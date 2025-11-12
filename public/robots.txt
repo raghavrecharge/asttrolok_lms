@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /*[0-9]{6,}\.html$
+Disallow: 
+Disallow: /cgi-bin/
+Sitemap: https://www.asttrolok.com/sitemap.xml

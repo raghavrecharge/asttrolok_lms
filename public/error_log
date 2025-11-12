@@ -1,0 +1,86 @@
+[20-Apr-2023 23:23:20 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 36864 bytes) in /home/examsexplorer/public_html/vendor/composer/ClassLoader.php on line 571
+[20-Apr-2023 23:23:25 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes) in /home/examsexplorer/public_html/vendor/laravel/framework/src/Illuminate/Mail/Mailer.php on line 620
+[20-Apr-2023 23:23:26 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes) in /home/examsexplorer/public_html/vendor/laravel/framework/src/Illuminate/Mail/Mailer.php on line 620
+[20-Apr-2023 23:23:28 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes) in /home/examsexplorer/public_html/vendor/laravel/framework/src/Illuminate/Mail/Mailer.php on line 620
+[20-Apr-2023 23:23:49 UTC] PHP Fatal error:  Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes) in /home/examsexplorer/public_html/vendor/laravel/framework/src/Illuminate/Mail/Mailer.php on line 620
+[24-May-2023 07:02:36 UTC] PHP Fatal error:  Cannot use isset() on the result of an expression (you can use "null !== expression" instead) in /home/examsexplorer/public_html/app/Http/Controllers/Auth/LoginController.php on line 242
+[24-May-2023 07:02:50 UTC] PHP Fatal error:  Cannot use isset() on the result of an expression (you can use "null !== expression" instead) in /home/examsexplorer/public_html/app/Http/Controllers/Auth/LoginController.php on line 242
+[24-May-2023 07:03:59 UTC] PHP Fatal error:  Cannot use isset() on the result of an expression (you can use "null !== expression" instead) in /home/examsexplorer/public_html/app/Http/Controllers/Auth/LoginController.php on line 242
+[24-May-2023 07:06:47 UTC] PHP Fatal error:  Cannot use isset() on the result of an expression (you can use "null !== expression" instead) in /home/examsexplorer/public_html/app/Http/Controllers/Auth/LoginController.php on line 242
+[24-May-2023 07:06:59 UTC] PHP Fatal error:  Cannot use isset() on the result of an expression (you can use "null !== expression" instead) in /home/examsexplorer/public_html/app/Http/Controllers/Auth/LoginController.php on line 242
+[24-May-2023 07:07:40 UTC] PHP Fatal error:  Cannot use isset() on the result of an expression (you can use "null !== expression" instead) in /home/examsexplorer/public_html/app/Http/Controllers/Auth/LoginController.php on line 242
+[24-May-2023 07:13:51 UTC] PHP Fatal error:  Cannot use isset() on the result of an expression (you can use "null !== expression" instead) in /home/examsexplorer/public_html/app/Http/Controllers/Auth/LoginController.php on line 242
+[24-May-2023 07:13:55 UTC] PHP Fatal error:  Cannot use isset() on the result of an expression (you can use "null !== expression" instead) in /home/examsexplorer/public_html/app/Http/Controllers/Auth/LoginController.php on line 242
+[30-May-2023 11:57:04 UTC] PHP Fatal error:  Cannot use isset() on the result of an expression (you can use "null !== expression" instead) in /home/lmsasttrolok/public_html/storage/framework/views/288a2e2ada079c58140ed90130486a4ba95be4e3.php on line 24
+[30-May-2023 11:57:08 UTC] PHP Fatal error:  Cannot use isset() on the result of an expression (you can use "null !== expression" instead) in /home/lmsasttrolok/public_html/storage/framework/views/288a2e2ada079c58140ed90130486a4ba95be4e3.php on line 24
+[07-Jun-2023 07:09:53 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 367005696 bytes) in /home/lmsasttrolok/public_html/app/Http/Controllers/Web/WebinarController.php on line 42
+[07-Jun-2023 07:09:55 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 367005696 bytes) in /home/lmsasttrolok/public_html/app/Http/Controllers/Web/WebinarController.php on line 42
+[07-Jun-2023 12:01:24 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 367005696 bytes) in /home/lmsasttrolok/public_html/app/Http/Controllers/Auth/SocialiteController.php on line 28
+[07-Jun-2023 12:16:42 UTC] PHP Fatal error:  Cannot use Socialite as Socialite because the name is already in use in /home/lmsasttrolok/public_html/app/Http/Controllers/Auth/SocialiteController.php on line 11
+[07-Jun-2023 12:16:45 UTC] PHP Fatal error:  Cannot use Socialite as Socialite because the name is already in use in /home/lmsasttrolok/public_html/app/Http/Controllers/Auth/SocialiteController.php on line 11
+[07-Jun-2023 12:16:52 UTC] PHP Fatal error:  Cannot use Socialite as Socialite because the name is already in use in /home/lmsasttrolok/public_html/app/Http/Controllers/Auth/SocialiteController.php on line 11
+[08-Jul-2023 13:51:34 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 266342400 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/HomeSectionSettingsController.php on line 33
+[08-Jul-2023 13:56:22 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 266342400 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/HomeSectionSettingsController.php on line 33
+[08-Jul-2023 13:56:32 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 266342400 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/HomeSectionSettingsController.php on line 33
+[08-Jul-2023 13:56:36 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 266342400 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/HomeSectionSettingsController.php on line 33
+[08-Jul-2023 14:01:49 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 266342400 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/HomeSectionSettingsController.php on line 33
+[14-Jul-2023 13:31:28 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 266342400 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Web/ForumController.php on line 307
+[14-Jul-2023 13:34:31 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 266342400 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Web/ForumController.php on line 307
+[14-Jul-2023 13:35:39 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 266342400 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Web/ForumController.php on line 307
+[17-Jul-2023 12:39:56 UTC] PHP Fatal error:  Cannot redeclare App\Http\Controllers\Panel\DashboardController::getRemainedInstallments() in /home/examsexplorer/public_html/app/Http/Controllers/Panel/DashboardController.php on line 191
+[18-Jul-2023 07:06:05 UTC] PHP Fatal error:  Cannot use DB as DB because the name is already in use in /home/examsexplorer/public_html/app/Http/Controllers/Panel/WebinarController.php on line 33
+[18-Jul-2023 07:06:10 UTC] PHP Fatal error:  Cannot use DB as DB because the name is already in use in /home/examsexplorer/public_html/app/Http/Controllers/Panel/WebinarController.php on line 33
+[18-Jul-2023 07:07:15 UTC] PHP Fatal error:  Cannot use DB as DB because the name is already in use in /home/examsexplorer/public_html/app/Http/Controllers/Panel/WebinarController.php on line 33
+[21-Jul-2023 09:18:11 UTC] PHP Fatal error:  Cannot use App\Models\ReserveMeeting as ReserveMeeting because the name is already in use in /home/examsexplorer/public_html/app/Http/Controllers/Panel/DashboardController.php on line 21
+[21-Jul-2023 09:20:54 UTC] PHP Fatal error:  Cannot use App\Http\Controllers\Controller as Controller because the name is already in use in /home/examsexplorer/public_html/app/Http/Controllers/Panel/DashboardController.php on line 24
+[21-Jul-2023 09:20:57 UTC] PHP Fatal error:  Cannot use App\Http\Controllers\Controller as Controller because the name is already in use in /home/examsexplorer/public_html/app/Http/Controllers/Panel/DashboardController.php on line 24
+[21-Jul-2023 09:44:18 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 266342400 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Panel/ReserveMeetingController.php on line 22
+[21-Jul-2023 09:44:52 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 367005696 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Panel/ReserveMeetingController.php on line 22
+[24-Jul-2023 10:20:19 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 266342400 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Web/traits/InstallmentsTrait.php on line 331
+[24-Jul-2023 10:22:41 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 266342400 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Web/traits/InstallmentsTrait.php on line 331
+[25-Jul-2023 07:10:56 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 266342400 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/RemedyController.php on line 357
+[25-Jul-2023 09:17:37 UTC] PHP Fatal error:  Cannot use DB as DB because the name is already in use in /home/examsexplorer/public_html/app/Http/Controllers/Admin/RemedyController.php on line 41
+[25-Jul-2023 09:18:42 UTC] PHP Fatal error:  Cannot use Illuminate\Support\Facades\DB as DB because the name is already in use in /home/examsexplorer/public_html/app/Http/Controllers/Admin/RemedyController.php on line 41
+[25-Jul-2023 10:29:31 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 333451264 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/RemedyController.php on line 507
+[25-Jul-2023 10:29:56 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 333451264 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/RemedyController.php on line 507
+[25-Jul-2023 10:30:35 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 333451264 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/RemedyController.php on line 507
+[27-Jul-2023 06:50:51 UTC] PHP Fatal error:  Cannot redeclare App\Models\File::chapter() in /home/examsexplorer/public_html/app/Models/File.php on line 54
+[27-Jul-2023 06:52:20 UTC] PHP Fatal error:  Cannot redeclare App\Models\File::chapter() in /home/examsexplorer/public_html/app/Models/File.php on line 54
+[27-Jul-2023 08:48:55 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 367005696 bytes) in /home/examsexplorer/public_html/storage/framework/views/79ce65a3438467b87d3fd40d4ff6d7d9ae352398.php on line 1038
+[27-Jul-2023 08:55:41 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 367005696 bytes) in /home/examsexplorer/public_html/storage/framework/views/79ce65a3438467b87d3fd40d4ff6d7d9ae352398.php on line 1038
+[01-Aug-2023 06:15:02 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 333451264 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Web/UserController.php on line 288
+[01-Aug-2023 06:18:33 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 367005696 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Web/UserController.php on line 281
+[05-Aug-2023 13:48:44 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 333451264 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/EnrollmentController.php on line 143
+[05-Aug-2023 13:48:58 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 333451264 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/EnrollmentController.php on line 143
+[05-Aug-2023 13:49:02 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 333451264 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/EnrollmentController.php on line 143
+[05-Aug-2023 13:49:35 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 333451264 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/EnrollmentController.php on line 143
+[05-Aug-2023 13:51:40 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 333451264 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/EnrollmentController.php on line 143
+[05-Aug-2023 13:55:51 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 333451264 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/EnrollmentController.php on line 143
+[05-Aug-2023 13:55:52 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 333451264 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/EnrollmentController.php on line 143
+[07-Aug-2023 06:29:59 UTC] PHP Fatal error:  Cannot use Illuminate\Http\Request as Request because the name is already in use in /home/examsexplorer/public_html/app/Http/Controllers/Admin/EnrollmentController.php on line 20
+[09-Aug-2023 14:14:43 UTC] PHP Fatal error:  During class fetch: Uncaught ParseError: syntax error, unexpected '.' in /home/examsexplorer/public_html/app/Http/Controllers/Web/traits/InstallmentsTrait.php:470
+Stack trace:
+#0 /home/examsexplorer/public_html/vendor/composer/ClassLoader.php(428): Composer\Autoload\includeFile('/home/examsexpl...')
+#1 [internal function]: Composer\Autoload\ClassLoader->loadClass('App\\Http\\Contro...')
+#2 /home/examsexplorer/public_html/app/Http/Controllers/Web/WebinarController.php(26): spl_autoload_call('App\\Http\\Contro...')
+#3 /home/examsexplorer/public_html/vendor/composer/ClassLoader.php(571): include('/home/examsexpl...')
+#4 /home/examsexplorer/public_html/vendor/composer/ClassLoader.php(428): Composer\Autoload\includeFile('/home/examsexpl...')
+#5 [internal function]: Composer\Autoload\ClassLoader->loadClass('App\\Http\\Contro...')
+#6 [internal function]: spl_autoload_call('App\\Http\\Contro...')
+#7 /home/examsexplorer/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php(809): ReflectionClass-> in /home/examsexplorer/public_html/app/Http/Controllers/Web/WebinarController.php on line 26
+[09-Aug-2023 14:14:46 UTC] PHP Fatal error:  During class fetch: Uncaught ParseError: syntax error, unexpected '.' in /home/examsexplorer/public_html/app/Http/Controllers/Web/traits/InstallmentsTrait.php:470
+Stack trace:
+#0 /home/examsexplorer/public_html/vendor/composer/ClassLoader.php(428): Composer\Autoload\includeFile('/home/examsexpl...')
+#1 [internal function]: Composer\Autoload\ClassLoader->loadClass('App\\Http\\Contro...')
+#2 /home/examsexplorer/public_html/app/Http/Controllers/Web/WebinarController.php(26): spl_autoload_call('App\\Http\\Contro...')
+#3 /home/examsexplorer/public_html/vendor/composer/ClassLoader.php(571): include('/home/examsexpl...')
+#4 /home/examsexplorer/public_html/vendor/composer/ClassLoader.php(428): Composer\Autoload\includeFile('/home/examsexpl...')
+#5 [internal function]: Composer\Autoload\ClassLoader->loadClass('App\\Http\\Contro...')
+#6 /home/examsexplorer/public_html/app/Http/Controllers/Web/LearningPageController.php(21): spl_autoload_call('App\\Http\\Contro...')
+#7 /home/examsexplorer/public_html/vendor/laravel/fram in /home/examsexplorer/public_html/app/Http/Controllers/Web/WebinarController.php on line 26
+[11-Aug-2023 12:35:29 UTC] PHP Fatal error:  Cannot use App\User as User because the name is already in use in /home/examsexplorer/public_html/app/Models/ImportUsers.php on line 8
+[11-Aug-2023 12:35:54 UTC] PHP Fatal error:  Class App\Models\ImportUsers contains 20 abstract methods and must therefore be declared abstract or implement the remaining methods (Astrotomic\Translatable\Contracts\Translatable::defaultAutoloadTranslations, Astrotomic\Translatable\Contracts\Translatable::disableAutoloadTranslations, Astrotomic\Translatable\Contracts\Translatable::enableAutoloadTranslations, ...) in /home/examsexplorer/public_html/app/Models/ImportUsers.php on line 15
+[11-Aug-2023 12:37:24 UTC] PHP Fatal error:  Allowed memory size of 5242880000 bytes exhausted (tried to allocate 3219132416 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/UserController.php on line 499
+[14-Aug-2023 12:27:41 UTC] PHP Fatal error:  Cannot use [] for reading in /home/examsexplorer/public_html/storage/framework/views/b92547ccbf8be9d3c901446e058c53c233bca9f9.php on line 282
+[14-Aug-2023 12:28:21 UTC] PHP Fatal error:  Cannot use [] for reading in /home/examsexplorer/public_html/storage/framework/views/b92547ccbf8be9d3c901446e058c53c233bca9f9.php on line 282
+[16-Aug-2023 12:08:42 UTC] PHP Fatal error:  Allowed memory size of 5242880000 bytes exhausted (tried to allocate 2682261504 bytes) in /home/examsexplorer/public_html/app/Http/Controllers/Admin/UserController.php on line 749

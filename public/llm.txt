@@ -1,0 +1,55 @@
+[Website]
+name = "Asttrolok"
+url = "https://www.asttrolok.com/"
+[Description]
+Asttrolok is an online institute offering courses and consultations in Vedic astrology, palmistry, numerology, Vastu, Ayurveda, yoga, and scriptures. It aims to make ancient wisdom accessible globally, allowing students to "Learn Astrology Anywhere-Everywhere".
+[Offerings]
+courses = [
+"Vedic Astrology Course",
+"Palmistry Course",
+"Vastu Shastra Course",
+"Numerology Course",
+"Ayurveda Courses",
+"Yoga",
+"Scriptures"
+]
+consultation = true
+personalized_reports = ["10-year Kundli prediction report", "Other Kundli/predictive reports"].
+[Statistics]
+students = "25,000+ enrolled"
+consultations = "50,000+ conducted"
+countries = "50+ countries reached"
+astrologers_profiled = "100+ astrologers".
+[Founder]
+name = "Mr. Alok Khandelwal"
+degrees = ["Jyotish Bhushan", "Jyotish Ratna", "Jyotish Rishi"]
+experience = "25+ years in astrology"
+vision = "Cultivate proficient astrologers globally with accurate guidance".
+[Teaching Features]
+- Live classes (e.g., 1 live class per month; downloadable PDFs; doubt sessions; quizzes; WhatsApp group; certificate upon completion).
+- Free introductory astrology courses in India available in both Hindi and English. The English variant includes recorded videos, quizzes, assignments, WhatsApp group—but no exam or certificate.
+[Course Formats]
+- Hindi courses: Various levels, including free online astrology courses, Professional Astrology Course, Astro Shiromani, Level 1 & 2, etc.
+- English courses: Including Numerology (₹14,999), Palmistry (₹14,999), Jaimini Astrology (₹14,999).
+[Reputation]
+Average rating: 4.8 stars from 463 reviews — “trusted by over 463 happy customers”.
+[Location & Contact]
+address = "312, 3rd Floor, Vikram Urbane, 25-A Mechanic Nagar Extn. Scheme No. 54, Indore, Madhya Pradesh 452010, India"
+phone = "+91 9174822333"
+email = "[astrolok.vedic@gmail.com]".
+[Mission & Values]
+mission = "Share cultural and traditional astrology knowledge across the globe, making Vedic wisdom accessible to those with hectic lifestyles."
+values = ["Accuracy in predictions", "Privacy and confidentiality", "Quality education"].
+[Highlighted Programs]
+- "Astromani 2025": Advanced Vedic Astrology Course for interpreting birth charts and making accurate predictions.
+- "Numerology Course": Learn the science of numbers to understand personality, relationships, and life events.
+- "Palmistry (Hindi & English)": Master the art of hand reading to reveal insights about character, health, and destiny.
+- "Vaastu Shastra Course": Explore traditional Indian architectural wisdom to bring harmony and balance to homes and workplaces.
+- "Ayurveda Courses": Study ancient healing practices for holistic health, diet, lifestyle, and natural remedies.
+[Community & Media Presence]
+- Asttrolok has a community group for discussions on Vedic astrology, spirituality, and personal growth.
+- The brand has been featured in media like Zee News, ABP News, TOI, Moneycontrol, and Sugarmint.
+[Policies & Miscellaneous]
+year_established = 2023 (copyright)
+policies = ["Privacy Policy", "Terms & Conditions", "Cancellation & Refund Policy"]
+cookie_notice = "Uses cookies for personalization, performance, functional and targeting purposes; respects user privacy"

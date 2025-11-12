@@ -1,0 +1,333 @@
+@charset "UTF-8";
+
+@media (min-width: 320px) and (max-width: 424px) {
+    body{
+        font-family: "Inter", sans-serif !important;
+    }
+    .mb-p {
+        padding-top: 10px !important;
+    padding-bottom: 200px !important;
+    }
+    .bg-t{
+        background-color: #c3c1be57 !important;
+    }
+    .mt-{
+        margin-top: -100px !important;
+        border-radius: 25px 25px 0px 0px !important;
+    }
+    .badge{
+        /*background-color: #fff !important;  */
+    }
+    .user-profile-avatar {
+        width: 150px !important;
+        min-width: 150px !important;
+        max-width: 150px !important;
+        height: 150px !important;
+        border-radius: 10px !important;
+        margin-top: -50px !important;
+    }
+    .user-title{
+        font-size: 20.76px !important;
+    line-height: 20.76px !important;
+    margin-top: 10px !important;
+    }
+    .font-13s {
+        font-size: 13.81px !important;
+        font-weight: 400 !important;
+        line-height: 22.84px !important;
+    }
+    .Fill{
+        color: #0AA06E !important;
+        font-weight:600;
+    }
+    .price{
+        font-size: 23.17px !important;
+        font-weight: 700 !important;
+        color: #0AA06E !important;
+    }
+    .user-profile-avatar img {
+        border-radius: 10px;
+    }
+    .rounded-lg1{
+        border-radius: 25px 25px 0px 0px;
+}
+.bookb{
+    padding: 7px 40px 12px 40px;
+    border-radius: 6px;
+    width: 231px;
+    height: 37px;
+    background-color: #32BA7C;
+}
+.profile-info-box .user-details {
+    flex-direction: column;
+    width: 100%;
+     text-align: left; 
+}
+.abouts{
+    border-top: 1px solid #cbc7c7;
+}
+.abouthide{
+    max-height: 55px;
+    overflow: hidden;
+}
+.readmore{
+    text-align: center;
+    color: #32BA7C;
+    font-weight: 500;
+    text-decoration: underline;
+    margin-top: 9px;
+}
+
+.white-shadow:after{
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 85%);
+    bottom: 100%;
+    content: '';
+    display: inline-block;
+    height: 150px;
+    position: absolute;
+    right: 0;
+    width: 100%;
+  }
+  .mobilehiden{
+    display: none !important;
+}
+.homehide{
+    display: none !important;
+  }
+  .pick-a-time .available-times label, .pick-a-time .meeting-type-reserve label {
+    cursor: pointer;
+    padding: 8px  !important;
+    border-radius: 25px !important;
+    border: solid 1px #cfcece !important;
+    color: var(--primary);
+    font-size: 0.875rem;
+}
+.datepicker-plot-area .datepicker-day-view .table-days td.today span {
+    background-color: #bbd6ff69;
+    color: #1000ff;
+    border-radius: 50px;
+    border: 0;
+    text-shadow: none;
+}
+.inline-reservation-calender .datepicker-plot-area .datepicker-day-view .table-days td.disabled span {
+    background-color: #ffffff;
+}
+.datepicker-plot-area .datepicker-day-view .table-days td span.other-month {
+    color: #fff;
+    border: none;
+    text-shadow: none;
+}
+.inline-reservation-calender .datepicker-plot-area .datepicker-navigator .pwt-btn {
+    color: #6a6a6a;
+}
+.pwt-btn-switch{
+    color: #32ba7c !important;
+    font-size: 1rem;
+}
+.datepicker-plot-area {
+    box-shadow: 0 2px 4px rgb(0 0 0 / 6%);
+}
+.inline-reservation-calender .datepicker-plot-area {
+    background-color: #ffffff00;
+}
+.inline-reservation-calender .datepicker-plot-area .datepicker-day-view .table-days td.selected span {
+    background-color: var(--primary);
+    border-radius: 50px;
+    text-shadow: none;
+    color: #ffffff !important;
+    font-weight: bold;
+}
+.inline-reservation-calender .datepicker-plot-area .datepicker-day-view .table-days td {
+    width: 62px;
+    height: 30px;
+    padding: 12px;
+}
+.inline-reservation-calender .datepicker-plot-area .datepicker-day-view .table-days td span {
+    width: 100%;
+    font-weight: 600;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.5s;
+}
+.pick-a-time .available-times, .pick-a-time .meeting-type-reserve {
+    margin-right: 5px !important;
+}
+.login-card1 {
+    padding:  1px 20px 50px 20px;
+}
+.abcak {
+        background-color: #fff;
+}
+.radius-20 {
+    border-radius:20px !important;
+    
+}
+.badge {
+    display: flex !important;
+    align-items: center !important;
+}
+}
+
+@media (min-width: 424px) and (max-width: 660px) {
+    .Fill{
+        color: #0AA06E !important;
+        font-weight:600;
+    }
+    .login-card1 {
+        padding:  1px 20px 50px 20px;
+    }
+    .pick-a-time .available-times, .pick-a-time .meeting-type-reserve {
+        margin-right: 5px !important;
+    }
+    
+  .pick-a-time .available-times label, .pick-a-time .meeting-type-reserve label {
+    cursor: pointer;
+    padding: 8px  !important;
+    border-radius: 25px !important;
+    border: solid 1px #cfcece !important;
+    color: var(--primary);
+    font-size: 0.875rem;
+}
+.inline-reservation-calender .datepicker-plot-area .datepicker-day-view .table-days td {
+    width: 62px;
+    height: 30px;
+    padding: 12px;
+}
+.inline-reservation-calender .datepicker-plot-area .datepicker-day-view .table-days td span {
+    width: 100%;
+    font-weight: 600;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.5s;
+}
+.datepicker-plot-area .datepicker-day-view .table-days td.today span {
+    background-color: #bbd6ff69;
+    color: #1000ff;
+    border-radius: 50px;
+    border: 0;
+    text-shadow: none;
+}
+.inline-reservation-calender .datepicker-plot-area .datepicker-day-view .table-days td.disabled span {
+    background-color: #ffffff;
+}
+.datepicker-plot-area .datepicker-day-view .table-days td span.other-month {
+    color: #fff;
+    border: none;
+    text-shadow: none;
+}
+.datepicker-plot-area {
+    box-shadow: 0 2px 4px rgb(0 0 0 / 6%);
+}
+.pwt-btn-switch{
+    color: #32ba7c !important;
+    font-size: 1rem;
+}
+.inline-reservation-calender .datepicker-plot-area .datepicker-navigator .pwt-btn {
+    color: #6a6a6a;
+}
+.inline-reservation-calender .datepicker-plot-area {
+    background-color: #ffffff00;
+}
+.inline-reservation-calender .datepicker-plot-area .datepicker-day-view .table-days td.selected span {
+    background-color: var(--primary);
+    border-radius: 50px;
+    text-shadow: none;
+    color: #ffffff !important;
+    font-weight: bold;
+}
+    .readmore{
+        text-align: center;
+        color: #32BA7C;
+        font-weight: 500;
+        text-decoration: underline;
+        margin-top: 9px;
+    }
+    .mobilehiden{
+        display: none !important;
+    }
+    .homehide{
+        display: none !important;
+      }
+    .abouthide{
+        max-height: 55px;
+        overflow: hidden;
+    }
+    .abouts{
+        border-top: 1px solid #cbc7c7;
+        padding: 10px;
+    }
+    .profile-info-box .user-details {
+        flex-direction: column;
+        width: 100%;
+         text-align: left; 
+    }
+    .bookb{
+        padding: 7px 40px 12px 40px;
+        border-radius: 6px;
+        width: 231px;
+        height: 37px;
+        background-color: #32BA7C;
+    }
+    .user-profile-avatar img {
+        border-radius: 10px;
+    }
+    .price{
+        font-size: 22.17px !important;
+    font-weight: 900 !important;
+    color: #0AA06E !important;
+    }
+    .mx-w{
+        max-width: 230px !important;
+    }
+    .font-13s {
+        font-size: 13.81px !important;
+        font-weight: 400 !important;
+        line-height: 22.84px !important;
+    }
+    .rounded-lg1{
+        border-radius: 25px 25px 0px 0px;
+}
+    
+    .user-profile-avatar {
+        width: 132px !important;
+        min-width: 132px !important;
+        max-width: 132px !important;
+        height: 126px !important;
+        border-radius: 10px !important;
+        margin-top: -50px !important;
+    }
+    .user-title{
+        font-size: 20.76px !important;
+    line-height: 20.76px !important;
+    margin-top: 10px !important;
+    }
+    .badge{
+        /*background-color: #fff !important;  */
+    }
+    .mb-p {
+        padding-top: 10px !important;
+    padding-bottom: 200px !important;
+    }
+    .bg-t{
+        background-color: #c3c1be57 !important;
+    } 
+    .mt-{
+        margin-top: -100px !important;
+    }
+    .abcak {
+        background-color: #fff;
+}
+.radius-20 {
+    border-radius:20px !important;
+    
+}
+.badge {
+    display: flex !important;
+    align-items: center !important;
+}
+}
+ 

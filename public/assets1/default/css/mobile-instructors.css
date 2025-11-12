@@ -1,0 +1,379 @@
+@charset "UTF-8";
+
+@media (min-width: 426px) {
+  .hide-mobile {
+    display: none !important;
+}
+}
+@media (max-width: 480px) {
+  
+    /* slider */
+    .mobile-home-slider {
+      width: 92% !important;
+      margin-top: 20px !important;
+      margin-left: 4% !important;
+      margin-right: 7% !important;
+      border-radius: 22px;
+      height: 230px !important;
+    }
+      .banner-redius {
+          border-radius: 22px;
+      }
+      .mobilehome {
+        height: 382px;
+      }
+      .main-heading-home {
+        font-size: 18px !important;
+        color: #000000;
+      }
+      .main-subheading-home-1 {
+        font-size: 24px !important;
+        color: #8F5A14;
+      }
+      
+      .main-subheading-home-2 {
+        font-size: 24px !important;
+        color: #3C5D92;
+      }
+      .main-subheading-home {
+        font-size: 24px !important;
+        color: #009846;
+      }
+      .main-text-home {
+        font-size: 9.5px;
+        line-height: 1;
+      }
+      .main-home-img {
+        max-height: 289px !important;
+        width: 260px !important;
+      }
+  
+      /* course catagories */
+      .stats-container .stats-item {
+          box-shadow: 0 3px 30px 0 rgb(255 255 255 / 10%) !important;
+      }
+      .stats-container .stats-item .stat-title {
+          font-size: 11.5px !important;
+      }
+  
+      /* view all */
+      .badge-primary1 {
+          background-color: #ffffff !important;
+          vertical-align: sub;
+      }
+      .radius-20 {
+          border-radius: 20px !important;
+      }
+  
+      /* courses */
+      .course-teacher-card.instructors-list .off-label {
+          position: absolute;
+          top: 3px;
+          left: 0px;
+          border: 2px solid white;
+          border-radius: 15px 15px 15px 15px !important;
+          z-index: 10;
+          box-shadow: 0 3px 30px 0 rgb(255 255 255 / 10%) !important;
+      }
+      .margin-31 {
+          margin-top: -26px !important;
+      }
+      .rounded-lg1 {
+          border-top-left-radius: 0.9375rem !important;
+          border-bottom-left-radius: 0.9375rem !important;
+      }
+      .can-reserve {
+          margin-left: -7px !important;
+          margin-top: 7px !important;
+      }
+      .padding-1 {
+          padding: 5px;
+          box-shadow: 0 3px 30px 0 rgb(255 255 255 / 10%) !important;
+      }
+      .btn1 {
+          font-size: 12px !important;
+          padding-right: 6px !important;
+          padding-left: 6px !important;
+          border-radius: 4px !important;
+          }
+          .btn1 {
+            display: inline-block;
+            font-weight: 400;
+            color: #ffffff;
+            background-color: #43d477;
+            text-align: center;
+            vertical-align: middle;
+            -webkit-user-select: none;
+               -moz-user-select: none;
+                -ms-user-select: none;
+                    user-select: none;
+            border: 1px solid transparent;
+            padding-right: 32px;
+            padding-left: 32px;
+            height: 48px;
+            font-size: 0.875rem;
+            border-radius: 8px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+          }
+      .scroll-bar {
+          max-height: 458PX;
+          overflow-x: hidden;
+          overflow-y: auto;
+      }
+      .mobilegrid1 {
+          flex: 2 0 50% !important;
+      max-width: 49% !important;
+      margin-left: 10px !important;
+      margin-right: -27px !important;
+      }
+      .mob-tab1 {
+          position: unset;
+          width: 30%;
+      }
+      .webinar-card.webinar-list .webinar-card-body {
+        padding: 12px !important;
+    }
+    .webinar-title1 {
+      font-size: 14.38px !important;
+      font-weight: bold !important;
+      font-family: "Inter", sans-serif;
+  }
+  
+  .scroll-bar1 {
+    max-height: 377PX;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .stats-container .stats-item .stat-icon-box {
+    border-radius: 17.823px;
+    width: 70px;
+    height: 60px;
+  }
+  .mob-cat {
+      margin-top: 20px !important;
+  }
+
+  a.text-white1:hover, a.text-white1:focus, a.active {
+    color: #32ba7c !important;
+    font-weight: 600;
+  }
+  .nav-tabs {
+    border-bottom: 1px solid #837979;
+}
+  
+    }
+@media (max-width: 425px) {
+  
+  /* slider */
+  .mobile-home-slider {
+    width: 92% !important;
+    margin-top: 20px !important;
+    margin-left: 4% !important;
+    margin-right: 7% !important;
+    border-radius: 22px;
+    height: 200px !important;
+  }
+    .banner-redius {
+        border-radius: 22px;
+    }
+    .mobilehome {
+      height: 382px;
+    }
+    .main-heading-home {
+      font-size: 18px !important;
+      color: #000000;
+    }
+    .main-subheading-home-1 {
+      font-size: 24px !important;
+      color: #8F5A14;
+    }
+    
+    .main-subheading-home-2 {
+      font-size: 24px !important;
+      color: #3C5D92;
+    }
+    .main-subheading-home {
+      font-size: 24px !important;
+      color: #009846;
+    }
+    .main-text-home {
+      font-size: 9.5px;
+      line-height: 1;
+    }
+    .main-home-img {
+      max-height: 289px !important;
+      width: 260px !important;
+    }
+
+    /* course catagories */
+    .stats-container .stats-item {
+        box-shadow: 0 3px 30px 0 rgb(255 255 255 / 10%) !important;
+    }
+    .stats-container .stats-item .stat-title {
+        font-size: 11.5px !important;
+    }
+
+    /* view all */
+    .badge-primary1 {
+        background-color: #ffffff !important;
+        vertical-align: sub;
+    }
+    .radius-20 {
+        border-radius: 20px !important;
+    }
+
+    /* courses */
+    .course-teacher-card.instructors-list .off-label {
+        position: absolute;
+        top: 3px;
+        left: 0px;
+        border: 2px solid white;
+        border-radius: 15px 15px 15px 15px !important;
+        z-index: 10;
+        box-shadow: 0 3px 30px 0 rgb(255 255 255 / 10%) !important;
+    }
+    .margin-31 {
+        margin-top: -26px !important;
+    }
+    .rounded-lg1 {
+        border-top-left-radius: 0.9375rem !important;
+        border-bottom-left-radius: 0.9375rem !important;
+    }
+    .can-reserve {
+        margin-left: -7px !important;
+        margin-top: 7px !important;
+    }
+    .padding-1 {
+        padding: 5px;
+        box-shadow: 0 3px 30px 0 rgb(255 255 255 / 10%) !important;
+    }
+    .btn1 {
+        font-size: 12px !important;
+        padding-right: 6px !important;
+        padding-left: 6px !important;
+        border-radius: 4px !important;
+        }
+        .btn1 {
+          display: inline-block;
+          font-weight: 400;
+          color: #ffffff;
+          background-color: #43d477;
+          text-align: center;
+          vertical-align: middle;
+          -webkit-user-select: none;
+             -moz-user-select: none;
+              -ms-user-select: none;
+                  user-select: none;
+          border: 1px solid transparent;
+          padding-right: 32px;
+          padding-left: 32px;
+          height: 48px;
+          font-size: 0.875rem;
+          border-radius: 8px;
+          font-weight: 500;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+    .scroll-bar {
+        max-height: 458PX;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+    .mobilegrid1 {
+        flex: 2 0 50% !important;
+    max-width: 49% !important;
+    margin-left: 10px !important;
+    margin-right: -27px !important;
+    }
+    .mob-tab1 {
+        position: unset;
+        width: 30%;
+    }
+    .webinar-card.webinar-list .webinar-card-body {
+      padding: 12px !important;
+  }
+  .webinar-title1 {
+    font-size: 14.38px !important;
+    font-weight: bold !important;
+    font-family: "Inter", sans-serif;
+}
+
+.scroll-bar1 {
+  max-height: 377PX;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.stats-container .stats-item .stat-icon-box {
+  border-radius: 17.823px;
+  width: 70px;
+  height: 60px;
+}
+.mob-cat {
+    margin-top: 20px !important;
+}
+
+
+  }
+
+  @media (max-width: 375px) {
+    .mt-15, .my-15 {
+      margin-top: 15px !important;
+  }
+  .stat-title {
+    font-size: 9.5px !important;
+  }
+  .stats-container .stats-item .stat-icon-box {
+    border-radius: 17.823px;
+    width: 60px;
+    height: 50px;
+}
+a.mobile-btn {
+  font-size: 10px !important;
+}
+.main-heading-home {
+  font-size: 15px !important;
+  color: #000000;
+}
+.main-subheading-home {
+font-size: 20px !important;
+color: #009846;
+}
+.slider-container .slider-content .slide-hint {
+font-size: 12px;
+}
+.main-subheading-home-1 {
+font-size: 20px !important;
+color: #8F5A14;
+}
+.font-16 {
+font-size: 0.8rem;
+}
+pre, code, kbd, samp {
+font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+font-size: .8em;
+}
+.font-20 {
+font-size: .9rem;
+}
+.btn1 {
+font-size: 9px !important;
+padding-right: 4px !important;
+padding-left: 4px !important;
+border-radius: 4px !important;
+}
+.col-xl, .col-xl-auto, .col-xl-12, .col-xl-11, .col-xl-10, .col-xl-9, .col-xl-8, .col-xl-7, .col-xl-6, .col-xl-5, .col-xl-4, .col-xl-3, .col-xl-2, .col-xl-1, .col-lg, .col-lg-auto, .col-lg-12, .col-lg-11, .col-lg-10, .col-lg-9, .col-lg-8, .col-lg-7, .col-lg-6, .col-lg-5, .col-lg-4, .col-lg-3, .col-lg-2, .col-lg-1, .col-md, .col-md-auto, .col-md-12, .col-md-11, .col-md-10, .col-md-9, .col-md-8, .col-md-7, .col-md-6, .col-md-5, .col-md-4, .col-md-3, .col-md-2, .col-md-1, .col-sm, .col-sm-auto, .col-sm-12, .col-sm-11, .col-sm-10, .col-sm-9, .col-sm-8, .col-sm-7, .col-sm-6, .col-sm-5, .col-sm-4, .col-sm-3, .col-sm-2, .col-sm-1, .col, .col-auto, .col-12, .col-11, .col-10, .col-9, .col-8, .col-7, .col-6, .col-5, .col-4, .col-3, .col-2, .col-1 {
+position: relative;
+width: 100%;
+padding-right: 11px;
+padding-left: 11px;
+}
+.font-12 {
+font-size: 0.65rem;
+}
+  }   

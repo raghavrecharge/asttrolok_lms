@@ -1,0 +1,216 @@
+@media (min-width: 320px) and (max-width: 424px) {
+    body{
+        font-family: "Inter", sans-serif !important;
+    }
+    .dropdown-menu {
+        position: absolute;
+        right: 0 !important;
+        z-index: 1000;
+        left: unset !important;
+        min-width: 10rem !important;
+        min-width: none;
+        top: 35% !important;
+    }
+    .dropdown-menu:after {
+        content: "";
+        position: absolute;
+        top: -10px;
+        right: 16px !important;
+        left: unset !important;
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-bottom: 10px solid #fff;
+    }
+    .webinar-card.grid-card .image-box {
+        position: relative;
+        width: 100%;
+        height: 135px !important;
+    }
+    .mobilehiden{
+        display: none !important;
+    }
+    .homehide{
+        display: none !important;
+      }
+      .remedies-list {
+        padding: 10px 5px 10px 5px !important;
+    }
+    .webinar-list-2{
+        padding: 5px !important; 
+    }
+    .mobile-home-slider {
+        width: 92% !important;
+        margin-top: 20px !important;
+        margin-left: 4% !important;
+        margin-right: 7% !important;
+        border-radius: 22px;
+        height: 200px !important;
+    }
+    .readmore{
+        text-align: center;
+        color: #32BA7C;
+        font-weight: 500;
+        text-decoration: underline;
+        margin-top: 9px;
+    }
+    .bookb {
+    padding: 0px 0px 0px 0px;
+    border-radius: 6px;
+    width: 80%;
+    margin-left: 10%;
+    /* height: 27px; */
+    background-color: #32BA7C;
+    font-size: 13px !important;
+}
+    .position-relative {
+    position: relative !important;
+    /*width: 67px !important;*/
+}
+.rounded-lg1{
+        width: 100%;
+    height: unset !important;
+}
+.mobile-home-slider {
+    width: 92% !important;
+    margin-top: 20px !important;
+    margin-left: 4% !important;
+    margin-right: 7% !important;
+    border-radius: 22px;
+    height: 200px !important;
+}
+.abcak{
+    
+    border: 1px solid #33ba7c;
+    padding: 8px 15px 8px 15px;
+    border-radius: 25px;
+
+}
+  .position-relative1 {
+    position: relative !important;
+    width: 67px !important;
+}
+.bg-secondary {
+    background-color: #f6f5f5 !important;
+}
+.course-content-section .nav-tabs .nav-item.active, .course-content-section .nav-tabs .nav-item a.active {
+                background-color: white !important;
+                border: none !important;
+                padding: 7px;
+                border-radius: 6px;
+                font-weight: 600;
+                color: #32ba7c;
+                
+    padding-left:50px;
+    padding-right:50px;
+            }
+}
+@media (min-width: 424px) and (max-width: 660px) {
+    .bg-secondary {
+    background-color: #f6f5f5 !important;
+}
+.course-content-section .nav-tabs .nav-item.active, .course-content-section .nav-tabs .nav-item a.active {
+                background-color: white !important;
+                border: none !important;
+                padding: 7px;
+                border-radius: 6px;
+                font-weight: 600;
+                color: #32ba7c;
+                
+    padding-left:50px;
+    padding-right:50px;
+            }
+      .position-relative1 {
+    position: relative !important;
+    width: 67px !important;
+}
+    .rounded-lg1{
+        width: 100%;
+    height: unset !important;
+}
+    .position-relative {
+    position: relative !important;
+    /*width: 67px !important;*/
+}
+    .bookb {
+    padding: 0px 0px 0px 0px;
+    border-radius: 6px;
+    width: 80%;
+    margin-left: 10%;
+    /* height: 27px; */
+    background-color: #32BA7C;
+    font-size: 13px !important;
+}
+    .readmore{
+        text-align: center;
+        color: #32BA7C;
+        font-weight: 500;
+        text-decoration: underline;
+        margin-top: 9px;
+    }
+    .mobile-home-slider {
+        width: 92% !important;
+        margin-top: 20px !important;
+        margin-left: 4% !important;
+        margin-right: 7% !important;
+        border-radius: 22px;
+        height: 200px !important;
+    }
+    body{
+        font-family: "Inter", sans-serif !important;
+    }
+    .webinar-list-2{
+        padding: 5px !important; 
+    }
+    .remedies-list {
+        padding: 10px 5px 10px 5px !important;
+    }
+    .mobilehiden{
+        display: none !important;
+    }
+    .homehide{
+        display: none !important;
+      }
+    .webinar-card.grid-card .image-box {
+        position: relative;
+        width: 100%;
+        height: 135px !important;
+    }
+    .dropdown-menu {
+        position: absolute;
+        right: 0 !important;
+        z-index: 1000;
+        left: unset !important;
+        min-width: 10rem !important;
+        min-width: none;
+        top: 35% !important;
+    }
+    .dropdown-menu:after {
+        content: "";
+        position: absolute;
+        top: -10px;
+        right: 16px !important;
+        left: unset !important;
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-bottom: 10px solid #fff;
+    }
+    .mobile-home-slider {
+    width: 92% !important;
+    margin-top: 20px !important;
+    margin-left: 4% !important;
+    margin-right: 7% !important;
+    border-radius: 22px;
+    height: 200px !important;
+}
+.abcak{
+    
+    border: 1px solid #33ba7c;
+    padding: 8px 15px 8px 15px;
+    border-radius: 25px;
+
+}
+}
