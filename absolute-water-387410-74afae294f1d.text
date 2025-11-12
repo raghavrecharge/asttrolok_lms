@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "absolute-water-387410",
+  "private_key_id": "74afae294f1d5b607c4d8990f5aade0309c6f55f",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDdL++9a1KOaCCl\nbGkIMCbl5gmZIDiQy7sGto/yWJMIAem9mKYxk3VQH0ucVLnkbDKkXAm0YLtrK+5X\nmNZEKDsieBCuEeMMOua6U4T/Ni1KIikRF7TeCScePOj/DKTubllvflDClJnuAbVk\nMebyqKbO5BpjzXdVvUVq8R1Vixpt56sHAeJSrMLnZnnyfAYY3dMXnI16sNKRsaa0\nyd6xAi8gu1w55Su+av/2mqSA8IJT2FFvsOFPerArK9zatSAcllp5w2bU0Tbzx+VV\nxv+Ob9C5zI7rcYVHC6E/FH53K9K/ZuIF2WOQaTSieUCAyYcSf4BLvjwzSFMg6p09\nd4bBabXRAgMBAAECggEAE0Nr12JebpqbpUHmJS6/DyypT1W4DMbsLe8pEDaDRPeY\nWh548ukLFtmdkIBB2aahWSEkPeUNeDhQ6f4cmGkB5W7xfPIqhP59k7gBuucGq2XY\nOm3cdFigYzNzfgBQPkJhYE1u+SikqKQrc7jI3/9XhRM78nngLRkZJPGE2Ctk4jID\n0JhiWkcpRtT8NMA6dUywwzOVXUCh7Zqt8gFF5c1EaiqHsFALxdccf56LdpXix7DF\nFAFwhyaAooWcm49RBI7HQC/6n77Lut+TiWAEJjRlRCtK9Cldk0vpDx1xA9bszgtx\n2jdcU1h5PoR0J1vVBCkB1hzoXSW6fhwHgw8qIRJy5QKBgQD5lBasFTWL+Zlj03dp\nONN7O3UAOZ3zO1Dxv6o+X3+l1Lu2A10X7DtRLbguoMYtwa/8TFyFohcbJBqVPfy+\nZkluhBFpB2t/37UoJ7KzvVTPnqggA7R2TS6a/t6WKzqWYznAMge6/oRf+6nMDQjp\nmMERGsTJ/ju0Ei1O4tv70cstpwKBgQDi4NeN2eLhFSO1cnfQKYBQ5deKWJ8C/8Gf\nSxCmajdHrImXKi3kKdjdNB+qKsxdM5XAdr7ygL63SxyfGIAFj9tGhHLg00yIKcSO\n/+beFYZu+6GUYY6aimJtlq16FTIbj0gIcQP5F6LugG4+3MvbLV/57Y72DfbTEC5l\nEzAZUL4fxwKBgQDnpzq8ExuWhuCHNdraQbKZ6YAZ62DeSSpCmWJNbpqus5xfvxOD\nhvMv0D3qmbQY+HR+u+oM53yG5qX97IFRwONbvx3h3M8868ncMay/BHdaFqt6u7Wf\nMNiXaQX1YL6KpCMQb9+ZA3CfHppmGZsyJ2TcmXoa+u0zoMOJOyxwujPadQKBgQCr\nSqZz6rVoytUTAUGEYFEIwv9g7Ffho8dDxSDlA/yImLOo9aeARDf/ioL9ryJsm63M\nidrQrHNRX9xUIeNGT752FznElMOLaj2E2aAsvIOq90CfDqjj9OcrZj/DlI0oUZ1J\nAkrFnhrdhwm1XG5tJGz5/WmaTCC2adkdZsdB1bw1sQKBgQCBeDJAwizjJshFqOku\neAYlgsmdyo19xqi1KpPpGNrDvCc1cQa/U2fcSqHILnOBqPY87gHZllhAeQ9I1WCl\nv6E7Fi4RdYsm/XxRPpUWKp81ZQ4RuXXNi7Tx7eUmiC4oPdBGWEEyL/90m2Lhv09x\ndxQp2U0u4N7TZ8aobDHhwDtYAg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "customsaforcloudstorage@absolute-water-387410.iam.gserviceaccount.com",
+  "client_id": "104735596729113123481",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/customsaforcloudstorage%40absolute-water-387410.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
