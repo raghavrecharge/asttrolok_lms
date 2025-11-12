@@ -1,0 +1,51 @@
+<div class=" mt-20  mx-20 course-teacher-card d-flex align-items-center flex-column">
+
+    @if(!empty($webinarPartnerTeacher))
+        <span class="user-select-none px-15 py-10 bg-gray200 off-label text-gray text-white font-12 rounded-sm ml-auto">{{ trans('public.invited') }}</span>
+    @endif
+<div class="row rounded-lg p-5 shadow-sm "><div class="col-3">
+    <div class="teacher-avatar mt-5">
+        <img src="{{ config('app.img_dynamic_url') }}{{ $courseTeacher->getAvatar(100) }}" class="img-cover" alt="{{ $courseTeacher->full_name }}">
+
+        {{-- @if($courseTeacher->offline)
+            <span class="user-circle-badge unavailable d-flex align-items-center justify-content-center">
+              <i data-feather="slash" width="20" height="20" class="text-white"></i>
+           </span>
+        @elseif($courseTeacher->verified)
+            <span class="user-circle-badge has-verified d-flex align-items-center justify-content-center">
+                <i data-feather="check" width="20" height="20" class="text-white"></i>
+            </span>
+        @endif --}}
+    </div></div><div class="col-9 pl-10"  style="display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    justify-content: center;
+    align-content: flex-end;">
+    <h3 class="ml-5 font-16 font-weight-bold text-primary">{{ $courseTeacher->full_name }}</h3>
+    <span class="ml-5 mt-5 font-14 font-weight-500 text-gray">{{ $courseTeacher->bio }}</span>
+</div></div>
+    {{-- @include('web.default.includes.webinar.rate',['rate' => $courseTeacher->rates()]) --}}
+
+    <!--<div class="user-reward-badges d-flex flex-wrap align-items-center mt-20">-->
+    <!--    @foreach($courseTeacher->getBadges() as $userBadge)-->
+    <!--        <div class="mr-15 mt-10" data-toggle="tooltip" data-placement="bottom" data-html="true" title="{!! (!empty($userBadge->badge_id) ? nl2br($userBadge->badge->description) : nl2br($userBadge->description)) !!}">-->
+    <!--            <img src="{{ !empty($userBadge->badge_id) ? $userBadge->badge->image : $userBadge->image }}" width="32" height="32" alt="{{ !empty($userBadge->badge_id) ? $userBadge->badge->title : $userBadge->title }}">-->
+    <!--        </div>-->
+    <!--    @endforeach-->
+    <!--</div>-->
+
+    @php
+        $hasMeeting = !empty($courseTeacher->hasMeeting());
+    @endphp
+
+    {{-- <div class="mt-25 d-flex flex-row align-items-center justify-content-center w-100">
+        <!--<a href="{{ $courseTeacher->getProfileUrl() }}" target="_blank" class="btn btn-sm btn-primary {{ $hasMeeting ? 'teacher-btn-action' : 'btn-block' }}">{{ trans('public.profile') }}</a>-->
+@if($courseTeacher->full_name!='Mr.Alok Khandelwal')
+        @if($hasMeeting)
+            <a href="{{ $courseTeacher->getProfileUrl() }}" class="btn btn-sm btn-primary teacher-btn-action ml-15">{{ trans('public.book_a_meeting') }}</a>
+        @endif
+        @else
+        <a href="https://alokastrology.com/in-services/" class="btn btn-sm btn-primary teacher-btn-action ml-15">{{ trans('public.book_a_meeting') }}</a>
+        @endif
+    </div> --}}
+</div>

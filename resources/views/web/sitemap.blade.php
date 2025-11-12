@@ -1,0 +1,103 @@
+<?php echo '<?xml version="1.0" encoding="UTF-8"?>'; ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+    <url>
+	<loc>https://www.asttrolok.com/</loc>
+	<lastmod>2024-06-27T10:00:19+01:00</lastmod>
+	<priority>1.0</priority>
+</url>
+<url>
+	<loc>https://www.asttrolok.com/login</loc>
+	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
+	<priority>1.0</priority>
+</url>
+<url>
+	<loc>https://www.asttrolok.com/register</loc>
+	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
+	<priority>1.0</priority>
+</url>
+<url>
+	<loc>https://www.asttrolok.com/consult-with-astrologers</loc>
+	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
+	<priority>1.0</priority>
+</url>
+<url>
+	<loc>https://www.asttrolok.com/categories/Astrology</loc>
+	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
+	<priority>0.8</priority>
+</url>
+<url>
+	<loc>https://www.asttrolok.com/categories/Ayurveda</loc>
+	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
+	<priority>0.8</priority>
+</url>
+<url>
+	<loc>https://www.asttrolok.com/categories/Numerology</loc>
+	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
+	<priority>0.8</priority>
+</url>
+<url>
+	<loc>https://www.asttrolok.com/categories/Palmistry</loc>
+	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
+	<priority>0.8</priority>
+</url>
+<url>
+	<loc>https://www.asttrolok.com/categories/Vastu</loc>
+	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
+	<priority>0.8</priority>
+</url>
+<url>
+	<loc>https://www.asttrolok.com/classes</loc>
+	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
+	<priority>1.0</priority>
+</url>
+<url>
+	<loc>https://www.asttrolok.com/blog</loc>
+	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
+	<priority>1.0</priority>
+</url>
+<url>
+	<loc>https://www.asttrolok.com/contact</loc>
+	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
+	<priority>1.0</priority>
+</url>
+<url>
+	<loc>https://www.asttrolok.com/landingpage/Astromani_2024</loc>
+	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
+	<priority>0.8</priority>
+</url>
+    @foreach ($webinars as $webinar)
+        <url>
+            <loc>{{ url('/') }}/course/{{ $webinar->slug }}</loc>
+            <lastmod>{{ gmdate("Y-m-d\TH:i:s\Z",  $webinar->created_at) }}</lastmod>
+            <changefreq>daily</changefreq>
+            <priority>0.8</priority>
+        </url>
+    @endforeach
+    <url>
+	<loc>https://www.asttrolok.com/pages/privacy-policy</loc>
+	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
+	<priority>0.8</priority>
+</url>
+<url>
+	<loc>https://www.asttrolok.com/pages/terms</loc>
+	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
+	<priority>0.8</priority>
+</url>
+<url>
+	<loc>https://www.asttrolok.com/pages/cancellation-and-refund-policy</loc>
+	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
+	<priority>0.8</priority>
+</url>
+   @foreach ($blogs as $blog)
+        <url>
+            <loc>{{ url('/') }}/blog/{{ $blog->slug }}</loc>
+            <lastmod>{{ gmdate("Y-m-d\TH:i:s\Z",  $blog->created_at) }}</lastmod>
+            <changefreq>daily</changefreq>
+            <priority>0.8</priority>
+        </url>
+    @endforeach
+    
+</urlset>
