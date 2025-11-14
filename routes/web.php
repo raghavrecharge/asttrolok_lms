@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Models\Blog;
 use App\Models\Webinar;
+use App\Http\Controllers\MailController;
 
    header('Access-Control-Allow-Origin:  *');
    header('Access-Control-Allow-Methods:  POST, GET, OPTIONS, PUT, DELETE');
@@ -18,6 +19,7 @@ use App\Models\Webinar;
 | contains the "web" middleware group. Now create something great!
 |
 */
+Route::get('send-mail', [MailController::class, 'index']);
 Route::group(['prefix' => 'my_api', 'namespace' => 'Api\Panel', 'middleware' => 'signed', 'as' => 'my_api.web.'], function () {
     Route::get('checkout/{user}', 'CartController@webCheckoutRender')->name('checkout');
     Route::get('/charge/{user}', 'PaymentsController@webChargeRender')->name('charge');

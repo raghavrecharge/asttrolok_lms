@@ -50,7 +50,11 @@ public function inststep(Request $request, $slug){
         // }
         $data['directAccess']=0;
 
-        $course = $data['course'];
+        $course = $data['course'] ?? null;
+
+        if (!$course) {
+            return back()->with('error', 'Course not found!');
+        }
         $user = $data['user'];
          $course_pricess = $course->price;
           $cchapt=count($course->chapters);

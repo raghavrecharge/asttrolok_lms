@@ -4,6 +4,8 @@ use App\Mixins\Financial\MultiCurrency;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Session;
 use Stevebauman\Location\Facades\Location;
+use App\Api\Request;
+
 function getTemplate()
 {
     /*$template = cache()->remember('view.template', 7 * 24 * 60 * 60, function () {
@@ -14,7 +16,13 @@ function getTemplate()
     }
     return 'web.default';
 }
-
+if (!function_exists('validateParam')) {
+    function validateParam($request_input, $rules, $somethingElseIsInvalid = null)
+    {
+        $customRequest = new Request();
+        return $customRequest->validateParam($request_input, $rules, $somethingElseIsInvalid);
+    }
+}
 function formatSizeUnits($bytes)
 {
     if ($bytes >= 1073741824) {

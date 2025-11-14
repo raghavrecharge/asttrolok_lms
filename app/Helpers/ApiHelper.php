@@ -2,13 +2,20 @@
 
 use App\Api\Response;
 use App\Api\Request;
-
+use Illuminate\Support\Facades\Validator;
 function validateParam($request_input, $rules, $somethingElseIsInvalid = null)
 {
-    $request = new Request();
-    return $request->validateParam($request_input, $rules, $somethingElseIsInvalid);
-}
+    $validator = Validator::make($request_input, $rules);
 
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => false,
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    return $validator->validated();
+}
 function apiResponse2($success, $status, $msg, $data = null,$title=null)
 {
     $response = new Response();

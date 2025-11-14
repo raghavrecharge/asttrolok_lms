@@ -8,6 +8,8 @@ Route::group(['namespace' => 'Auth', 'middleware' => ['api.request.type']], func
     Route::post('/register/step/{step}', ['as' => 'register', 'uses' => 'RegisterController@stepRegister']);
     Route::post('/signup', ['as' => 'signup', 'uses' => 'RegisterController@Register']);
     Route::post('/login', ['as' => 'login', 'uses' => 'LoginController@requestOtp']);
+    Route::post('/send-otp', ['as' => 'send-otp', 'uses' => 'OtpController@sendOtp']);
+    Route::post('/verify-otp', ['as' => 'verify-otp', 'uses' => 'OtpController@verifyOtp']);
     Route::get('/sendotp', ['as' => 'sendotp', 'uses' => 'LoginController@sendOtp']);
     Route::post('/resend-otp', ['as' => 'resend-otp', 'uses' => 'LoginController@resendOtp']);
 
