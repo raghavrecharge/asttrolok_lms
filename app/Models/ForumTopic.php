@@ -15,7 +15,7 @@ class ForumTopic extends Model
     protected $dateFormat = 'U';
     protected $guarded = ['id'];
 
-    public function sluggable()
+    public function sluggable(): array
     {
         return [
             'slug' => [

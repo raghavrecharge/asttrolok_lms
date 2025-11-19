@@ -72,7 +72,7 @@ class Product extends Model implements TranslatableContract
         return !empty($media) ? $media->path : null;
     }
 
-    public function sluggable()
+    public function sluggable(): array
     {
         return [
             'slug' => [

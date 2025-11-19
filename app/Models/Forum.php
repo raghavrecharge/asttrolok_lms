@@ -30,7 +30,7 @@ class Forum extends Model implements TranslatableContract
         return getTranslateAttributeValue($this, 'description');
     }
 
-    public function sluggable()
+    public function sluggable(): array
     {
         return [
             'slug' => [
