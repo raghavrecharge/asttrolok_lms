@@ -21,123 +21,144 @@
 
 <div id="navbarVacuum"></div>
 <nav id="navbar" class="navbar navbar-expand-lg navbar-light">
-    @if (empty($authUser)) 
-      <div class="{{ (!empty($isPanel) and $isPanel) ? 'container-fluid' : 'container'}}">
+     
+      <div class="container">
     
-     @else
-      @if($authUser->isUser())
-  <div class="{{ (!empty($isPanel) and $isPanel) ? 'container' : 'container'}}">
-        @else
-         <div class="{{ (!empty($isPanel) and $isPanel) ? 'container-fluid' : 'container'}}">
-        
-            @endif
-    @endif
-        <div class="d-flex align-items-center justify-content-between w-100">
+             <div class="d-flex align-items-center justify-content-between w-100">
 
 <div class="navmobile navmobiledisplay">
     <div>
-    @if(!isset($_GET['ad']))
-    <button class="navbar-toggler navbar-order" type="button" id="navbarToggle">
+        <button class="navbar-toggler navbar-order" type="button" id="navbarToggle">
         <span class="navbar-toggler-icon"></span>
     </button>
-    @endif
-    </div>
-     <a class="navbar-brand navbar-order d-flex align-items-center justify-content-center mr-0 " href="{{isset($_GET['ad'])?'#':'/'}}">
-                @if(!empty($generalSettings['logo']))
-                    <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $generalSettings['logo'] }}" class="img-cover" alt="site logo">
-                @endif
-            </a>
+        </div>
+     <a class="navbar-brand navbar-order d-flex align-items-center justify-content-center mr-0 " href="https://marketing.asttrolok.com">
+                                    <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/Asttrolok-Logo.png" class="img-cover" alt="site logo">
+                            </a>
 <div class="top-navbar">
             
     
     <div class="xs-w-100 d-flex align-items-center justify-content-between ">
             <div class="d-flex">
-                  @include('web.default.includes.top_nav.currency')
+                  <div class="js-currency-select custom-dropdown position-relative" style="margin-top:7px;">
+        <form action="/set-currency" method="post">
+            <input type="hidden" name="_token" value="VN3yV218tFXUdCDz1q7sUmHkNKU0HYi3DvojFDnn" autocomplete="off">
+            <input type="hidden" name="currency" value="INR">
+
+                                                <div class="custom-dropdown-toggle d-flex align-items-center cursor-pointer">
+                        <div class="mr-5 text-secondary">
+                            <span class="js-lang-title font-14">INR (₹)</span>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14px" height="14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down icons"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                                                                </form>
+
+        <div class="custom-dropdown-body py-10">
+
+                            <div class="js-currency-dropdown-item custom-dropdown-body__item cursor-pointer active" data-value="INR" data-title="INR (₹)">
+                    <div class=" d-flex align-items-center w-100 px-15 py-5 text-gray bg-transparent">
+                        <div class="size-32 position-relative d-flex-center bg-gray100 rounded-sm">
+                            ₹
+                        </div>
+
+                        <span class="ml-5 font-14">India Rupee</span>
+                    </div>
+                </div>
+                            <div class="js-currency-dropdown-item custom-dropdown-body__item cursor-pointer " data-value="USD" data-title="USD ($)">
+                    <div class=" d-flex align-items-center w-100 px-15 py-5 text-gray bg-transparent">
+                        <div class="size-32 position-relative d-flex-center bg-gray100 rounded-sm">
+                            $
+                        </div>
+
+                        <span class="ml-5 font-14">United States Dollar</span>
+                    </div>
+                </div>
+            
+        </div>
+    </div>
+
+
+
+
+
+
                   <div class="border-left mx-5 mx-lg-15"></div>
-                @include(getTemplate().'.includes.shopping-cart-dropdwon')
+                <div class="dropdown">
+    <button type="button" disabled="" class="btn btn-transparent dropdown-toggle" id="navbarShopingCart" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart mr-10"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+
+            </button>
+
+    <div class="dropdown-menu" aria-labelledby="navbarShopingCart">
+        <div class="d-md-none border-bottom mb-20 pb-10 text-right">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x close-dropdown"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </div>
+        <div class="h-100">
+            <div class="navbar-shopping-cart h-100" data-simplebar="init"><div class="simplebar-wrapper" style="margin: 0px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" style="height: 100%; overflow: hidden;"><div class="simplebar-content" style="padding: 0px;">
+                                    <div class="d-flex align-items-center text-center py-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart mr-10"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                        <span class="">Your cart is empty</span>
+                    </div>
+                            </div></div></div></div><div class="simplebar-placeholder" style="width: auto; height: 121px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: hidden;"><div class="simplebar-scrollbar" style="height: 0px; display: none;"></div></div></div>
+        </div>
+    </div>
+</div>
 
                 <div class="border-left mx-5 mx-lg-15"></div>
 
-                @include(getTemplate().'.includes.notification-dropdown')
+                <div class="dropdown">
+    <button type="button" class="btn btn-transparent dropdown-toggle" disabled="" id="navbarNotification" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bell mr-10"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+
+            </button>
+
+    <div class="dropdown-menu pt-20" aria-labelledby="navbarNotification">
+        <div class="d-flex flex-column h-100">
+            <div class="mb-auto navbar-notification-card" data-simplebar="init"><div class="simplebar-wrapper" style="margin: 0px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" style="height: 100%; overflow: hidden;"><div class="simplebar-content" style="padding: 0px;">
+                <div class="d-md-none border-bottom mb-20 pb-10 text-right">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x close-dropdown"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </div>
+
+                                    <div class="d-flex align-items-center text-center py-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bell mr-10"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        <span class="">Empty notifications</span>
+                    </div>
+                
+            </div></div></div></div><div class="simplebar-placeholder" style="width: auto; height: 189px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: hidden;"><div class="simplebar-scrollbar" style="height: 0px; display: none;"></div></div></div>
+
+                    </div>
+    </div>
+</div>
             </div>
  
         </div>
-            <!--{{-- User Menu --}}-->
+            <!---->
             
         </div>
        
         
         
     </div>
-            <div class="mx-lg-30 d-none d-lg-flex flex-grow-1 navbar-toggle-content " id="navbarContent">
+            <div class="mx-lg-30 d-none d-lg-flex flex-grow-1 navbar-toggle-content  show" id="navbarContent">
                 <div class="navbar-toggle-header text-right d-lg-none">
                     <button class="btn-transparent" id="navbarClose">
-                        <i data-feather="x" width="32" height="32"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                 </div>
 
                 <ul class="navbar-nav mr-auto d-flex align-items-center">
-                    <!--@if(!empty($categories) and count($categories))-->
-                    <!--    <li class="mr-lg-25">-->
-                    <!--        <div class="menu-category">-->
-                    <!--            <ul>-->
-                    <!--                <li class="cursor-pointer user-select-none d-flex xs-categories-toggle">-->
-                    <!--                    <i data-feather="grid" width="20" height="20" class="mr-10 d-none d-lg-block"></i>-->
-                    <!--                    {{ trans('categories.categories') }}-->
-
-                    <!--                    <ul class="cat-dropdown-menu">-->
-                    <!--                        @foreach($categories as $category)-->
-                    <!--                        @if($category->title != "Uncategories")-->
-                    <!--                            <li>-->
-                    <!--                                <a href="{{ $category->getUrl() }}">-->
-                    <!--                                    <div class="d-flex align-items-center">-->
-                    <!--                                        <img loading="lazy" decoding="async" src="{{ $category->icon }}" class="cat-dropdown-menu-icon mr-10" alt="{{ $category->title }} icon">-->
-                    <!--                                        {{ $category->title }}-->
-                    <!--                                    </div>-->
-
-                    <!--                                    @if(!empty($category->subCategories) and count($category->subCategories))-->
-                    <!--                                        <i data-feather="chevron-right" width="20" height="20" class="d-none d-lg-inline-block ml-10"></i>-->
-                    <!--                                        <i data-feather="chevron-down" width="20" height="20" class="d-inline-block d-lg-none"></i>-->
-                    <!--                                    @endif-->
-                    <!--                                </a>-->
-
-                    <!--                                @if(!empty($category->subCategories) and count($category->subCategories))-->
-                    <!--                                    <ul class="sub-menu" data-simplebar @if((!empty($isRtl) and $isRtl)) data-simplebar-direction="rtl" @endif>-->
-                    <!--                                        @foreach($category->subCategories as $subCategory)-->
-                    <!--                                            <li>-->
-                    <!--                                                <a href="{{ $subCategory->getUrl() }}">-->
-                    <!--                                                    @if(!empty($subCategory->icon))-->
-                    <!--                                                        <img loading="lazy" decoding="async" src="{{ $subCategory->icon }}" class="cat-dropdown-menu-icon mr-10" alt="{{ $subCategory->title }} icon">-->
-                    <!--                                                    @endif-->
-
-                    <!--                                                    {{ $subCategory->title }}-->
-                    <!--                                                </a>-->
-                    <!--                                            </li>-->
-                    <!--                                        @endforeach-->
-                    <!--                                    </ul>-->
-                    <!--                                @endif-->
-                    <!--                            </li>-->
-                    <!--                            @endif-->
-                    <!--                        @endforeach-->
-                    <!--                    </ul>-->
-                    <!--                </li>-->
-                    <!--            </ul>-->
-                    <!--        </div>-->
-                    <!--    </li>-->
-                    <!--@endif-->
+                    
 <div class="my-20" style="width: 100%;">
-     @if(empty($authUser))
-                             <li class="nav-item">
+                                  <li class="nav-item">
                    
- <a href="/login" style="font-weight: 800;width:48%; font-size:14px !important;" class="btn btn-primary">{{ trans('auth.login') }}</a>
+ <a href="/login" style="font-weight: 800;width:48%; font-size:14px !important;" class="btn btn-primary">Login</a>
                   
                             <!--</li>-->
                             <!-- <li class="nav-item">-->
-        <a href="/register" style="font-weight: 800;width:48%; float:right; font-size:14px !important;" class="btn btn-primary">{{ trans('auth.register') }}</a>
+        <a href="/register" style="font-weight: 800;width:48%; float:right; font-size:14px !important;" class="btn btn-primary">Register</a>
                    
                             </li>
-                             @endif
-                             
+                                                          
                              
                              
                             </div>
@@ -145,79 +166,95 @@
                              <li class="nav-item">
 
 
-                @if(!empty($navBtnUrl))
-                   
-
-                    <a href="{{ $navBtnUrl }}" style="font-size: 16px;font-weight: 600;color:#343434;" class="">
-                        {{ $navBtnText }}
-                    </a>
-                @endif
-
+                
 
 
 
                             </li>
                             
                             </div>
-                    @if(!empty($navbarPages) and count($navbarPages))
-                        @foreach($navbarPages as $navbarPage)
-                           
-                            @if($navbarPage['title'] !="Courses")
-                            <li class="nav-item ">
-                                <a class="nav-link" href="{{ $navbarPage['link'] }}">{{ $navbarPage['title'] }}</a>
+                                                                       
+                                                        <li class="nav-item ">
+                                <a class="nav-link" href="https://marketing.asttrolok.com/">Home</a>
                             </li>
-                             @endif   
-                            @if($navbarPage['title'] =="Courses")
+                                
+                                                                               
+                                                        <li class="nav-item ">
+                                <a class="nav-link" href="https://marketing.asttrolok.com/consult-with-astrologers">Consult with Astrologer's</a>
+                            </li>
+                                
+                                                                               
+                               
+                                                       
                            
-                           
-                            @if(!empty($categories) and count($categories))
-                        <li class="nav-item ">
+                                                    <li class="nav-item ">
                             <div class="menu-category ">
                                 <ul>
-                                    <li class="cursor-pointer user-select-none d-flex xs-categories-toggle ">
+                                    <li class="cursor-pointer user-select-none d-flex xs-categories-toggle">
                                         <!--<i data-feather="grid" width="20" height="20" class="mr-10 d-none d-lg-block"></i>-->
-                                        <span class="dropdown-toggle nav-item nav-link">{{ $navbarPage['title'] }}</span>
+                                        <span class="dropdown-toggle nav-item nav-link">Courses</span>
                                         
 
                                         <ul class="cat-dropdown-menu">
-                                            @foreach($categories as $category)
-                                            @if($category->title != "Uncategories")
-                                                <li>
+                                                                                                                                                                                                                                <li>
                                                     
-                                                    <a href="{{ $category->getUrl() }}" >
+                                                    <a href="https://marketing.asttrolok.com/categories/astrology">
                                                         <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
-                                                            <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $category->icon }}" class="cat-dropdown-menu-icon mr-10" alt="{{ $category->title }} icon">
-                                                            {{ $category->title }}
+                                                            <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse 1.webp" class="cat-dropdown-menu-icon mr-10" alt="Astrology icon">
+                                                            Astrology
                                                         </div>
 
-                                                        @if(!empty($category->subCategories) and count($category->subCategories))
-                                                            <!--<i data-feather="chevron-right" width="20" height="20" class="d-none d-lg-inline-block ml-10"></i>-->
-                                                            <!--<i data-feather="chevron-down" width="20" height="20" class="d-inline-block d-lg-none"></i>-->
-                                                        @endif
-                                                    </a>
+                                                                                                            </a>
 
-                                                    @if(!empty($category->subCategories) and count($category->subCategories))
-                                                        <!--<ul class="sub-menu" data-simplebar @if((!empty($isRtl) and $isRtl)) data-simplebar-direction="rtl" @endif>-->
-                                                            @foreach($category->subCategories as $subCategory)
-                                                                <!--<li>-->
-                                                                <!--    <a href="{{ $subCategory->getUrl() }}">-->
-                                                                <!--        @if(!empty($subCategory->icon))-->
-                                                                <!--            <img loading="lazy" decoding="async" src="{{ $subCategory->icon }}" class="cat-dropdown-menu-icon mr-10" alt="{{ $subCategory->title }} icon">-->
-                                                                <!--        @endif-->
+                                                                                                    </li>
+                                                                                                                                                                                        <li>
+                                                    
+                                                    <a href="https://marketing.asttrolok.com/categories/ayurveda">
+                                                        <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
+                                                            <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%204.webp" class="cat-dropdown-menu-icon mr-10" alt="Ayurveda icon">
+                                                            Ayurveda
+                                                        </div>
 
-                                                                <!--        {{ $subCategory->title }}-->
-                                                                <!--    </a>-->
-                                                                <!--</li>-->
-                                                            @endforeach
-                                                        <!--</ul>-->
-                                                    @endif
-                                                </li>
-                                                @endif
-                                            @endforeach
-                                            <li style="float:right;">
-                                                <a href="/classes" >
+                                                                                                            </a>
+
+                                                                                                    </li>
+                                                                                                                                                                                        <li>
+                                                    
+                                                    <a href="https://marketing.asttrolok.com/categories/numerology">
+                                                        <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
+                                                            <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse 3.webp" class="cat-dropdown-menu-icon mr-10" alt="Numerology icon">
+                                                            Numerology
+                                                        </div>
+
+                                                                                                            </a>
+
+                                                                                                    </li>
+                                                                                                                                                                                        <li>
+                                                    
+                                                    <a href="https://marketing.asttrolok.com/categories/palmistry">
+                                                        <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
+                                                            <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse 2.webp" class="cat-dropdown-menu-icon mr-10" alt="Palmistry icon">
+                                                            Palmistry
+                                                        </div>
+
+                                                                                                            </a>
+
+                                                                                                    </li>
+                                                                                                                                                                                        <li>
+                                                    
+                                                    <a href="https://marketing.asttrolok.com/categories/vastu">
+                                                        <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
+                                                            <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse 5.webp" class="cat-dropdown-menu-icon mr-10" alt="Vastu icon">
+                                                            Vastu
+                                                        </div>
+
+                                                                                                            </a>
+
+                                                                                                    </li>
+                                                                                                                                        <li style="float:right;">
+                                                <a href="https://marketing.asttrolok.com/classes">
                                                         <div class="d-flex align-items-center" style="    font-size: 12px;font-weight: 600;text-align:center;color: #171347;">
-                                                            <!--<img loading="lazy" decoding="async" src="https://www.asttrolok.in/store/1/Home/icon/Astrology.png" class="cat-dropdown-menu-icon mr-10" alt="all icon">-->
+                                                           
                                                             View All
                                                         </div>
 
@@ -228,59 +265,79 @@
                                 </ul>
                             </div>
                         </li>
-                        <!--<li class="nav-item homeshow">-->
-                        <!--        <a class="nav-link" href="{{ $navbarPage['link'] }}">{{ $navbarPage['title'] }}</a>-->
-                        <!--</li>-->
-                        
-                        
-                    @endif      
-                         
-                           
-                           @endif
-                        @endforeach
+                                           
+                                                        <li class="nav-item ">
+                                <a class="nav-link" href="https://marketing.asttrolok.com/blog">Blog</a>
+                            </li>
                                 
+                                                                               
+                                                        <li class="nav-item ">
+                                <a class="nav-link" href="https://marketing.asttrolok.com/contact">Contact Us</a>
+                            </li>
+                                
+                                                                                    
                          
                                 
                         <div class="navmobile">
                              
                             <li class="nav-item">
-                                <a href="/tutorial-guide" style="font-size: 14px;font-weight: 600;" >Tutorial Guide</a> 
+                                <a href="/tutorial-guide" style="font-size: 14px;font-weight: 600;">Tutorial Guide</a> 
                             </li>
-                            @if(!empty($authUser))
-                            <!--<li class="nav-item">-->
-                            <!--    <a href="/panel" style="font-size: 14px;font-weight: 600;" >Dashboard</a> -->
-                            <!--</li>-->
-                            <li class="navbar-auth-user-dropdown-item">
-                    <a href="/logout" class="d-flex align-items-center w-500 py-10 text-danger font-14 bg-transparent">
-                        <img loading="lazy" decoding="async" src="{{ config('app.js_css_url') }}/assets/default/img/icons/user_menu/logout.svg" class="icons">
-                        <span class="ml-5">{{ trans('auth.logout') }}</span>
-                    </a>
-                </li>
-                 @endif
-                            </div>
-                    @endif
-                </ul>
+                                                        </div>
+                                    </ul>
             </div>
             
 
             <div class="nav-icons-or-start-live navbar-order navbar-order1">
 
-                @if(!empty($navBtnUrl))
-                    <a href="{{ $navBtnUrl }}" class="d-none d-lg-flex btn btn-sm btn-primary nav-start-a-live-btn">
-                        {{ $navBtnText }}
-                    </a>
-
-                    <a href="{{ $navBtnUrl }}" class="d-flex d-lg-none text-primary nav-start-a-live-btn font-14">
-                        {{ $navBtnText }}
-                    </a>
-                @endif
-
+                
                 <div class="d-none nav-notify-cart-dropdown top-navbar ">
-                    @include(getTemplate().'.includes.shopping-cart-dropdwon')
+                    <div class="dropdown">
+    <button type="button" disabled="" class="btn btn-transparent dropdown-toggle" id="navbarShopingCart" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart mr-10"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+
+            </button>
+
+    <div class="dropdown-menu" aria-labelledby="navbarShopingCart">
+        <div class="d-md-none border-bottom mb-20 pb-10 text-right">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x close-dropdown"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </div>
+        <div class="h-100">
+            <div class="navbar-shopping-cart h-100" data-simplebar="init"><div class="simplebar-wrapper" style="margin: 0px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" style="height: auto; overflow: hidden;"><div class="simplebar-content" style="padding: 0px;">
+                                    <div class="d-flex align-items-center text-center py-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart mr-10"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                        <span class="">Your cart is empty</span>
+                    </div>
+                            </div></div></div></div><div class="simplebar-placeholder" style="width: 0px; height: 0px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: hidden;"><div class="simplebar-scrollbar" style="height: 0px; display: none;"></div></div></div>
+        </div>
+    </div>
+</div>
 
                     <div class="border-left mx-15"></div>
 
-                    @include(getTemplate().'.includes.notification-dropdown')
+                    <div class="dropdown">
+    <button type="button" class="btn btn-transparent dropdown-toggle" disabled="" id="navbarNotification" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bell mr-10"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+
+            </button>
+
+    <div class="dropdown-menu pt-20" aria-labelledby="navbarNotification">
+        <div class="d-flex flex-column h-100">
+            <div class="mb-auto navbar-notification-card" data-simplebar="init"><div class="simplebar-wrapper" style="margin: 0px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" style="height: auto; overflow: hidden;"><div class="simplebar-content" style="padding: 0px;">
+                <div class="d-md-none border-bottom mb-20 pb-10 text-right">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x close-dropdown"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </div>
+
+                                    <div class="d-flex align-items-center text-center py-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bell mr-10"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        <span class="">Empty notifications</span>
+                    </div>
+                
+            </div></div></div></div><div class="simplebar-placeholder" style="width: 0px; height: 0px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: hidden;"><div class="simplebar-scrollbar" style="height: 0px; display: none;"></div></div></div>
+
+                    </div>
+    </div>
+</div>
                 </div>
 
             </div>

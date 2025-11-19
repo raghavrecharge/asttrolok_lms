@@ -438,6 +438,7 @@
                                                 <div class="bullet"></div>
                                                 @switch($webinar->status)
                                                     @case(\App\Models\Webinar::$active)
+                                                    {{--
                                                     <span class="text-success">{{ trans('admin/main.publish') }}</span>
                                                     @if($webinar->isProgressing())
                                                         <div class="text-warning text-small font-600-bold">({{  trans('webinars.in_progress') }})</div>
@@ -446,6 +447,7 @@
                                                     @else
                                                         <span class="text-success text-small font-600-bold">({{ trans('public.finished') }})</span>
                                                     @endif
+                                                    --}}
                                                     @break
                                                     @case(\App\Models\Webinar::$isDraft)
                                                     <span class="text-dark">{{ trans('admin/main.is_draft') }}</span>
@@ -497,6 +499,7 @@
                                                 <div class="bullet"></div>
                                                 @switch($course->status)
                                                     @case(\App\Models\Webinar::$active)
+                                                    {{--
                                                     <span class="text-success">{{ trans('admin/main.publish') }}</span>
                                                     @if($course->isProgressing())
                                                         <div class="text-warning text-small font-600-bold">({{  trans('webinars.in_progress') }})</div>
@@ -505,6 +508,7 @@
                                                     @else
                                                         <span class="text-success text-small font-600-bold">({{ trans('public.finished') }})</span>
                                                     @endif
+                                                    --}}
                                                     @break
                                                     @case(\App\Models\Webinar::$isDraft)
                                                     <span class="text-dark">{{ trans('admin/main.is_draft') }}</span>

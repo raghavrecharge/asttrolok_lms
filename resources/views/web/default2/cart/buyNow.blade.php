@@ -213,27 +213,184 @@
 @endsection
 
 @push('scripts_bottom')
-    <script>
-        var couponInvalidLng = '{{ trans('cart.coupon_invalid') }}';
-        var selectProvinceLang = '{{ trans('update.select_province') }}';
-        var selectCityLang = '{{ trans('update.select_city') }}';
-        var selectDistrictLang = '{{ trans('update.select_district') }}';
-    </script>
-
+<script src="{{ config('app.js_css_url') }}/assets2/default/js/parts/payment.min.js"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script src="/js/unified-payment.js"></script>
-<script>
-document.getElementById('paymentSubmit').addEventListener('click', function(e) {
-    e.preventDefault();
-    
-    const userDetails = {
-        name: document.getElementById('customer_name').value,
-        email: document.getElementById('customer_email').value,
-        number: document.getElementById('customer_number').value,
-        discount_id: {{ session('discountCouponId') ?? null }}
-    };
 
-    initiatePayment('webinar', {{ $webinar->id }}, userDetails);
-});
+<script>
+    $(document).ready(function() {
+        // Restrict mobile number input to digits only and max 10 digits
+        $('#customer_number').on('keypress', function(e) {
+            var $this = $(this);
+            var regex = /^[0-9]$/;
+            var str = String.fromCharCode(!e.charCode ? e.which : e.charCode);
+            
+            if ($this.val().length >= 10) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // Prevent numbers starting with 0-5
+            if ($this.val().length === 0 && e.charCode >= 48 && e.charCode <= 53) {
+                e.preventDefault();
+                return false;
+            }
+            
+            if (regex.test(str)) {
+                return true;
+            }
+            
+            e.preventDefault();
+            return false;
+        });
+
+        // Payment button click handler
+        $('#paymentSubmit').on('click', function(e) {
+            e.preventDefault();
+            
+            // Clear previous errors
+            $('.error-message').text('');
+            
+            // Get form values
+            var name = $('#customer_name').val().trim();
+            var email = $('#customer_email').val().trim();
+            var mobile = $('#customer_number').val().trim();
+            
+            // Validation
+            var isValid = true;
+            
+            if (name === '') {
+                $('#name-error').text('Name field is required');
+                isValid = false;
+            }
+            
+            if (email === '') {
+                $('#email-error').text('Email field is required');
+                isValid = false;
+            } else {
+                var emailRegex = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+                if (!emailRegex.test(email)) {
+                    $('#email-error').text('Enter a valid email address');
+                    isValid = false;
+                }
+            }
+            
+            if (mobile === '') {
+                $('#mobile-error').text('Mobile field is required');
+                isValid = false;
+            } else if (mobile.length < 10) {
+                $('#mobile-error').text('Enter a valid 10-digit mobile number');
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                return false;
+            }
+            
+            // Disable button to prevent double clicks
+            $(this).prop('disabled', true);
+            
+            // Send webhook data
+            $.ajax({
+                method: 'POST',
+                url: "{{ url('/webhook-url') }}",
+                data: {
+                    name: name,
+                    email: email,
+                    mobile: mobile,
+                    course_title: "{{ $webinar->title }}",
+                    _token: "{{ csrf_token() }}"
+                }
+            });
+            
+            // Initialize Razorpay
+            var options = {
+                key: "{{ env('RAZORPAY_API_KEY') }}",
+                amount: "{{ (int)(preg_replace('/[^\d.]/', '', handlePrice($total * 100))) }}",
+                currency: "{{ currency() }}",
+                name: 'Asttrolok',
+                description: "Payment for the course {{ $webinar->title }}",
+                image: "{{ $generalSettings['logo'] ?? '' }}",
+                handler: function(response) {
+                    // Show loader
+                    $('#loader').show();
+                    $('#paymentSubmit').prop('disabled', true);
+                    
+                    // GTM tracking
+                    @if(auth()->check())
+                        window.dataLayer = window.dataLayer || [];
+                        window.dataLayer.push({
+                            'event': 'purchase',
+                            'transaction_id': response.razorpay_payment_id,
+                            'user_id': {{ auth()->id() }},
+                            'value': {{ $total }},
+                            'currency': "{{ currency() }}",
+                            'course': '{{ $webinar->id }}'
+                        });
+                    @else
+                        fetch('/get-user-id', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                            },
+                            body: JSON.stringify({
+                                name: name,
+                                email: email,
+                                phone: mobile
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            window.dataLayer = window.dataLayer || [];
+                            window.dataLayer.push({
+                                'event': 'purchase',
+                                'transaction_id': response.razorpay_payment_id,
+                                'user_id': data.user_id,
+                                'value': {{ $total }},
+                                'currency': "{{ currency() }}",
+                                'course': '{{ $webinar->id }}'
+                            });
+                        })
+                        .catch(err => console.error('User lookup failed:', err));
+                    @endif
+                    
+                    // Fill verification form and submit
+                    $('#verify_name').val(name);
+                    $('#verify_email').val(email);
+                    $('#verify_number').val(mobile);
+                    $('#razorpay_payment_id').val(response.razorpay_payment_id);
+                    $('#razorpay_signature').val(response.razorpay_signature);
+                    $('#razorpay-verify-form').submit();
+                },
+                modal: {
+                    ondismiss: function() {
+                        $('#paymentSubmit').prop('disabled', false);
+                        alert('Payment cancelled');
+                    }
+                },
+                prefill: {
+                    name: name,
+                    email: email,
+                    contact: mobile
+                },
+                notes: {
+                    name: name,
+                    item: 'course'
+                },
+                theme: {
+                    color: "#43d477"
+                }
+            };
+            
+            var rzp = new Razorpay(options);
+            rzp.open();
+            
+            // Re-enable button after Razorpay modal opens
+            setTimeout(function() {
+                $('#paymentSubmit').prop('disabled', false);
+            }, 1000);
+        });
+    });
 </script>
 @endpush

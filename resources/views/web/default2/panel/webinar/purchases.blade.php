@@ -49,13 +49,10 @@
                 @php
                     $item = !empty($sale->webinar) ? $sale->webinar : $sale->bundle;
 
-                    $lastSession = !empty($sale->webinar) ? $sale->webinar->lastSession() : null;
-                    $nextSession = !empty($sale->webinar) ? $sale->webinar->nextSession() : null;
+                   
                     $isProgressing = false;
 
-                    if(!empty($sale->webinar) and $sale->webinar->start_date <= time() and !empty($lastSession) and $lastSession->date > time()) {
-                        $isProgressing = true;
-                    }
+                   
                 @endphp
 
                 @if(!empty($item))
@@ -279,13 +276,10 @@
                 @php
                     $item = !empty($sale->webinar) ? $sale->webinar : $sale->bundle;
 
-                    $lastSession = !empty($sale->webinar) ? $sale->webinar->lastSession() : null;
-                    $nextSession = !empty($sale->webinar) ? $sale->webinar->nextSession() : null;
+            
                     $isProgressing = false;
 
-                    if(!empty($sale->webinar) and $sale->webinar->start_date <= time() and !empty($lastSession) and $lastSession->date > time()) {
-                        $isProgressing = true;
-                    }
+                  
                 @endphp
 
                 @if(!empty($item))

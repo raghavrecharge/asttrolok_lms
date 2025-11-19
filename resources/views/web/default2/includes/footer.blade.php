@@ -86,7 +86,7 @@
                         <div class="">
                             
                             <div class="footer-logo" style="width: 215px; height: 57px;">
-                                <a href="{{isset($_GET['ad'])?'#':'/'}}"><img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Asttolok-White-Logo.webp" class="img-cover" alt="footer logo"></a>
+                                <a href="https://marketing.asttrolok.com/"><img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Asttolok-White-Logo.webp" class="img-cover" alt="footer logo"></a>
                             </div>
                             <br>
                             <p>
@@ -115,12 +115,12 @@
                             <div class="mt-20"> 
                                 
                                 <ul class="ml-10">
-                                    <li style="list-style: outside;color: #ffffff;">
+                    <!--                <li style="list-style: outside;color: #ffffff;">-->
                                         
-                                        <p>
-                            <a href="#"><font color="#ffffff">Career &amp; Placement</font></a>
-                        </p>
-                    </li>
+                    <!--                    <p>-->
+                    <!--        <a href="#"><font color="#ffffff">Career &amp; Placement</font></a>-->
+                    <!--    </p>-->
+                    <!--</li>-->
                     <li style="list-style: outside;color: #ffffff;">
                         <p>
                             <font color="#ffffff">
@@ -131,25 +131,25 @@
                     
                     <li style="list-style: outside;color: #ffffff;">
                         <p>
-                            <a href="{{isset($_GET['ad'])?'#':'/consult-with-astrologers'}}"><font color="#ffffff">Astrologers</font></a>
+                            <a href="https://marketing.asttrolok.com/consult-with-astrologers"><font color="#ffffff">Astrologers</font></a>
                         </p>
                     </li>
                     <li style="list-style: outside;color: #ffffff;">
                         <p>
-                            <a href="{{isset($_GET['ad'])?'#':'/classes'}}"><font color="#ffffff">Courses</font></a>
+                            <a href="https://marketing.asttrolok.com/classes"><font color="#ffffff">Courses</font></a>
                         </p>
                     </li>
                     <li style="list-style: outside;color: #ffffff;">
                         <p>
                             <font color="#ffffff">
-                                <a href="{{isset($_GET['ad'])?'#':'/blog'}}"><font color="#ffffff">Blog</font></a><br>
+                                <a href="https://marketing.asttrolok.com/blog"><font color="#ffffff">Blog</font></a><br>
                             </font>
                         </p>
                     </li>
                     <li style="list-style: outside;color: #ffffff;">
                         <p>
                             <font color="#ffffff">
-                                <a href="{{isset($_GET['ad'])?'#':'/tutorial-guide'}}"><font color="#ffffff">Tutorial Guide</font></a><br>
+                                <a href="https://marketing.asttrolok.com/tutorial-guide"><font color="#ffffff">Tutorial Guide</font></a><br>
                             </font>
                         </p>
                     </li>
@@ -245,12 +245,12 @@
                 <div class="mt-20 mg-left" style="font-family: Montserrat, sans-serif; font-size: 15px; letter-spacing: 0.04695px;">
                     
                     <ul>
-                        <li style="list-style: outside;color: #ffffff;">
+                        <!--<li style="list-style: outside;color: #ffffff;">-->
                             
-                            <p>
-                                <a href="#"><font color="#ffffff">Career & Placement</font></a>
-                            </p>
-                        </li>
+                        <!--    <p>-->
+                        <!--        <a href="#"><font color="#ffffff">Career & Placement</font></a>-->
+                        <!--    </p>-->
+                        <!--</li>-->
                         <li style="list-style: outside;color: #ffffff;">
                             <p>
                                 <font color="#ffffff">
@@ -261,18 +261,18 @@
                         
                         <li style="list-style: outside;color: #ffffff;">
                             <p>
-                                <a href="/instructors"><font color="#ffffff">Astrologers</font></a>
+                                <a href="https://marketing.asttrolok.com/instructors"><font color="#ffffff">Astrologers</font></a>
                         </p>
                     </li>
                     <li style="list-style: outside;color: #ffffff;">
                         <p>
-                            <a href="/classes"><font color="#ffffff">Courses</font></a>
+                            <a href="https://marketing.asttrolok.com/classes"><font color="#ffffff">Courses</font></a>
                         </p>
                         </li>
                         <li style="list-style: outside;color: #ffffff;">
                             <p>
                             <font color="#ffffff">
-                                <a href="/blog"><font color="#ffffff">Blog</font></a><br />
+                                <a href="https://marketing.asttrolok.com/blog"><font color="#ffffff">Blog</font></a><br />
                             </font>
                         </p>
                     </li>

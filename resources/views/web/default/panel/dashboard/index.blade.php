@@ -273,15 +273,13 @@ height: 100%;
             @foreach($sales as $sale)
             
                 @php
+                $isProgressing = false;
                     $item = !empty($sale->webinar) ? $sale->webinar : $sale->bundle;
 
-                    $lastSession = !empty($sale->webinar) ? $sale->webinar->lastSession() : null;
-                    $nextSession = !empty($sale->webinar) ? $sale->webinar->nextSession() : null;
+                 
                     $isProgressing = false;
 
-                    if(!empty($sale->webinar) and $sale->webinar->start_date <= time() and !empty($lastSession) and $lastSession->date > time()) {
-                        $isProgressing = true;
-                    }
+                  
                 @endphp
 
                 @if(!empty($item))
@@ -1316,6 +1314,7 @@ height: 100%;
             @elseif(empty($isFeature) and !empty($webinar->feature))
                 <span class="badge badge-warning">{{ trans('home.featured') }}</span>
             @elseif($webinar->type == 'webinar')
+            {{--
                 @if($webinar->start_date > time())
                     <span class="badge badge-primary">{{  trans('panel.not_conducted') }}</span>
                 @elseif($webinar->isProgressing())
@@ -1323,6 +1322,7 @@ height: 100%;
                 @else
                     <span class="badge badge-secondary">{{ trans('public.finished') }}</span>
                 @endif
+                --}}
             @elseif(!empty($webinar->type))
                 <span class="badge badge-primary">{{ trans('webinars.'.$webinar->type) }}</span>
             @endif

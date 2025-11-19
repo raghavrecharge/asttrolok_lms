@@ -22,7 +22,7 @@
 
  <div class="mainfooter border-top" > 
       <nav class="mobile-nav text-center"> 
-        <a href="{{isset($_GET['ad'])?'#':'/'}}" class="bloc-icon {{ Request::path() == '/' ? 'active-tab-mobile' : '' }}" style="text-align:center !important;"> 
+        <a href="https://marketing.asttrolok.com/" class="bloc-icon {{ Request::path() == '/' ? 'active-tab-mobile' : '' }}" style="text-align:center !important;"> 
              {{-- <img loading="lazy" decoding="async" src=" {{ config('app.img_dynamic_url') }}/store/1/default_images/footer/Home.svg" alt="">  --}}
              @if(Request::path() == '/')
              <svg width="29" height="28" viewBox="0 0 61 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -38,7 +38,7 @@
                 
              <br><span class="font-12">Home</span>
          </a> 
-         <a href="{{isset($_GET['ad'])?'#':'/classes?sort=newest'}}" class="bloc-icon {{ (Request::path() == 'classes' or (isset($course)? $course->type == 'course': false )) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;"> 
+         <a href="https://marketing.asttrolok.com/classes?sort=newest" class="bloc-icon {{ (Request::path() == 'classes' or (isset($course)? $course->type == 'course': false )) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;"> 
              {{-- <img loading="lazy" decoding="async" src=" {{ config('app.img_dynamic_url') }}/store/1/default_images/footer/courses.svg" alt="">  --}}
              
                 @if((Request::path() == 'classes' or (isset($course)? $course->type == 'course': false )))
@@ -59,7 +59,7 @@
                 @endif
              <br><span class="font-12">Courses</span>
          </a> 
-         <a href="{{isset($_GET['ad'])?'#':'/consult-with-astrologers'}}" class="bloc-icon {{ (Request::path() == 'consult-with-astrologers' or isset($meeting)) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;"> 
+         <a href="https://marketing.asttrolok.com/consult-with-astrologers" class="bloc-icon {{ (Request::path() == 'consult-with-astrologers' or isset($meeting)) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;"> 
              {{-- <img loading="lazy" decoding="async" src=" {{ config('app.img_dynamic_url') }}/store/1/default_images/footer/consultation.svg" alt=""> --}}
             
                 @if(Request::path() == 'consult-with-astrologers' or isset($meeting))
@@ -82,7 +82,7 @@
                 @endif
                 <br><span class="font-12">Consultation</span>
          </a> 
-        {{-- <a href="/remedies" class="bloc-icon {{ (Request::path() == 'remedies' or (isset($course)? $course->type == 'remedy': false )) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;"> 
+        {{-- <a href="https://marketing.asttrolok.com/remedies" class="bloc-icon {{ (Request::path() == 'remedies' or (isset($course)? $course->type == 'remedy': false )) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;"> 
              <img loading="lazy" decoding="async" src=" {{ config('app.img_dynamic_url') }}/store/1/default_images/footer/remedies.svg" alt="">  
             
                  @if((Request::path() == 'remedies' or (isset($course)? $course->type == 'remedy': false )))
@@ -97,7 +97,7 @@
                 @endif
                 <br><span class="font-12">Remedies</span>
          </a> --}}
-         <a href="{{isset($_GET['ad'])?'#':'/blog'}}" class="bloc-icon {{ (Request::path() == 'blog' or (isset($course)? $course->type == 'remedy': false )) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;"> 
+         <a href="https://marketing.asttrolok.com/blog" class="bloc-icon {{ (Request::path() == 'blog' or (isset($course)? $course->type == 'remedy': false )) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;"> 
              {{-- <img loading="lazy" decoding="async" src=" {{ config('app.img_dynamic_url') }}/store/1/default_images/footer/remedies.svg" alt="">  --}}
             
                  @if((Request::path() == 'blog' or (isset($course)? $course->type == 'remedy': false )))
