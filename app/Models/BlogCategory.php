@@ -34,11 +34,18 @@ class BlogCategory extends Model
         return $this->hasMany('App\Models\Blog', 'category_id', 'id');
     }
 
-    public function getUrl()
+    // public function getUrl()
+    // {
+    //      $originalString = $this->slug;
+    //     // $modifiedString = str_replace(' ', '-', $originalString);
+    //     $modifiedString = strtolower($originalString);
+    //     return '/blog/categories/' . $modifiedString;
+    // }
+
+     public function getUrl()
     {
-         $originalString = $this->slug;
-        // $modifiedString = str_replace(' ', '-', $originalString);
-        $modifiedString = strtolower($originalString);
-        return '/blog/categories/' . $modifiedString;
+        $baseUrl = config('app.manual_base_url');
+
+        return $baseUrl . '/blog/categories/' . $this->slug;
     }
 }

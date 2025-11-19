@@ -741,9 +741,16 @@ class Remedy extends Model implements TranslatableContract
         return $this->thumbnail;
     }
 
+    // public function getUrl()
+    // {
+    //     return url('/remedy/' . $this->slug);
+    // }
+
     public function getUrl()
     {
-        return url('/remedy/' . $this->slug);
+        $baseUrl = config('app.manual_base_url');
+
+        return $baseUrl . '/remedy/' . $this->slug;
     }
 
     public function getLearningPageUrl()

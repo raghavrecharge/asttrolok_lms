@@ -259,5 +259,8 @@ return [
     
     'js_css_url' => env('JS_CSS_URL'),
     'img_dynamic_url' => env('IMG_DYNAMIC_URL'),
+    'manual_base_url' => env('MANUAL_BASE_URL', ''),
+
+
 
 ];

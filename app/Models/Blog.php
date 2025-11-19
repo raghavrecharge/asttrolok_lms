@@ -55,12 +55,22 @@ class Blog extends Model implements TranslatableContract
         return $this->hasMany('App\Models\Comment', 'blog_id', 'id');
     }
 
+    // public function getUrl()
+    // {
+    //      $originalString = $this->slug;
+    //     // $modifiedString = str_replace(' ', '-', $originalString);
+    //     $modifiedString = strtolower($originalString);
+    //     return '/blog/' . $modifiedString;
+    // }
+
     public function getUrl()
     {
-         $originalString = $this->slug;
-        // $modifiedString = str_replace(' ', '-', $originalString);
-        $modifiedString = strtolower($originalString);
-        return '/blog/' . $modifiedString;
+        $slug = strtolower($this->slug);
+
+        // Base URL from env
+        $baseUrl = config('app.manual_base_url');
+
+        return $baseUrl . '/blog/' . $slug;
     }
 
     public function getTitleAttribute()

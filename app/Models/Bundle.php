@@ -138,9 +138,16 @@ class Bundle extends Model implements TranslatableContract
         return false;
     }
 
+    // public function getUrl()
+    // {
+    //     return url('/bundles/' . $this->slug);
+    // }
+
     public function getUrl()
     {
-        return url('/bundles/' . $this->slug);
+        $baseUrl = config('app.manual_base_url');
+
+        return $baseUrl . '/bundles/' . $this->slug;
     }
 
     public function getImageCover()

@@ -49,6 +49,11 @@ function formatSizeUnits($bytes)
  * */
 function dateTimeFormat($timestamp, $format = 'H:i', $useAdminSetting = true, $applyTimezone = true, $timezone = "UTC")
 {
+    // Handle null timestamp
+    if (empty($timestamp)) {
+        return null; // ya "" ya "N/A" jo chaho
+    }
+
     if ($applyTimezone) {
         $timezone = getTimezone();
     }
@@ -63,13 +68,18 @@ function dateTimeFormat($timestamp, $format = 'H:i', $useAdminSetting = true, $a
 
     $carbon = (new Carbon\Carbon())
         ->setTimezone($timezone)
-        ->setTimestamp($timestamp);
+        ->setTimestamp((int)$timestamp); // force integer
 
     return $useAdminSetting ? $carbon->translatedFormat($format) : $carbon->format($format);
 }
 
+
 function dateTimeFormatForHumans($timestamp, $applyTimezone = true, $timezone = "UTC", $parts = 3)
 {
+    if (empty($timestamp)) {
+        return null; 
+    }
+
     if ($applyTimezone) {
         $timezone = getTimezone();
     }
@@ -80,10 +90,11 @@ function dateTimeFormatForHumans($timestamp, $applyTimezone = true, $timezone = 
 
     $carbon = (new Carbon\Carbon())
         ->setTimezone($timezone)
-        ->setTimestamp($timestamp);
+        ->setTimestamp((int)$timestamp);
 
     return $carbon->diffForHumans(null, null, false, $parts);
 }
+
 
 function getTimezone()
 {

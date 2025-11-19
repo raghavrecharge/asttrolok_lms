@@ -152,8 +152,9 @@ class User extends Authenticatable
     {
         if (!empty($this->cover_img)) {
             $path = str_replace('/storage', '', $this->cover_img);
+               $baseUrl = "https://storage.googleapis.com/astrolok/webp";
 
-            $imgUrl = url($path);
+            $imgUrl = $baseUrl . $path;
         } else {
             $imgUrl = getPageBackgroundSettings('user_cover');
         }
@@ -166,7 +167,11 @@ class User extends Authenticatable
         $originalString = $this->full_name;
         $modifiedString = str_replace(' ', '-', $originalString);
         $modifiedString = strtolower($modifiedString);
-        return '/users/' . $this->id . '/astrologer-'. $modifiedString ;
+        // return '/users/' . $this->id . '/astrologer-'. $modifiedString ;
+
+        $baseUrl = config('app.manual_base_url');
+
+        return $baseUrl . '/users/' . $this->id . '/astrologer-' . $modifiedString;
     }
 
     public function getLevelOfTrainingAttribute()

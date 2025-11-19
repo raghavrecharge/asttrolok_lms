@@ -20,7 +20,7 @@ class GiftsController extends Controller
     {
         $this->authorize("admin_gift_history");
 
-        $query = Gift::query()->where('status', '!=', 'pending')
+        $query = Gift::query()->where('gifts.status', '!=', 'pending')
             ->whereHas('sale'); // refund or not refund
 
         $topStats = $this->getTopStats($query);

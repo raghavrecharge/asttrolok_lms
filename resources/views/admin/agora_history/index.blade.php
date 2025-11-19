@@ -40,7 +40,7 @@
                                 @endphp
 
                                 <tr>
-                                    <td class="text-left">{{ $agoraHistory->session->webinar->title }}</td>
+                                    <td class="text-left">{{ $agoraHistory->session->webinar->title ?? "" }}</td>
                                     <td class="text-left">{{ $agoraHistory->session->title }}</td>
                                     <td>{{ convertMinutesToHourAndMinute($agoraHistory->session->duration) }}</td>
                                     <td>{{ dateTimeFormat($agoraHistory->start_at, 'j M Y | H:i') }}</td>
