@@ -33,7 +33,7 @@
     </button>
         </div>
      <a class="navbar-brand navbar-order d-flex align-items-center justify-content-center mr-0 " href="https://marketing.asttrolok.com">
-                                    <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/Asttrolok-Logo.png" class="img-cover" alt="site logo">
+                                    <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/asttroloklogo-min_converted.webp" class="img-cover" alt="site logo">
                             </a>
 <div class="top-navbar">
             

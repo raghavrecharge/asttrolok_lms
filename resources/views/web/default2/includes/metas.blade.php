@@ -68,11 +68,11 @@ if($url_array[1]=="blog")
 ?>
 <meta property="og:image" content="{{ url(!empty($post->image) ? config('app.img_dynamic_url') . $post->image : '') }}"> 
 <?php }else{	?>
-<meta property="og:image" content="https://storage.googleapis.com/astrolok/store/1/Home/Asttrolok-Logo.png"> 
+<meta property="og:image" content="https://storage.googleapis.com/astrolok/store/1/Home/asttroloklogo-min_converted.webp"> 
 <?php }}
 else{
     ?>
-    <meta property="og:image" content="https://storage.googleapis.com/astrolok/store/1/Home/Asttrolok-Logo.png"> 
+    <meta property="og:image" content="https://storage.googleapis.com/astrolok/store/1/Home/asttroloklogo-min_converted.webp"> 
     <?php
 }
 ?>
@@ -93,11 +93,11 @@ if($url_array[1]=="blog")
 ?>
 <meta name="twitter:image" content="{{ url(!empty($post->image) ? config('app.img_dynamic_url') . $post->image : '') }}"> 
 <?php }else{	?>
-<meta name="twitter:image" content="https://storage.googleapis.com/astrolok/store/1/Home/Asttrolok-Logo.png"> 
+<meta name="twitter:image" content="https://storage.googleapis.com/astrolok/store/1/Home/asttroloklogo-min_converted.webp"> 
 <?php }}
 else{
 ?>
-<meta name="twitter:image" content="https://storage.googleapis.com/astrolok/store/1/Home/Asttrolok-Logo.png">
+<meta name="twitter:image" content="https://storage.googleapis.com/astrolok/store/1/Home/asttroloklogo-min_converted.webp">
 <?php
 }?>
 
