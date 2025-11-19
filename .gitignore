@@ -30,3 +30,8 @@ Homestead.json
 auth.json
 storage/logs/*.log
 storage/logs/*.log
+
+storage/logs/*.log
+storage/logs/*.txt
+storage/logs/*
+
