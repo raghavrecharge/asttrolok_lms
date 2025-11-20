@@ -86,7 +86,7 @@ class ForumController extends Controller
             'recommendedTopics' => $this->getRecommendedTopics(),
         ];
 
-        return view('web.default.forum.index', $data);
+        return view('web.default2.forum.index', $data);
     }
  public function tutorialGuide()
     {
@@ -333,7 +333,7 @@ class ForumController extends Controller
             'error125' => $error125];
         }
             //   print_r($data); 
-                return view('web.default.forum.create_topic', $data);
+                return view('web.default2.forum.create_topic', $data);
             
     }
 
