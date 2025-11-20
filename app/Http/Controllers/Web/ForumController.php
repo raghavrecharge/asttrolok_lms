@@ -112,7 +112,7 @@ class ForumController extends Controller
                         return view('web.default2' . '.forum.supports', $data);
                     }
 
-        return view('web.default.forum.supports', $data);
+        return view('web.default2.forum.supports', $data);
     }
     private function getFeaturedTopics()
     {
@@ -187,7 +187,7 @@ class ForumController extends Controller
             'resultCount' => $resultCount
         ];
 
-        return view('web.default.forum.topics_search', $data);
+        return view('web.default2.forum.topics_search', $data);
     }
 
     public function topics(Request $request, $slug)
@@ -213,7 +213,7 @@ class ForumController extends Controller
                 'resultCount' => $resultCount
             ];
 
-            return view('web.default.forum.topics', $data);
+            return view('web.default2.forum.topics', $data);
         }
 
         abort(404);
@@ -566,7 +566,7 @@ class ForumController extends Controller
                     'topic' => $topic,
                 ];
 
-                return view('web.default.forum.create_topic', $data);
+                return view('web.default2.forum.create_topic', $data);
             }
         }
 
@@ -710,7 +710,7 @@ class ForumController extends Controller
                     'likedPostsIds' => $likedPostsIds,
                 ];
 
-                return view('web.default.forum.posts', $data);
+                return view('web.default2.forum.posts', $data);
             }
         }
 
