@@ -12,7 +12,7 @@ use App\Models\Role;
 use App\Models\Api\Sale;
 use App\Models\Api\Subscribe;
 use Illuminate\Support\Facades\DB;
-use Tymon\JWTAuth\Contracts\JWTSubject;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
 class User extends Model implements JWTSubject
 {

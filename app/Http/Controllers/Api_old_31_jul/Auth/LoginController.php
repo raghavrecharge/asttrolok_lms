@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use App\Models\Affiliate;
 use App\Models\Role;
-//use Tymon\JWTAuth\Contracts\JWTSubject;
+//use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use App\Models\Api\User;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\DB;
