@@ -100,7 +100,7 @@
                 </div>
 
                 <div class="card-footer text-center">
-                    {{ $waitlists->appends(request()->input())->links() }}
+                    {{ $waitlists->appends(request()->input())->links('pagination::bootstrap-4') }}
                 </div>
             </div>
         </div>

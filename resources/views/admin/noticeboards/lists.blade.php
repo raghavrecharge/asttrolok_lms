@@ -199,7 +199,7 @@
                 </div>
 
                 <div class="card-footer text-center">
-                    {{ $noticeboards->appends(request()->input())->links() }}
+                    {{ $noticeboards->appends(request()->input())->links('pagination::bootstrap-4') }}
                 </div>
             </div>
         </div>

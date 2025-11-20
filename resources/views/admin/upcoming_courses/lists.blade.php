@@ -335,7 +335,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $upcomingCourses->appends(request()->input())->links() }}
+                            {{ $upcomingCourses->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
 
                     </div>

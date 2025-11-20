@@ -91,7 +91,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $rules->appends(request()->input())->links() }}
+                            {{ $rules->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
 
                     </div>

@@ -199,7 +199,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $forums->appends(request()->input())->links() }}
+                            {{ $forums->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
 
                     </div>

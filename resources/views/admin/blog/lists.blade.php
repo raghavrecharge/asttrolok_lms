@@ -153,7 +153,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $blog->appends(request()->input())->links() }}
+                            {{ $blog->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
 
                     </div>

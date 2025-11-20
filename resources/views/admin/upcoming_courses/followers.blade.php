@@ -165,7 +165,7 @@
         </div>
 
         <div class="card-footer text-center">
-            {{ $followers->appends(request()->input())->links() }}
+            {{ $followers->appends(request()->input())->links('pagination::bootstrap-4') }}
         </div>
 
     </div>

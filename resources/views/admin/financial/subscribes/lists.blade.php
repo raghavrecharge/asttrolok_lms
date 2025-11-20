@@ -77,7 +77,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $subscribes->appends(request()->input())->links() }}
+                            {{ $subscribes->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
 
                     </div>

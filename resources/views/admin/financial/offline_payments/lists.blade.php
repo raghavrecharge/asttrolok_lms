@@ -233,7 +233,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $offlinePayments->appends(request()->input())->links() }}
+                            {{ $offlinePayments->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
 
                     </div>

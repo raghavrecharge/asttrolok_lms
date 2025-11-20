@@ -86,7 +86,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $quizzesResults->appends(request()->input())->links() }}
+                            {{ $quizzesResults->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
                     </div>
                 </div>

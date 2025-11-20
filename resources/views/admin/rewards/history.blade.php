@@ -63,7 +63,7 @@
                 </div>
 
                 <div class="card-footer text-center">
-                    {{ $rewards->links() }}
+                    {{ $rewards->links('pagination::bootstrap-4') }}
                 </div>
             </section>
         </div>

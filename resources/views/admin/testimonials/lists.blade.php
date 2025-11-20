@@ -74,7 +74,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $testimonials->appends(request()->input())->links() }}
+                            {{ $testimonials->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
 
                     </div>

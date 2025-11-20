@@ -114,7 +114,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $certificates->appends(request()->input())->links() }}
+                            {{ $certificates->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
                     </div>
                 </div>

@@ -182,7 +182,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $specialOffers->appends(request()->input())->links() }}
+                            {{ $specialOffers->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
                     </div>
                 </div>

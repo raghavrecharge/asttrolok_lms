@@ -113,7 +113,7 @@
             </div>
             <!-- Pagination -->
             <div class="card-footer text-center">
-                {{ $users->appends(request()->input())->links() }}
+                {{ $users->appends(request()->input())->links('pagination::bootstrap-4') }}
             </div>
         </div>
     </div>

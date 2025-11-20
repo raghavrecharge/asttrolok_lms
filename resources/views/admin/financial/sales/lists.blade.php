@@ -337,7 +337,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $sales->links() }}
+                            {{ $sales->links('pagination::bootstrap-4') }}
                         </div>
 
                     </div>

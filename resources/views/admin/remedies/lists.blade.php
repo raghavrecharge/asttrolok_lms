@@ -408,7 +408,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $remedies->appends(request()->input())->links() }}
+                            {{ $remedies->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
                         
                     </div>

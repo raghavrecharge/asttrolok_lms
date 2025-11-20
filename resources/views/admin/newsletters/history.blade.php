@@ -74,7 +74,7 @@
                 </div>
 
                 <div class="card-footer text-center">
-                    {{ $newsletters->appends(request()->input())->links() }}
+                    {{ $newsletters->appends(request()->input())->links('pagination::bootstrap-4') }}
                 </div>
             </div>
         </div>

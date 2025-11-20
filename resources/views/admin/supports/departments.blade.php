@@ -56,7 +56,7 @@
                                 </div>
 
                                 <div class="text-center mt-2">
-                                    {{ $departments->appends(request()->input())->links() }}
+                                    {{ $departments->appends(request()->input())->links('pagination::bootstrap-4') }}
                                 </div>
                             </div>
 

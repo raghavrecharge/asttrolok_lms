@@ -82,7 +82,7 @@
                 </div>
 
                 <div class="card-footer text-center">
-                    {{ $notifications->appends(request()->input())->links() }}
+                    {{ $notifications->appends(request()->input())->links('pagination::bootstrap-4') }}
                 </div>
             </div>
         </div>

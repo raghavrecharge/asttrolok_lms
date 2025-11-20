@@ -50,7 +50,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $filters->appends(request()->input())->links() }}
+                            {{ $filters->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
                     </div>
                 </div>

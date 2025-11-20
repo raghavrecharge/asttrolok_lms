@@ -60,7 +60,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $webinars->appends(request()->input())->links() }}
+                            {{ $webinars->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
 
                     </div>

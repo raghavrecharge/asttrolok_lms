@@ -279,7 +279,7 @@
                 </div>
 
                 <div class="card-footer text-center">
-                    {{ $appointments->appends(request()->input())->links() }}
+                    {{ $appointments->appends(request()->input())->links('pagination::bootstrap-4') }}
                 </div>
             </section>
         </div>

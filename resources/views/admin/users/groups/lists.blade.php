@@ -60,7 +60,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $groups->appends(request()->input())->links() }}
+                            {{ $groups->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
 
                     </div>

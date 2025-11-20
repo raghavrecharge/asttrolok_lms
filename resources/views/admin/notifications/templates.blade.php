@@ -46,7 +46,7 @@
                 </div>
 
                 <div class="card-footer text-center">
-                    {{ $templates->appends(request()->input())->links() }}
+                    {{ $templates->appends(request()->input())->links('pagination::bootstrap-4') }}
                 </div>
             </div>
         </div>

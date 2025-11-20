@@ -54,7 +54,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                        {{ $trends->appends(request()->input())->links() }}
+                        {{ $trends->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
                     </div>
                 </div>

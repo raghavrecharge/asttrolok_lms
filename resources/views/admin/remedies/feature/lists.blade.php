@@ -148,7 +148,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $features->appends(request()->input())->links() }}
+                            {{ $features->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
                     </div>
                 </div>

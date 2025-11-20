@@ -315,7 +315,7 @@
                 </div>
 
                 <div class="my-3">
-                    {{ $students->appends(request()->input())->links() }}
+                    {{ $students->appends(request()->input())->links('pagination::bootstrap-4') }}
                 </div>
             @else
 

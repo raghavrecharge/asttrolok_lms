@@ -55,7 +55,7 @@
                 </div>
 
                 <div class="card-footer text-center">
-                    {{ $agoraHistories->links() }}
+                    {{ $agoraHistories->links('pagination::bootstrap-4') }}
                 </div>
             </section>
         </div>

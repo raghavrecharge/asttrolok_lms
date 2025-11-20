@@ -235,7 +235,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $transactions->appends(request()->input())->links() }}
+                            {{ $transactions->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
 
                     </div>

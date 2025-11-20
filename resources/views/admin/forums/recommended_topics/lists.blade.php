@@ -61,7 +61,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $recommendedTopics->appends(request()->input())->links() }}
+                            {{ $recommendedTopics->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
                     </div>
                 </div>

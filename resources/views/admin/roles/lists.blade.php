@@ -63,7 +63,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            {{ $roles->appends(request()->input())->links() }}
+                            {{ $roles->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
                     </div>
                 </div>

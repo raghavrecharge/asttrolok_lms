@@ -93,7 +93,7 @@
                 </div>
 
                 <div class="card-footer text-center">
-                    {{ $regions->appends(request()->input())->links() }}
+                    {{ $regions->appends(request()->input())->links('pagination::bootstrap-4') }}
                 </div>
             </section>
         </div>

@@ -237,7 +237,7 @@
                 </div>
 
                 <div class="card-footer text-center">
-                    {{ $reviews->appends(request()->input())->links() }}
+                    {{ $reviews->appends(request()->input())->links('pagination::bootstrap-4') }}
                 </div>
             </section>
         </div>

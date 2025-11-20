@@ -46,7 +46,7 @@
         </div>
 
         <div class="card-footer text-center">
-            {{ $paymentChannels->appends(['tab' => "payment_channels"])->links() }}
+            {{ $paymentChannels->appends(['tab' => "payment_channels"])->links('pagination::bootstrap-4') }}
         </div>
 
     </div>
