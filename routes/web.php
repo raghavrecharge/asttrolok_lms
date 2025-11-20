@@ -200,7 +200,8 @@ Route::group(['namespace' => 'Web', 'middleware' => ['check_mobile_app', 'impers
     
     Route::get('/cronjob', 'InstallmentsController@cronJob');
     
-    Route::get('/', 'HomeController@index');
+    // Route::get('/', 'HomeController@index');
+    Route::get('/', 'LoginController@showLoginForm');
      Route::get('/chatbot', 'HomeController@chatbot');
     Route::get('/checkvideo', 'HomeController@checkvideo');
     Route::get('/events', 'HomeController@redirect');

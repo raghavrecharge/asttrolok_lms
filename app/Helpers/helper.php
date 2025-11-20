@@ -2515,7 +2515,7 @@ function apiResponse2($success, $status, $msg, $data = null,$title=null)
 
 function nicePrice($price)
 {
-    return round(handlePrice($price, false), 2);
+    return round(floatval(handlePrice($price, false) ?? 0), 2);
 }
 
 function nicePriceWithTax($price)
