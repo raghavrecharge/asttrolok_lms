@@ -419,7 +419,12 @@ $user = auth()->user();
             foreach ($WebinarPartPayment as $WebinarPartPayment1){
                 $webinars1 = Webinar:: where('id', $WebinarPartPayment1->webinar_id)
             ->first();
-                $amount_paid[]=[ $WebinarPartPayment1->amount , strtotime($WebinarPartPayment1->created_at) , $webinars1->title];
+            $amount_paid[] = [
+    $WebinarPartPayment1->amount,
+    strtotime($WebinarPartPayment1->created_at),
+    $webinars1?->title ?? null
+];
+                // $amount_paid[]=[ $WebinarPartPayment1->amount , strtotime($WebinarPartPayment1->created_at) , $webinars1->title];
             }
             usort($amount_paid, function($a, $b) {
                 return $b[1] <=> $a[1];
