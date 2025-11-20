@@ -366,7 +366,12 @@ $user = auth()->user();
                 if($sales2->webinar_id){
                     $webinars1 = Webinar:: where('id', $sales2->webinar_id)
             ->first();
-                    $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $webinars1->title ];
+            $amount_paid[] = [
+                $sales2->total_amount,
+                $sales2->created_at,
+                $webinars1->title ?? 'No Title'
+            ];
+                                // $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $webinars1?->title ];
                 }elseif($sales2->installment_payment_id){
                     $InstallmentOrderPayment = InstallmentOrderPayment::where('id', $sales2->installment_payment_id)
                 ->first();
@@ -378,8 +383,13 @@ $user = auth()->user();
                     $webinars1 = Webinar:: where('id', $InstallmentOrder->webinar_id)
             ->first();
             
-            
-                    $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $webinars1->title ];
+            $amount_paid[] = [
+    $sales2->total_amount,
+    $sales2->created_at,
+    $webinars1->title ?? null
+];
+
+                    // $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $webinars1->title ];
                     // print_r($webinars1);
             // die();
             }
