@@ -6,9 +6,6 @@ use Illuminate\Filesystem\FilesystemAdapter;
 
 class CustomGCSAdapter extends FilesystemAdapter
 {
-    /**
-     * Get the URL for the file at the given path.
-     */
     public function url($path)
     {
         $path = ltrim($path, '/');
@@ -21,34 +18,21 @@ class CustomGCSAdapter extends FilesystemAdapter
         return "https://storage.googleapis.com/{$bucket}/{$fullPath}";
     }
 
-    /**
-     * Get a temporary URL for the file at the given path.
-     */
     public function temporaryUrl($path, $expiration, array $options = [])
     {
         return $this->url($path);
     }
 
-    /**
-     * Set the visibility for the given path.
-     */
     public function setVisibility($path, $visibility)
     {
-        // GCS mein visibility bucket-level hai, ignore karo
         return true;
     }
 
-    /**
-     * Get the visibility for the given path.
-     */
     public function getVisibility($path)
     {
         return 'public';
     }
 
-    /**
-     * Create a directory.
-     */
     public function makeDirectory($path)
     {
         $placeholder = rtrim($path, '/') . '/.gitkeep';
@@ -57,39 +41,28 @@ class CustomGCSAdapter extends FilesystemAdapter
             $this->put($placeholder, '');
             return true;
         } catch (\Exception $e) {
-            \Log::warning("GCS makeDirectory failed: {$path}", ['error' => $e->getMessage()]);
             return true;
         }
     }
 
-    /**
-     * Delete a directory.
-     */
     public function deleteDirectory($directory)
     {
         try {
             return parent::deleteDirectory($directory);
         } catch (\Exception $e) {
-            \Log::warning("GCS deleteDirectory failed: {$directory}", ['error' => $e->getMessage()]);
             return true;
         }
     }
 
-    /**
-     * Check if file or directory exists.
-     */
     public function exists($path)
     {
         try {
-            // Pehle file check karo
             if ($this->fileExists($path)) {
                 return true;
             }
             
-            // Directory check - listContents ko array mein convert karo
             try {
                 $listing = $this->listContents($path, false);
-                // DirectoryListing ko array mein convert karo
                 $contents = iterator_to_array($listing, false);
                 return count($contents) > 0;
             } catch (\Exception $e) {
@@ -100,9 +73,6 @@ class CustomGCSAdapter extends FilesystemAdapter
         }
     }
 
-    /**
-     * Determine if a file exists.
-     */
     public function fileExists($path)
     {
         try {
@@ -112,14 +82,10 @@ class CustomGCSAdapter extends FilesystemAdapter
         }
     }
 
-    /**
-     * Determine if a directory exists.
-     */
     public function directoryExists($path)
     {
         try {
             $listing = $this->listContents($path, false);
-            // DirectoryListing ko array mein convert karo
             $contents = iterator_to_array($listing, false);
             return count($contents) > 0;
         } catch (\Exception $e) {
@@ -127,28 +93,19 @@ class CustomGCSAdapter extends FilesystemAdapter
         }
     }
 
-    /**
-     * Get all files in a directory.
-     */
     public function files($directory = null, $recursive = false)
     {
         try {
             return parent::files($directory, $recursive);
         } catch (\Exception $e) {
-            \Log::error('GCS files() error', ['dir' => $directory, 'error' => $e->getMessage()]);
             return [];
         }
     }
 
-    /**
-     * Get all directories in a directory.
-     */
     public function directories($directory = null, $recursive = false)
     {
         try {
             $listing = $this->listContents($directory ?: '', $recursive);
-            
-            // DirectoryListing ko array mein convert karo
             $contents = iterator_to_array($listing, false);
             
             return collect($contents)
@@ -161,36 +118,87 @@ class CustomGCSAdapter extends FilesystemAdapter
                 ->values()
                 ->all();
         } catch (\Exception $e) {
-            \Log::error('GCS directories() error', ['dir' => $directory, 'error' => $e->getMessage()]);
             return [];
         }
     }
 
     /**
-     * Get all files and directories in a directory.
+     * IMPORTANT: Mime type detection WITHOUT finfo
      */
-    public function listContents($directory = '', $recursive = false)
+    public function mimeType($path)
     {
-        try {
-            return parent::listContents($directory, $recursive);
-        } catch (\Exception $e) {
-            \Log::error('GCS listContents() error', ['dir' => $directory, 'error' => $e->getMessage()]);
-            // Empty DirectoryListing return karo instead of array
-            return new \League\Flysystem\DirectoryListing([]);
+        // Agar finfo available hai to use karo
+        if (class_exists('finfo')) {
+            try {
+                return parent::mimeType($path);
+            } catch (\Exception $e) {
+                // Continue to fallback
+            }
         }
+        
+        // Fallback: extension se detect karo
+        return $this->guessMimeTypeFromExtension($path);
     }
 
     /**
-     * Get array of all files and directories.
-     * Helper method jo DirectoryListing ko array mein convert karta hai
+     * Guess mime type from file extension
      */
-    public function listContentsArray($directory = '', $recursive = false)
+    protected function guessMimeTypeFromExtension($path)
     {
-        try {
-            $listing = $this->listContents($directory, $recursive);
-            return iterator_to_array($listing, false);
-        } catch (\Exception $e) {
-            return [];
-        }
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        
+        $mimeTypes = [
+            // Images
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            'svg' => 'image/svg+xml',
+            'bmp' => 'image/bmp',
+            'ico' => 'image/x-icon',
+            
+            // Documents
+            'pdf' => 'application/pdf',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls' => 'application/vnd.ms-excel',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'ppt' => 'application/vnd.ms-powerpoint',
+            'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            
+            // Text
+            'txt' => 'text/plain',
+            'html' => 'text/html',
+            'htm' => 'text/html',
+            'css' => 'text/css',
+            'js' => 'application/javascript',
+            'json' => 'application/json',
+            'xml' => 'application/xml',
+            'csv' => 'text/csv',
+            
+            // Archives
+            'zip' => 'application/zip',
+            'rar' => 'application/x-rar-compressed',
+            '7z' => 'application/x-7z-compressed',
+            'tar' => 'application/x-tar',
+            'gz' => 'application/gzip',
+            
+            // Audio
+            'mp3' => 'audio/mpeg',
+            'wav' => 'audio/wav',
+            'ogg' => 'audio/ogg',
+            'm4a' => 'audio/mp4',
+            
+            // Video
+            'mp4' => 'video/mp4',
+            'avi' => 'video/x-msvideo',
+            'mov' => 'video/quicktime',
+            'wmv' => 'video/x-ms-wmv',
+            'flv' => 'video/x-flv',
+            'webm' => 'video/webm',
+        ];
+        
+        return $mimeTypes[$extension] ?? 'application/octet-stream';
     }
 }
