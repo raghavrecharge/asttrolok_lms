@@ -17,7 +17,7 @@
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.6",
-        "league/flysystem-google-cloud-storage": "^3.0",
+        "league/flysystem-google-cloud-storage": "^3.30",
         "maatwebsite/excel": "^3.1.56",
         "mews/captcha": "^3.4",
         "mews/purifier": "^3.4",

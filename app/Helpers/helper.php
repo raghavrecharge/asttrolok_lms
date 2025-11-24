@@ -2478,7 +2478,7 @@ if (!function_exists('getOptimizedImagewebp')) {
 
             $storagePath = ltrim($webpPath, '/');
 
-            if (Storage::disk('gcs')->exists($storagePath)) {
+            if (Storage::disk('gcs')->fileExists($storagePath)) {
                 return rtrim($imgUrl, '/') . $webpPath;
             }
         }

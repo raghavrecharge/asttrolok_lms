@@ -43,10 +43,10 @@ return [
     // 'files_url' => '/store',
     'base_directory' => '',
     'files_url' => '',
+    'url_base' => 'https://storage.googleapis.com/astrolok',
 
 
-
-    'disk' => 'upload',
+    'disk' => 'gcs',
     /*
     |--------------------------------------------------------------------------
     | Folder Names

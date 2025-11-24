@@ -12,10 +12,10 @@ class LfmConfigHandler extends ConfigHandler
 
        
         if ($user && $user->role_name === 'admin') {
-            return 'store/1';
+            return '/1';
         }
        
-        return 'store/' . $user->id;
+        return '/' . $user->id;
     }
 }
 
