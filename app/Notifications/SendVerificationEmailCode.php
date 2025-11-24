@@ -1,27 +1,14 @@
 <?php
-
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use function Matrix\trace;
 
-class SendVerificationEmailCode extends Notification
+class SendVerificationEmailCode extends Notification implements ShouldQueue
 {
-    private $notifiable;
-
-    /**
-     * Create a new notification instance.
-     *
-     * @return void
-     */
-    public function __construct($notifiable)
-    {
-        
-        $this->notifiable = $notifiable;
-    }
+    use Queueable;
 
     /**
      * Get the notification's delivery channels.
@@ -42,27 +29,28 @@ class SendVerificationEmailCode extends Notification
      */
     public function toMail($notifiable)
     {
-         
         $generalSettings = getGeneralSettings();
         $subject = trans('auth.email_confirmation');
-
+        
         $confirm = [
             'title' => $subject . ' ' . trans('auth.in') . ' ' . $generalSettings['site_name'],
-            'message' => trans('auth.email_confirmation_template_body', ['email' => $notifiable->email, 'site' => $generalSettings['site_name']]),
+            'message' => trans('auth.email_confirmation_template_body', [
+                'email' => $notifiable->email, 
+                'site' => $generalSettings['site_name']
+            ]),
             'code' => $notifiable->code
         ];
 
-// print_r($confirm);die();
-
         return (new MailMessage)
             ->subject($subject)
-            ->from(!empty($generalSettings['site_email']) ? $generalSettings['site_email'] : env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'))
+            ->from(
+                $generalSettings['site_email'] ?? env('MAIL_FROM_ADDRESS'), 
+                env('MAIL_FROM_NAME')
+            )
             ->view('web.default.emails.confirmCode', [
                 'confirm' => $confirm,
                 'generalSettings' => $generalSettings
             ]);
-            
-            
     }
 
     /**

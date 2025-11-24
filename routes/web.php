@@ -53,6 +53,7 @@ Route::get('/emergencyDatabaseUpdate', function () {
 });
 
 Route::group(['namespace' => 'Auth', 'middleware' => ['check_mobile_app', 'share', 'check_maintenance']], function () {
+    Route::get('/', 'LoginController@showLoginForm');
     Route::get('/login', 'LoginController@showLoginForm');
     Route::post('/login', 'LoginController@login');
     Route::get('/logout', 'LoginController@logout');
@@ -201,7 +202,6 @@ Route::group(['namespace' => 'Web', 'middleware' => ['check_mobile_app', 'impers
     Route::get('/cronjob', 'InstallmentsController@cronJob');
     
     // Route::get('/', 'HomeController@index');
-    Route::get('/', 'LoginController@showLoginForm');
      Route::get('/chatbot', 'HomeController@chatbot');
     Route::get('/checkvideo', 'HomeController@checkvideo');
     Route::get('/events', 'HomeController@redirect');

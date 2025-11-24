@@ -8,7 +8,8 @@ use App\Models\Verification;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-
+use Mail;
+use App\Mail\TestMail;
 class VerificationController extends Controller
 {
 
@@ -58,6 +59,7 @@ class VerificationController extends Controller
                 if ($username == 'mobile') {
                     $verification->sendSMSCode();
                 } else {
+                   
                     $verification->sendEmailCode();
                 }
             } catch (\Exception $exception) {

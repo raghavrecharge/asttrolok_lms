@@ -53,7 +53,7 @@
                                                         <div class="invoice-title">
                                                             <!--<h2>{{ $generalSettings['site_name'] }}</h2>-->
                                                             <div style="width:200px;">             <h2><a class="navbar-brand navbar-order d-flex align-items-center justify-content-center mr-0 " href="/">
-                                    <img loading="lazy" src="https://storage.googleapis.com/astrolok/store/1/Home/asttroloklogo-min_converted.webp" class="img-cover" alt="site logo">
+                                    <img loading="lazy" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/asttroloklogo-min_converted.webp" class="img-cover" alt="site logo">
                             </a></h2></div>
                                                
                                                             {{--<div class="invoice-number">Invoice<p>{{ trans('public.item_id') }}: #{{ $webinar->id }}</p></div>--}}
@@ -294,7 +294,9 @@
                                             <hr>
                                             <div class="text-md-right">
 
-                                                <button type="button" onclick="window.print()" class="btn btn-warning btn-icon icon-left"><i class="fas fa-print"></i> Print</button>
+                                                <button type="button" onclick="window.print()" class="btn btn-warning btn-icon icon-left">
+                                                    <!--<i class="fas fa-print"></i>-->
+                                                    Print</button>
                                             </div>
                                         </div>
                                     </div>

@@ -29,7 +29,13 @@ class SetCurrencyController extends Controller
                     'currency' => $currency
                 ]);
             } else {
-                Cookie::queue('user_currency', $currency, 30 * 24 * 60);
+                Cookie::queue('user_currency', $currency, 30 * 24 * 60,'/',            // path
+                '.asttrolok.com', // domain
+                true,           // secure
+                true,           // httpOnly
+                false,          // raw
+                'None'          // SameSite=None
+                );
             }
         }
 

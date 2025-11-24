@@ -99,6 +99,8 @@ class LoginController extends Controller
             if ($username === 'mobile') {
                 return $this->mobileWithOtp($request);
             } else {
+                
+                
                 return $this->emailWithOtp($request);
             }
         } else {
@@ -305,7 +307,7 @@ class LoginController extends Controller
           
               $verificationController = new VerificationController();
             $checkConfirmed = $verificationController->checkConfirmed($user, 'email', $email);
-                  
+                
         }
           
             

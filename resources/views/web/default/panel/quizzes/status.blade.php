@@ -1,4 +1,4 @@
-@extends(getTemplate().'.layouts.app')
+@extends(getTemplate() .'.panel.layouts.panel_layout')
 
 @section('content')
     <div class="container">

@@ -62,7 +62,15 @@ class CookieSecurityController extends Controller
                 $data
             );
         } else {
-            Cookie::queue($this->cookieKey, json_encode($data), 30 * 24 * 60);
+            Cookie::queue($this->cookieKey, json_encode($data), 30 * 24 * 60,'/',            // path
+                '.asttrolok.com', // domain
+                true,           // secure
+                true,           // httpOnly
+                false,          // raw
+                'None'          // SameSite=None
+                );
         }
+
+
     }
 }
