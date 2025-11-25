@@ -23,7 +23,7 @@ RewriteRule ^ - [G]
     RewriteCond %{REQUEST_URI} ^/public/index\.php/course/ [NC,OR]
     RewriteCond %{REQUEST_URI} ^/courses/ [NC,OR]
     RewriteCond %{REQUEST_URI} ^/welcome/view_article/ [NC]
-    RewriteRule ^.*$ https://www.asttrolok.com/classes [R=301,L]
+    RewriteRule ^.*$ https://lms.asttrolok.com/classes [R=301,L]
 	
 	
  # ✅ Add HSTS Header here

@@ -10,11 +10,12 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Mail;
 use App\Mail\TestMail;
+
 class VerificationController extends Controller
 {
 
     public function checkConfirmed($user = null, $username, $value)
-    {
+    { 
         if (!empty($value)) {
             $verification = Verification::where($username, $value)
                 ->where('expired_at', '>', time())
@@ -55,9 +56,16 @@ class VerificationController extends Controller
 
             $verification = Verification::updateOrCreate([$username => $value], $data);
 
-            try {
+            try {              
                 if ($username == 'mobile') {
-                    $verification->sendSMSCode();
+                  
+                    $smsService = new \App\Services\TwoFactorService();
+                    $result = $smsService->sendOTP($value);
+
+                    if ($result['success']) {
+                        $verification->session_id = $result['session_id'];
+                        $verification->save();
+                    }
                 } else {
                    
                     $verification->sendEmailCode();
@@ -71,7 +79,10 @@ class VerificationController extends Controller
             ];
         }
 
-        abort(404);
+        return [
+                'status' => 'failed',
+                'code'=>null
+            ];
     }
     
     
