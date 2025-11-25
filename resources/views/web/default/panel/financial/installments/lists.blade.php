@@ -72,7 +72,7 @@
 
                 @if(!empty($orderItem))
                    
-                        <div class="col-lg-6">
+                        <div class="col-lg-6 mb-10">
                             <div class="webinar-card webinar-list panel-installment-card d-flex">
                                 <div class="image-box" style="height:auto !important;">
                                     @if(in_array($itemType, ['course', 'bundle']))
