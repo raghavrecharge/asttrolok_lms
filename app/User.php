@@ -159,7 +159,7 @@ class User extends Authenticatable
             $imgUrl = getPageBackgroundSettings('user_cover');
         }
 
-        return $imgUrl;
+        return $this->cover_img;
     }
 
     public function getProfileUrl()

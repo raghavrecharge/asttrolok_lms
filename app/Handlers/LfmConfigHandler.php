@@ -15,7 +15,7 @@ class LfmConfigHandler extends ConfigHandler
             return '/1';
         }
        
-        return '/' . $user->id;
+        return $user->id;
     }
 }
 

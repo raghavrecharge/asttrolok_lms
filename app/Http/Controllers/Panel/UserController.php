@@ -369,9 +369,9 @@ class UserController extends Controller
         $image_base64 = base64_decode($image_parts[1]);
         $file = uniqid() . '.' . $image_type;
 
-        Storage::disk('public')->put($folderPath . $file, $image_base64);
+        Storage::disk('gcs')->put($folderPath . $file, $image_base64);
 
-        return Storage::disk('public')->url($folderPath . $file);
+        return Storage::disk('gcs')->url($folderPath . $file);
     }
 
     public function storeMetas(Request $request)

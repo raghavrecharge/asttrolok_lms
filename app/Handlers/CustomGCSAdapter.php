@@ -14,8 +14,11 @@ class CustomGCSAdapter extends FilesystemAdapter
         
         $fullPath = $pathPrefix ? $pathPrefix . '/' . $path : $path;
         $fullPath = ltrim($fullPath, '/');
-        
-        return "https://storage.googleapis.com/{$bucket}/{$fullPath}";
+        $parts = explode('/', $fullPath);
+        $filtered = array_filter($parts, fn($p) => $p !== 'webp');
+        $fullPath = implode('/', $filtered);
+        return '/'.$fullPath ;
+        // return "https://storage.googleapis.com/{$bucket}/{$fullPath}";
     }
 
     public function temporaryUrl($path, $expiration, array $options = [])
