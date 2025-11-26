@@ -1,4 +1,5 @@
 @php
+    $generalSettings = getGeneralSettings();
     $socials = getSocials();
     if (!empty($socials) and count($socials)) {
         $socials = collect($socials)->sortBy('order')->toArray();
@@ -6,6 +7,56 @@
 
     $footerColumns = getFooterColumns();
 @endphp
+
+<style>
+    .footer .footer-social img {
+  width: 24px;
+  min-width: 24px;
+  max-width: 24px;
+  height: 24px;
+}
+
+.footer .footer-logo {
+  width: 170px;
+  height: 50px;
+}
+
+.footer .border-blue {
+  border-top: 1px solid #305995;
+}
+
+.footer .footer-copyright-card {
+  position: relative;
+  background-color: transparent;
+}
+
+.footer .footer-copyright-card .container {
+  position: relative;
+  z-index: 2;
+  background-color: transparent;
+}
+
+.footer .footer-copyright-card:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.15;
+  background-color: #000;
+  z-index: 1;
+}
+
+.footer .footer-subscribe {
+    position: relative;
+    top: -80px;
+    height: 120px;
+    background-image: url(/assets/default/img/footer/pattern.png);
+    background-color: var
+#0170ff
+(--primary);
+    border-radius: 15px;
+    padding: 25px;
+}
+</style>
 <div class="footermobile">
     
     </div>
@@ -43,7 +94,7 @@
     @endphp
     
     <div class="container">
-        @if(!isset($_GET['ad']))
+        @if(isset($_GET['ad']))
         <div class="row">
             
             @foreach($columns as $column)
@@ -86,25 +137,25 @@
                         <div class="">
                             
                             <div class="footer-logo" style="width: 215px; height: 57px;">
-                                <a href="https://marketing.asttrolok.com/"><img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Asttolok-White-Logo.webp" class="img-cover" alt="footer logo"></a>
+                                <a href="{{isset($_GET['ad'])?'#':'/'}}"><img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Asttolok-White-Logo.webp" class="img-cover" alt="footer logo"></a>
                             </div>
                             <br>
                             <p>
-                                <span style="font-family: Montserrat, sans-serif; font-size: 15px; letter-spacing: 0.04695px; text-align: justify; display:none;">
+                                <span style="font-family: Montserrat, sans-serif; font-size: 15px; letter-spacing: 0.04695px; text-align: justify;">
                                     <font color="#ffffff">
-                                        Welcome 1to Asttrolok, recognized among India's top 3 astrology institutes, offering courses in astrology, numerology, palmistry, vastu, &amp; ayurveda. Our goal:
+                                        Welcome to Asttrolok, recognized among India's top 3 astrology institutes, offering courses in astrology, numerology, palmistry, vastu, &amp; ayurveda. Our goal:
                                         guide to enlightenment, share wisdom globally.
                                     </font>
                                 </span>
                             </p>
                             <div class="align-items-center justify-content-between mt-15">
                                 <div class="footer-social">
-                                    <a href="https://www.instagram.com/asttrolok"> <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/default_images/social/social-icons/Instagram-min_converted.webp" alt="Instagram" class="mr-15"></a>
-                <a href="//api.whatsapp.com/send?phone=919174822333&amp;text= "><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/default_images/social/social-icons/Whatsapp-min_converted.webp" alt="Whatsapp" class="mr-15"></a>
-                <a href="https://twitter.com/asttrolok"> <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/default_images/social/social-icons/Twitter-min_converted.webp" alt="Twitter" class="mr-15"> </a>
-                <a href="https://www.facebook.com/asttrolok"><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/default_images/social/social-icons/facebook-min_converted.webp" alt="Facebook" class="mr-15"></a>
+                                    <a href="https://www.instagram.com/asttrolok"> <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/store/1/default_images/social/social-icons/Instagram1.webp" alt="Instagram" class="mr-15"></a>
+                <a href="//api.whatsapp.com/send?phone=919174822333&amp;text= "><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/store/1/default_images/social/social-icons/Whatsapp1.webp" alt="Whatsapp" class="mr-15"></a>
+                <a href="https://twitter.com/asttrolok"> <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/store/1/default_images/social/Twitter.png" alt="Twitter" class="mr-15"> </a>
+                <a href="https://www.facebook.com/asttrolok"><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/store/1/default_images/social/social-icons/FB1.webp" alt="Facebook" class="mr-15"></a>
                 <!--<a href="https://www.youtube.com/@ASTTROLOKChannel"><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/store/1/default_images/social/Youtube.webp" alt="youtube" class="mr-15" /></a>-->
-                <a href="https://in.pinterest.com/asttrolok/"><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/default_images/social/social-icons/pinterest-min_converted.webp" alt="pinterest" class="mr-15"></a>
+                <a href="https://in.pinterest.com/asttrolok/"><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/store/1/default_images/social/social-icons/pinterest2.webp" alt="pinterest" class="mr-15"></a>
             </div>
         </div>
                             </div>
@@ -115,12 +166,12 @@
                             <div class="mt-20"> 
                                 
                                 <ul class="ml-10">
-                    <!--                <li style="list-style: outside;color: #ffffff;">-->
+                                    <li style="list-style: outside;color: #ffffff;">
                                         
-                    <!--                    <p>-->
-                    <!--        <a href="#"><font color="#ffffff">Career &amp; Placement</font></a>-->
-                    <!--    </p>-->
-                    <!--</li>-->
+                                        <p>
+                            <a href="#"><font color="#ffffff">Career &amp; Placement</font></a>
+                        </p>
+                    </li>
                     <li style="list-style: outside;color: #ffffff;">
                         <p>
                             <font color="#ffffff">
@@ -131,25 +182,25 @@
                     
                     <li style="list-style: outside;color: #ffffff;">
                         <p>
-                            <a href="https://marketing.asttrolok.com/consult-with-astrologers"><font color="#ffffff">Astrologers</font></a>
+                            <a href="{{isset($_GET['ad'])?'#':'/consult-with-astrologers'}}"><font color="#ffffff">Astrologers</font></a>
                         </p>
                     </li>
                     <li style="list-style: outside;color: #ffffff;">
                         <p>
-                            <a href="https://marketing.asttrolok.com/classes"><font color="#ffffff">Courses</font></a>
+                            <a href="{{isset($_GET['ad'])?'#':'/classes'}}"><font color="#ffffff">Courses</font></a>
                         </p>
                     </li>
                     <li style="list-style: outside;color: #ffffff;">
                         <p>
                             <font color="#ffffff">
-                                <a href="https://marketing.asttrolok.com/blog"><font color="#ffffff">Blog</font></a><br>
+                                <a href="{{isset($_GET['ad'])?'#':'/blog'}}"><font color="#ffffff">Blog</font></a><br>
                             </font>
                         </p>
                     </li>
                     <li style="list-style: outside;color: #ffffff;">
                         <p>
                             <font color="#ffffff">
-                                <a href="https://marketing.asttrolok.com/tutorial-guide"><font color="#ffffff">Tutorial Guide</font></a><br>
+                                <a href="{{isset($_GET['ad'])?'#':'/tutorial-guide'}}"><font color="#ffffff">Tutorial Guide</font></a><br>
                             </font>
                         </p>
                     </li>
@@ -165,7 +216,7 @@
                         <p class="mt-5" style="font-size: 15px !important;">
                             <font color="#ffffff"><a href="tel:09174822333" style="color:#fff; margin-right:10px;" target="_blank">
                                 
-                                <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/default_images/social/Call Icon.svg" width="15" height="15" alt="Instagram">
+                                <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/store/1/default_images/social/Call Icon.svg" width="15" height="15" alt="Instagram">
                                 09174822333
                             </a></font>
                         </p>
@@ -173,7 +224,7 @@
                                                                         
                         <font color="#ffffff">
                             <a href="mailto:astrolok.vedic@gmail.com" style="color:#fff" target="_blank">
-                                <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/default_images/social/mail_4314565 1.svg" width="15" height="15" alt="Instagram">
+                                <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/store/1/default_images/social/mail_4314565 1.svg" width="15" height="15" alt="Instagram">
                                 
                                 astrolok.vedic@gmail.com
                         </a>
@@ -201,7 +252,7 @@
                     </p>
                     
                     <a target="_blank" href="https://www.youtube.com/@ASTTROLOKChannel?sub_confirmation=1">
-                        <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/default_images/social/youtube.webp" alt="youtube" width="100">
+                        <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/store/1/default_images/social/youtube.webp" alt="youtube" width="100">
                     </a>
                             </div>
                         </div>
@@ -215,13 +266,13 @@
                         <div class="col-md-5">
                             <div class="">
                     <div class="footer-logo" style="width: 215px; height: 57px;">
-                        <a href="/"><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/Asttolok-White-Logo.webp" class="img-cover" alt="footer logo" /></a>
+                        <a href="/"><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/store/1/Asttolok-White-Logo.webp" class="img-cover" alt="footer logo" /></a>
                     </div>
                     <br />
                     <p>
                         <span style="font-family: Montserrat, sans-serif; font-size: 15px; letter-spacing: 0.04695px; text-align: justify;">
                             <font color="#ffffff">
-                                Welcome2 to Asttrolok, recognized among India's top 3 astrology institutes, offering courses in astrology, numerology, palmistry, vastu, & ayurveda. Our goal:
+                                Welcome to Asttrolok, recognized among India's top 3 astrology institutes, offering courses in astrology, numerology, palmistry, vastu, & ayurveda. Our goal:
                                 guide to enlightenment, share wisdom globally.
                             </font>
                         </span>
@@ -230,12 +281,12 @@
                 </div>
                 <div class="align-items-center justify-content-between mt-15">
                     <div class="footer-social">
-                        <a href="https://www.instagram.com/asttrolok"> <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/default_images/social/social-icons/Instagram-min_converted.webp" alt="Instagram" class="mr-15" /></a>
-                        <a href="//api.whatsapp.com/send?phone=919174822333&text= "><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}//webpstore/1/default_images/social/social-icons/Whatsapp-min_converted.webp" alt="Whatsapp" class="mr-15" /></a>
-                        <a href="https://twitter.com/asttrolok"> <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/default_images/social/social-icons/Twitter-min_converted.webp" alt="Twitter" class="mr-15" /> </a>
-                        <a href="https://www.facebook.com/asttrolok"><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/default_images/social/social-icons/facebook-min_converted.webp" alt="Facebook" class="mr-15" /></a>
+                        <a href="https://www.instagram.com/asttrolok"> <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/store/1/default_images/social/social-icons/Instagram1.webp" alt="Instagram" class="mr-15" /></a>
+                        <a href="//api.whatsapp.com/send?phone=919174822333&text= "><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/store/1/default_images/social/social-icons/Whatsapp1.webp" alt="Whatsapp" class="mr-15" /></a>
+                        <a href="https://twitter.com/asttrolok"> <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/store/1/default_images/social/Twitter.png" alt="Twitter" class="mr-15" /> </a>
+                        <a href="https://www.facebook.com/asttrolok"><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/store/1/default_images/social/social-icons/FB1.webp" alt="Facebook" class="mr-15" /></a>
                         <!--<a href="https://www.youtube.com/@ASTTROLOKChannel"><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/store/1/default_images/social/Youtube.webp" alt="youtube" class="mr-15" /></a>-->
-                        <a href="https://in.pinterest.com/asttrolok/"><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/default_images/social/social-icons/pinterest-min_converted.webp" alt="pinterest" class="mr-15" /></a>
+                        <a href="https://in.pinterest.com/asttrolok/"><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/store/1/default_images/social/social-icons/pinterest2.webp" alt="pinterest" class="mr-15" /></a>
                     </div>
                 </div>
             </div>
@@ -245,12 +296,12 @@
                 <div class="mt-20 mg-left" style="font-family: Montserrat, sans-serif; font-size: 15px; letter-spacing: 0.04695px;">
                     
                     <ul>
-                        <!--<li style="list-style: outside;color: #ffffff;">-->
+                        <li style="list-style: outside;color: #ffffff;">
                             
-                        <!--    <p>-->
-                        <!--        <a href="#"><font color="#ffffff">Career & Placement</font></a>-->
-                        <!--    </p>-->
-                        <!--</li>-->
+                            <p>
+                                <a href="#"><font color="#ffffff">Career & Placement</font></a>
+                            </p>
+                        </li>
                         <li style="list-style: outside;color: #ffffff;">
                             <p>
                                 <font color="#ffffff">
@@ -261,18 +312,18 @@
                         
                         <li style="list-style: outside;color: #ffffff;">
                             <p>
-                                <a href="https://marketing.asttrolok.com/instructors"><font color="#ffffff">Astrologers</font></a>
+                                <a href="{{ config('app.manual_base_url') }}/instructors"><font color="#ffffff">Astrologers</font></a>
                         </p>
                     </li>
                     <li style="list-style: outside;color: #ffffff;">
                         <p>
-                            <a href="https://marketing.asttrolok.com/classes"><font color="#ffffff">Courses</font></a>
+                            <a href="{{ config('app.manual_base_url') }}/classes"><font color="#ffffff">Courses</font></a>
                         </p>
                         </li>
                         <li style="list-style: outside;color: #ffffff;">
                             <p>
                             <font color="#ffffff">
-                                <a href="https://marketing.asttrolok.com/blog"><font color="#ffffff">Blog</font></a><br />
+                                <a href="{{ config('app.manual_base_url') }}/blog"><font color="#ffffff">Blog</font></a><br />
                             </font>
                         </p>
                     </li>
@@ -335,8 +386,8 @@
             <div class="">
                 <p style="font-family: Montserrat, sans-serif; font-size: 15px; letter-spacing: 0.04695px; text-align: justify;color:#fff">© All copyrights reserved 2023 Asttrolok.com  | 
                     <font color="#ffffff">
-                        <a href="/pages/privacy-policy"><font color="#ffffff">Privacy Policy</font></a> 
-                    </font> | <a href="/pages/terms"><font color="#ffffff">Terms &amp; Conditions</font></a> | <a href="/pages/cancellation-and-refund-policy"><font color="#ffffff">Cancellation &amp; Refund Policy</font></a>
+                        <a href="{{ config('app.manual_base_url') }}/pages/privacy-policy"><font color="#ffffff">Privacy Policy</font></a> 
+                    </font> | <a href="{{ config('app.manual_base_url') }}/pages/terms"><font color="#ffffff">Terms &amp; Conditions</font></a> | <a href="{{ config('app.manual_base_url') }}/pages/cancellation-and-refund-policy"><font color="#ffffff">Cancellation &amp; Refund Policy</font></a>
                 </p>
             </div>
         </div>
