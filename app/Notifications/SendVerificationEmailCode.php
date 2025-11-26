@@ -2,14 +2,12 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class SendVerificationEmailCode extends Notification implements ShouldQueue
+class SendVerificationEmailCode extends Notification
 {
-    use Queueable;
-
+   
     /**
      * Get the notification's delivery channels.
      *
