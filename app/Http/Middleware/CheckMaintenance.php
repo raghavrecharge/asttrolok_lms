@@ -9,62 +9,62 @@ class CheckMaintenance
 {
     /**
      * Handle an incoming request.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \Closure $next
-     * @return mixed
      */
     public function handle($request, Closure $next)
     {
-         if (Auth::check()) {
-            if (Auth::user()->token_login != session()->get('token_login') && Auth::user()->id != 1 && !session()->has('impersonated')) {
+        // SINGLE DEVICE SESSIONS toggle (default true)
+        $singleDevice = env('SINGLE_DEVICE_SESSIONS', true);
+
+        if ($singleDevice && Auth::check()) {
+            // keep original exemptions: user id 1 and impersonation
+            if (Auth::user()->token_login != session()->get('token_login')
+                && Auth::user()->id != 1
+                && ! session()->has('impersonated')) {
+
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
                 return redirect('/');
             }
         }
-        $route = $request->getPathInfo();
-        // if ($request->path() !== '/' && substr($request->path(), -1) === '/') {
-        //     // Redirect to the URL without the last trailing slash
-        //     $cleanedUri = rtrim($request->getRequestUri(), '/');
 
-        //     return redirect($cleanedUri, 301);
-        // }
+        $route = $request->getPathInfo();
+
         $ignoreRoutes = [
             '/maintenance',
             '/locale',
         ];
-               
-        if (!in_array($route, $ignoreRoutes) and !request()->is('laravel-filemanager*')) {
-            if (!empty(getFeaturesSettings('maintenance_status')) and getFeaturesSettings('maintenance_status')) {
+
+        if (! in_array($route, $ignoreRoutes) and ! request()->is('laravel-filemanager*')) {
+            if (! empty(getFeaturesSettings('maintenance_status')) && getFeaturesSettings('maintenance_status')) {
                 $maintenanceAccessKey = getFeaturesSettings('maintenance_access_key');
 
-                if (!empty($maintenanceAccessKey) and !empty($request->get($maintenanceAccessKey))) {
+                if (! empty($maintenanceAccessKey) && ! empty($request->get($maintenanceAccessKey))) {
                     return $next($request);
                 }
 
                 return redirect(route('maintenanceRoute'));
             }
         }
-        
-          $this->redirectIfPublic();
+
+        $this->redirectIfPublic();
+
         return $next($request);
     }
-   function redirectIfPublic() {
-   
-    $requestUri = $_SERVER['REQUEST_URI'];
-    
-    if (strpos($requestUri, '/public/') === 0) {
-        $newUri = str_replace('/public/', '/', $requestUri, $count);
-        if ($count > 0) {
-            $scheme = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-            $host = $_SERVER['HTTP_HOST'];
-            $currentUrl = $scheme . '://' . $host . $newUri;
-            header("Location: $currentUrl");
-            exit();
+
+    protected function redirectIfPublic()
+    {
+        $requestUri = $_SERVER['REQUEST_URI'];
+
+        if (strpos($requestUri, '/public/') === 0) {
+            $newUri = str_replace('/public/', '/', $requestUri, $count);
+            if ($count > 0) {
+                $scheme = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+                $host = $_SERVER['HTTP_HOST'];
+                $currentUrl = $scheme . '://' . $host . $newUri;
+                header("Location: $currentUrl");
+                exit();
+            }
         }
     }
-}
-
 }
