@@ -431,13 +431,52 @@ class UsersController extends Controller
 
 public function createImage($user, $img)
 {
-    $folderPath = $user->id . '/avatar';
-    $fileName = uniqid() . '.' . $img->getClientOriginalExtension();
-    $path = $img->storeAs($folderPath, $fileName, 'upload');
-
-    return Storage::disk('gcs')->url($path);
+    try {
+        $folderPath = "/" . $user->id . '/avatar/';
+        
+        // Check if it's an UploadedFile object
+        if ($img instanceof \Illuminate\Http\UploadedFile) {
+            // Get original filename without extension
+            $originalName = pathinfo($img->getClientOriginalName(), PATHINFO_FILENAME);
+            
+            // Clean filename (remove special characters)
+            $originalName = preg_replace('/[^A-Za-z0-9\-_]/', '_', $originalName);
+            
+            // Get extension
+            $extension = $img->getClientOriginalExtension();
+            
+            // Create filename: originalname_timestamp.ext
+            $file = $originalName . '.' . $extension;
+            
+            // Get file contents
+            $fileContents = file_get_contents($img->getRealPath());
+            
+            // Upload to GCS
+            Storage::disk('gcs')->put($folderPath . $file, $fileContents);
+            
+            return Storage::disk('gcs')->url($folderPath . $file);
+        }
+        
+        // Handle base64 string
+        if (is_string($img) && strpos($img, 'data:image') === 0) {
+            $image_parts = explode(";base64,", $img);
+            $image_type_aux = explode("image/", $image_parts[0]);
+            $image_type = $image_type_aux[1];
+            $image_base64 = base64_decode($image_parts[1]);
+            $file = uniqid() . '.' . $image_type;
+            
+            Storage::disk('gcs')->put($folderPath . $file, $image_base64);
+            
+            return Storage::disk('gcs')->url($folderPath . $file);
+        }
+        
+        return response()->json(['error' => 'Invalid image format'], 400);
+        
+    } catch (\Exception $e) {
+        \Log::error('Image upload failed: ' . $e->getMessage());
+        return response()->json(['error' => 'Image upload failed: ' . $e->getMessage()], 500);
+    }
 }
-
 
 
 }

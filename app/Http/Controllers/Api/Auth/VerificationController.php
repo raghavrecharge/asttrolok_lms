@@ -14,7 +14,7 @@ use App\Mail\TestMail;
 class VerificationController extends Controller
 {
 
-    public function checkConfirmed($user = null, $username, $value)
+    public function checkConfirmed($user, $username, $value)
     { 
         if (!empty($value)) {
             $verification = Verification::where($username, $value)
@@ -183,12 +183,11 @@ class VerificationController extends Controller
     // }
     public function confirmCode(Request $request, $username = null)
     {
-    $value = $username ?: $request->input('mobile', $request->input('email'));
+    $value = $username ?: $request->input('mobile', $request->input('username'));
     $username = $this->username($value);
     $request[$username] = $value;
     $code = $request->get('code');
     $time = time();
-
     // Verify the code
      if ($value =="akdln3214@gmail.com") {
          $verification = Verification::where($username, $value)
