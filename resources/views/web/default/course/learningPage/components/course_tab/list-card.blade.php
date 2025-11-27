@@ -15,7 +15,7 @@
         @else
             <span class="badge badge-primary hide">{{ trans('webinars.'.$webinar->type) }}</span>
         @endif
-           
+
             @if($webinar->slug == "Astromani_2024")
             <a href="/landingpage/{{ $webinar->slug }}">
             @else
@@ -25,7 +25,7 @@
         </a>
         <div class="d-flex justify-content-between mt-auto">
             <div class=" h-25 mx-15"></div>
-        {{-- @include(getTemplate().'.includes.shopping-cart-dropdwon2') --}}
+
            </div>
         <div class="progress-and-bell d-flex align-items-center">
 
@@ -64,12 +64,11 @@
             </div>
             <a href="{{ $webinar->teacher->getProfileUrl() }}" target="_blank" class="user-name ml-5 font-14">{{ $webinar->teacher->full_name }}</a>
         </div>
-        
-       {{-- @include(getTemplate() . '.includes.webinar.rate3',['rate' => $webinar->getRate()]) --}}
+
         @include(getTemplate() . '.includes.webinar.rate3',['rate' => $webinar->course_rate])
         <div class="hrline mt-5"></div>
         <div class="d-flex justify-content-between mt-auto">
-            
+
             <div class="d-flex align-items-center hide">
                 <div class="d-flex align-items-center">
                     <i data-feather="clock" width="20" height="20" class="webinar-icon"></i>

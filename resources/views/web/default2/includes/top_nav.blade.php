@@ -39,9 +39,7 @@
 
             <div class="d-flex align-items-center justify-content-between justify-content-md-center">
 
-                {{-- Currency --}}
                 @include('web.default.includes.top_nav.currency')
-
 
                 @if(!empty($localLanguage) and count($localLanguage) > 1)
                     <form action="/locale" method="post" class="mr-15 mx-md-20">
@@ -59,7 +57,6 @@
                 @else
                     <div class="mr-15 mx-md-20"></div>
                 @endif
-
 
                 <form action="/search" method="get" class="form-inline my-2 my-lg-0 navbar-search position-relative">
                     <input class="form-control mr-5 rounded" type="text" name="search" maxlength="20" placeholder="{{ trans('navbar.search_anything') }}" aria-label="Search">
@@ -81,12 +78,10 @@
                 @include(getTemplate().'.includes.notification-dropdown')
             </div>
 
-            {{-- User Menu --}}
             @include('web.default.includes.top_nav.user_menu')
         </div>
     </div>
 </div>
-
 
 @push('scripts_bottom')
     <link href="{{ config('app.js_css_url') }}/assets/default/vendors/flagstrap/css/flags.css" rel="stylesheet">

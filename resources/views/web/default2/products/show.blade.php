@@ -7,19 +7,12 @@
 
 @section('content')
 
-    {{-- Cashback Alert --}}
     @if(!empty($cashbackRules) and count($cashbackRules))
         <div class="container position-relative mt-30">
             @include('web.default.includes.cashback_alert',['itemPrice' => $product->price])
         </div>
     @endif
-{{--
-    <div class="container product-show-special-offer position-relative mt-30">
-        @if(!empty($activeSpecialOffer))
-            @include('web.default.course.special_offer')
-        @endif
-    </div>
---}}
+
     <div class="container {{ !empty($activeSpecialOffer) ? 'mt-50' : 'mt-30' }}">
         <div class="row">
             <div class="col-12 col-lg-6">
@@ -34,7 +27,6 @@
                         </button>
                     @endif
                 </div>
-
 
                 <div class="product-show-thumbnail-card d-flex align-items-center mt-20">
                     <div class="thumbnail-card is-first-thumbnail-card cursor-pointer position-relative">
@@ -208,7 +200,6 @@
                             </div>
                         </div>
 
-                        {{-- Gift Card --}}
                         @if($product->isVirtual() and $productAvailability > 0 and !empty(getGiftsGeneralSettings('status')) and !empty(getGiftsGeneralSettings('allow_sending_gift_for_products')))
                             <a href="/gift/product/{{ $product->slug }}" class="d-flex align-items-center mt-15 rounded-lg border p-15">
                                 <div class="size-40 d-flex-center rounded-circle bg-gray200">
@@ -288,8 +279,6 @@
 
         </div>
 
-
-        {{-- Ads Bannaer --}}
         @if(!empty($advertisingBanners) and count($advertisingBanners))
             <div class="mt-30 mt-md-50">
                 <div class="row">
@@ -303,7 +292,6 @@
                 </div>
             </div>
         @endif
-        {{-- ./ Ads Bannaer --}}
 
     </div>
 

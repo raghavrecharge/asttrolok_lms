@@ -1,10 +1,8 @@
-
 @extends(getTemplate() .'.panel.layouts.panel_layout')
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/chartjs/chart.min.css"/>
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/apexcharts/apexcharts.css"/>
-    
-     <!--<link rel="stylesheet" href="https://themewagon.github.io/stisla-1/assets/modules/bootstrap/css/bootstrap.min.css">-->
+
       <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/owl.carousel.min.css">
   <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/owl.theme.default.min.css">
    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/daterangepicker/daterangepicker.min.css">
@@ -12,10 +10,6 @@
 @section('content')
 
         <style>
-/*        .owl-stage, .idebar-ads {*/
-/*  flex: 1 1 auto;*/
-/*}*/
-
 
 .sidebar-ads {
   height:317px;
@@ -31,7 +25,7 @@
     margin: 8px 0;
     max-width: 85%;
     word-wrap: break-word;
-    
+
 }
 .metadata {
     display: inline-block;
@@ -60,15 +54,15 @@
     display: flex;
 }
         .sent{
-            
+
             background: #e1ffc7;
     border-radius: 5px 0px 5px 5px;
-    /*float: right;*/
+
         }
         .message.received {
     background: #fff;
     border-radius: 0px 5px 5px 5px;
-        /*float: left;*/
+
         }
         .finace::-webkit-scrollbar {
     width: 5px;
@@ -86,9 +80,7 @@
 .no-finace::-webkit-scrollbar-thumb {
   background: linear-gradient(to right, #9effc1, lightgrey);
 }
-/*#slider2 .owl-item{*/
-/*    width: 525px !important;*/
-/*}*/
+
         .finace{
             min-height: 375px;
     max-height: 375px;
@@ -99,7 +91,7 @@
            min-height: 400px;
     max-height: 400px;
     overflow-x: hidden;
-    overflow-y: scroll; 
+    overflow-y: scroll;
         }
         .dashboard-banner{
             width: 100%;
@@ -138,7 +130,7 @@
     justify-content: space-evenly;
 }
 .dashboard-stats span{
-    /*font-size:15px;*/
+
 }
 .dashboard-stats .stat-icon {
     width: 75px !important;
@@ -153,8 +145,7 @@
     .image-banner{
         display:none;
     }
-    
-    
+
 }
 .conversations-list {
     height: 420px;
@@ -169,8 +160,7 @@ height: 100%;
     font-size: 9.75px !important;
 }
         </style>
-            
-           
+
     <section class="dashboard ">
         <div class="row">
             <div class="col-12 col-lg-9  d-none">
@@ -182,9 +172,9 @@ height: 100%;
                         <img src="{{ config('app.js_css_url') }}/assets/default/img/default/avatar-1.png" alt="" class="imgs" >
                     </div>
                     <div class="ml-15">
-                      
+
                         <span class="font-16 text-gray dash-box font-weight-500">Welcome {{ $authUser->full_name }}</span>
-                        
+
                     </div>
                 </div>
                 <div class="d-flex justify-content">
@@ -194,7 +184,7 @@ height: 100%;
                        <span class="font-30 text-secondary">{{ (!empty($openSupportsCount1) ? $openSupportsCount1 : 0) }}</span>
                     </div>
                     <a href="panel/support/tickets" class="font-14 font-weight-bold text-dark-blue"><span class="px-5  text-gray dash-box font-weight-500"  style="font-size: 12.5px;">Open Tickets</span></a>
-             
+
                  </div>
                     </div>
                   <div>
@@ -204,7 +194,7 @@ height: 100%;
                     </div>
                       <a href="panel/support/tickets" class="font-14 font-weight-bold text-dark-blue"><span class=" text-gray dash-box font-weight-500" style="font-size: 12.5px;">Closed Tickets</span></a>
                  </div>
-                
+
                </div>
                 <div>
                 <div class="userprofile1 d-flex align-items-center">
@@ -213,18 +203,18 @@ height: 100%;
                     </div>
                        <a href="panel/support" class="font-14 font-weight-bold text-dark-blue"><span class="text-gray dash-box font-weight-500"  style="font-size: 12.5px;">Courses Support</span></a>
                  </div>
-                
+
                </div>
                 </div>
                       </div>
                   <div class="col-12 col-lg-5">
                       <div class="image-banner"><img src="{{ config('app.js_css_url') }}/store/1/dashboards.png" alt="" class="imgs"></div>
-                
+
                 </div>
                 </div>
             </div>
             </div>
-         
+
             <div class="col-12 col-lg-3 homehide  d-none">
                 <div class="dashboard-stats rounded-sm panel-shadow p-10 p-md-5 d-flex align-items-center">
                     <div class="stat-icon ">
@@ -236,9 +226,7 @@ height: 100%;
                           <a href="/panel/financial/account" class="font-14 font-weight-bold text-dark-blue">{{ trans('financial.charge_account') }}</a>
                     </div>
                     <div class="border-gray300 align-items-center  justify-content-center ">
-                       
-                            
-                       
+
                     </div>
                 </div>
 
@@ -249,9 +237,9 @@ height: 100%;
                     <div class="d-flex flex-column ml-1">
                         <span class="font-30 text-secondary">{{ !empty($openInstallmentsCount) ? $openInstallmentsCount : 0 }}</span>
                         <span class="font-14 text-gray dash-box font-weight-500" style="min-height: 42px;">{{ trans('update.open_installments') }}</span>
-                        
+
                     </div>
-                    
+
                 </a>
             </div>
             </div>
@@ -260,12 +248,12 @@ height: 100%;
                        <div class="d-flex align-items-start align-items-md-center justify-content-between flex-column flex-md-row">
             <h2 class="section-title">{{ trans('panel.my_purchases') }}</h2>
         </div>
-        
+
         @if((!empty($sales) and !$sales->isEmpty()) || (!empty($orders) and !$orders->isEmpty()))
         <div class="row mt-30">
               <div class="owl-carousel owl-theme slider" id="slider1">
         @if(!empty($sales) and !$sales->isEmpty() )
-         
+
             @foreach($sales as $sale)
             <div>
                 @php
@@ -281,7 +269,7 @@ height: 100%;
                 @endphp
 
                 @if(!empty($item))
-                   
+
                         <div class="col-12">
                             <div class="webinar-card webinar-list">
                                  <div class="image-box" style="height:150px !important;     min-height: 150px !important;">
@@ -312,10 +300,6 @@ height: 100%;
                                                 @if(!empty($sale->gift_id))
                                                     <span class="badge badge-primary ">{{ trans('update.gift') }}</span>
                                                 @endif
-                                           
-
-                                        
-                                            <!--@include(getTemplate() . '.includes.webinar.rate',['rate' => $item->getRate()])-->
 
                                     <div class="webinar-price-box mt-15">
                                         @if($item->price > 0)
@@ -349,10 +333,6 @@ height: 100%;
                                                             <button type="button" data-webinar-id="{{ $item->id }}" class="join-purchase-webinar webinar-actions btn-transparent d-block mt-10">{{ trans('footer.join') }}</button>
                                                         @endif
 
-                                                        <!--@if(!empty($item->downloadable) or (!empty($item->files) and count($item->files)))-->
-                                                        <!--    <a href="{{ $item->getUrl() }}?tab=content" target="_blank" class="webinar-actions d-block mt-10">{{ trans('home.download') }}</a>-->
-                                                        <!--@endif-->
-
                                                         @if($item->price > 0)
                                                             <a href="/panel/webinars/{{ $item->id }}/sale/{{ $sale->id }}/invoice" target="_blank" class="webinar-actions d-block mt-10">{{ trans('public.invoice') }}</a>
                                                         @endif
@@ -364,61 +344,10 @@ height: 100%;
                                         </div>
                                     </div>
 
-                                
-
                                     <div class="d-flex align-items-center justify-content-between flex-wrap mt-auto">
 
-                                        <!--@if(!empty($sale->gift_id) and $sale->buyer_id == $authUser->id)-->
-                                        <!--    <div class="d-flex align-items-start flex-column mt-20 mr-15">-->
-                                        <!--        <span class="stat-title">{{ trans('update.gift_status') }}:</span>-->
-
-                                        <!--        @if(!empty($sale->gift_date) and $sale->gift_date > time())-->
-                                        <!--            <span class="stat-value text-warning">{{ trans('public.pending') }}</span>-->
-                                        <!--        @else-->
-                                        <!--            <span class="stat-value text-primary">{{ trans('update.sent') }}</span>-->
-                                        <!--        @endif-->
-                                        <!--    </div>-->
-                                        <!--@else-->
-                                        <!--    <div class="d-flex align-items-start flex-column mt-20 mr-15">-->
-                                        <!--        <span class="stat-title">{{ trans('public.item_id') }}:</span>-->
-                                        <!--        <span class="stat-value">{{ $item->id }}</span>-->
-                                        <!--    </div>-->
-                                        <!--@endif-->
-
-                                        <!--@if(!empty($sale->gift_id))-->
-                                        <!--    <div class="d-flex align-items-start flex-column mt-20 mr-15">-->
-                                        <!--        <span class="stat-title">{{ trans('update.gift_receive_date') }}:</span>-->
-                                        <!--        <span class="stat-value">{{ (!empty($sale->gift_date)) ? dateTimeFormat($sale->gift_date, 'j M Y H:i') : trans('update.instantly') }}</span>-->
-                                        <!--    </div>-->
-                                        <!--@else-->
-                                        <!--    <div class="d-flex align-items-start flex-column mt-20 mr-15">-->
-                                        <!--        <span class="stat-title">{{ trans('public.category') }}:</span>-->
-                                        <!--        <span class="stat-value">{{ !empty($item->category_id) ? $item->category->title : '' }}</span>-->
-                                        <!--    </div>-->
-                                        <!--@endif-->
-
                                         @if(!empty($sale->webinar) and $item->type == 'webinar')
-                                            <!--@if($item->isProgressing() and !empty($nextSession))-->
-                                            <!--    <div class="d-flex align-items-start flex-column mt-20 mr-15">-->
-                                            <!--        <span class="stat-title">{{ trans('webinars.next_session_duration') }}:</span>-->
-                                            <!--        <span class="stat-value">{{ convertMinutesToHourAndMinute($nextSession->duration) }} Hrs</span>-->
-                                            <!--    </div>-->
 
-                                            <!--    <div class="d-flex align-items-start flex-column mt-20 mr-15">-->
-                                            <!--        <span class="stat-title">{{ trans('webinars.next_session_start_date') }}:</span>-->
-                                            <!--        <span class="stat-value">{{ dateTimeFormat($nextSession->date,'j M Y') }}</span>-->
-                                            <!--    </div>-->
-                                            <!--@else-->
-                                            <!--    <div class="d-flex align-items-start flex-column mt-20 mr-15">-->
-                                            <!--        <span class="stat-title">{{ trans('public.duration') }}:</span>-->
-                                            <!--        <span class="stat-value">{{ convertMinutesToHourAndMinute($item->duration) }} Hrs</span>-->
-                                            <!--    </div>-->
-
-                                            <!--    <div class="d-flex align-items-start flex-column mt-20 mr-15">-->
-                                            <!--        <span class="stat-title">{{ trans('public.start_date') }}:</span>-->
-                                            <!--        <span class="stat-value">{{ dateTimeFormat($item->start_date,'j M Y') }}</span>-->
-                                            <!--    </div>-->
-                                            <!--@endif-->
                                         @elseif(!empty($sale->bundle))
                                             <div class="d-flex align-items-start flex-column mt-10 mr-15">
                                                 <span class="stat-title">{{ trans('public.duration') }}:</span>
@@ -451,29 +380,24 @@ height: 100%;
                                         @endif
                                         <a href="{{ $item->getLearningPageUrl() }}" target="_blank" class="btn btn-sm btn-primary my-10 w-100 mt-2 ">{{ trans('update.learning_page') }}</a>
 
-
                                     </div>
                                 </div>
                             </div>
                         </div>
-                   
+
                 @endif
                 </div>
             @endforeach
-            <!--</div>-->
-            <!--</div>-->
+
             @endif
             @if(!empty($orders) and !$orders->isEmpty())
-            
-            <!--<div class="row mt-30">-->
-            <!--  <div class="owl-carousel owl-theme slider" id="slider1">-->
-                 
+
               @foreach($orders as $sale)
             <div>
                 @php
-                
+
                     $item = !empty($sale->webinar) ? $sale->webinar : $sale->bundle;
-           
+
                     $lastSession = !empty($sale->webinar) ? $sale->webinar->lastSession() : null;
                     $nextSession = !empty($sale->webinar) ? $sale->webinar->nextSession() : null;
                     $isProgressing = false;
@@ -481,11 +405,11 @@ height: 100%;
                     if(!empty($sale->webinar) and $sale->webinar->start_date <= time() and !empty($lastSession) and $lastSession->date > time()) {
                         $isProgressing = true;
                     }
-                     
+
                 @endphp
 
                 @if(!empty($item))
-                   
+
                         <div class="col-12">
                             <div class="webinar-card webinar-list">
                                  <div class="image-box" style="height:150px !important;     min-height: 150px !important;">
@@ -495,8 +419,8 @@ height: 100%;
                                     <div class="d-flex align-items-start justify-content-between">
                                        <a href="{{ $item->getUrl() }}">
                                             <h3 class="webinar-title font-weight-bold font-16 text-dark-blue" style="height: 75px;">
-                                                 {{ $item->title }} 
-                                                <!--<div  style="display: flex; justify-content: space-between;align-items: center;">-->
+                                                 {{ $item->title }}
+
                                                  @if(!empty($item->access_days))
                                                     @if(!$item->checkHasExpiredAccessDays($sale->created_at, $sale->gift_id))
                                                         <span class="badge badge-outlined-danger ">{{ trans('update.access_days_expired') }}</span>
@@ -517,15 +441,9 @@ height: 100%;
                                                     <span class="badge badge-primary ">{{ trans('update.gift') }}</span>
                                                 @endif
 
-
-                                                <!--@if(!empty($sale->gift_id))-->
-                                                <!--    <span class="badge badge-primary ">{{ trans('update.gift') }}</span>-->
-                                                <!--@endif-->
-                                                <!--</div>-->
                                                 <style>
                                                     .stars-card{ justify-content: space-between;}
                                                 </style>
-                                                              <!--@include(getTemplate() . '.includes.webinar.rate',['rate' => $item->getRate()])-->
 
                                     <div class="webinar-price-box mt-5" style="display: flex; justify-content: space-between;align-items: center;">
                                         @if($item->price > 0)
@@ -540,32 +458,27 @@ height: 100%;
                                         @endif
                                         @php
                                         $isOverdue='0';
-                                        
+
                                         @endphp
                                           @foreach($installment->steps as $step)
                                 @php
                                     $stepPayment = $payments->where('step_id', $step->id)->where('status', 'paying')->first();
                             if(!($payments->where('step_id', $step->id)->where('status', 'paid')->first())){
                                     $dueAt = ($step->deadline * 86400) + $sale->created_at;
-                                    
+
                                     $isOverdue = ($dueAt < time() and empty($stepPayment));
                                   }
-                                  
+
                                 @endphp
                                    @endforeach
                                     @if($isOverdue != '0')
-                                   
+
                                       <a href="/panel/financial/installments/{{ $sale->id }}/details" target="_blank"  class="webinar-actions d-block mt-10 font-weight-normal"><span class="badge badge-danger ml-10" style="padding-top: 2px;  padding-bottom: 2px;">Unpaid (Overdue)</span></a>
-                                       
+
                                     @endif
-    
-                      
-                   
-           
+
                                     </div>
                                             </h3></a>
-                                            
-                                        
 
                                         <div class="btn-group dropdown table-actions">
                                             <button type="button" class="btn-transparent dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -585,8 +498,6 @@ height: 100%;
                                                             <button type="button" data-webinar-id="{{ $item->id }}" class="join-purchase-webinar webinar-actions btn-transparent d-block mt-10">{{ trans('footer.join') }}</button>
                                                         @endif
 
-                                                       
-
                                                         @if($item->price > 0)
                                                             <a href="/panel/financial/installments/{{ $sale->id }}/details" target="_blank" class="webinar-actions d-block mt-10">View Details</a>
                                                         @endif
@@ -594,67 +505,16 @@ height: 100%;
 
                                                     <a href="{{ $item->getUrl() }}?tab=reviews" target="_blank" class="webinar-actions d-block mt-10">{{ trans('public.feedback') }}</a>
                                                 @endif
-                                     
+
                                             </div>
                                         </div>
-                                        
-                                    </div>
 
-                                 
+                                    </div>
 
                                     <div class="d-flex align-items-center justify-content-between flex-wrap mt-auto">
 
-                                        <!--@if(!empty($sale->gift_id) and $sale->buyer_id == $authUser->id)-->
-                                        <!--    <div class="d-flex align-items-start flex-column mt-20 mr-15">-->
-                                        <!--        <span class="stat-title">{{ trans('update.gift_status') }}:</span>-->
-
-                                        <!--        @if(!empty($sale->gift_date) and $sale->gift_date > time())-->
-                                        <!--            <span class="stat-value text-warning">{{ trans('public.pending') }}</span>-->
-                                        <!--        @else-->
-                                        <!--            <span class="stat-value text-primary">{{ trans('update.sent') }}</span>-->
-                                        <!--        @endif-->
-                                        <!--    </div>-->
-                                        <!--@else-->
-                                        <!--    <div class="d-flex align-items-start flex-column mt-20 mr-15">-->
-                                        <!--        <span class="stat-title">{{ trans('public.item_id') }}:</span>-->
-                                        <!--        <span class="stat-value">{{ $item->id }}</span>-->
-                                        <!--    </div>-->
-                                        <!--@endif-->
-
-                                        <!--@if(!empty($sale->gift_id))-->
-                                        <!--    <div class="d-flex align-items-start flex-column mt-20 mr-15">-->
-                                        <!--        <span class="stat-title">{{ trans('update.gift_receive_date') }}:</span>-->
-                                        <!--        <span class="stat-value">{{ (!empty($sale->gift_date)) ? dateTimeFormat($sale->gift_date, 'j M Y H:i') : trans('update.instantly') }}</span>-->
-                                        <!--    </div>-->
-                                        <!--@else-->
-                                        <!--    <div class="d-flex align-items-start flex-column mt-20 mr-15">-->
-                                        <!--        <span class="stat-title">{{ trans('public.category') }}:</span>-->
-                                        <!--        <span class="stat-value">{{ !empty($item->category_id) ? $item->category->title : '' }}</span>-->
-                                        <!--    </div>-->
-                                        <!--@endif-->
-
                                         @if(!empty($sale->webinar) and $item->type == 'webinar')
-                                            <!--@if($item->isProgressing() and !empty($nextSession))-->
-                                            <!--    <div class="d-flex align-items-start flex-column mt-20 mr-15">-->
-                                            <!--        <span class="stat-title">{{ trans('webinars.next_session_duration') }}:</span>-->
-                                            <!--        <span class="stat-value">{{ convertMinutesToHourAndMinute($nextSession->duration) }} Hrs</span>-->
-                                            <!--    </div>-->
 
-                                            <!--    <div class="d-flex align-items-start flex-column mt-20 mr-15">-->
-                                            <!--        <span class="stat-title">{{ trans('webinars.next_session_start_date') }}:</span>-->
-                                            <!--        <span class="stat-value">{{ dateTimeFormat($nextSession->date,'j M Y') }}</span>-->
-                                            <!--    </div>-->
-                                            <!--@else-->
-                                            <!--    <div class="d-flex align-items-start flex-column mt-20 mr-15">-->
-                                            <!--        <span class="stat-title">{{ trans('public.duration') }}:</span>-->
-                                            <!--        <span class="stat-value">{{ convertMinutesToHourAndMinute($item->duration) }} Hrs</span>-->
-                                            <!--    </div>-->
-
-                                            <!--    <div class="d-flex align-items-start flex-column mt-20 mr-15">-->
-                                            <!--        <span class="stat-title">{{ trans('public.start_date') }}:</span>-->
-                                            <!--        <span class="stat-value">{{ dateTimeFormat($item->start_date,'j M Y') }}</span>-->
-                                            <!--    </div>-->
-                                            <!--@endif-->
                                         @elseif(!empty($sale->bundle))
                                             <div class="d-flex align-items-start flex-column mt-10 mr-15">
                                                 <span class="stat-title">{{ trans('public.duration') }}:</span>
@@ -687,18 +547,16 @@ height: 100%;
                                         @endif
                                         <a href="{{ $item->getLearningPageUrl() }}" target="_blank" class="btn btn-sm btn-primary my-10 w-100 mt-2 ">{{ trans('update.learning_page') }}</a>
 
-
                                     </div>
                                 </div>
                             </div>
                         </div>
-                   
+
                 @endif
                 </div>
-              
+
             @endforeach
-             <!--</div>-->
-             <!--</div>-->
+
             @endif
            </div>
              </div>
@@ -709,39 +567,21 @@ height: 100%;
             'hint' => trans('panel.no_result_purchases_hint') ,
             'btn' => ['url' => '/classes?sort=newest','text' => trans('panel.start_learning')]
         ])
-         
+
         @endif
-            <!--<div class="card-body">-->
-            <!--        <div class="owl-carousel owl-theme slider" id="slider1">-->
-            <!--          <div><img alt="image" src="{{ config('app.js_css_url') }}/store/1/dashboards.png"></div>-->
-            <!--          <div><img alt="image" src="{{ config('app.js_css_url') }}/store/1/dashboards.png"></div>-->
-            <!--          <div><img alt="image" src="{{ config('app.js_css_url') }}/store/1/dashboards.png"></div>-->
-            <!--          <div><img alt="image" src="{{ config('app.js_css_url') }}/store/1/dashboards.png"></div>-->
-            <!--        </div>-->
-            <!--      </div>-->
+
                 </div>
-             <!--   <div class="col-lg-4">-->
-             <!--       <div class="rounded-lg sidebar-ads mt-40">-->
-             <!--   <a href="">-->
-             <!--       <img src="{{ config('app.js_css_url') }}/store\1\Home\Side-Banner.jpg" class="shadow-sm  shadow-sm mt-40 adds1 rounded-lg" alt="Reserve a meeting - Course page">-->
-             <!--       </a>-->
-             <!--</div>-->
-                    
-             <!--   </div>-->
+
                 <div class="col-lg-4">
                     <div class="rounded-lg sidebar-ads mt-40">
                 <a href="{{$sidebanner['studentdashboard']['link']}}">
                     <img src="{{ config('app.img_dynamic_url') }}{{$sidebanner['studentdashboard']['image']}}" class="shadow-sm  shadow-sm mt-40 adds1 rounded-lg" alt="Reserve a meeting - Course page">
                     </a>
              </div>
-                    
+
                 </div>
             </div>
-            
-            
-            
-            <!--##############################################   Support    ####################################################-->
-            
+
     <section class="mt-25 homehide d-none">
         <h2 class="section-title">{{ trans('panel.message_filters') }}</h2>
 
@@ -941,12 +781,11 @@ height: 100%;
 
                                     @foreach($selectSupport->conversations as $conversations)
                                         @php
-                                       
+
                                        $msgdate=dateTimeFormat($conversations->created_at,'j M Y');
                                        @endphp
                                        @if($datess==$msgdate)
-                                       
-                                       
+
                                         @else
                                         @php
                                        $datess=$msgdate;
@@ -954,42 +793,17 @@ height: 100%;
                                        <div class="crntdate">
                                        <span >{{ $datess }}</span></div>
                                        @endif
-                                       
-                                       
-                                        
+
                                             @if(!empty($conversations->supporter))
                                             <div class="ldiv">
                                             <div class="rounded-sm mt-15 panel-shadow border p-15 message received">
                                              @else
                                              <div class="rdiv">
                                              <div class="rounded-sm mt-15 panel-shadow border p-15 message sent">
-                                              
+
                                             @endif
                                             {{ nl2br($conversations->message) }}
-                  <!--                          <div class="d-flex align-items-center justify-content-between  border-gray300">-->
-                                                <!--<div class="user-inline-avatar d-flex align-items-center">-->
-                                                    <!--<div class="avatar bg-gray200">-->
-                                                    <!--    <img src="{{ (!empty($conversations->supporter)) ? $conversations->supporter->getAvatar() : $conversations->sender->getAvatar() }}" class="img-cover" alt="">-->
-                                                    <!--</div>-->
-                                                    <!--<div class="ml-10">-->
-                                                    <!--    <span class="d-block text-dark-blue font-14 font-weight-500">{{ (!empty($conversations->supporter)) ? $conversations->supporter->full_name : $conversations->sender->full_name }}</span>-->
-                                                        <!--<span class="mt-1 font-12 text-gray d-block">{{ (!empty($conversations->supporter)) ? trans('panel.staff') : $conversations->sender->role_name }}</span>-->
-                                                    <!--</div>-->
-                                                    <!--<p class="text-gray font-14 mt-15 font-weight-500">{{ nl2br($conversations->message) }}</p> -->
-                                                <!--</div>-->
 
-                  <!--                              <div class="d-flex flex-column align-items-end">-->
-                  <!--                                  <span class="metadata">-->
-                  <!--    <span class="time">{{ dateTimeFormat($conversations->created_at,'j M Y | H:i') }}</span>-->
-                  <!--</span>-->
-                                                   <!--<span class="font-12 text-gray"></span>-->
-                                       
-
-                  <!--                                  @if(!empty($conversations->attach))-->
-                  <!--                                      <a href="{{ url($conversations->attach) }}" target="_blank" class="font-12 mt-10 text-danger"><i data-feather="paperclip" height="14"></i> {{ trans('panel.attach') }}</a>-->
-                  <!--                                  @endif-->
-                  <!--                              </div>-->
-                  <!--                          </div>-->
                    <span class="metadata">
                       <span class="time">{{ dateTimeFormat($conversations->created_at,' H:i') }}</span>
                   </span>
@@ -1005,7 +819,7 @@ height: 100%;
                                     {{ csrf_field() }}
 
                                     <div class="form-group mt-10">
-                                        <!--<label class="input-label d-block">{{ trans('site.message') }}</label>-->
+
                                         <textarea name="message" class="form-control @error('message')  is-invalid @enderror" rows="2">{{ old('message') }}</textarea>
                                         @error('message')
                                         <div class="invalid-feedback">
@@ -1055,37 +869,33 @@ height: 100%;
         @endif
     </section>
 
-
-            
-            
-            <!--##############################################   financial    ####################################################-->
             @php
             $finc=count($accountings);
-            
+
             @endphp
                <div class="row">
                    @if($finc>0)
                    <div class="col-12 col-lg-8 mt-35">
-                   
+
                    @else
                    <div class="col-12 col-lg-12 mt-35">
                    @endif
-            
+
                  <h2 class="section-title">You may also like </h2>
              <div class="row">
             <div class="owl-carousel owl-theme slider" id="slider2">
-                 
+
                  @foreach($featureWebinars as $webinar)
               @php
               //$user = auth()->user();
               //if($user->id==1504){
               if($webinar->id==2069){
-              
+
               $name= "Upcomming Course";
               //}
               }
               @endphp
-               
+
                     <div>
                         <div class="col-12  mt-20">
 <div class="webinar-card">
@@ -1112,7 +922,6 @@ height: 100%;
             <a href="{{ $webinar->getUrl() }}">
                 <img src="{{ config('app.img_dynamic_url') }}{{ $webinar->getImage() }}" class="img-cover" alt="{{ $webinar->title }}">
             </a>
-
 
             @if($webinar->checkShowProgress())
                 <div class="progress">
@@ -1179,8 +988,7 @@ height: 100%;
 
                     </div>
                 @endforeach
-                
-                
+
              </div>
             </div>
             </div>
@@ -1195,9 +1003,9 @@ height: 100%;
                                 <thead>
                                 <tr>
                                     <th>{{ trans('public.title') }}</th>
-                                    <!--<th>{{ trans('public.description') }}</th>-->
+
                                     <th class="text-center">{{ trans('panel.amount') }} ({{ $currency }})</th>
-                                    <!--<th class="text-center">{{ trans('public.creator') }}</th>-->
+
                                     <th class="text-center">{{ trans('public.date') }}</th>
                                 </tr>
                                 </thead>
@@ -1244,15 +1052,12 @@ height: 100%;
                                                 @endif
 
                                                 <div class="font-12 text-gray">
-                                                   
-                                                    
+
                                                     {{ $accounting->description }}
                                                 </div>
                                             </div>
                                         </td>
-                                        <!--<td class="text-left align-middle">-->
-                                        <!--    <span class="font-weight-500 text-gray">{{ $accounting->description }}</span>-->
-                                        <!--</td>-->
+
                                         <td class="text-center align-middle"  width="10%">
                                             @switch($accounting->type)
                                                 @case(\App\Models\Accounting::$addiction)
@@ -1263,7 +1068,7 @@ height: 100%;
                                                     @break;
                                             @endswitch
                                         </td>
-                                        <!--<td class="text-center align-middle">{{ trans('public.'.$accounting->store_type) }}</td>-->
+
                                         <td class="text-center align-middle"  width="30%">
                                             <span>{{ dateTimeFormat($accounting->created_at, 'j M Y') }}</span>
                                         </td>
@@ -1274,44 +1079,16 @@ height: 100%;
                         </div>
                     </div>
                 </div>
-            
+
             </div>
-            
+
             </div>
-            
-                  
+
                    @endif
             </div>
-            
-                <!--##############################################   financial    ####################################################-->
-            
-            
-            
-            
-            
-            
-            <!--<div class="col-12 col-lg-6 mt-35">-->
-            <!--    <div class="bg-white monthly-sales-card rounded-sm panel-shadow py-10 py-md-20 px-15 px-md-30">-->
-            <!--        <div class="d-flex align-items-center justify-content-between">-->
-            <!--            <h3 class="font-16 text-dark-blue font-weight-bold">{{ ($authUser->isUser()) ? trans('panel.learning_statistics') : trans('panel.monthly_sales') }}</h3>-->
 
-            <!--            <span class="font-16 font-weight-500 text-gray">{{ dateTimeFormat(time(),'M Y') }}</span>-->
-            <!--        </div>-->
-
-            <!--        <div class="monthly-sales-chart">-->
-            <!--            <canvas id="myChart"></canvas>-->
-            <!--        </div>-->
-            <!--    </div>-->
-            <!--</div>-->
-            
-            
-            
-               <!--##############################################   end    ####################################################-->
-            
         <div class="row">
             <div class="col-12 col-lg-3 mt-35">
-             
-                  
 
                     @php
                         $getFinancialSettings = getFinancialSettings();
@@ -1319,15 +1096,11 @@ height: 100%;
                         $can_drawable = 0;
                     @endphp
 
-                  
-                
             </div>
 
         </div>
 
-       
     </section>
-
 
     <div class="d-none" id="iNotAvailableModal">
         <div class="offline-modal">
@@ -1358,21 +1131,20 @@ height: 100%;
 @endsection
 
 @push('scripts_bottom')
- <!--<script src="{{ config('app.js_css_url') }}/assets/default/vendors/jquery.min.js"></script>-->
+
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/apexcharts/apexcharts.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/chartjs/chart.min.js"></script>
 <script src="{{ config('app.js_css_url') }}/assets/default/vendors/owl.carousel.min.js"></script>
   <script src="{{ config('app.js_css_url') }}/assets/default/vendors/modules-slider.js"></script>
-  <!--<script src="{{ config('app.js_css_url') }}/assets/default/vendors/scripts.js"></script>-->
-  
+
     <script>
         var offlineSuccess = '{{ trans('panel.offline_success') }}';
         var $chartDataMonths = @json($monthlyChart['months']);
         var $chartData = @json($monthlyChart['data']);
-//         var divHeight = $('.owl-stage').height(); 
+//         var divHeight = $('.owl-stage').height();
 //         alert(divHeight);
 // $('.sidebar-ads').css('max-height', divHeight+'px');
-//  var divHeight = $('.sidebar-ads').height(); 
+//  var divHeight = $('.sidebar-ads').height();
 //         // alert(divHeight);
 // $('#slider1').css('min-height', divHeight+'px');
     </script>
@@ -1413,4 +1185,3 @@ height: 100%;
         </script>
     @endpush
 @endif
-

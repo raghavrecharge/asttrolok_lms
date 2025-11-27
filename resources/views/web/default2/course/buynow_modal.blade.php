@@ -1,23 +1,4 @@
-<!--<div class="modal fade" id="myModal" role="dialog">-->
-<!--    <div class="modal-dialog">-->
-    
-      <!-- Modal content-->
-<!--      <div class="modal-content">-->
-<!--        <div class="modal-header">-->
-<!--          <button type="button" class="close" data-dismiss="modal">&times;</button>-->
-<!--          <h4 class="modal-title">Modal Header</h4>-->
-<!--        </div>-->
-<!--        <div class="modal-body">-->
-<!--          <p>Some text in the modal.</p>-->
-<!--        </div>-->
-<!--        <div class="modal-footer">-->
-<!--          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
-<!--        </div>-->
-<!--      </div>-->
-      
-<!--    </div>-->
-<!--  </div>-->
-  <div class="modal fade" id="buynow_modal" tabindex="-1" aria-labelledby="buynow_modal" aria-hidden="true">
+<div class="modal fade" id="buynow_modal" tabindex="-1" aria-labelledby="buynow_modal" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content py-20">
             <div class="d-flex align-items-center justify-content-between px-20">
@@ -29,19 +10,15 @@
             </div>
 
             <div class="mt-25 position-relative">
-                
-
-                
 
                 <div class="modal-video-lists mt-15">
 
-                  
                                     <div class="d-flex justify-content-between align-items-center my-15 px-20">
                                         <h3 class="section-title after-line">Please login to access the content.</h3>
                                     </div>
 
                                         <div class="rounded-lg shadow-sm  col-12 col-lg-4 mt-25 mt-lg-0" style="margin-right: auto;margin-left: auto;">
-                                            
+
                                             <div class="px-20 pb-30">
                         <form action="/cart/store" method="post">
                             {{ csrf_field() }}
@@ -150,14 +127,8 @@
 
                         </form>
 
-                       
-
-                        
-                    
-
-                    
                 </div>
-                          
+
                 </div>
             </div>
         </div>

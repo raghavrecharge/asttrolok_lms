@@ -1,4 +1,3 @@
-
 @extends('web.default2.layouts.app')
 @section('content')
 <section class="container mt-50">
@@ -8,19 +7,17 @@
             $consultants = collect($c['consultants'] ?? []);
         @endphp
 
-        {{-- Consultation Type Heading --}}
         @if(!empty($consultation->consultation_type))
             <h3 class="mt-4">
                 Consultation Type: {{ ucfirst($consultation->consultation_type) }}
-                @if($consultation->consultation_type === 'range' 
-                    && !empty($consultation->starting_price) 
+                @if($consultation->consultation_type === 'range'
+                    && !empty($consultation->starting_price)
                     && !empty($consultation->ending_price))
                     ({{ $consultation->starting_price }} - {{ $consultation->ending_price }})
                 @endif
             </h3>
         @endif
 
-        {{-- Consultants List --}}
         <div class="row justify-content-center">
             @forelse($consultants as $instructor)
                 @php
@@ -37,7 +34,6 @@
                 <div class="col-12 col-md-6 col-lg-4">
                     <div class="rounded-lg shadow-sm mt-20 px-25 py-15 course-teacher-card instructors-list text-left d-flex align-items-left flex-column position-relative">
 
-                        {{-- Status / Discount --}}
                         <div class="row">
                             <div class="col-11 col-md-6 col-lg-11" style="padding:0;"></div>
                             <div class="col-1 col-md-6 col-lg-1" style="padding:0;">
@@ -50,7 +46,7 @@
                         </div>
 
                         <div class="row">
-                            {{-- Avatar + Rating --}}
+
                             <div class="col-3 col-md-6 col-lg-3" style="padding:0;">
                                 <a href="{{ $instructor->getProfileUrl() }}{{ $canReserve ? '?tab=appointments' : '' }}" class="text-left d-flex flex-column align-items-left justify-content-left">
                                     <div class="teacher-avatar mt-5 position-relative">
@@ -71,7 +67,6 @@
                                 </a>
                             </div>
 
-                            {{-- Details --}}
                             <div class="col-9 col-md-6 col-lg-9">
                                 <h3 class="font-16 font-weight-bold text-dark-blue text-left ml-10">{{ $instructor->full_name }}</h3>
                                 @if(!empty($instructor->bio))
@@ -82,8 +77,7 @@
                                     <div class="col-7 col-md-7 col-lg-7">
                                         <div class="mt-15 pl-10">
                                             @if($amount > 0 && !$meeting->disabled)
-                                                {{--<span class="font-20 text-primary font-weight-500">{{ handlePrice($finalAmount / 30) }}</span>--}}
-                                                <!--<span class="text-dark-blue" style="font-size: small!important;"> / Min</span>-->
+
                                                 @if($discount > 0)
                                                     <span class="font-14 text-gray text-decoration-line-through ml-10">{{ handlePrice($amount / 30) }}</span>
                                                 @endif
@@ -110,4 +104,3 @@
     @endforelse
 </section>
 @endsection
-

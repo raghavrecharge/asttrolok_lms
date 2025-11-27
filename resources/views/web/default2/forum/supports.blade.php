@@ -7,40 +7,14 @@
                 font-size: 16px !important;
     }
 </style>
-   {{--   <section class="forum-hero-section mt-50 position-relative">
-        <div class="container forum-hero-section__container">
-            <div class="row">
-                <div class="col-12 col-md-6">
-                    <h1 class="font-36 text-secondary">
-                        <span>How can we help you ?</span>
-                    </h1>
-                    <p class="font-14 text-gray mt-15">If you need help with any included topic, you can create a topic in the forum and start communication with other users.</p>
 
-                  <div class="search-input bg-white p-10 flex-grow-1 mt-25">
-                        <form action="/forums/search" method="get">
-                            <div class="form-group d-flex align-items-center m-0">
-                                <input type="text" name="search" class="form-control border-0" placeholder="{{ trans('update.search_discussions') }}"/>
-                                <button type="submit" class="btn btn-primary rounded-pill">{{ trans('public.search') }}</button>
-                            </div>
-                        </form>
-                    </div> 
-                </div>
-            </div>
-        </div>
-
-        <div class="forum-hero-section__image">
-            <img src="{{ config('app.js_css_url') }}/assets/default/img/forum/hero.png" class="img-cover" alt="forum hero">
-        </div>
-    </section>--}}
-
-  
 <section class="container forums-featured-section mt-30 mt-md-50">
 
             <div class="text-center mb-30">
                 <h1 class="font-36 font-weight-bold text-secondary">How can we help you ?</h1>
                 <p class="font-14 text-gray">Follow simple steps and video tutorials to easily navigate and use the site effectively.</p>
             </div>
-            
+
             <div class="row">
                 <div class="col-12 col-lg-6">
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
@@ -51,10 +25,10 @@
                             <a href="#" data-toggle="modal" data-target="#import" class="">
                                 <h4 class="font-16 font-weight-bold text-dark">How to Login ?</h4>
                             </a>
-                            {{--<p class="font-14 text-gray">Social media is a collective term for websites and applications that focus on communication, ...</p>--}}
+
                         </div>
                     </div>
-                    
+
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
                             <img src="/store/1/default_images/forums/icons/How to Reset Your Password.svg" alt="How do you put a Group Link in a note card" class="img-cover">
@@ -65,7 +39,7 @@
                             </a>
                         </div>
                     </div>
-                    
+
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
                             <img src="/store/1/default_images/forums/icons/How to Purchase an Online Course.svg" alt="The best texture quality settings for makeup" class="img-cover">
@@ -76,7 +50,7 @@
                             </a>
                         </div>
                     </div>
-                        
+
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
                             <img src="/store/1/default_images/forums/icons/How to See Access Course Content.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
@@ -87,7 +61,7 @@
                             </a>
                         </div>
                     </div>
-                    
+
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
                             <img src="/store/1/default_images/forums/icons/How to View Quiz Results and Answers.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
@@ -98,10 +72,10 @@
                             </a>
                         </div>
                     </div>
-                    
+
                 </div>
                 <div class="col-12 col-lg-6">
-                    
+
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
                             <img src="/store/1/default_images/forums/icons/How to give a second attempt for Quiz.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
@@ -112,7 +86,7 @@
                             </a>
                         </div>
                     </div>
-                    
+
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
                             <img src="/store/1/default_images/forums/icons/How to set a meeting time for the instructor.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
@@ -123,7 +97,7 @@
                             </a>
                         </div>
                     </div>
-                    
+
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
                             <img src="/store/1/default_images/forums/icons/How to download a ppt file.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
@@ -134,7 +108,7 @@
                             </a>
                         </div>
                     </div>
-                    
+
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
                             <img src="/store/1/default_images/forums/icons/How to Complete the Quiz in Waiting.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
@@ -145,7 +119,7 @@
                             </a>
                         </div>
                     </div>
-                    
+
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
                             <img src="/store/1/default_images/forums/icons/QUIZ.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
@@ -158,10 +132,9 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="forums-featured-bg-box"></div>
         </section>
-   
 
     <section class="container forum-question-section bg-info-light rounded-lg mt-25 mt-md-45">
         <div class="row">
@@ -171,8 +144,6 @@
                         <span class="">Still Have Questions ?</span>
                         <span class="d-block">Our support team is here for you!</span>
                     </h2>
-
-                    <!--<p class="mt-15 text-gray font-14">{{ trans('update.have_a_question_hint') }}</p>-->
 
                     <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center mt-15">
                         <a href="/contact" class="btn btn-primary">
@@ -193,7 +164,7 @@
     </section>
   <div class="modal fade" id="import" tabindex="-1" aria-labelledby="import" aria-hidden="true">
         <div class="modal-dialog  modal-dialog-centered" style="width:95%;max-width:95%;">
-            
+
             <div class="container modal-content py-20" id="videolink" style="padding: 30px;">
                  <div class="d-flex align-items-center justify-content-between px-20">
                 <h3 class="section-title after-line"></h3>
@@ -213,47 +184,33 @@
                                    href="#content" role="tab" aria-controls="content"
                                    aria-selected="false" style="text-align: center;"><img src="https://storage.googleapis.com/astrolok/store/1/MobileSelectorIcon.svg" alt="" role="presentation" ><p>Mobile</p></a>
                             </li>
-                           
-                           
+
                         </ul>
-                        
+
                         <div id="instructorsList" class=" mt-15">
-                
+
                 <div class="tab-content " id="nav-tabContent">
                     <div class="tab-pane fade  show active" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                      
+
                         <div class="row">
                              <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                             <h2 class=" font-weight-bold text-dark">How to Login ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
-                                                <p class="mt-10">1. Click on the <a href="/login" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;-weight: 800;">Login</a> option from right corner 
+
+                                                <p class="mt-10">1. Click on the <a href="/login" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;-weight: 800;">Login</a> option from right corner
                                                 </p>
                                                  <p class="mt-10">2. Now enter the email id in  username box
                                                 </p>
                                                  <p class="mt-10 ">3. Now enter the password
                                                 </p>
-                                                 
+
                                                  <p class="mt-10">4. Click the <b>Login</b> button.
                                                 </p>
                                                  <p class="mt-10">5. Wait a few moments and my purchase page will be open
                                                 </p>
-                                           
-<!--                            <p class="font-16 font-weight-normal text-gray mt-10">-->
-<!--                                Click the invite link provided by the host, for example in a calendar or email invitation, and follow the on-screen instructions.-->
-<!--Alternatively, open the Zoom desktop client.-->
-<!--Click the Home tab .-->
-<!--Click the Join icon .-->
-<!--Enter the meeting ID provided by the meeting host.-->
-<!--If prompted, enter the meeting passcode.-->
-<!--Click Join.-->
-<!--You will then join the meeting or waiting room, if enabled by the host.</p>-->
 
-                            <!--<div class="mt-35 d-flex align-items-center">-->
-                            <!--                                        <a href="/login" class="btn btn-primary mr-15">Become an Instructor</a>-->
-                            <!--                                </div>-->
                         </div>
                     </div>
 
@@ -264,26 +221,23 @@
             </section>
                                           </div>
 
-                
-
             </div>
                <div class=" tab-pane fade  {{ (request()->get('tab','') == 'content') ? 'show active' : '' }}" id="content" role="tabpanel" aria-labelledby="content-tab">
                                 <div class="row">
-                               
-                                       
+
                                           <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                              <h2 class=" font-weight-bold text-dark">How to Login ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
-                                                <p class="mt-10">1. Click on the <a href="/login" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;-weight: 800;">Login</a> option from right corner 
+
+                                                <p class="mt-10">1. Click on the <a href="/login" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;-weight: 800;">Login</a> option from right corner
                                                 </p>
                                                  <p class="mt-10">2. Now enter the email id in  username box
                                                 </p>
                                                  <p class="mt-10 ">3. Now enter the password
                                                 </p>
-                                                 
+
                                                  <p class="mt-10">4. Click the <b>Login</b> button.
                                                 </p>
                                                  <p class="mt-10">5. Wait a few moments and my purchase page will be open
@@ -296,22 +250,18 @@
                     </div>
                 </div>
             </section>
-                                       
-                                    
-                                    
+
                             </div></div>
                               </div>
 
-                
-
             </div>
-                <!--<iframe width="-webkit-fill-available" id="videoiframe" height="300" allow="autoplay"  title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>-->
+
             </div>
         </div>
     </div>
   <div class="modal fade" id="import1" tabindex="-1" aria-labelledby="import1" aria-hidden="true">
         <div class="modal-dialog  modal-dialog-centered" style="width:95%;max-width:95%;">
-            
+
             <div class="container modal-content py-20" id="videolink" style="padding: 30px;">
                  <div class="d-flex align-items-center justify-content-between px-20">
                 <h3 class="section-title after-line"></h3>
@@ -331,22 +281,21 @@
                                    href="#content" role="tab" aria-controls="content"
                                    aria-selected="false" style="text-align: center;"><img src="https://storage.googleapis.com/astrolok/store/1/MobileSelectorIcon.svg" alt="" role="presentation" ><p>Mobile</p></a>
                             </li>
-                           
-                           
+
                         </ul>
-                        
+
                         <div id="instructorsList" class=" mt-15">
-                
+
                 <div class="tab-content " id="nav-tabContent">
                     <div class="tab-pane fade  show active" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                      
+
                         <div class="row">
                              <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                             <h2 class=" font-weight-bold text-dark">How to Reset Your Password ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
+
                                                 <p class="mt-10">1. Click on the login button from the top right corner (or click on this link )
                                                 </p>
                                                  <p class="mt-10 ">2. Click on the <a href="/forget-password" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;-weight: 800;">Forgot Password</a>
@@ -361,22 +310,9 @@
                                                 </p>
                                                 <p class="mt-10">7. Open the email and click on the link provided to reset your password.
                                                 </p>
-                                                 <p class="mt-10">8. After clicking the link, you can create a new password 
+                                                 <p class="mt-10">8. After clicking the link, you can create a new password
                                                 </p>
-                                           
-<!--                            <p class="font-16 font-weight-normal text-gray mt-10">-->
-<!--                                Click the invite link provided by the host, for example in a calendar or email invitation, and follow the on-screen instructions.-->
-<!--Alternatively, open the Zoom desktop client.-->
-<!--Click the Home tab .-->
-<!--Click the Join icon .-->
-<!--Enter the meeting ID provided by the meeting host.-->
-<!--If prompted, enter the meeting passcode.-->
-<!--Click Join.-->
-<!--You will then join the meeting or waiting room, if enabled by the host.</p>-->
 
-                            <!--<div class="mt-35 d-flex align-items-center">-->
-                            <!--                                        <a href="/login" class="btn btn-primary mr-15">Become an Instructor</a>-->
-                            <!--                                </div>-->
                         </div>
                     </div>
 
@@ -387,19 +323,16 @@
             </section>
                                           </div>
 
-                
-
             </div>
                <div class=" tab-pane fade  {{ (request()->get('tab','') == 'content') ? 'show active' : '' }}" id="content" role="tabpanel" aria-labelledby="content-tab">
                                 <div class="row">
-                               
-                                       
+
                                           <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                              <h2 class=" font-weight-bold text-dark">How to Reset Your Password ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
+
                                                 <p class="mt-10">1. Click on the login button from the top right corner (or click on this link )
                                                 </p>
                                                  <p class="mt-10 ">2. Click on the <a href="/forget-password" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;-weight: 800;">Forgot Password</a>
@@ -414,7 +347,7 @@
                                                 </p>
                                                 <p class="mt-10">7. Open the email and click on the link provided to reset your password.
                                                 </p>
-                                                 <p class="mt-10">8. After clicking the link, you can create a new password 
+                                                 <p class="mt-10">8. After clicking the link, you can create a new password
                                                 </p>
                         </div>
                     </div>
@@ -424,22 +357,18 @@
                     </div>
                 </div>
             </section>
-                                       
-                                    
-                                    
+
                             </div></div>
                               </div>
 
-                
-
             </div>
-                <!--<iframe width="-webkit-fill-available" id="videoiframe" height="300" allow="autoplay"  title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>-->
+
             </div>
         </div>
     </div>
   <div class="modal fade" id="import2" tabindex="-1" aria-labelledby="import2" aria-hidden="true">
         <div class="modal-dialog  modal-dialog-centered" style="width:95%;max-width:95%;">
-            
+
             <div class="container modal-content py-20" id="videolink" style="padding: 30px;">
                  <div class="d-flex align-items-center justify-content-between px-20">
                 <h3 class="section-title after-line"></h3>
@@ -459,22 +388,21 @@
                                    href="#content" role="tab" aria-controls="content"
                                    aria-selected="false" style="text-align: center;"><img src="https://storage.googleapis.com/astrolok/store/1/MobileSelectorIcon.svg" alt="" role="presentation" ><p>Mobile</p></a>
                             </li>
-                           
-                           
+
                         </ul>
-                        
+
                         <div id="instructorsList" class=" mt-15">
-                
+
                 <div class="tab-content " id="nav-tabContent">
                     <div class="tab-pane fade  show active" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                      
+
                         <div class="row">
                              <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                             <h2 class=" font-weight-bold text-dark">How  to Purchase an Online Course ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
+
                                                 <p class="mt-10">1. Go to courses dropdown and click on the <b>View all</b> options (click on the link)
                                                 </p>
                                                  <p class="mt-10">2. Click on the course name you want to purchase and see course details
@@ -487,22 +415,9 @@
                                                 </p>
                                                 <p class="mt-10">6. You choose the payment options like (UPI ,Credit/Debit card and Internet Banking)
                                                 </p>
-                                                <p class="mt-10">7. Once the payment is successful, wait for few seconds you will be redirected back to the website 
+                                                <p class="mt-10">7. Once the payment is successful, wait for few seconds you will be redirected back to the website
                                                 </p>
-                                           
-<!--                            <p class="font-16 font-weight-normal text-gray mt-10">-->
-<!--                                Click the invite link provided by the host, for example in a calendar or email invitation, and follow the on-screen instructions.-->
-<!--Alternatively, open the Zoom desktop client.-->
-<!--Click the Home tab .-->
-<!--Click the Join icon .-->
-<!--Enter the meeting ID provided by the meeting host.-->
-<!--If prompted, enter the meeting passcode.-->
-<!--Click Join.-->
-<!--You will then join the meeting or waiting room, if enabled by the host.</p>-->
 
-                            <!--<div class="mt-35 d-flex align-items-center">-->
-                            <!--                                        <a href="/login" class="btn btn-primary mr-15">Become an Instructor</a>-->
-                            <!--                                </div>-->
                         </div>
                     </div>
 
@@ -513,19 +428,16 @@
             </section>
                                           </div>
 
-                
-
             </div>
                <div class=" tab-pane fade  {{ (request()->get('tab','') == 'content') ? 'show active' : '' }}" id="content" role="tabpanel" aria-labelledby="content-tab">
                                 <div class="row">
-                               
-                                       
+
                                           <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                              <h2 class=" font-weight-bold text-dark">How  to Purchase an Online Course ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
+
                                                 <p class="mt-10">1. Go to courses dropdown and click on the <b>View all</b> options (click on the link)
                                                 </p>
                                                  <p class="mt-10">2. Click on the course name you want to purchase and see course details
@@ -538,7 +450,7 @@
                                                 </p>
                                                 <p class="mt-10">6. You choose the payment options like (UPI ,Credit/Debit card and Internet Banking)
                                                 </p>
-                                                <p class="mt-10">7. Once the payment is successful, wait for few seconds you will be redirected back to the website 
+                                                <p class="mt-10">7. Once the payment is successful, wait for few seconds you will be redirected back to the website
                                                 </p>
                         </div>
                     </div>
@@ -548,22 +460,18 @@
                     </div>
                 </div>
             </section>
-                                       
-                                    
-                                    
+
                             </div></div>
                               </div>
 
-                
-
             </div>
-                <!--<iframe width="-webkit-fill-available" id="videoiframe" height="300" allow="autoplay"  title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>-->
+
             </div>
         </div>
     </div>
   <div class="modal fade" id="import3" tabindex="-1" aria-labelledby="import3" aria-hidden="true">
         <div class="modal-dialog  modal-dialog-centered" style="width:95%;max-width:95%;">
-            
+
             <div class="container modal-content py-20" id="videolink" style="padding: 30px;">
                  <div class="d-flex align-items-center justify-content-between px-20">
                 <h3 class="section-title after-line"></h3>
@@ -583,44 +491,30 @@
                                    href="#content" role="tab" aria-controls="content"
                                    aria-selected="false" style="text-align: center;"><img src="https://storage.googleapis.com/astrolok/store/1/MobileSelectorIcon.svg" alt="" role="presentation" ><p>Mobile</p></a>
                             </li>
-                           
-                           
+
                         </ul>
-                        
+
                         <div id="instructorsList" class=" mt-15">
-                
+
                 <div class="tab-content " id="nav-tabContent">
                     <div class="tab-pane fade  show active" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                      
+
                         <div class="row">
                              <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                             <h2 class=" font-weight-bold text-dark">How to See/Access Course Content ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
+
                                                 <p class="mt-10">1. Login with your credentials from <a href="/login" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;-weight: 800;">Login</a> page.
                                                 </p>
                                                  <p class="mt-10">2. On purchase section Find course and click on the <b>Learning Page</b> button
                                                 </p>
-                                                 <p class="mt-10 ">3. Here you can see all the available content from this  course in the right side 
+                                                 <p class="mt-10 ">3. Here you can see all the available content from this  course in the right side
                                                 </p>
                                                  <p class="mt-10">4. Click on the section and click on any <b>video or file</b> to open
                                                 </p>
-                                           
-<!--                            <p class="font-16 font-weight-normal text-gray mt-10">-->
-<!--                                Click the invite link provided by the host, for example in a calendar or email invitation, and follow the on-screen instructions.-->
-<!--Alternatively, open the Zoom desktop client.-->
-<!--Click the Home tab .-->
-<!--Click the Join icon .-->
-<!--Enter the meeting ID provided by the meeting host.-->
-<!--If prompted, enter the meeting passcode.-->
-<!--Click Join.-->
-<!--You will then join the meeting or waiting room, if enabled by the host.</p>-->
 
-                            <!--<div class="mt-35 d-flex align-items-center">-->
-                            <!--                                        <a href="/login" class="btn btn-primary mr-15">Become an Instructor</a>-->
-                            <!--                                </div>-->
                         </div>
                     </div>
 
@@ -631,24 +525,21 @@
             </section>
                                           </div>
 
-                
-
             </div>
                <div class=" tab-pane fade  {{ (request()->get('tab','') == 'content') ? 'show active' : '' }}" id="content" role="tabpanel" aria-labelledby="content-tab">
                                 <div class="row">
-                               
-                                       
+
                                           <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                              <h2 class=" font-weight-bold text-dark">How to See/Access Course Content ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
+
                                                 <p class="mt-10">1. Login with your credentials from <a href="/login" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;-weight: 800;">Login</a> page.
                                                 </p>
                                                  <p class="mt-10">2. On purchase section Find course and click on the <b>Learning Page</b> button
                                                 </p>
-                                                 <p class="mt-10 ">3. Here you can see all the available content from this  course in the right side 
+                                                 <p class="mt-10 ">3. Here you can see all the available content from this  course in the right side
                                                 </p>
                                                  <p class="mt-10">4. Click on the section and click on any <b>video or file</b> to open
                                                 </p>
@@ -660,22 +551,18 @@
                     </div>
                 </div>
             </section>
-                                       
-                                    
-                                    
+
                             </div></div>
                               </div>
 
-                
-
             </div>
-                <!--<iframe width="-webkit-fill-available" id="videoiframe" height="300" allow="autoplay"  title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>-->
+
             </div>
         </div>
     </div>
   <div class="modal fade" id="import4" tabindex="-1" aria-labelledby="import4" aria-hidden="true">
         <div class="modal-dialog  modal-dialog-centered" style="width:95%;max-width:95%;">
-            
+
             <div class="container modal-content py-20" id="videolink" style="padding: 30px;">
                  <div class="d-flex align-items-center justify-content-between px-20">
                 <h3 class="section-title after-line"></h3>
@@ -695,22 +582,21 @@
                                    href="#content" role="tab" aria-controls="content"
                                    aria-selected="false" style="text-align: center;"><img src="https://storage.googleapis.com/astrolok/store/1/MobileSelectorIcon.svg" alt="" role="presentation" ><p>Mobile</p></a>
                             </li>
-                           
-                           
+
                         </ul>
-                        
+
                         <div id="instructorsList" class=" mt-15">
-                
+
                 <div class="tab-content " id="nav-tabContent">
                     <div class="tab-pane fade  show active" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                      
+
                         <div class="row">
                              <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                             <h2 class=" font-weight-bold text-dark">How to View Quiz Results and Answers ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
+
                                                 <p class="mt-10">1. <p class="mt-10">1. Login with your credentials from <a href="/login" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;-weight: 800;">Login</a> page.
                                                 </p>
                                                  <p class="mt-10">2. Once logged in, find the <b>Purchase Course</b> section.
@@ -725,20 +611,7 @@
                                                 </p>
                                                 <p class="mt-10">7. Click the <b>Next</b> button to browse through all the answers.
                                                 </p>
-                                           
-<!--                            <p class="font-16 font-weight-normal text-gray mt-10">-->
-<!--                                Click the invite link provided by the host, for example in a calendar or email invitation, and follow the on-screen instructions.-->
-<!--Alternatively, open the Zoom desktop client.-->
-<!--Click the Home tab .-->
-<!--Click the Join icon .-->
-<!--Enter the meeting ID provided by the meeting host.-->
-<!--If prompted, enter the meeting passcode.-->
-<!--Click Join.-->
-<!--You will then join the meeting or waiting room, if enabled by the host.</p>-->
 
-                            <!--<div class="mt-35 d-flex align-items-center">-->
-                            <!--                                        <a href="/login" class="btn btn-primary mr-15">Become an Instructor</a>-->
-                            <!--                                </div>-->
                         </div>
                     </div>
 
@@ -749,19 +622,16 @@
             </section>
                                           </div>
 
-                
-
             </div>
                <div class=" tab-pane fade  {{ (request()->get('tab','') == 'content') ? 'show active' : '' }}" id="content" role="tabpanel" aria-labelledby="content-tab">
                                 <div class="row">
-                               
-                                       
+
                                           <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                              <h2 class=" font-weight-bold text-dark">How to View Quiz Results and Answers ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
+
                                                 <p class="mt-10">1. <p class="mt-10">1. Login with your credentials from <a href="/login" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;-weight: 800;">Login</a> page.
                                                 </p>
                                                  <p class="mt-10">2. Once logged in, find the <b>Purchase Course</b> section.
@@ -784,22 +654,18 @@
                     </div>
                 </div>
             </section>
-                                       
-                                    
-                                    
+
                             </div></div>
                               </div>
 
-                
-
             </div>
-                <!--<iframe width="-webkit-fill-available" id="videoiframe" height="300" allow="autoplay"  title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>-->
+
             </div>
         </div>
     </div>
   <div class="modal fade" id="import5" tabindex="-1" aria-labelledby="import5" aria-hidden="true">
         <div class="modal-dialog  modal-dialog-centered" style="width:95%;max-width:95%;">
-            
+
             <div class="container modal-content py-20" id="videolink" style="padding: 30px;">
                  <div class="d-flex align-items-center justify-content-between px-20">
                 <h3 class="section-title after-line"></h3>
@@ -819,25 +685,24 @@
                                    href="#content" role="tab" aria-controls="content"
                                    aria-selected="false" style="text-align: center;"><img src="https://storage.googleapis.com/astrolok/store/1/MobileSelectorIcon.svg" alt="" role="presentation" ><p>Mobile</p></a>
                             </li>
-                           
-                           
+
                         </ul>
-                        
+
                         <div id="instructorsList" class=" mt-15">
-                
+
                 <div class="tab-content " id="nav-tabContent">
                     <div class="tab-pane fade  show active" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                      
+
                         <div class="row">
                              <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                             <h2 class=" font-weight-bold text-dark">How to give a second attempt for Quiz ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
-                                                <p class="mt-10">1. Login with your credentials on the Login page (Skip if already login) 
+
+                                                <p class="mt-10">1. Login with your credentials on the Login page (Skip if already login)
                                                 </p>
-                                                 <p class="mt-10">2. Click to the <b>Quizzes</b> tab.from dashboard 
+                                                 <p class="mt-10">2. Click to the <b>Quizzes</b> tab.from dashboard
                                                 </p>
                                                  <p class="mt-10 ">3. Click on the <b>My Results</b> option.
                                                 </p>
@@ -849,20 +714,7 @@
                                                 </p>
                                                 <p class="mt-10">7. Once you  have Answered all the questions then click on the <b>Finish</b> button to submit your answers and complete the quiz.
                                                 </p>
-                                           
-<!--                            <p class="font-16 font-weight-normal text-gray mt-10">-->
-<!--                                Click the invite link provided by the host, for example in a calendar or email invitation, and follow the on-screen instructions.-->
-<!--Alternatively, open the Zoom desktop client.-->
-<!--Click the Home tab .-->
-<!--Click the Join icon .-->
-<!--Enter the meeting ID provided by the meeting host.-->
-<!--If prompted, enter the meeting passcode.-->
-<!--Click Join.-->
-<!--You will then join the meeting or waiting room, if enabled by the host.</p>-->
 
-                            <!--<div class="mt-35 d-flex align-items-center">-->
-                            <!--                                        <a href="/login" class="btn btn-primary mr-15">Become an Instructor</a>-->
-                            <!--                                </div>-->
                         </div>
                     </div>
 
@@ -873,22 +725,19 @@
             </section>
                                           </div>
 
-                
-
             </div>
                <div class=" tab-pane fade  {{ (request()->get('tab','') == 'content') ? 'show active' : '' }}" id="content" role="tabpanel" aria-labelledby="content-tab">
                                 <div class="row">
-                               
-                                       
+
                                           <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                              <h2 class=" font-weight-bold text-dark">How to give a second attempt for Quiz ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
-                                                <p class="mt-10">1. Login with your credentials on the Login page (Skip if already login) 
+
+                                                <p class="mt-10">1. Login with your credentials on the Login page (Skip if already login)
                                                 </p>
-                                                 <p class="mt-10">2. Click to the <b>Quizzes</b> tab.from dashboard 
+                                                 <p class="mt-10">2. Click to the <b>Quizzes</b> tab.from dashboard
                                                 </p>
                                                  <p class="mt-10 ">3. Click on the <b>My Results</b> option.
                                                 </p>
@@ -908,22 +757,18 @@
                     </div>
                 </div>
             </section>
-                                       
-                                    
-                                    
+
                             </div></div>
                               </div>
 
-                
-
             </div>
-                <!--<iframe width="-webkit-fill-available" id="videoiframe" height="300" allow="autoplay"  title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>-->
+
             </div>
         </div>
     </div>
   <div class="modal fade" id="import6" tabindex="-1" aria-labelledby="import6" aria-hidden="true">
         <div class="modal-dialog  modal-dialog-centered" style="width:95%;max-width:95%;">
-            
+
             <div class="container modal-content py-20" id="videolink" style="padding: 30px;">
                  <div class="d-flex align-items-center justify-content-between px-20">
                 <h3 class="section-title after-line"></h3>
@@ -943,22 +788,21 @@
                                    href="#content" role="tab" aria-controls="content"
                                    aria-selected="false" style="text-align: center;"><img src="https://storage.googleapis.com/astrolok/store/1/MobileSelectorIcon.svg" alt="" role="presentation" ><p>Mobile</p></a>
                             </li>
-                           
-                           
+
                         </ul>
-                        
+
                         <div id="instructorsList" class=" mt-15">
-                
+
                 <div class="tab-content " id="nav-tabContent">
                     <div class="tab-pane fade  show active" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                      
+
                         <div class="row">
                              <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                             <h2 class=" font-weight-bold text-dark">How to set a meeting time for the instructor ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
+
                                                 <p class="mt-10">1. Login with your credentials (Instructor)  on the Login page (Skip if already login)
                                                 </p>
                                                  <p class="mt-10">2. Click on the <b>meeting</b> tab from the left side from dashboard page
@@ -973,20 +817,7 @@
                                                 </p>
                                                 <p class="mt-10">7. After completing your availability click on the <b>save</b> button
                                                 </p>
-                                           
-<!--                            <p class="font-16 font-weight-normal text-gray mt-10">-->
-<!--                                Click the invite link provided by the host, for example in a calendar or email invitation, and follow the on-screen instructions.-->
-<!--Alternatively, open the Zoom desktop client.-->
-<!--Click the Home tab .-->
-<!--Click the Join icon .-->
-<!--Enter the meeting ID provided by the meeting host.-->
-<!--If prompted, enter the meeting passcode.-->
-<!--Click Join.-->
-<!--You will then join the meeting or waiting room, if enabled by the host.</p>-->
 
-                            <!--<div class="mt-35 d-flex align-items-center">-->
-                            <!--                                        <a href="/login" class="btn btn-primary mr-15">Become an Instructor</a>-->
-                            <!--                                </div>-->
                         </div>
                     </div>
 
@@ -997,19 +828,16 @@
             </section>
                                           </div>
 
-                
-
             </div>
                <div class=" tab-pane fade  {{ (request()->get('tab','') == 'content') ? 'show active' : '' }}" id="content" role="tabpanel" aria-labelledby="content-tab">
                                 <div class="row">
-                               
-                                       
+
                                           <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                              <h2 class=" font-weight-bold text-dark">How to set a meeting time for the instructor ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
+
                                                 <p class="mt-10">1. Login with your credentials (Instructor)  on the Login page (Skip if already login)
                                                 </p>
                                                  <p class="mt-10">2. Click on the <b>meeting</b> tab from the left side from dashboard page
@@ -1032,22 +860,18 @@
                     </div>
                 </div>
             </section>
-                                       
-                                    
-                                    
+
                             </div></div>
                               </div>
 
-                
-
             </div>
-                <!--<iframe width="-webkit-fill-available" id="videoiframe" height="300" allow="autoplay"  title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>-->
+
             </div>
         </div>
     </div>
   <div class="modal fade" id="import7" tabindex="-1" aria-labelledby="import7" aria-hidden="true">
         <div class="modal-dialog  modal-dialog-centered" style="width:95%;max-width:95%;">
-            
+
             <div class="container modal-content py-20" id="videolink" style="padding: 30px;">
                  <div class="d-flex align-items-center justify-content-between px-20">
                 <h3 class="section-title after-line"></h3>
@@ -1067,27 +891,26 @@
                                    href="#content" role="tab" aria-controls="content"
                                    aria-selected="false" style="text-align: center;"><img src="https://storage.googleapis.com/astrolok/store/1/MobileSelectorIcon.svg" alt="" role="presentation" ><p>Mobile</p></a>
                             </li>
-                           
-                           
+
                         </ul>
-                        
+
                         <div id="instructorsList" class=" mt-15">
-                
+
                 <div class="tab-content " id="nav-tabContent">
                     <div class="tab-pane fade  show active" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                      
+
                         <div class="row">
                              <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                             <h2 class=" font-weight-bold text-dark">How to download a ppt file ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
+
                                                 <p class="mt-10">1. Login with your credentials from login page
                                                 </p>
                                                  <p class="mt-10">2. Find Courses in my purchase section
                                                 </p>
-                                                 <p class="mt-10 ">3. Click on the <b>learning</b> page button 
+                                                 <p class="mt-10 ">3. Click on the <b>learning</b> page button
                                                 </p>
                                                  <p class="mt-10">4. On this page, you can see various course materials, including PPT files
                                                 </p>
@@ -1097,20 +920,7 @@
                                                 </p>
                                                 <p class="mt-10">7. now click on the <b>save</b> button PPt  file will be saved in your system.
                                                 </p>
-                                           
-<!--                            <p class="font-16 font-weight-normal text-gray mt-10">-->
-<!--                                Click the invite link provided by the host, for example in a calendar or email invitation, and follow the on-screen instructions.-->
-<!--Alternatively, open the Zoom desktop client.-->
-<!--Click the Home tab .-->
-<!--Click the Join icon .-->
-<!--Enter the meeting ID provided by the meeting host.-->
-<!--If prompted, enter the meeting passcode.-->
-<!--Click Join.-->
-<!--You will then join the meeting or waiting room, if enabled by the host.</p>-->
 
-                            <!--<div class="mt-35 d-flex align-items-center">-->
-                            <!--                                        <a href="/login" class="btn btn-primary mr-15">Become an Instructor</a>-->
-                            <!--                                </div>-->
                         </div>
                     </div>
 
@@ -1121,24 +931,21 @@
             </section>
                                           </div>
 
-                
-
             </div>
                <div class=" tab-pane fade  {{ (request()->get('tab','') == 'content') ? 'show active' : '' }}" id="content" role="tabpanel" aria-labelledby="content-tab">
                                 <div class="row">
-                               
-                                       
+
                                           <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                              <h2 class=" font-weight-bold text-dark">How to download a ppt file ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
+
                                                 <p class="mt-10">1. Login with your credentials from login page
                                                 </p>
                                                 <p class="mt-10">2. Find Courses in my purchase section
                                                 </p>
-                                                <p class="mt-10">3. Click on the <b>learning</b> page button 
+                                                <p class="mt-10">3. Click on the <b>learning</b> page button
                                                 </p>
                                                 <p class="mt-10">4. On this page, you can see various course materials, including PPT files
                                                 </p>
@@ -1156,22 +963,18 @@
                     </div>
                 </div>
             </section>
-                                       
-                                    
-                                    
+
                             </div></div>
                               </div>
 
-                
-
             </div>
-                <!--<iframe width="-webkit-fill-available" id="videoiframe" height="300" allow="autoplay"  title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>-->
+
             </div>
         </div>
     </div>
   <div class="modal fade" id="import8" tabindex="-1" aria-labelledby="import8" aria-hidden="true">
         <div class="modal-dialog  modal-dialog-centered" style="width:95%;max-width:95%;">
-            
+
             <div class="container modal-content py-20" id="videolink" style="padding: 30px;">
                  <div class="d-flex align-items-center justify-content-between px-20">
                 <h3 class="section-title after-line"></h3>
@@ -1191,22 +994,21 @@
                                    href="#content" role="tab" aria-controls="content"
                                    aria-selected="false" style="text-align: center;"><img src="https://storage.googleapis.com/astrolok/store/1/MobileSelectorIcon.svg" alt="" role="presentation" ><p>Mobile</p></a>
                             </li>
-                           
-                           
+
                         </ul>
-                        
+
                         <div id="instructorsList" class=" mt-15">
-                
+
                 <div class="tab-content " id="nav-tabContent">
                     <div class="tab-pane fade  show active" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                      
+
                         <div class="row">
                              <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                             <h2 class=" font-weight-bold text-dark">How to Complete the Quiz in Waiting ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
+
                                                 <p class="mt-10">1. Login with your credentials on the Login page (Skip if already login)
                                                 </p>
                                                  <p class="mt-10">2. Click to the <b>Quizzes</b> tab.from dashboard or My Purchase page
@@ -1221,20 +1023,7 @@
                                                 </p>
                                                 <p class="mt-10">7.  Once all question are answered click on the <b>finish</b> button
                                                 </p>
-                                           
-<!--                            <p class="font-16 font-weight-normal text-gray mt-10">-->
-<!--                                Click the invite link provided by the host, for example in a calendar or email invitation, and follow the on-screen instructions.-->
-<!--Alternatively, open the Zoom desktop client.-->
-<!--Click the Home tab .-->
-<!--Click the Join icon .-->
-<!--Enter the meeting ID provided by the meeting host.-->
-<!--If prompted, enter the meeting passcode.-->
-<!--Click Join.-->
-<!--You will then join the meeting or waiting room, if enabled by the host.</p>-->
 
-                            <!--<div class="mt-35 d-flex align-items-center">-->
-                            <!--                                        <a href="/login" class="btn btn-primary mr-15">Become an Instructor</a>-->
-                            <!--                                </div>-->
                         </div>
                     </div>
 
@@ -1245,19 +1034,16 @@
             </section>
                                           </div>
 
-                
-
             </div>
                <div class=" tab-pane fade  {{ (request()->get('tab','') == 'content') ? 'show active' : '' }}" id="content" role="tabpanel" aria-labelledby="content-tab">
                                 <div class="row">
-                               
-                                       
+
                                           <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                              <h2 class=" font-weight-bold text-dark">How to Complete the Quiz in Waiting ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
+
                                                 <p class="mt-10">1. Login with your credentials on the Login page (Skip if already login)
                                                 </p>
                                                  <p class="mt-10">2. Click to the <b>Quizzes</b> tab.from dashboard or My Purchase page
@@ -1280,22 +1066,18 @@
                     </div>
                 </div>
             </section>
-                                       
-                                    
-                                    
+
                             </div></div>
                               </div>
 
-                
-
             </div>
-                <!--<iframe width="-webkit-fill-available" id="videoiframe" height="300" allow="autoplay"  title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>-->
+
             </div>
         </div>
     </div>
   <div class="modal fade" id="import9" tabindex="-1" aria-labelledby="import9" aria-hidden="true">
         <div class="modal-dialog  modal-dialog-centered" style="width:95%;max-width:95%;">
-            
+
             <div class="container modal-content py-20" id="videolink" style="padding: 30px;">
                  <div class="d-flex align-items-center justify-content-between px-20">
                 <h3 class="section-title after-line"></h3>
@@ -1315,29 +1097,28 @@
                                    href="#content" role="tab" aria-controls="content"
                                    aria-selected="false" style="text-align: center;"><img src="https://storage.googleapis.com/astrolok/store/1/MobileSelectorIcon.svg" alt="" role="presentation" ><p>Mobile</p></a>
                             </li>
-                           
-                           
+
                         </ul>
-                        
+
                         <div id="instructorsList" class=" mt-15">
-                
+
                 <div class="tab-content " id="nav-tabContent">
                     <div class="tab-pane fade  show active" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                      
+
                         <div class="row">
                              <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                             <h2 class=" font-weight-bold text-dark">How to attempt the Quiz  ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
+
                                                 <p class="mt-10">1. Log in with your credentials on the Login page (Skip if already login)
                                                 </p>
                                                  <p class="mt-10">2. Click to the Quizzes tab from the dashboard.
                                                 </p>
                                                  <p class="mt-10 ">3. Select Quiz Option.
                                                 </p>
-                                                 
+
                                                  <p class="mt-10">4. Click on the Quiz button
                                                 </p>
                                                  <p class="mt-10">5. Go through the quiz and answer each question as it appears.
@@ -1346,20 +1127,7 @@
                                                 </p>
                                                 <p class="mt-10">7. Once you have Answered all the questions then click on the Finish button to submit your answers and complete the quiz.
                                                 </p>
-                                           
-<!--                            <p class="font-16 font-weight-normal text-gray mt-10">-->
-<!--                                Click the invite link provided by the host, for example in a calendar or email invitation, and follow the on-screen instructions.-->
-<!--Alternatively, open the Zoom desktop client.-->
-<!--Click the Home tab .-->
-<!--Click the Join icon .-->
-<!--Enter the meeting ID provided by the meeting host.-->
-<!--If prompted, enter the meeting passcode.-->
-<!--Click Join.-->
-<!--You will then join the meeting or waiting room, if enabled by the host.</p>-->
 
-                            <!--<div class="mt-35 d-flex align-items-center">-->
-                            <!--                                        <a href="/login" class="btn btn-primary mr-15">Become an Instructor</a>-->
-                            <!--                                </div>-->
                         </div>
                     </div>
 
@@ -1370,26 +1138,23 @@
             </section>
                                           </div>
 
-                
-
             </div>
                <div class=" tab-pane fade  {{ (request()->get('tab','') == 'content') ? 'show active' : '' }}" id="content" role="tabpanel" aria-labelledby="content-tab">
                                 <div class="row">
-                               
-                                       
+
                                           <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
                              <h2 class=" font-weight-bold text-dark">How to attempt the Quiz  ?</h2>
-                                                <!--<h4 class="mt-10">1. Login Process</h4>-->
+
                                                 <p class="mt-10">1. Log in with your credentials on the Login page (Skip if already login)
                                                 </p>
                                                  <p class="mt-10">2. Click to the Quizzes tab from the dashboard.
                                                 </p>
                                                  <p class="mt-10 ">3. Select Quiz Option.
                                                 </p>
-                                                 
+
                                                  <p class="mt-10">4. Click on the Quiz button
                                                 </p>
                                                  <p class="mt-10">5. Go through the quiz and answer each question as it appears.
@@ -1406,18 +1171,14 @@
                     </div>
                 </div>
             </section>
-                                       
-                                    
-                                    
+
                             </div></div>
                               </div>
 
-                
-
             </div>
-                <!--<iframe width="-webkit-fill-available" id="videoiframe" height="300" allow="autoplay"  title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>-->
+
             </div>
         </div>
     </div>
-  
+
 @endsection

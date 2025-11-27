@@ -1,36 +1,11 @@
-
 <style>
    .categories {
     display: flex;
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
-     min-height: 60px !important; 
-} 
-/*a.active-clr {*/
-/*          color: white;*/
-/*      }*/
-/*       .active-cat {*/
-/*          background: linear-gradient(180deg, #43d477 -0%, #29ae59 100%);*/
-/*          color: white;*/
-/*      }*/
-/*      .frame-690-7jm {*/
-/*    align-items: center;*/
-    /* background: linear-gradient(180deg, #43d477 -0%, #29ae59 100%); */
-/*    border-radius: 2rem;*/
-/*    color: #ffffff;*/
-/*    display: flex;*/
-/*    flex-shrink: 0;*/
-    /* font-family: Work Sans, 'Source Sans Pro'; */
-/*    font-size: 1rem;*/
-/*    font-weight: 600;*/
-/*    height: 100% !important;*/
-/*    justify-content: center;*/
-/*    letter-spacing: 0.016rem;*/
-/*    line-height: 1.5;*/
-/*    white-space: nowrap;*/
-/*    border: solid 0.07rem #b3b3b3;*/
-/*    width: 6rem !important;*/
-/*}*/
+     min-height: 60px !important;
+}
+
 .checkbox-button label {
     cursor: pointer;
     font-size: 0.875rem;
@@ -42,8 +17,7 @@
     transition: all 0.3s ease;
 }
 </style>
-    
-          
+
             <div id="topFilters" class="mt-25 shadow-lg border border-gray300 rounded-sm p-10 p-md-20 d-none">
                 <div class="col-lg-3 d-flex align-items-center">
                         <select name="sort" id="sort-by" class="form-control d-none">
@@ -52,7 +26,7 @@
                             <option value="experience" @if(request()->get('sort', null) == 'experience') selected="selected" @endif>Experience</option>
                             <option value="expensive" @if(request()->get('sort', null) == 'expensive') selected="selected" @endif>Highest Price</option>
                             <option value="inexpensive" @if(request()->get('sort', null) == 'inexpensive') selected="selected" @endif>Lowest Price</option>
-                            <!--<option value="inexpensive" @if(request()->get('sort', null) == 'inexpensive') selected="selected" @endif>{{ trans('public.inexpensive') }}</option>-->
+
                             <option value="top_sale" @if(request()->get('sort', null) == 'top_sale') selected="selected" @endif>Best Sellers</option>
                             <option value="top_rate" @if(request()->get('sort', null) == 'top_rate') selected="selected" @endif>{{ trans('public.best_rates') }}</option>
                         </select>
@@ -85,20 +59,11 @@
 
                     </div>
 
-                    <!--<div class="col-lg-3 d-flex align-items-center">-->
-                    <!--    <select name="sort" class="form-control">-->
-                    <!--        <option disabled selected>{{ trans('public.sort_by') }}</option>-->
-                    <!--        <option value="">{{ trans('public.all') }}</option>-->
-                    <!--        <option value="top_rate" @if(request()->get('sort',null) == 'top_rate') selected="selected" @endif>{{ trans('site.top_rate') }}</option>-->
-                    <!--        <option value="top_sale" @if(request()->get('sort',null) == 'top_sale') selected="selected" @endif>{{ trans('site.top_sellers') }}</option>-->
-                    <!--    </select>-->
-                    <!--</div>-->
-
                 </div>
             </div>
 
             <div class="categories">
-                <!--<h3 class="category-filter-title font-20 font-weight-bold">{{ trans('categories.categories') }}</h3>-->
+
  @foreach($categories as $category)
                         @if(!empty($category->subCategories) and count($category->subCategories))
                             @foreach($category->subCategories as $subCategory)
@@ -116,37 +81,5 @@
                         @endif
                         @endif
                     @endforeach
-                <!--<div class="p-10 mt-20 d-flex  flex-wrap">-->
 
-                <!--    @foreach($categories as $category)-->
-                <!--        @if(!empty($category->subCategories) and count($category->subCategories))-->
-                <!--            @foreach($category->subCategories as $subCategory)-->
-                <!--                <div class="checkbox-button bordered-200 mt-5 mr-15">-->
-                <!--                    <input type="checkbox" name="categories[]" id="checkbox{{ $subCategory->id }}" value="{{ $subCategory->id }}" @if(in_array($subCategory->id,request()->get('categories',[]))) checked="checked" @endif>-->
-                <!--                    <label for="checkbox{{ $subCategory->id }}">{{ $subCategory->title }}</label>-->
-                <!--                </div>-->
-                <!--            @endforeach-->
-                <!--        @else-->
-                <!--            <div class="checkbox-button bordered-200 mr-20">-->
-                <!--                <input type="checkbox" name="categories[]" id="checkbox{{ $category->id }}" value="{{ $category->id }}" @if(in_array($category->id,request()->get('categories',[]))) checked="checked" @endif>-->
-                <!--                <label for="checkbox{{ $category->id }}">{{ $category->title }}</label>-->
-                <!--            </div>-->
-                <!--        @endif-->
-                <!--    @endforeach-->
-
-                <!--</div>-->
             </div>
-       
-
-<!--<div class="stats-container">-->
-<!--            <div class="container">-->
-<!--                <div class="row categories">-->
-                                      
-<!--                     <div class="frame-690-7jm swiper-slide mr-5  {{ Request::path() == 'categories/Astrology' ? 'active-cat' : '' }}" ><a href="/categories/Astrology?search=&card=grid" class="p-5 {{ Request::path() == 'categories/Astrology' ? 'active-clr' : '' }}">Astrology</a></div>-->
-<!--                    <div class="frame-687-qpB swiper-slide mr-5 {{ Request::path() == 'categories/Ayurveda' ? 'active-cat' : '' }}" ><a href="/categories/Ayurveda?search=&card=grid" class="p-5 {{ Request::path() == 'categories/Ayurveda' ? 'active-clr' : '' }}">Ayurveda</a></div>-->
-<!--                    <div class="frame-688-JBy swiper-slide mr-5 {{ Request::path() == 'categories/Numerology' ? 'active-cat' : '' }}"><a href="/categories/Numerology?search=&card=grid" class="p-5 {{ Request::path() == 'categories/Numerology' ? 'active-clr' : '' }}">Numerology</a></div>-->
-<!--                    <div class="frame-688-onw swiper-slide mr-5 {{ Request::path() == 'categories/Palmistry' ? 'active-cat' : '' }}" ><a href="/categories/Palmistry?search=&card=grid" class="p-5 {{ Request::path() == 'categories/Palmistry' ? 'active-clr' : '' }}">Palmistry</a></div>-->
-<!--                    <div class="frame-689-qzX swiper-slide mr-5 {{ Request::path() == 'categories/Vastu' ? 'active-cat' : '' }}"><a href="/categories/Vastu?search=&card=grid" class="p-5 {{ Request::path() == 'categories/Vastu' ? 'active-clr' : '' }}">Vastu</a></div>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->

@@ -63,7 +63,6 @@
                     </div>
                 </div>
 
-
                 <div class="row">
                     <div class="col-12 col-lg-6">
 
@@ -181,18 +180,6 @@
                                     </div>
                                 </div>
                             @endif
-
-                            {{--
-                                                        <div class="form-group mt-20">
-                                                            <div class="d-flex align-items-center justify-content-between">
-                                                                <label class="cursor-pointer input-label" for="sessionAgoraRecordSwitch{{ !empty($session) ? $session->id : '_record' }}">{{ trans('update.record') }}</label>
-                                                                <div class="custom-control custom-switch">
-                                                                    <input type="checkbox" name="ajax[{{ !empty($session) ? $session->id : 'new' }}][agora_record]" class="custom-control-input" id="sessionAgoraRecordSwitch{{ !empty($session) ? $session->id : '_record' }}" {{ (!empty($session) and !empty($session->agora_settings) and $session->agora_settings->record) ? 'checked' : ''  }}>
-                                                                    <label class="custom-control-label" for="sessionAgoraRecordSwitch{{ !empty($session) ? $session->id : '_record' }}"></label>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                            --}}
 
                         </div>
 

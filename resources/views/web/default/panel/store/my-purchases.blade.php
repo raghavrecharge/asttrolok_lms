@@ -172,14 +172,14 @@
                                 <tbody>
 
                                 @foreach($orders as $order)
-                                
+
                                     <tr>
                                         <td class=" text-left">
                                             <span class="d-block font-weight-500 text-dark-blue font-16">{{ $order->sale->order_id ?? '-' }}</span>
                                             @if($order->bundle_id)
                                             <span class="d-block font-weight-500 text-dark-blue font-16">Bundle {{ $order->bundle_id }}</span>
                                             @endif
-                                            {{--<span class="d-block font-12 text-gray">{{ $order->quantity }} {{ trans('update.product') }}</span> --}}
+
                                         </td>
                                         <td class=" text-left">
                                             <span class="d-block font-weight-500 text-dark-blue font-16">{{ $order->product->title }}</span>
@@ -190,13 +190,9 @@
                                                 <div class="avatar bg-gray200">
                                                     <img loading="lazy"  src="{{ config('app.img_dynamic_url') }}{{ !empty($order->seller) ? $order->seller->getAvatar() : '' }}" class="img-cover" alt="">
                                                 </div>
-                                               {{--  <div class=" ml-5">
-                                                    <span class="d-block">{{ !empty($order->seller) ? $order->seller->full_name : '' }}</span>
-                                                   <span class="mt-5 font-12 text-gray d-block">{{ !empty($order->seller) ? $order->seller->email : '' }}</span>
-                                                </div> --}}
+
                                             </div>
                                         </td>
-
 
                                         <td class="align-middle">
                                             <span>{{ handlePrice($order->sale->amount) }}</span>

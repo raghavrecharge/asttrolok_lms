@@ -31,15 +31,15 @@
     align-items: center;
     justify-content: space-between;
 }">
-<a href="/blog"     >         
+<a href="/blog"     >
 <svg width="21" height="13" viewBox="0 0 21 13" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M19.8984 5.69112C20.3452 5.69112 20.7073 6.05327 20.7073 6.5C20.7073 6.94673 20.3452 7.30888 19.8984 7.30888V5.69112ZM0.529732 7.07197C0.213842 6.75608 0.213842 6.24392 0.529732 5.92803L5.67743 0.780334C5.99332 0.464446 6.50548 0.464446 6.82136 0.780334C7.13725 1.09622 7.13725 1.60838 6.82136 1.92427L2.24563 6.5L6.82136 11.0757C7.13725 11.3916 7.13725 11.9038 6.82136 12.2197C6.50548 12.5356 5.99332 12.5356 5.67743 12.2197L0.529732 7.07197ZM19.8984 7.30888H1.1017V5.69112H19.8984V7.30888Z" fill="#737373"/>
-</svg></a>      
+</svg></a>
 
                         <span class="mt-10 mt-md-20 font-16 font-weight-500 text-gray">
                             <a href="{{ $post->category->getUrl() }}" class="text-gray ">{{ $post->category->title }}</a>
                         </span>
-<div class="js-share-blog">                      
+<div class="js-share-blog">
 <svg width="26" height="25" viewBox="0 0 26 25" fill="none" xmlns="http://www.w3.org/2000/svg">
 <rect x="0.707031" y="25" width="25" height="25" rx="12.5" transform="rotate(-90 0.707031 25)" fill="#929292"/>
 <path d="M8.71975 10.8974C9.60482 10.8974 10.3223 11.6149 10.3223 12.5C10.3223 13.385 9.60482 14.1025 8.71975 14.1025C7.83468 14.1025 7.11719 13.385 7.11719 12.5C7.11719 11.6149 7.83468 10.8974 8.71975 10.8974Z" fill="white"/>
@@ -47,31 +47,12 @@
 <path d="M17.6941 10.8974C18.5792 10.8974 19.2967 11.6149 19.2967 12.5C19.2967 13.385 18.5792 14.1025 17.6941 14.1025C16.809 14.1025 16.0915 13.385 16.0915 12.5C16.0915 11.6149 16.809 10.8974 17.6941 10.8974Z" fill="white"/>
 </svg>
 </div>
-                        
+
                     </div>
                     <h1 class="font-30 font-weight-bold mt-20">{{ $post->title }}</h1>
 
                     <div class="d-flex flex-column flex-sm-row align-items-center align-sm-items-start justify-content-between">
-                     {{--   @if(!empty($post->author))
-                            <span class="mt-10 mt-md-20 font-16 font-weight-500 text-white">{{ trans('public.created_by') }}
-                                @if($post->author->isTeacher())
-                                    <a href="{{ $post->author->getProfileUrl() }}" target="_blank" class="text-white text-decoration-underline">{{ $post->author->full_name }}</a>
-                                @elseif(!empty($post->author->full_name))
-                                    <span class="text-white text-decoration-underline">{{ $post->author->full_name }}</span>
-                                @endif
-                        </span>
-                        @endif --}}
 
-                        
-
-                      {{--  <span class="mt-10 mt-md-20 font-16 font-weight-500 text-white">{{ dateTimeFormat($post->created_at, 'j M Y') }}</span> 
-
-                        <div class="js-share-blog d-flex align-items-center cursor-pointer mt-10 mt-md-20">
-                            <div class="icon-box ">
-                                <i data-feather="share-2" class="text-white" width="20" height="20"></i>
-                            </div>
-                            <div class="ml-5 font-16 font-weight-500 text-white">{{ trans('public.share') }}</div>
-                        </div> --}}
                     </div>
 
                 </div>
@@ -119,46 +100,37 @@
         <div class="row">
             <div class="col-12 col-lg-8">
                 <div class="post-show">
-<!--<strong style="float: right;margin-bottom:10px;">Views: {{ $post->visit_count }} </strong>-->
+
                     <div class="post-img pb-30">
                         <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $post->image }}" alt="{{ $post->title }}">
                     </div>
-       <div class="webinar-card-body w-100 d-flex flex-column" style="margin-top: -76px;padding-right: 14px;">             
+       <div class="webinar-card-body w-100 d-flex flex-column" style="margin-top: -76px;padding-right: 14px;">
 <div class="radius-20  stars-card d-flex align-items-center" style="padding-left: 1px; padding-right:1px; padding-top:1px; display: flex !important;flex-direction: row-reverse;flex-wrap: nowrap;">
-   
- 
-        
-        
+
             <span class="radius-20 badge badge-primary1 rate1  shadow-sm " style="padding:7px; line-height: 1;background-color: white; ">
-               
-                
+
 <svg width="15" height="10" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M6.00001 7C2.60239 7 0.106664 3.82863 0.106664 3.82863C-0.0355548 3.64791 -0.0355548 3.35217 0.106664 3.17137C0.106664 3.17137 2.60239 0 6.00001 0C9.39764 0 11.8933 3.17137 11.8933 3.17137C12.0356 3.35214 12.0356 3.64791 11.8933 3.82863C11.8933 3.82863 9.39761 7 6.00001 7Z" fill="#32BA7C"/>
 <path d="M6 6C7.65685 6 9 4.88071 9 3.5C9 2.11929 7.65685 1 6 1C4.34315 1 3 2.11929 3 3.5C3 4.88071 4.34315 6 6 6Z" fill="white"/>
 <path d="M6 5C7.10457 5 8 4.32843 8 3.5C8 2.67157 7.10457 2 6 2C4.89543 2 4 2.67157 4 3.5C4 4.32843 4.89543 5 6 5Z" fill="#2B6056"/>
 <path d="M7.5 3C7.77614 3 8 2.77614 8 2.5C8 2.22386 7.77614 2 7.5 2C7.22386 2 7 2.22386 7 2.5C7 2.77614 7.22386 3 7.5 3Z" fill="white"/>
 </svg>{{ $post->visit_count }} Views</span>
-      
-  
+
 </div>
 </div>
-
-
 
                     {!! nl2br($post->content) !!}
-                    
-                    
+
                     @php
-                    
-                        $str_arr1 = explode ("/", $_SERVER['REQUEST_URI']); 
-    
-    
+
+                        $str_arr1 = explode ("/", $_SERVER['REQUEST_URI']);
+
                         if(in_array("what-is-pitru-paksha-and-why-it-is-observed", $str_arr1)){
                         @endphp
-                        
+
                         <script async src="https://www.vbt.io/ext/vbtforms.js?lang=en" charset="utf-8"></script>
 <style type="text/css">
-	/* Form Embed Code - No Extra Styling */
+
 	#vboutEmbedFormWrapper-110767 a,#vboutEmbedFormWrapper-110767 div,#vboutEmbedFormWrapper-110767 dl,#vboutEmbedFormWrapper-110767 dt,#vboutEmbedFormWrapper-110767 em,#vboutEmbedFormWrapper-110767 fieldset,
 	#vboutEmbedFormWrapper-110767 form,#vboutEmbedFormWrapper-110767 h1,#vboutEmbedFormWrapper-110767 h2,#vboutEmbedFormWrapper-110767 h3,#vboutEmbedFormWrapper-110767 h4,#vboutEmbedFormWrapper-110767 h5,#vboutEmbedFormWrapper-110767 h6,
 	#vboutEmbedFormWrapper-110767 hr,#vboutEmbedFormWrapper-110767 img,#vboutEmbedFormWrapper-110767 label,#vboutEmbedFormWrapper-110767 li,#vboutEmbedFormWrapper-110767 ol,#vboutEmbedFormWrapper-110767 p,#vboutEmbedFormWrapper-110767 pre,
@@ -170,7 +142,7 @@
 	#vboutEmbedFormWrapper-110767 li{display:list-item}
 	#vboutEmbedFormWrapper-110767 table{border-collapse:collapse;border-spacing:0}
 	#vboutEmbedFormWrapper-110767 th,#vboutEmbedFormWrapper-110767 td,#vboutEmbedFormWrapper-110767 caption{font-weight:normal;vertical-align:top;text-align:left}
-	
+
 	#vboutEmbedFormWrapper-110767 form {display:block; position:relative; text-align:left; padding:10px 0 10px 3%; max-width: 500px;}
 	#vboutEmbedFormWrapper-110767 h1 {font-weight:bold; padding:0; margin:15px 0; font-size:1.4em;}
 	#vboutEmbedFormWrapper-110767 input, #vboutEmbedFormWrapper-110767 .vbt-birthdayfield {border:1px solid #999; -webkit-appearance:none;}
@@ -209,10 +181,10 @@
 	#vboutEmbedFormWrapper-110767 .vfb-submit button,#vboutEmbedFormWrapper-110767 .vfb-submit button:hover,#vboutEmbedFormWrapper-110767 .vfb-submit button:hover:not(.inactive),#vboutEmbedFormWrapper-110767 .vfb-submit button:focus,#vboutEmbedFormWrapper-110767 .vfb-submit button:active,#vboutEmbedFormWrapper-110767 .vfb-submit button:active:not(.inactive):not(.link) {background-image: none;background-color: #A01694;border-color: #A01694;color: #ffffff;}
 
 	#vboutEmbedFormWrapper-110767 form, #vboutEmbedFormWrapper-110767 label, #vboutEmbedFormWrapper-110767 input, #vboutEmbedFormWrapper-110767 select, #vboutEmbedFormWrapper-110767 textarea, #vboutEmbedFormWrapper-110767 .vbt-birthdayfield { font-family: helvetica; }
-	
+
 	#vboutEmbedFormWrapper-110767 form, #vboutEmbedFormWrapper-110767 label { color: #33475b; }
 
-	#vboutEmbedFormWrapper-110767 .iti{display: block;} 
+	#vboutEmbedFormWrapper-110767 .iti{display: block;}
 	#vboutEmbedFormWrapper-110767 input[type=tel]{padding-left: 48px!important;}
 	#vboutEmbedFormWrapper-110767 fieldset{display: block;display: contents;}
 
@@ -247,7 +219,6 @@
 	<form action="https://www.vbt.io/embedcode/submit/110767/?_format=page" target="_blank"  id="vboutEmbedForm-110767" name="vboutEmbedForm-110767" data-vboutform="110767" class="" method="post" enctype="multipart/form-data">
 		<h1>Fill Out Your Details Today & Get Your Custom Pitra Paksh Remedy Report</h1>
 
-	
 		<div id="vboutEmbedFormResponse-110767" style="display: none;"></div>
 		<fieldset>
 <div class="vbf-step">
@@ -263,23 +234,15 @@
 		</fieldset>
 	</form>
 </div>
-                        
+
                         @php
-                        
-                        
+
                         }
-                    
-                    
+
                     @endphp
-                    
-                    
-                    
-                    
-                    
-                    
+
                 </div>
 
-                {{-- post Comments --}}
                 @if($post->enable_comment)
                     @include('web.default.includes.comments',[
                             'comments' => $post->comments,
@@ -287,7 +250,6 @@
                             'inputValue' => $post->id
                         ])
                 @endif
-                {{-- ./ post Comments --}}
 
             </div>
 
@@ -309,7 +271,6 @@
                     </div>
                 @endif
 
-                {{-- categories --}}
                 <div class="p-20 mt-30 rounded-sm shadow-lg border border-gray300">
                     <h3 class="category-filter-title font-16 font-weight-bold text-dark-blue">{{ trans('categories.categories') }}</h3>
 
@@ -320,7 +281,6 @@
                     </div>
                 </div>
 
-                {{-- recent_posts --}}
                 <div class="p-20 mt-30 rounded-sm shadow-lg border border-gray300">
                     <h3 class="category-filter-title font-20 font-weight-bold text-dark-blue">{{ trans('site.recent_posts') }}</h3>
 
@@ -343,8 +303,7 @@
                         <a href="/blog" class="btn btn-sm btn-primary btn-block mt-30">{{ trans('home.view_all') }} {{ trans('site.posts') }}</a>
                     </div>
                 </div>
-                
-                
+
                 <div class="p-20 mt-30 rounded-sm shadow-lg border border-gray300">
                     <h3 class="category-filter-title font-20 font-weight-bold text-dark-blue">Popular Courses</h3>
 
@@ -354,7 +313,7 @@
                         @endphp
 
                         @foreach($popularWebinars as $popularWebinar)
-                            
+
                             @if(in_array($popularWebinar->id, $courses))
                             <div class="popular-post d-flex align-items-start mt-20">
                                 <div class="popular-post-image rounded">
@@ -362,7 +321,7 @@
                                 </div>
                                 <div class="popular-post-content d-flex flex-column ml-10">
                                     <a href="/course/{{$popularWebinar->slug}}">
-                                        <h3 class="text-dark-blue font-14">{{ truncate($popularWebinar->title,50) }}{{--$popularWebinar->id--}}</h3>
+                                        <h3 class="text-dark-blue font-14">{{ truncate($popularWebinar->title,50) }}</h3>
                                     </a>
                                     <span class="mt-auto font-12 text-gray">{{ handlePrice($popularWebinar->bestTicket(), true, true, false, null, true) }}</span>
                                 </div>
@@ -373,15 +332,13 @@
                         <a href="/classes?sort=newest" class="btn btn-sm btn-primary btn-block mt-30">{{ trans('home.view_all') }} Courses</a>
                     </div>
                 </div>
-                
-                
+
                 <div class="p-20 mt-30 rounded-sm shadow-lg border border-gray300">
                     <h3 class="category-filter-title font-20 font-weight-bold text-dark-blue">Consultants</h3>
 
                     <div class="pt-15">
                 <div class="col-12  mt-25 mt-lg-0 " >
-        
-       
+
          <div class="deckteacher teacher-swiper-container1 position-relative d-flex justify-content-center mt-0">
             <div class="swiper-container teacher-swiper-container1 pb-25">
                <div class="swiper-wrapper py-0">
@@ -414,17 +371,13 @@
                        </div>
                     </div>
                  </div>
-                 @endforeach  
-                   
-                  
-                 
-                 
+                 @endforeach
+
                </div>
             </div>
             <div class="swiper-pagination teacher-swiper-pagination1 ast-pagination"></div>
          </div>
-       
-         
+
     </div>
     </div></div>
 

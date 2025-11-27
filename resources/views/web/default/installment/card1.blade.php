@@ -6,7 +6,7 @@
             <div class="">
                 <p class="text-gray font-14 text-ellipsis1">{!!($installment->description) !!}</p>
             </div>
-            
+
                <div class="default-package-icon">
                 <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/become-instructor/default.png" class="img-cover" alt="{{ trans('update.installment_overview') }}" width="176" height="144">
             </div>
@@ -16,12 +16,7 @@
                 @endphp
 
                 @if($reachedCapacityPercent > 0)
-                    <!--<div class="mt-20 d-flex align-items-center">-->
-                    <!--    <div class="progress card-progress flex-grow-1">-->
-                    <!--        <span class="progress-bar rounded-sm {{ $reachedCapacityPercent > 50 ? 'bg-danger' : 'bg-primary' }}" style="width: {{ $reachedCapacityPercent }}%"></span>-->
-                    <!--    </div>-->
-                    <!--    <div class="ml-10 font-12 text-danger">{{ trans('update.percent_capacity_reached',['percent' => $reachedCapacityPercent]) }}</div>-->
-                    <!--</div>-->
+
                 @endif
             @endif
 
@@ -69,12 +64,11 @@
                         <div class="installment-step d-flex align-items-center font-12 text-gray">{{ $installmentStep->getDeadlineTitle($itemPrice) }}</div>
                     @endforeach
                 </div>
-                
-                
+
                 <form action="/cart/coupon/validate1" method="Post">
                     {{ csrf_field() }}
-                    <div class="row"> 
-                    <div class="col-12 col-lg-9"> 
+                    <div class="row">
+                    <div class="col-12 col-lg-9">
                     <div class="form-group">
                         <input type="text" name="coupon" id="coupon_input" class="form-control mt-25"
                          placeholder="{{ trans('cart.enter_your_code_here') }}">

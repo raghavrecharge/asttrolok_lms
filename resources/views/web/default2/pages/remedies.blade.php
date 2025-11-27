@@ -9,35 +9,13 @@
 @section('content')
     <section class="site-top-banner search-top-banner opacity-04 position-relative">
         <img src="https://storage.googleapis.com/astrolok/store/1/Remedies/shloka/Mantra Remedies - Banner - 1351X401.jpg" loading="lazy"class="img-cover" alt="" />
-        
 
-        <!--<div class="container h-100">-->
-        <!--    <div class="row h-100 align-items-center justify-content-center text-center">-->
-        <!--        <div class="col-12 col-md-9 col-lg-7">-->
-        <!--            <div class="top-search-categories-form">-->
-        <!--                <h1 class="text-white font-30 mb-15">{{ $pageTitle }} </h1>-->
-        <!--                <span class="course-count-badge py-5 px-10 text-white rounded">{{ $coursesCount }} Remedies</span>-->
-
-        <!--                <div class="search-input bg-white p-10 flex-grow-1">-->
-        <!--                    <form action="/search" method="get">-->
-        <!--                        <div class="form-group d-flex align-items-center m-0">-->
-        <!--                            <input type="text" name="search" class="form-control border-0" placeholder="Search Remedies"/>-->
-        <!--                            <button type="submit" class="btn btn-primary rounded-pill">{{ trans('home.find') }}</button>-->
-        <!--                        </div>-->
-        <!--                    </form>-->
-        <!--                </div>-->
-        <!--            </div>-->
-        <!--        </div>-->
-        <!--    </div>-->
-        <!--</div>-->
     </section>
 
     <div class="container mt-30">
 
         <section class="mt-lg-50 pt-lg-20 mt-md-40 pt-md-40">
             <form action="/classes" method="get" id="filtersForm">
-
-              
 
                 <div class="row mt-20">
                     <div class="col-12 col-lg-12">
@@ -60,8 +38,6 @@
 
                     </div>
 
-
-                    
                 </div>
 
             </form>

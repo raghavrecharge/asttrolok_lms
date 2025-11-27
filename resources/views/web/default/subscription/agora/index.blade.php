@@ -4,7 +4,6 @@
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/agora/agora.css"/>
 @endpush
 
-
 @section('content')
 
     <div class="agora-page">
@@ -40,14 +39,6 @@
                         </a>
                     </li>
 
-                    {{--<li class="nav-item">
-                        <a class="position-relative font-14 d-flex align-items-center" id="users-tab" data-toggle="tab"
-                           href="#users" role="tab" aria-controls="users"
-                           aria-selected="false">
-                            <i data-feather="users" width="16" height="16" class="agora-tabs-icons mr-1"></i>
-                            <span class="agora-tabs-link-text">{{ trans('panel.users') }}</span>
-                        </a>
-                    </li>--}}
                 </ul>
 
                 <div class="tab-content h-100" id="nav-tabContent">
@@ -56,10 +47,6 @@
                         @include('web.default.course.agora.chat')
                     </div>
 
-                    {{--<div class="pb-20 tab-pane fade  h-100" id="users" role="tabpanel"
-                         aria-labelledby="users-tab">
-                        @include('web.default.course.agora.users')
-                    </div>--}}
                 </div>
             </div>
         </div>

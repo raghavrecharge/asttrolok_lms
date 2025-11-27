@@ -4,7 +4,7 @@
     @endphp
 
     @if((!empty($rate) and $rate > 0) or !empty($showRateStars))
-        
+
         @while(--$i >= 5 - $rate)
             <i data-feather="star" width="14" height="14" class="active" style="padding-left:1px;"></i>
         @endwhile
@@ -21,7 +21,7 @@
     flex-direction: row;
     align-items: center;
 }">
-                 <!--<i data-feather="star" width="14" height="14" class="active"></i> -->
+
                  <svg width="14" height="14" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <g clip-path="url(#clip0_263_410)">
                     <path d="M14.6461 5.51542L9.78752 5.06481L7.85756 0.583302C7.72244 0.269504 7.27751 0.269504 7.1424 0.583302L5.21247 5.06484L0.353914 5.51542C0.0137192 5.54697 -0.123771 5.97011 0.132899 6.19558L3.79869 9.41594L2.7259 14.176C2.65078 14.5093 3.01073 14.7708 3.30448 14.5963L7.49999 12.1051L11.6955 14.5963C11.9893 14.7708 12.3492 14.5093 12.2741 14.176L11.2013 9.41594L14.8671 6.19558C15.1238 5.97011 14.9863 5.54697 14.6461 5.51542Z" fill="#FFDC64"/>
@@ -32,10 +32,9 @@
                     <rect width="14" height="14" fill="white"/>
                     </clipPath>
                     </defs>
-                    </svg> 
+                    </svg>
                     {{ $rate }}</span>
         @endif
 
-        
     @endif
 </div>

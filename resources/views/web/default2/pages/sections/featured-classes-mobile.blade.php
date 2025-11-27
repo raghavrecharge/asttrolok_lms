@@ -1,4 +1,3 @@
-{{-- Featured Classes Mobile Section --}}
 <section class="featured-classes-mobile d-lg-none">
     <div class="container">
         <div class="row">
@@ -14,8 +13,8 @@
                     <div class="webinar-card">
                         <figure>
                             <a href="{{ $featureWebinar->getUrl() }}">
-                                <img src="{{ $featureWebinar->getImage() }}" 
-                                     class="img-cover" 
+                                <img src="{{ $featureWebinar->getImage() }}"
+                                     class="img-cover"
                                      alt="{{ $featureWebinar->title }}">
                             </a>
                             @if($featureWebinar->bestTicket())

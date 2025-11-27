@@ -4,308 +4,77 @@
     $requirementsExtraDescription = !empty($course->webinarExtraDescription) ? $course->webinarExtraDescription->where('type','requirements') : null;
 @endphp
 
-
-{{--course description--}}
 @if($subscription->description)
     <div class="mt-20">
-        <!--<h2 class="section-title after-line">{{ trans('product.Webinar_description') }}</h2>-->
+
         <div class="mt-15 course-description">
             {!! $subscription->description !!}
         </div>
     </div>
 @endif
-{{-- ./ course description--}}
 
 <div style="text-align: center;">
 @if($canSale and !empty(getFeaturesSettings('direct_classes_payment_button_status')))
 @if($subscription->price > 0)
-    <!--<button type="button" data-toggle="modal" data-target="#buynow_modal" class=" btn btn-primary btn-sm px-25 mt-20" >-->
-    <!--    BUY NOW-->
-    <!--</button>-->
+
     <a href="/subscriptions/direct-payment/{{$subscription->slug}}" class="btn btn-primary btn-sm px-25 mt-20">Subscribe Now</a>
 
     @else
-    
+
         @if($subscription->slug == 'learn-free-vedic-astrology-subscription-online' )
         <a href="/register-free" class=" btn btn-primary btn-sm mt-20 {{ (!$canSale) ? (' disabled ' . $subscription->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
         @else
         <a href="{{ $canSale ? '/subscription/'. $subscription->slug .'/free' : '#' }}" class="mt-20 btn btn-primary btn-sm {{ (!$canSale) ? (' disabled ' . $subscription->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
         @endif
-        
+
     @endif
 
 @endif
 </div>
-<!--<div class="mt-40">-->
-<!--        <h2 class="section-title after-line">What You will get?</h2>-->
 
-             
-        <!--<div class="d-flex align-items-center mt-20 shadow-lg " style="    border-top-left-radius: 30px;     border-bottom-left-radius: 30px;">-->
-        <!--                <div class="" style="width: 130px; min-width: 130px;border-radius: 30px; ">-->
-        <!--                    <img loading="lazy" src="https://asttrolok.in/assets/default/css/landingPage/resources/img/32-Live-Classes-min.png" class="img-cover rounded-circle1" alt="Robert Ransdell" style="border-radius: 30px; ">-->
-        <!--                </div>-->
-        <!--                <div class="ml-10 mw-100">-->
-        <!--                   <h3 class="font-16 text-secondary font-weight-bold">Recorded Videos</h3>-->
-        <!--                         <span class="d-flex align-items-start font-14 text-gray ">Dive deep into astrology with dynamic live sessions taught by the renowned astrologer & trainer.</span>-->
-        <!--                </div>-->
-        <!--            </div>-->
-<!--                 <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 shadow-lg rounded-lg mt-15">-->
-                    <!--  <div class="forums-featured-card-icon">-->
-                    <!--    <img loading="lazy" src="/store/1/default_images/forums/icons/marketing.svg" alt="What is social media?" class="img-cover">-->
-                    <!--</div>-->
-<!--                    <div class="forums-featured-card-icon" style="width: 130px; min-width: 130px; ">-->
-<!--                        <img loading="lazy" src="https://storage.googleapis.com/astrolok/store/1/get/32-Live-Classes-min.png" alt="What is social media?" class="img-cover">-->
-<!--                    </div>-->
-
-<!--                    <div class="ml-15">-->
-                        
-<!--                            <h4 class="font-16 font-weight-bold text-dark">Recorded Videos</h4>-->
-                       
-<!--                        <p class="font-16 text-gray">Easy-to-follow videos to learn at your own pace.</p>-->
-                       
-<!--                    </div>-->
-<!--                </div>     -->
-                    
-                    
-                    
-                    
-            <!--<p class="d-flex align-items-start font-14 text-gray mt-10">-->
-                <!--<i data-feather="check" width="18" height="18" class="mr-10 webinar-extra-description-check-icon"></i>-->
-            <!--    <img loading="lazy" src="https://asttrolok.in/assets/default/css/landingPage/resources/img/32-Live-Classes-min.png" alt="32 Live Classes - Asttrolok">-->
-            <!--    <span class="">Recorded Videos</span>-->
-            <!--     <span class="">Dive deep into astrology with dynamic live sessions taught by the renowned astrologer & trainer.</span>-->
-            <!--</p>-->
-             
-        <!--<div class="d-flex align-items-center mt-20 shadow-lg " style="    border-top-left-radius: 30px;     border-bottom-left-radius: 30px;">-->
-        <!--                <div class="" style="width: 130px; min-width: 130px;border-radius: 30px; ">-->
-        <!--                    <img loading="lazy" src="https://asttrolok.in/assets/default/css/landingPage/resources/img/32-Live-Classes-min.png" class="img-cover rounded-circle1" alt="Robert Ransdell" style="border-radius: 30px; ">-->
-        <!--                </div>-->
-        <!--                <div class="ml-10 mw-100">-->
-        <!--                   <h3 class="font-16 text-secondary font-weight-bold">Downloadable PDFs</h3>-->
-        <!--                         <span class="d-flex align-items-start font-14 text-gray ">Dive deep into astrology with dynamic live sessions taught by the renowned astrologer & trainer.</span>-->
-        <!--                </div>-->
-        <!--            </div>-->
-<!--                 <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 shadow-lg rounded-lg mt-15">-->
-                    <!--  <div class="forums-featured-card-icon">-->
-                    <!--    <img loading="lazy" src="/store/1/default_images/forums/icons/marketing.svg" alt="What is social media?" class="img-cover">-->
-                    <!--</div>-->
-<!--                    <div class="forums-featured-card-icon" style="width: 130px; min-width: 130px; ">-->
-<!--                        <img loading="lazy" src="https://storage.googleapis.com/astrolok/store/1/get/30-Downloadable-PDFs-min.png" alt="What is social media?" class="img-cover">-->
-<!--                    </div>-->
-
-<!--                    <div class="ml-15">-->
-                        
-<!--                            <h4 class="font-16 font-weight-bold text-dark">Downloadable PDFs</h4>-->
-                       
-<!--                        <p class="font-16 text-gray">Access downloadable study materials for easy reference and deeper understanding.</p>-->
-                       
-<!--                    </div>-->
-<!--                </div>     -->
-                    
-                    
-                    
-                    
-            <!--<p class="d-flex align-items-start font-14 text-gray mt-10">-->
-                <!--<i data-feather="check" width="18" height="18" class="mr-10 webinar-extra-description-check-icon"></i>-->
-            <!--    <img loading="lazy" src="https://asttrolok.in/assets/default/css/landingPage/resources/img/32-Live-Classes-min.png" alt="32 Live Classes - Asttrolok">-->
-            <!--    <span class="">Downloadable PDFs</span>-->
-            <!--     <span class="">Dive deep into astrology with dynamic live sessions taught by the renowned astrologer & trainer.</span>-->
-            <!--</p>-->
-             
-        <!--<div class="d-flex align-items-center mt-20 shadow-lg " style="    border-top-left-radius: 30px;     border-bottom-left-radius: 30px;">-->
-        <!--                <div class="" style="width: 130px; min-width: 130px;border-radius: 30px; ">-->
-        <!--                    <img loading="lazy" src="https://asttrolok.in/assets/default/css/landingPage/resources/img/32-Live-Classes-min.png" class="img-cover rounded-circle1" alt="Robert Ransdell" style="border-radius: 30px; ">-->
-        <!--                </div>-->
-        <!--                <div class="ml-10 mw-100">-->
-        <!--                   <h3 class="font-16 text-secondary font-weight-bold">Doubt Sessions with Mentors</h3>-->
-        <!--                         <span class="d-flex align-items-start font-14 text-gray ">Dive deep into astrology with dynamic live sessions taught by the renowned astrologer & trainer.</span>-->
-        <!--                </div>-->
-        <!--            </div>-->
-<!--                 <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 shadow-lg rounded-lg mt-15">-->
-                    <!--  <div class="forums-featured-card-icon">-->
-                    <!--    <img loading="lazy" src="/store/1/default_images/forums/icons/marketing.svg" alt="What is social media?" class="img-cover">-->
-                    <!--</div>-->
-<!--                    <div class="forums-featured-card-icon" style="width: 130px; min-width: 130px; ">-->
-<!--                        <img loading="lazy" src="https://storage.googleapis.com/astrolok/store/1/get/25-Doubt-Sessions-with-Mentors-min.png" alt="What is social media?" class="img-cover">-->
-<!--                    </div>-->
-
-<!--                    <div class="ml-15">-->
-                        
-<!--                            <h4 class="font-16 font-weight-bold text-dark">Doubt Sessions with Mentors</h4>-->
-                       
-<!--                        <p class="font-16 text-gray">Group sessions with mentors to clarify doubts and reinforce concepts.</p>-->
-                       
-<!--                    </div>-->
-<!--                </div>     -->
-                    
-                    
-                    
-                    
-            <!--<p class="d-flex align-items-start font-14 text-gray mt-10">-->
-                <!--<i data-feather="check" width="18" height="18" class="mr-10 webinar-extra-description-check-icon"></i>-->
-            <!--    <img loading="lazy" src="https://asttrolok.in/assets/default/css/landingPage/resources/img/32-Live-Classes-min.png" alt="32 Live Classes - Asttrolok">-->
-            <!--    <span class="">Doubt Sessions with Mentors</span>-->
-            <!--     <span class="">Dive deep into astrology with dynamic live sessions taught by the renowned astrologer & trainer.</span>-->
-            <!--</p>-->
-             
-        <!--<div class="d-flex align-items-center mt-20 shadow-lg " style="    border-top-left-radius: 30px;     border-bottom-left-radius: 30px;">-->
-        <!--                <div class="" style="width: 130px; min-width: 130px;border-radius: 30px; ">-->
-        <!--                    <img loading="lazy" src="https://asttrolok.in/assets/default/css/landingPage/resources/img/32-Live-Classes-min.png" class="img-cover rounded-circle1" alt="Robert Ransdell" style="border-radius: 30px; ">-->
-        <!--                </div>-->
-        <!--                <div class="ml-10 mw-100">-->
-        <!--                   <h3 class="font-16 text-secondary font-weight-bold">Test/Quiz/Assignments</h3>-->
-        <!--                         <span class="d-flex align-items-start font-14 text-gray ">Dive deep into astrology with dynamic live sessions taught by the renowned astrologer & trainer.</span>-->
-        <!--                </div>-->
-        <!--            </div>-->
-<!--                 <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 shadow-lg rounded-lg mt-15">-->
-                    <!--  <div class="forums-featured-card-icon">-->
-                    <!--    <img loading="lazy" src="/store/1/default_images/forums/icons/marketing.svg" alt="What is social media?" class="img-cover">-->
-                    <!--</div>-->
-<!--                    <div class="forums-featured-card-icon" style="width: 130px; min-width: 130px; ">-->
-<!--                        <img loading="lazy" src="https://storage.googleapis.com/astrolok/store/1/get/Test-Quiz-Assignments-min.png" alt="What is social media?" class="img-cover">-->
-<!--                    </div>-->
-
-<!--                    <div class="ml-15">-->
-                        
-<!--                            <h4 class="font-16 font-weight-bold text-dark">Test/Quiz/Assignments</h4>-->
-                       
-<!--                        <p class="font-16 text-gray">Engaging quizzes and assignments to test your knowledge and practical skills.</p>-->
-                       
-<!--                    </div>-->
-<!--                </div>     -->
-                    
-                    
-                    
-                    
-            <!--<p class="d-flex align-items-start font-14 text-gray mt-10">-->
-                <!--<i data-feather="check" width="18" height="18" class="mr-10 webinar-extra-description-check-icon"></i>-->
-            <!--    <img loading="lazy" src="https://asttrolok.in/assets/default/css/landingPage/resources/img/32-Live-Classes-min.png" alt="32 Live Classes - Asttrolok">-->
-            <!--    <span class="">Test/Quiz/Assignments</span>-->
-            <!--     <span class="">Dive deep into astrology with dynamic live sessions taught by the renowned astrologer & trainer.</span>-->
-            <!--</p>-->
-             
-        <!--<div class="d-flex align-items-center mt-20 shadow-lg " style="    border-top-left-radius: 30px;     border-bottom-left-radius: 30px;">-->
-        <!--                <div class="" style="width: 130px; min-width: 130px;border-radius: 30px; ">-->
-        <!--                    <img loading="lazy" src="https://asttrolok.in/assets/default/css/landingPage/resources/img/32-Live-Classes-min.png" class="img-cover rounded-circle1" alt="Robert Ransdell" style="border-radius: 30px; ">-->
-        <!--                </div>-->
-        <!--                <div class="ml-10 mw-100">-->
-        <!--                   <h3 class="font-16 text-secondary font-weight-bold">WhatsApp Group</h3>-->
-        <!--                         <span class="d-flex align-items-start font-14 text-gray ">Dive deep into astrology with dynamic live sessions taught by the renowned astrologer & trainer.</span>-->
-        <!--                </div>-->
-        <!--            </div>-->
-<!--                 <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 shadow-lg rounded-lg mt-15">-->
-                    <!--  <div class="forums-featured-card-icon">-->
-                    <!--    <img loading="lazy" src="/store/1/default_images/forums/icons/marketing.svg" alt="What is social media?" class="img-cover">-->
-                    <!--</div>-->
-<!--                    <div class="forums-featured-card-icon" style="width: 130px; min-width: 130px; ">-->
-<!--                        <img loading="lazy" src="https://storage.googleapis.com/astrolok/store/1/get/WhatsApp-Group-min.png" alt="What is social media?" class="img-cover">-->
-<!--                    </div>-->
-
-<!--                    <div class="ml-15">-->
-                        
-<!--                            <h4 class="font-16 font-weight-bold text-dark">WhatsApp Group</h4>-->
-                       
-<!--                        <p class="font-16 text-gray">Join the exclusive WhatsApp group for real-time updates and peer discussions</p>-->
-                       
-<!--                    </div>-->
-<!--                </div>     -->
-                    
-                    
-                    
-                    
-            <!--<p class="d-flex align-items-start font-14 text-gray mt-10">-->
-                <!--<i data-feather="check" width="18" height="18" class="mr-10 webinar-extra-description-check-icon"></i>-->
-            <!--    <img loading="lazy" src="https://asttrolok.in/assets/default/css/landingPage/resources/img/32-Live-Classes-min.png" alt="32 Live Classes - Asttrolok">-->
-            <!--    <span class="">WhatsApp Group</span>-->
-            <!--     <span class="">Dive deep into astrology with dynamic live sessions taught by the renowned astrologer & trainer.</span>-->
-            <!--</p>-->
-             
-        <!--<div class="d-flex align-items-center mt-20 shadow-lg " style="    border-top-left-radius: 30px;     border-bottom-left-radius: 30px;">-->
-        <!--                <div class="" style="width: 130px; min-width: 130px;border-radius: 30px; ">-->
-        <!--                    <img loading="lazy" src="https://asttrolok.in/assets/default/css/landingPage/resources/img/32-Live-Classes-min.png" class="img-cover rounded-circle1" alt="Robert Ransdell" style="border-radius: 30px; ">-->
-        <!--                </div>-->
-        <!--                <div class="ml-10 mw-100">-->
-        <!--                   <h3 class="font-16 text-secondary font-weight-bold">Online Exam &amp; Certificate</h3>-->
-        <!--                         <span class="d-flex align-items-start font-14 text-gray ">Dive deep into astrology with dynamic live sessions taught by the renowned astrologer & trainer.</span>-->
-        <!--                </div>-->
-        <!--            </div>-->
-<!--                 <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 shadow-lg rounded-lg mt-15">-->
-                    <!--  <div class="forums-featured-card-icon">-->
-                    <!--    <img loading="lazy" src="/store/1/default_images/forums/icons/marketing.svg" alt="What is social media?" class="img-cover">-->
-                    <!--</div>-->
-<!--                    <div class="forums-featured-card-icon" style="width: 130px; min-width: 130px; ">-->
-<!--                        <img loading="lazy" src="https://storage.googleapis.com/astrolok/store/1/get/Online-Exam-Certificate-min.png" alt="What is social media?" class="img-cover">-->
-<!--                    </div>-->
-
-<!--                    <div class="ml-15">-->
-                        
-<!--                            <h4 class="font-16 font-weight-bold text-dark">Online Exam &amp; Certificate</h4>-->
-                       
-<!--                        <p class="font-16 text-gray">Take an online exam and earn a certificate of completion upon passing</p>-->
-                       
-<!--                    </div>-->
-<!--                </div>     -->
-                    
-                    
-                    
-                    
-            <!--<p class="d-flex align-items-start font-14 text-gray mt-10">-->
-                <!--<i data-feather="check" width="18" height="18" class="mr-10 webinar-extra-description-check-icon"></i>-->
-            <!--    <img loading="lazy" src="https://asttrolok.in/assets/default/css/landingPage/resources/img/32-Live-Classes-min.png" alt="32 Live Classes - Asttrolok">-->
-            <!--    <span class="">Online Exam &amp; Certificate</span>-->
-            <!--     <span class="">Dive deep into astrology with dynamic live sessions taught by the renowned astrologer & trainer.</span>-->
-            <!--</p>-->
-<!--            </div>-->
 @if(!empty($learningMaterialsExtraDescription) and count($learningMaterialsExtraDescription))
     <div class="mt-20 ">
     <h2 class="section-title after-line">What You will get?</h2>
 
         @foreach($learningMaterialsExtraDescription as $learningMaterial)
-            <!--<p class="d-flex align-items-start font-14 text-gray mt-10">-->
-            <!--    <i data-feather="check" width="18" height="18" class="mr-10 webinar-extra-description-check-icon"></i>-->
-            <!--    <span class="">{{ $learningMaterial->value }}</span>-->
-            <!--</p>-->
+
             <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 shadow-lg rounded-lg mt-15">
-                 <!--<div class="forums-featured-card-icon">-->
-                 <!--       <img loading="lazy" src="/store/1/default_images/forums/icons/marketing.svg" alt="What is social media?" class="img-cover">-->
-                 <!--   </div>-->
+
                     <div class="forums-featured-card-icon col-4" style="padding: 0;">
                         <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $learningMaterial->img }}" alt="What is social media?" class="img-cover">
                     </div>
 
                     <div class="ml-15">
-                        
+
                             <h4 class="font-16 font-weight-bold text-dark">{{ $learningMaterial->value }}</h4>
-                       
+
                         <p class="font-16 text-gray">{{ $learningMaterial->description }}</p>
-                       
+
                     </div>
-                </div>    
+                </div>
         @endforeach
     </div>
 @endif
 
  <div class="mt-40">
       <h2 class="section-title after-line">What all you will learn?</h2>
-        <!--<h3 class="font-16 text-secondary font-weight-bold mb-15">What all you will learn?</h3>-->
+
  @include('web.default2'.'.subscription.tabs.content')
  </div>
- 
+
 <div style="text-align: center;">
 @if($canSale and !empty(getFeaturesSettings('direct_classes_payment_button_status')))
 @if($subscription->price > 0)
-    <!--<button type="button" data-toggle="modal" data-target="#buynow_modal" class=" btn btn-primary btn-sm px-25 mt-20" >-->
-    <!--    BUY NOW-->
-    <!--</button>-->
+
     <a href="/subscriptions/direct-payment/{{$subscription->slug}}" class="btn btn-primary btn-sm px-25 mt-20">Subscribe Now</a>
     @else
-    
+
         @if($subscription->slug == 'learn-free-vedic-astrology-subscription-online' )
         <a href="/register-free" class=" btn btn-primary btn-sm mt-20 {{ (!$canSale) ? (' disabled ' . $subscription->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
         @else
         <a href="{{ $canSale ? '/subscription/'. $subscription->slug .'/free' : '#' }}" class="mt-20 btn btn-primary btn-sm {{ (!$canSale) ? (' disabled ' . $subscription->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
         @endif
-        
+
     @endif
 
 @endif
@@ -380,58 +149,47 @@
                 <center><h4 class="font-20 font-weight-bold text-dark">Mr. Alok Khandelwal</h4></center><br>
                 <p class="font-14 text-gray">Mr. Alok Khandelwal is an internationally celebrated Vedic Astrologer and founder of Asttrolok, a premier institute for authentic Vedic knowledge. With 19+ years of expertise, he holds distinguished degrees including Jyotish Bhushan, Jyotish Ratna, Jyotish Rishi, MBA (Marketing), and MA (Economics). </p><br>
                 <p class="font-14 text-gray">Under his leadership, Asttrolok has trained 50,000+ students across 70+ countries, hosted 50+ webinars, and nurtured 150+ trained astrologers consulting actively through Asttrolok’s platform. He has delivered over 35,000 consultations globally and continues to teach students across USA, Europe, and Russia. A committed meditator associated with The Art of Living Foundation for over 20+ years, Mr. Khandelwal’s mission is to re-establish astrology as a rational, empowering science worldwide.</p><br>
-                <!--<p class="font-14 text-gray">With over 50,000 students already taught and hundreds more added each year, Mr. Khandelwal's impact continues to grow. He is highly regarded for his expertise in Ancient Vedic Astrology and interpersonal skills, offering practical solutions to professional, personal, emotional, and mental challenges. Additionally, he holds membership in the esteemed 'Art of Living' foundation and is sought-after as a guest speaker in prestigious institutions nationwide.</p>-->
+
             </div>
         </div>
-    </div>        
+    </div>
  <div class="mt-40">
         <h2 class="section-title after-line">About Asttrolok</h2>
         <div class="mt-15 course-description">
-            {{--{!! clean($course->description) !!}--}}
-<div>Asttrolok, founded in 2016, stands as one of the top three reputable online Vedic institutes in the country, dedicated to dispelling misconceptions and championing fact-based knowledge of Vedic Science in the fields of Astrology, Numerology, Palmistry, Yoga, Ayurveda & Scriptures. With students hailing from over 70+ countries, including professionals like lawyers, doctors, IITians, and actors, Asttrolok boasts a diverse and esteemed student body.</div>
 
-<!--<div class="mt-20">The institute's reputation is further enhanced by its association with the Founder, Renowned Astrologer & Trainer Mr. Alok Khandelwal & 50+ other mentors & panelists, who all bring their extensive expertise and experience to the teaching. Asttrolok's commitment to protecting & spreading the knowledge that liberates & transforms solidifies its standing as a leading institution in the realm of Vedic astrology.</div>-->
+<div>Asttrolok, founded in 2016, stands as one of the top three reputable online Vedic institutes in the country, dedicated to dispelling misconceptions and championing fact-based knowledge of Vedic Science in the fields of Astrology, Numerology, Palmistry, Yoga, Ayurveda & Scriptures. With students hailing from over 70+ countries, including professionals like lawyers, doctors, IITians, and actors, Asttrolok boasts a diverse and esteemed student body.</div>
 
         </div>
     </div>
 @if(!empty($requirementsExtraDescription) and count($requirementsExtraDescription))
     <div class="mt-20">
-        <!--<h3 class="font-16 text-secondary font-weight-bold mb-15">{{ trans('update.requirements') }}</h3>-->
+
 <h2 class="section-title after-line">Bonuses with this Astrology Course</h2>
         @foreach($requirementsExtraDescription as $requirementExtraDescription)
-            <!--<p class="d-flex align-items-start font-14 text-gray mt-10">-->
-            <!--    <i data-feather="check" width="18" height="18" class="mr-10 webinar-extra-description-check-icon"></i>-->
-            <!--    <span class="">{{ $requirementExtraDescription->value }}</span>-->
-            <!--</p>-->
-            
+
             <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 shadow-lg rounded-lg mt-15">
                         <div class="forums-featured-card-icon col-3" style="padding: 0;">
                         <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $requirementExtraDescription->img }}" alt="What is social media?" class="img-cover">
                     </div>
-                    <!--<div class="forums-featured-card-icon">-->
-                    <!--    <img loading="lazy" src="/store/1/default_images/forums/icons/marketing.svg" alt="What is social media?" class="img-cover">-->
-                    <!--</div>-->
 
                     <div class="ml-15">
-                        
+
                             <h4 class="font-16 font-weight-bold text-dark">{{ $requirementExtraDescription->value }}</h4>
-                       
+
                         <p class="font-16 text-gray">{{ $requirementExtraDescription->description }}.</p>
-                       
+
                     </div>
                 </div>
         @endforeach
     </div>
 @endif
 
-
-
 @if(!empty($companyLogosExtraDescription) and count($companyLogosExtraDescription))
 
  <div class="mt-40">
         <h2 class="section-title after-line">About Asttrolok</h2>
         <div class="mt-15 course-description">
-            <!--{!! clean($course->description) !!}-->
+
 <div>Asttrolok, founded in 2016, stands as one of the top three reputable online Vedic institutes in the country, dedicated to dispelling misconceptions and championing fact-based knowledge of Vedic Science in the fields of Astrology, Numerology, Palmistry, Yoga, Ayurveda & Scriptures. With students hailing from over 50+ countries, including professionals like lawyers, doctors, IITians, and actors, Asttrolok boasts a diverse and esteemed student body.</div>
 
 <div class="mt-20">The institute's reputation is further enhanced by its association with the Founder, Renowned Astrologer & Trainer Mr. Alok Khandelwal & 50+ other mentors & panelists, who all bring their extensive expertise and experience to the teaching. Asttrolok's commitment to protecting & spreading the knowledge that liberates & transforms solidifies its standing as a leading institution in the realm of Vedic astrology.</div>
@@ -445,9 +203,9 @@
                 </div>
             @endforeach
         </div>
- 
+
 @endif
-{{-- course prerequisites --}}
+
 @if(!empty($subscription->prerequisites) and $subscription->prerequisites->count() > 0)
 
     <div class="mt-20">
@@ -460,7 +218,7 @@
         @endforeach
     </div>
 @endif
-{{-- ./ course prerequisites --}}
+
 <div class="mt-20">
         <h2 class="section-title after-line">Frequently Asked Questions (FAQs)</h2>
 
@@ -515,19 +273,7 @@
                         <div class="panel-collapse text-gray"> Yes Along with video lessons, you will also get study material, notes, and reference charts to support your learning.</div>
                     </div>
                 </div>
-                <!--            <div class="accordion-row rounded-sm shadow-lg border mt-20 py-20 px-35">-->
-                <!--    <div class="font-weight-bold font-14 text-secondary" role="tab" id="faq_22">-->
-                <!--        <div href="#collapseFaq22" aria-controls="collapseFaq22" class="d-flex align-items-center justify-content-between" role="button" data-toggle="collapse" data-parent="#accordion" aria-expanded="true">-->
-                <!--            <span></span>-->
-                <!--            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down collapse-chevron-icon"><polyline points="6 9 12 15 18 9"></polyline></svg>-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--    <div id="collapseFaq22" aria-labelledby="faq_22" class=" collapse" role="tabpanel">-->
-                <!--        <div class="panel-collapse text-gray">-->
-                <!--           For students or curious minds, this is a way to gain clarity, direction, and life skills through astrology — while earning a certificate from a trusted institute.-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--</div>-->
+
                             <div class="accordion-row rounded-sm shadow-lg border mt-20 py-20 px-35">
                     <div class="font-weight-bold font-14 text-secondary" role="tab" id="faq_23">
                         <div href="#collapseFaq23" aria-controls="collapseFaq23" class="d-flex align-items-center justify-content-between" role="button" data-toggle="collapse" data-parent="#accordion" aria-expanded="true">
@@ -541,87 +287,10 @@
                         </div>
                     </div>
                 </div>
-                            <!--<div class="accordion-row rounded-sm shadow-lg border mt-20 py-20 px-35">-->
-                    <!--<div class="font-weight-bold font-14 text-secondary" role="tab" id="faq_24">-->
-                        <!--<div href="#collapseFaq24" aria-controls="collapseFaq24" class="d-flex align-items-center justify-content-between" role="button" data-toggle="collapse" data-parent="#accordion" aria-expanded="true">-->
-                        <!--    <span>How long can I access the video recordings &amp;amp; notes?</span>-->
-                        <!--    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down collapse-chevron-icon"><polyline points="6 9 12 15 18 9"></polyline></svg>-->
-                        <!--</div>-->
-                    <!--</div>-->
-                    <!--<div id="collapseFaq24" aria-labelledby="faq_24" class=" collapse" role="tabpanel">-->
-                    <!--    <div class="panel-collapse text-gray">-->
-                    <!--        We give all the video recordings and notes which you can access for a limited period.-->
-                    <!--    </div>-->
-                    <!--</div>-->
-                <!--</div>-->
-                <!--            <div class="accordion-row rounded-sm shadow-lg border mt-20 py-20 px-35">-->
-                <!--    <div class="font-weight-bold font-14 text-secondary" role="tab" id="faq_25">-->
-                <!--        <div href="#collapseFaq25" aria-controls="collapseFaq25" class="d-flex align-items-center justify-content-between" role="button" data-toggle="collapse" data-parent="#accordion" aria-expanded="true">-->
-                <!--            <span>What if I have any questions during the course?</span>-->
-                <!--            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down collapse-chevron-icon"><polyline points="6 9 12 15 18 9"></polyline></svg>-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--    <div id="collapseFaq25" aria-labelledby="faq_25" class=" collapse" role="tabpanel">-->
-                <!--        <div class="panel-collapse text-gray">-->
-                <!--            You can ask all your doubts in between the classes. There will be a WhatsApp group too, in which you can drop your question, and we will contact you asap with the answer.-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--</div>-->
-                <!--            <div class="accordion-row rounded-sm shadow-lg border mt-20 py-20 px-35">-->
-                <!--    <div class="font-weight-bold font-14 text-secondary" role="tab" id="faq_26">-->
-                <!--        <div href="#collapseFaq26" aria-controls="collapseFaq26" class="d-flex align-items-center justify-content-between" role="button" data-toggle="collapse" data-parent="#accordion" aria-expanded="true">-->
-                <!--            <span>Will there be any practical exam &amp;amp; assignments?</span>-->
-                <!--            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down collapse-chevron-icon"><polyline points="6 9 12 15 18 9"></polyline></svg>-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--    <div id="collapseFaq26" aria-labelledby="faq_26" class=" collapse" role="tabpanel">-->
-                <!--        <div class="panel-collapse text-gray">-->
-                <!--            Yes, we conduct practical sessions to get our students to practice better, as well as you need to submit assignments during the course.-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--</div>-->
-                <!--            <div class="accordion-row rounded-sm shadow-lg border mt-20 py-20 px-35">-->
-                <!--    <div class="font-weight-bold font-14 text-secondary" role="tab" id="faq_27">-->
-                <!--        <div href="#collapseFaq27" aria-controls="collapseFaq27" class="d-flex align-items-center justify-content-between" role="button" data-toggle="collapse" data-parent="#accordion" aria-expanded="true">-->
-                <!--            <span>How will the exam be conducted?</span>-->
-                <!--            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down collapse-chevron-icon"><polyline points="6 9 12 15 18 9"></polyline></svg>-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--    <div id="collapseFaq27" aria-labelledby="faq_27" class=" collapse" role="tabpanel">-->
-                <!--        <div class="panel-collapse text-gray">-->
-                <!--            After every course, we give a month for preparation. After that, an online exam will be held which is mandatory to get the certification in astrology.-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--</div>-->
-                <!--            <div class="accordion-row rounded-sm shadow-lg border mt-20 py-20 px-35">-->
-                <!--    <div class="font-weight-bold font-14 text-secondary" role="tab" id="faq_28">-->
-                <!--        <div href="#collapseFaq28" aria-controls="collapseFaq28" class="d-flex align-items-center justify-content-between" role="button" data-toggle="collapse" data-parent="#accordion" aria-expanded="true">-->
-                <!--            <span>Will I get a certificate? How do I receive the certificate after I finish the course? Is there any extra cost for it?</span>-->
-                <!--            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down collapse-chevron-icon"><polyline points="6 9 12 15 18 9"></polyline></svg>-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--    <div id="collapseFaq28" aria-labelledby="faq_28" class=" collapse" role="tabpanel">-->
-                <!--        <div class="panel-collapse text-gray">-->
-                <!--            Yes, the certificate will be given without any extra cost. There will be a certification ceremony in the institute else we will send it through courier.-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--</div>-->
-                <!--            <div class="accordion-row rounded-sm shadow-lg border mt-20 py-20 px-35">-->
-                <!--    <div class="font-weight-bold font-14 text-secondary" role="tab" id="faq_29">-->
-                <!--        <div href="#collapseFaq29" aria-controls="collapseFaq29" class="d-flex align-items-center justify-content-between" role="button" data-toggle="collapse" data-parent="#accordion" aria-expanded="true">-->
-                <!--            <span>Is there any installment facility?</span>-->
-                <!--            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down collapse-chevron-icon"><polyline points="6 9 12 15 18 9"></polyline></svg>-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--    <div id="collapseFaq29" aria-labelledby="faq_29" class=" collapse" role="tabpanel">-->
-                <!--        <div class="panel-collapse text-gray">-->
-                <!--            Yes, you can pay the fee in installments. Installment details are mentioned above with timeframes.-->
-                <!--        </div>-->
-                <!--    </div>-->
-                <!--</div>-->
+
                     </div>
     </div>
-{{-- course FAQ --}}
+
 @if(!empty($subscription->faqs) and $subscription->faqs->count() > 0)
     <div class="mt-20">
         <h2 class="section-title after-line">{{ trans('public.faq') }}</h2>
@@ -645,17 +314,3 @@
         </div>
     </div>
 @endif
-{{-- ./ course FAQ --}}
-
-
-
-
-
-
-{{-- course Comments --}}
-{{-- @include('web.default.includes.comments',[
-        'comments' => $subscription->comments,
-        'inputName' => 'webinar_id',
-        'inputValue' => $subscription->id
-    ]) --}}
-{{-- ./ course Comments --}}

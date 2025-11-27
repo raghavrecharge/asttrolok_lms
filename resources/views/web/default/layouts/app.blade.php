@@ -7,15 +7,14 @@
 @endphp
 
 <head>
-    
+
     @include('web.default.includes.metas')
     <title>{{ $pageTitle ?? '' }}{{ !empty($generalSettings['site_name']) ? (' | '.$generalSettings['site_name']) : '' }}</title>
 
-    <!-- General CSS File -->
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/sweetalert2/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/toast/jquery.toast.min.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/simplebar/simplebar.css">
-    {{-- <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/app.css"> --}}
+
     <link rel="stylesheet" href="/assets/default/css/app.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,9 +25,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-    
-    
 
     @if($isRtl)
         <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/rtl-app.css">
@@ -45,33 +41,22 @@
         {!! getThemeColorsSettings() !!}
     </style>
 
-
     @if(!empty($generalSettings['preloading']) and $generalSettings['preloading'] == '1')
         @include('admin.includes.preloading')
     @endif
-    <!-- Google tag (gtag.js) --> 
-   
-   
-  
 
-
-    <!-- Facebook Pixel Code -->
     <script>
         setTimeout(function() {
             $("[href='https://elfsight.com/google-reviews-widget/?utm_source=websites&utm_medium=clients&utm_content=google-reviews&utm_term=www.asttrolok.com&utm_campaign=free-widget']").hide();
             //   $('.WidgetBackground__Content-sc-1ho7q3r-2 > a').find('.inline').last().attr("style", "display:none !important");
         }, 2000);
     </script>
-    <!-- End Facebook Pixel Code -->
 
-
-    <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-MH675X5');</script>
-    <!-- End Google Tag Manager -->
 
 </head>
 
@@ -111,12 +96,9 @@
         '2068' => 4.1,
     ];
 @endphp
-    
-    
-    <!-- Google Tag Manager (noscript) -->
+
     <noscript><iframe src=""
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
 
     <div id="app" class="{{ (!empty($floatingBar) and $floatingBar->position == 'top' and $floatingBar->fixed) ? 'has-fixed-top-floating-bar' : '' }}">
         @if(!empty($floatingBar) and $floatingBar->position == 'top')
@@ -136,10 +118,10 @@
 
     </div>
 
-    @php 
+    @php
         $agent = new \Jenssegers\Agent\Agent;
     @endphp
-    
+
     @if(!isset($appFooter))
         @if($agent->isMobile())
             @include('web.default.includes.footer')
@@ -148,13 +130,10 @@
         @endif
     @endif
 
-    {{-- @include('web.default.includes.advertise_modal.index') --}}
-
     @if(!empty($floatingBar) and $floatingBar->position == 'bottom')
         @include('web.default.includes.floating_bar')
     @endif
-    
-    <!-- Template JS File -->
+
     <script src="{{ config('app.js_css_url') }}/assets/default/js/app.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/feather-icons/dist/feather.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/moment.min.js"></script>
@@ -216,19 +195,16 @@
         {!! !empty(getCustomCssAndJs('js')) ? getCustomCssAndJs('js') : '' !!}
     </script>
 
-    {{-- @include('web.default2.course.pop_up')
-    @include('web.default.course.pop_up1') --}}
-    
     @php
-        $str_arr = explode("/", request()->getRequestUri()); 
-        
+        $str_arr = explode("/", request()->getRequestUri());
+
         // Check for specific page
         if(in_array("what-is-pitru-paksha-and-why-it-is-observed", $str_arr)) {
-            
+
             if(session()->has('started1234')) {
                 // Calculate remaining time
                 $time = (session('duration1234') - (time() - session('started1234')));
-                
+
                 if($time <= 0) {
                     // Session expired, clear it
                     session()->forget(['started1234', 'duration1234']);
@@ -251,7 +227,7 @@
         // General session handling
         if(session()->has('started123')) {
             $time = (session('duration123') - (time() - session('started123')));
-            
+
             if($time <= 0) {
                 // Session expired, clear it
                 session()->forget(['started123', 'duration123']);
@@ -260,7 +236,7 @@
             // Start new session
             session(['started123' => time()]);
             session(['duration123' => (3*24*60*60)]); // 3 days
-            
+
             if(!in_array("what-is-pitru-paksha-and-why-it-is-observed", $str_arr)) {
                 // Add any additional logic here if needed
             }
@@ -273,21 +249,7 @@
             flex-direction: row-reverse;
         }
 
-        /* Uncomment if needed
-        .cat-dropdown-menu {
-            opacity: 1;
-            visibility: visible;
-            top: 43px;
-        }
-
-        .xs-categories-toggle:not(:hover) > .cat-dropdown-menu {
-            visibility: hidden; 
-            opacity: 0; 
-            transform: translateY(15px);
-        }
-        */
-        
-        @media (max-width: 700px) { 
+        @media (max-width: 700px) {
             .mobile4 {
                 display: none!important;
             }

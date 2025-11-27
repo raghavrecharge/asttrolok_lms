@@ -32,14 +32,12 @@
 
         @include('web.default.forum.post_card')
 
-        {{-- Topic Posts --}}
         @if(!empty($topic->posts) and count($topic->posts))
             @foreach($topic->posts as $postRow)
                 @include('web.default.forum.post_card',['post' => $postRow])
             @endforeach
         @endif
 
-        {{-- Reply to Topic  --}}
         @if(!auth()->check())
             <div class="reply-login-close-card d-flex flex-column align-items-center w-100 p-15 rounded-lg border bg-white mt-15 p-40">
                 <div class="icon-card">
@@ -76,7 +74,6 @@
                             </button>
                         </div>
 
-
                         <div class="form-group">
                             <label class="input-label">{{ trans('public.description') }}</label>
                             <textarea id="summernote" name="description" class="form-control"></textarea>
@@ -110,7 +107,6 @@
             </div>
         @endif
     </div>
-
 
     <div id="topicReportModal" class="d-none">
         <h3 class="section-title after-line font-20 text-dark-blue">{{ trans('panel.report') }}</h3>

@@ -2,14 +2,12 @@
 
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/vendors/leaflet/leaflet.css">
-    <!--<link rel="canonical" href="https://www.asttrolok.com/contact" />-->
+
 @endpush
 
-
 @section('content')
-    <!--<section class="site-top-banner search-top-banner opacity-04 position-relative">-->
+
     <section class="cart-banner search-top-banner opacity-04 position-relative">
-        <!--<img src="{{ config('app.img_dynamic_url') }}{{ $contactSettings['background'] }}" class="img-cover" alt="{{ $pageTitle ?? 'contact' }}"/>-->
 
         <div class="container h-100">
             <div class="row h-100 justify-content-center text-center">
@@ -25,14 +23,8 @@
     <div class="container">
         <section class="">
             @if(!empty($contactSettings['latitude']) and !empty($contactSettings['longitude']))
-                <!--<div class="contact-map" id="contactMap"-->
-                <!--     data-latitude="{{ $contactSettings['latitude'] }}"-->
-                <!--     data-longitude="{{ $contactSettings['longitude'] }}"-->
-                <!--     data-zoom="{{ $contactSettings['map_zoom'] ?? 12 }}">-->
-                    
-                <!--</div>-->
-            @endif
 
+            @endif
 
             <div class="row">
                 <div class="col-12 col-md-4">

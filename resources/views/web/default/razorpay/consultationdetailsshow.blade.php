@@ -13,19 +13,12 @@
         $showOtherRegisterMethod = getFeaturesSettings('show_other_register_method') ?? false;
         $showCertificateAdditionalInRegister = getFeaturesSettings('show_certificate_additional_in_register') ?? false;
         $selectRolesDuringRegistration = getFeaturesSettings('select_the_role_during_registration') ?? null;
-        
-        
-       
+
     @endphp
 
     <div class="container">
         <div class="row login-container1">
-            <!--<div class="col-12 col-md-6 pl-0"  style="display: flex;flex-wrap: nowrap;align-items: center;">-->
-            <!--    <img src="{{ getPageBackgroundSettings('register') }}"  style="height:auto;" class="img-cover" alt="Login">-->
-            
-            <!--</div>-->
-            
-            
+
             <div class="col-12 col-md-12">
                 <div class="login-card">
                     <h1 class="font-20 font-weight-bold">Birth Details</h1>
@@ -57,7 +50,7 @@
                         @endif
 
                        <div class="row">
-    
+
     <div class="col-6">
                         <div class="form-group">
                             <label class="input-label" for="amount">Birth Date:</label>
@@ -85,9 +78,7 @@
                         </div>
                         </div>
                         </div>
-                        
-                    
-                        
+
                         <div class="form-group">
                             <label class="input-label" for="amount">Birth Place:</label>
                             <input name="birthplace" type="text" required
@@ -109,15 +100,14 @@
                             </div>
                             @enderror
                         </div>
-                        
-                       
+
    <div class="row">
     <div class="col-5">
         <div class="form-group">
             <label class="input-label" for="mobile">{{ trans('auth.country') }}:</label>
             <select name="country_code" class="form-control select2">
                 @foreach(getCountriesMobileCode() as $country => $code)
-                 <!--<option value="{{ $code }}" @if($code == old('country_code')) selected @endif>{{ $country }}</option>-->
+
                     <option value="{{ $code }}" @if($code == '+91')) selected @endif>{{ $country }}</option>
                 @endforeach
             </select>
@@ -156,12 +146,6 @@
     @enderror
 </div>
 
-        
-
-
-              
-                
-
                         @if(getFeaturesSettings('timezone_in_register'))
                             @php
                                 $selectedTimezone = getGeneralSettings('default_time_zone');
@@ -183,16 +167,8 @@
                             </div>
                         @endif
 
-                  
-
-                        
-
                         <button type="submit" class="btn btn-primary btn-block mt-20">Submit</button>
                     </form>
-
-                  
-                        
-                    
 
                 </div>
             </div>

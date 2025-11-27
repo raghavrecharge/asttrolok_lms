@@ -1,23 +1,4 @@
-<!--<div class="modal fade" id="myModal" role="dialog">-->
-<!--    <div class="modal-dialog">-->
-    
-      <!-- Modal content-->
-<!--      <div class="modal-content">-->
-<!--        <div class="modal-header">-->
-<!--          <button type="button" class="close" data-dismiss="modal">&times;</button>-->
-<!--          <h4 class="modal-title">Modal Header</h4>-->
-<!--        </div>-->
-<!--        <div class="modal-body">-->
-<!--          <p>Some text in the modal.</p>-->
-<!--        </div>-->
-<!--        <div class="modal-footer">-->
-<!--          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
-<!--        </div>-->
-<!--      </div>-->
-      
-<!--    </div>-->
-<!--  </div>-->
-  <div class="modal fade" id="myModal213" tabindex="-1" aria-labelledby="myModal213" aria-hidden="true" style="z-index: 10000;">
+<div class="modal fade" id="myModal213" tabindex="-1" aria-labelledby="myModal213" aria-hidden="true" style="z-index: 10000;">
     <div class=" pop_up_size123 pop_up_size1234 modal-dialog modal-lg modal-dialog-centered " >
         <div class="modal-content py-20 " style="padding-left: 28px;">
             <div class="d-flex align-items-center justify-content-between px-20">
@@ -29,10 +10,10 @@
             </div>
 
             <div class="mt-25 position-relative">
-                
+
 <script async src="https://www.vbt.io/ext/vbtforms.js?lang=en" charset="utf-8"></script>
 <style type="text/css">
-	/* Form Embed Code - No Extra Styling */
+
 	#vboutEmbedFormWrapper-110993 a,#vboutEmbedFormWrapper-110993 div,#vboutEmbedFormWrapper-110993 dl,#vboutEmbedFormWrapper-110993 dt,#vboutEmbedFormWrapper-110993 em,#vboutEmbedFormWrapper-110993 fieldset,
 	#vboutEmbedFormWrapper-110993 form,#vboutEmbedFormWrapper-110993 h2,#vboutEmbedFormWrapper-110993 h2,#vboutEmbedFormWrapper-110993 h3,#vboutEmbedFormWrapper-110993 h4,#vboutEmbedFormWrapper-110993 h5,#vboutEmbedFormWrapper-110993 h6,
 	#vboutEmbedFormWrapper-110993 hr,#vboutEmbedFormWrapper-110993 img,#vboutEmbedFormWrapper-110993 label,#vboutEmbedFormWrapper-110993 li,#vboutEmbedFormWrapper-110993 ol,#vboutEmbedFormWrapper-110993 p,#vboutEmbedFormWrapper-110993 pre,
@@ -44,7 +25,7 @@
 	#vboutEmbedFormWrapper-110993 li{display:list-item}
 	#vboutEmbedFormWrapper-110993 table{border-collapse:collapse;border-spacing:0}
 	#vboutEmbedFormWrapper-110993 th,#vboutEmbedFormWrapper-110993 td,#vboutEmbedFormWrapper-110993 caption{font-weight:normal;vertical-align:top;text-align:left}
-	
+
 	#vboutEmbedFormWrapper-110993 form {display:block; position:relative; text-align:left; padding:10px 0 10px 3%; max-width: 500px;}
 	#vboutEmbedFormWrapper-110993 h2 {font-weight:bold; padding:0; margin:15px 0; font-size:1.4em;}
 	#vboutEmbedFormWrapper-110993 input, #vboutEmbedFormWrapper-110993 .vbt-birthdayfield {border:1px solid #999; -webkit-appearance:none;}
@@ -83,10 +64,10 @@
 	#vboutEmbedFormWrapper-110993 .vfb-submit button,#vboutEmbedFormWrapper-110993 .vfb-submit button:hover,#vboutEmbedFormWrapper-110993 .vfb-submit button:hover:not(.inactive),#vboutEmbedFormWrapper-110993 .vfb-submit button:focus,#vboutEmbedFormWrapper-110993 .vfb-submit button:active,#vboutEmbedFormWrapper-110993 .vfb-submit button:active:not(.inactive):not(.link) {background-image: none;background-color: #A01694;border-color: #A01694;color: #ffffff;}
 
 	#vboutEmbedFormWrapper-110993 form, #vboutEmbedFormWrapper-110993 label, #vboutEmbedFormWrapper-110993 input, #vboutEmbedFormWrapper-110993 select, #vboutEmbedFormWrapper-110993 textarea, #vboutEmbedFormWrapper-110993 .vbt-birthdayfield { font-family: helvetica; }
-	
+
 	#vboutEmbedFormWrapper-110993 form, #vboutEmbedFormWrapper-110993 label { color: #33475b; }
 
-	#vboutEmbedFormWrapper-110993 .iti{display: block;} 
+	#vboutEmbedFormWrapper-110993 .iti{display: block;}
 	#vboutEmbedFormWrapper-110993 input[type=tel]{padding-left: 48px!important;}
 	#vboutEmbedFormWrapper-110993 fieldset{display: block;display: contents;}
 
@@ -121,7 +102,7 @@
 	<form action="https://www.vbt.io/embedcode/submit/110993/?_format=page" target="_blank"  id="vboutEmbedForm-110993" name="vboutEmbedForm-110993" data-vboutform="110993" class="" method="post" enctype="multipart/form-data">
 		<center><h2>Get Personalized Remedies</h2>
 </center>
-	
+
 		<div id="vboutEmbedFormResponse-110993" style="display: none;"></div>
 		<fieldset>
 <div class="vbf-step"><div class="vboutEmbedFormRow"><label class="title" for="custom-358666">Full Name<span class="required-asterisk">*</span></label><div class="vboutEmbedFormField"><input type="text" name="vbout_EmbedForm[field][358666]" id="custom-358666" value="" class="vfb-text  required  "    /></div></div><div class="vboutEmbedFormRow"><label class="title" for="custom-358669">Number<span class="required-asterisk">*</span></label><div class="vboutEmbedFormField"><input type="tel" name="vbout_EmbedForm[field][358669]" id="custom-358669" value="" class="vfb-text  required  validate-phone "    data-countrylist="no" /></div></div><div class="vboutEmbedFormRow"><label class="title" for="custom-358668">Email<span class="required-asterisk">*</span></label><div class="vboutEmbedFormField"><input type="email" name="vbout_EmbedForm[field][358668]" id="custom-358668" value="" class="vfb-text  required  validate-email "    /></div></div><div class="vboutEmbedFormRow"><label class="title" for="custom-745620">Birth Time<span class="required-asterisk">*</span></label><div class="vboutEmbedFormField"><input type="time" name="vbout_EmbedForm[field][745620]" id="custom-745620" value="" class="vfb-text  required  "    /></div></div><div class="vboutEmbedFormRow"><label class="title" for="custom-745621">Birth Date<span class="required-asterisk">*</span></label><div class="vboutEmbedFormField"><input type="text" name="vbout_EmbedForm[field][745621]" id="custom-745621" value="" class="vfb-text vfb-date vboutEmbedFormDatePicker  required " data-format="m/d/Y"   /></div></div><div class="vboutEmbedFormRow"><label class="title" for="custom-745622">Birth Place<span class="required-asterisk">*</span></label><div class="vboutEmbedFormField"><input type="text" name="vbout_EmbedForm[field][745622]" id="custom-745622" value="" class="vfb-text  required  "    /></div></div></div>
@@ -133,15 +114,6 @@
 		</fieldset>
 	</form>
 </div>
-
-
-
-
-
-
-
-
-
 
         </div>
     </div>

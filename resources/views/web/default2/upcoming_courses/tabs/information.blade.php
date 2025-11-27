@@ -12,7 +12,6 @@
     @include('web.default.includes.webinar.list-card',['webinar' => $upcomingCourse->webinar])
 @endif
 
-
 @php
     $learningMaterialsExtraDescription = !empty($upcomingCourse->extraDescriptions) ? $upcomingCourse->extraDescriptions->where('type','learning_materials') : null;
     $companyLogosExtraDescription = !empty($upcomingCourse->extraDescriptions) ? $upcomingCourse->extraDescriptions->where('type','company_logos') : null;
@@ -32,7 +31,6 @@
     </div>
 @endif
 
-{{--course description--}}
 @if($upcomingCourse->description)
     <div class="mt-20">
         <h2 class="section-title after-line">{{ trans('update.course_description') }}</h2>
@@ -41,7 +39,6 @@
         </div>
     </div>
 @endif
-{{-- ./ course description--}}
 
 @if(!empty($companyLogosExtraDescription) and count($companyLogosExtraDescription))
     <div class="mt-20 rounded-sm border bg-white p-15">
@@ -73,8 +70,6 @@
     </div>
 @endif
 
-
-{{-- course FAQ --}}
 @if(!empty($upcomingCourse->faqs) and $upcomingCourse->faqs->count() > 0)
     <div class="mt-20">
         <h2 class="section-title after-line">{{ trans('public.faq') }}</h2>
@@ -98,12 +93,9 @@
         </div>
     </div>
 @endif
-{{-- ./ course FAQ --}}
 
-{{-- course Comments --}}
 @include('web.default.includes.comments',[
         'comments' => $upcomingCourse->comments,
         'inputName' => 'upcoming_course_id',
         'inputValue' => $upcomingCourse->id
     ])
-{{-- ./ course Comments --}}

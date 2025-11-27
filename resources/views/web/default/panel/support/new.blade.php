@@ -103,17 +103,14 @@
             </div>
         </section>
     </form>
-    <!-- Screen Blocker -->
+
 <div id="screen-blocker" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 9999;"></div>
 
-<!-- Popup Modal -->
 <div id="submissionPopup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000; background: #fff; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
     <h4>Submitting...</h4>
     <p>Please wait while your message is being sent.</p>
     <div class="spinner" style="margin-top: 10px; border: 4px solid rgba(0, 0, 0, 0.2); border-top: 4px solid #007bff; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite;"></div>
 </div>
-
-
 
 @endsection
 
@@ -143,14 +140,13 @@
             event.preventDefault(); // Remove this in production
             form.submit(); // Actually submit the form
             setTimeout(() => {
-                
+
                 screenBlocker.style.display = "none";
                 submissionPopup.style.display = "none";
             }, 10000); // Delay for 2 seconds
         });
     });
 </script>
-
 
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/select2/select2.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets/default/js/panel/conversations.min.js"></script>

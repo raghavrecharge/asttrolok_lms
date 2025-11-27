@@ -21,9 +21,9 @@
 
 <div id="navbarVacuum"></div>
 <nav id="navbar" class="navbar navbar-expand-lg navbar-light">
-     
+
       <div class="container">
-    
+
              <div class="d-flex align-items-center justify-content-between w-100">
 
 <div class="navmobile navmobiledisplay">
@@ -36,8 +36,7 @@
                                     <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/asttroloklogo-min_converted.webp" class="img-cover" alt="site logo">
                             </a>
 <div class="top-navbar">
-            
-    
+
     <div class="xs-w-100 d-flex align-items-center justify-content-between ">
             <div class="d-flex">
                   <div class="js-currency-select custom-dropdown position-relative" style="margin-top:7px;">
@@ -73,14 +72,9 @@
                         <span class="ml-5 font-14">United States Dollar</span>
                     </div>
                 </div>
-            
+
         </div>
     </div>
-
-
-
-
-
 
                   <div class="border-left mx-5 mx-lg-15"></div>
                 <div class="dropdown">
@@ -123,21 +117,18 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bell mr-10"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                         <span class="">Empty notifications</span>
                     </div>
-                
+
             </div></div></div></div><div class="simplebar-placeholder" style="width: auto; height: 189px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: hidden;"><div class="simplebar-scrollbar" style="height: 0px; display: none;"></div></div></div>
 
                     </div>
     </div>
 </div>
             </div>
- 
+
         </div>
-            <!---->
-            
+
         </div>
-       
-        
-        
+
     </div>
             <div class="mx-lg-30 d-none d-lg-flex flex-grow-1 navbar-toggle-content " id="navbarContent">
                 <div class="navbar-toggle-header text-right d-lg-none">
@@ -147,57 +138,42 @@
                 </div>
 
                 <ul class="navbar-nav mr-auto d-flex align-items-center">
-                    
+
 <div class="my-20" style="width: 100%;">
                                   <li class="nav-item">
-                   
+
  <a href="/login" style="font-weight: 800;width:48%; font-size:14px !important;" class="btn btn-primary">Login</a>
-                  
-                            <!--</li>-->
-                            <!-- <li class="nav-item">-->
+
         <a href="/register" style="font-weight: 800;width:48%; float:right; font-size:14px !important;" class="btn btn-primary">Register</a>
-                   
+
                             </li>
-                                                          
-                             
-                             
+
                             </div>
                             <div class="navmobile">
                              <li class="nav-item">
 
-
-                
-
-
-
                             </li>
-                            
+
                             </div>
-                                                                       
+
                                                         <li class="nav-item ">
                                 <a class="nav-link" href="https://marketing.asttrolok.com/">Home</a>
                             </li>
-                                
-                                                                               
+
                                                         <li class="nav-item ">
                                 <a class="nav-link" href="https://marketing.asttrolok.com/consult-with-astrologers">Consult with Astrologer's</a>
                             </li>
-                                
-                                                                               
-                               
-                                                       
-                           
+
                                                     <li class="nav-item ">
                             <div class="menu-category ">
                                 <ul>
                                     <li class="cursor-pointer user-select-none d-flex xs-categories-toggle">
-                                        <!--<i data-feather="grid" width="20" height="20" class="mr-10 d-none d-lg-block"></i>-->
+
                                         <span class="dropdown-toggle nav-item nav-link">Courses</span>
-                                        
 
                                         <ul class="cat-dropdown-menu">
                                                                                                                                                                                                                                 <li>
-                                                    
+
                                                     <a href="https://marketing.asttrolok.com/categories/astrology">
                                                         <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
                                                             <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse 1.webp" class="cat-dropdown-menu-icon mr-10" alt="Astrology icon">
@@ -208,7 +184,7 @@
 
                                                                                                     </li>
                                                                                                                                                                                         <li>
-                                                    
+
                                                     <a href="https://marketing.asttrolok.com/categories/ayurveda">
                                                         <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
                                                             <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%204.webp" class="cat-dropdown-menu-icon mr-10" alt="Ayurveda icon">
@@ -219,7 +195,7 @@
 
                                                                                                     </li>
                                                                                                                                                                                         <li>
-                                                    
+
                                                     <a href="https://marketing.asttrolok.com/categories/numerology">
                                                         <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
                                                             <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse 3.webp" class="cat-dropdown-menu-icon mr-10" alt="Numerology icon">
@@ -230,7 +206,7 @@
 
                                                                                                     </li>
                                                                                                                                                                                         <li>
-                                                    
+
                                                     <a href="https://marketing.asttrolok.com/categories/palmistry">
                                                         <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
                                                             <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse 2.webp" class="cat-dropdown-menu-icon mr-10" alt="Palmistry icon">
@@ -241,7 +217,7 @@
 
                                                                                                     </li>
                                                                                                                                                                                         <li>
-                                                    
+
                                                     <a href="https://marketing.asttrolok.com/categories/vastu">
                                                         <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
                                                             <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse 5.webp" class="cat-dropdown-menu-icon mr-10" alt="Vastu icon">
@@ -254,7 +230,7 @@
                                                                                                                                         <li style="float:right;">
                                                 <a href="https://marketing.asttrolok.com/classes">
                                                         <div class="d-flex align-items-center" style="    font-size: 12px;font-weight: 600;text-align:center;color: #171347;">
-                                                           
+
                                                             View All
                                                         </div>
 
@@ -265,32 +241,26 @@
                                 </ul>
                             </div>
                         </li>
-                                           
+
                                                         <li class="nav-item ">
                                 <a class="nav-link" href="https://marketing.asttrolok.com/blog">Blog</a>
                             </li>
-                                
-                                                                               
+
                                                         <li class="nav-item ">
                                 <a class="nav-link" href="https://marketing.asttrolok.com/contact">Contact Us</a>
                             </li>
-                                
-                                                                                    
-                         
-                                
+
                         <div class="navmobile">
-                             
+
                             <li class="nav-item">
-                                <a href="/tutorial-guide" style="font-size: 14px;font-weight: 600;">Tutorial Guide</a> 
+                                <a href="/tutorial-guide" style="font-size: 14px;font-weight: 600;">Tutorial Guide</a>
                             </li>
                                                         </div>
                                     </ul>
             </div>
-            
 
             <div class="nav-icons-or-start-live navbar-order navbar-order1">
 
-                
                 <div class="d-none nav-notify-cart-dropdown top-navbar ">
                     <div class="dropdown">
     <button type="button" disabled="" class="btn btn-transparent dropdown-toggle" id="navbarShopingCart" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -332,7 +302,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bell mr-10"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                         <span class="">Empty notifications</span>
                     </div>
-                
+
             </div></div></div></div><div class="simplebar-placeholder" style="width: 0px; height: 0px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: hidden;"><div class="simplebar-scrollbar" style="height: 0px; display: none;"></div></div></div>
 
                     </div>

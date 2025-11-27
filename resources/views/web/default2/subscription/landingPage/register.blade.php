@@ -46,8 +46,6 @@
                             </div>
                         @endif
 
-                       
-
                         <div class="form-group">
                             <label class="input-label" for="full_name">{{ trans('auth.full_name') }}:</label>
                             <input name="full_name" maxlength="50" type="text" value="{{ old('full_name') }}" class="form-control @error('full_name') is-invalid @enderror">
@@ -57,7 +55,7 @@
                             </div>
                             @enderror
                         </div>
-                        
+
                          @if($registerMethod == 'mobile')
                             @include('web.default2.auth.register_includes.mobile_field')
 
@@ -66,15 +64,9 @@
                             @endif
                         @else
                         @include('web.default2.auth.register_includes.mobile_field',['optional' => false])
-                            
 
-                            <!--@if($showOtherRegisterMethod)-->
-                            <!--    @include('web.default2.auth.register_includes.mobile_field',['optional' => true])-->
-                            <!--@endif-->
                              @include('web.default2.auth.register_includes.email_field')
                         @endif
-                        
-                     
 
                         <div class="form-group">
                             <label class="input-label" for="password">{{ trans('auth.password') }}:</label>
@@ -111,7 +103,7 @@
                                 @enderror
                             </div>
                         @endif
-                        
+
                         <div class="form-group">
                             <label class="input-label" for="amount">Amount:</label>
                             <input name="amount" maxlength="50" type="text" value="{{ old('amount') }}" class="form-control @error('amount') is-invalid @enderror">

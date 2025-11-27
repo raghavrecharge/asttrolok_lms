@@ -250,7 +250,6 @@
             </li>
         @endif
 
-
         <li class="sidenav-item {{ (request()->is('panel/meetings') or request()->is('panel/meetings/*')) ? 'sidenav-item-active' : '' }}">
             <a class="d-flex align-items-center" data-toggle="collapse" href="#meetingCollapse" role="button" aria-expanded="false" aria-controls="meetingCollapse">
                 <span class="sidenav-item-icon mr-10">
@@ -533,7 +532,6 @@
             </li>
         @endif
 
-
         @if($authUser->isTeacher())
             <li class="sidenav-item {{ (request()->is('panel/blog') or request()->is('panel/blog/*')) ? 'sidenav-item-active' : '' }}">
                 <a class="d-flex align-items-center" data-toggle="collapse" href="#blogCollapse" role="button" aria-expanded="false" aria-controls="blogCollapse">
@@ -647,11 +645,4 @@
         </li>
     </ul>
 
-    <!--@if(!empty($getPanelSidebarSettings) and !empty($getPanelSidebarSettings['background']))-->
-        <!--<div class="sidebar-create-class d-none d-md-block">-->
-        <!--    <a href="{{ !empty($getPanelSidebarSettings['link']) ? $getPanelSidebarSettings['link'] : '' }}" class="sidebar-create-class-btn d-block text-right p-5">-->
-        <!--        <img src="{{ !empty($getPanelSidebarSettings['background']) ? $getPanelSidebarSettings['background'] : '' }}" alt="">-->
-        <!--    </a>-->
-        <!--</div>-->
-    <!--@endif-->
 </div>

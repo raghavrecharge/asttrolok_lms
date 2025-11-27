@@ -147,7 +147,7 @@
                                     <th class="text-center">{{ trans('public.total_mark') }}</th>
                                     <th class="text-center">{{ trans('public.pass_mark') }}</th>
                                     <th class="text-center">{{ trans('quiz.students') }}</th>
-                                    {{--<th>{{ trans('quiz.average') }}</th>--}}
+
                                     <th class="text-center">{{ trans('public.status') }}</th>
                                     <th class="text-center">{{ trans('public.date_created') }}</th>
                                     <th></th>

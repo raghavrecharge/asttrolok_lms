@@ -5,7 +5,6 @@
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/video/video-js.min.css">
 @endpush
 
-
 @section('content')
     <section class="course-cover-container bg-gray200">
         <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $upcomingCourse->getImageCover() }}" class="img-cover course-cover-img" alt="{{ $upcomingCourse->title }}"/>
@@ -19,7 +18,6 @@
                         <h1 class="font-30">
                             {{ clean($upcomingCourse->title, 't') }}
                         </h1>
-
 
                         @if(!empty($upcomingCourse->category))
                             <span class="d-block font-16 mt-10">{{ trans('public.in') }} <a href="{{ $upcomingCourse->category->getUrl() }}" target="_blank" class="font-weight-500 text-decoration-underline text-white">{{ $upcomingCourse->category->title }}</a></span>
@@ -235,7 +233,6 @@
                             </div>
                         @endif
 
-
                         <div class="mt-20 d-flex align-items-center justify-content-between text-gray">
                             <div class="d-flex align-items-center">
                                 <i data-feather="tag" width="20" height="20"></i>
@@ -261,15 +258,12 @@
                     </div>
                 </div>
 
-                {{-- organization --}}
                 @if($upcomingCourse->creator_id != $upcomingCourse->teacher_id)
                     @include('web.default.course.sidebar_instructor_profile', ['courseTeacher' => $upcomingCourse->creator])
                 @endif
-                {{-- teacher --}}
-                @include('web.default.course.sidebar_instructor_profile', ['courseTeacher' => $upcomingCourse->teacher])
-                {{-- ./ teacher --}}
 
-                {{-- tags --}}
+                @include('web.default.course.sidebar_instructor_profile', ['courseTeacher' => $upcomingCourse->teacher])
+
                 @if($upcomingCourse->tags->count() > 0)
                     <div class="rounded-lg tags-card shadow-sm mt-35 px-25 py-20">
                         <h3 class="sidebar-title font-16 text-secondary font-weight-bold">{{ trans('public.tags') }}</h3>
@@ -282,7 +276,6 @@
                     </div>
                 @endif
 
-                {{-- ads --}}
                 @if(!empty($advertisingBannersSidebar) and count($advertisingBannersSidebar))
                     <div class="row">
                         @foreach($advertisingBannersSidebar as $sidebarBanner)
@@ -298,7 +291,6 @@
             </div>
         </div>
 
-        {{-- Ads Bannaer --}}
         @if(!empty($advertisingBanners) and count($advertisingBanners))
             <div class="mt-30 mt-md-50">
                 <div class="row">
@@ -312,7 +304,7 @@
                 </div>
             </div>
         @endif
-        {{-- ./ Ads Bannaer --}}
+
     </section>
 
     <div id="webinarReportModal" class="d-none">

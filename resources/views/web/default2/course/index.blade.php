@@ -16,14 +16,14 @@
             font-family: 'main-font-family' !important;
         }
         .course-content-sidebar .course-img.has-video .course-video-icon {
-   
+
     width: 50px;
     height: 50px;
-   
+
 }
  .register_desktop{
         position: fixed;
-   
+
     top: 110px;
     width: 27%;
     right: 6.5%;
@@ -32,13 +32,6 @@
         display:none;
     }
 
-
-
-/*******************************
-* MODAL AS LEFT/RIGHT SIDEBAR
-* Add "left" or "right" in modal parent div, after class="modal".
-* Get free snippets on bootpen.com
-*******************************/
 	.modal.left .modal-dialog,
 	.modal.right .modal-dialog {
 		position: fixed;
@@ -52,41 +45,37 @@
 		        transform: translateX(100%);
 	}
 .afterpop{
-    
+
     transition: all 2s  !important;
     transition-timing-function: ease-in  !important;
    -webkit-transform: translateX(0%) !important;
 		    -ms-transform: translateX(0%) !important;
 		     -o-transform: translateX(0%) !important;
 		        transform: translateX(0%) !important;
-		        
+
 }
 	.modal.left .modal-content,
 	.modal.right .modal-content {
 		height: 100%;
 		overflow-y: auto;
 	}
-	
+
 	.modal.left .modal-body,
 	.modal.right .modal-body {
 		padding: 15px 15px 80px;
 	}
 
-
-        
-/*Right*/
 	.modal.right.fade .modal-dialog {
-	    
+
 		right: 0px;
-		        
+
 	}
-	
+
 	.modal.right.fade.in .modal-dialog {
 		right: 0;
 		transition: all .5s;
 	}
 
-/* ----- MODAL STYLE ----- */
 	.modal-content {
 		border-radius: 0;
 		border: none;
@@ -96,11 +85,6 @@
 		border-bottom-color: #EEEEEE;
 		background-color: #FAFAFA;
 	}
-
-/* ----- v CAN BE DELETED v ----- */
-
-
-
 
     </style>
 @endpush
@@ -112,24 +96,15 @@
 
         <div class="cover-content pt-40">
             <div class="container position-relative">
-              {{--  @if(!empty($activeSpecialOffer))
-                    @include('web.default2.course.special_offer')
-                @endif --}}
+
                 <h2 class="font-30 course-title text-center py-10">{{ clean($course->title, 't') }}{{(isset($course->start_date) and $course->isCourse()) ?" (Upcoming)" :"" }}</h2>
                 <div class="row">
                     <div class="col-12 col-lg-6 course-section-top">
                         <div class="course-img text-center {{ $course->video_demo ? 'has-video' :'' }}">
 
-                      
-
                         @if($course->video_demo)
                         <iframe style="border-radius: 30px; cursor:pointer; text-align: center; width:100%; height:280px" src="{{ $course->video_demo_source == 'upload' ?  url($course->video_demo) : $course->video_demo }}" title="Asttrolok" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"  allowfullscreen=""></iframe>
-                            <!--<div id="webinarDemoVideoBtn"-->
-                            <!--     data-video-path="{{ $course->video_demo_source == 'upload' ?  url($course->video_demo) : $course->video_demo }}"-->
-                            <!--     data-video-source="{{ $course->video_demo_source }}"-->
-                            <!--     class="course-video-icon cursor-pointer d-flex align-items-center justify-content-center">-->
-                            <!--    <i data-feather="play" width="25" height="25"></i>-->
-                            <!--</div>-->
+
                             @else
                               <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $course->getImage() }}" class="img-cover" style="height:auto" alt="webinar Demo Video">
                         @endif
@@ -143,7 +118,7 @@
                         @if($canSale and !empty(getFeaturesSettings('direct_classes_payment_button_status')))
                         @if($course->price > 0)
                         <button type="button" class="btn-primary btn  buy_now mt-20 js-course-direct-payment">{{ trans('update.buy_now') }}</button>
-                    
+
                          @else
                                     @if($course->slug == 'learn-free-vedic-astrology-course-online' )
                                         @if(empty($authUser))
@@ -169,60 +144,27 @@
                         <div class="course-img {{ $course->video_demo ? 'has-video' :'' }}">
 
                         <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $course->getImageCover() }}" class="img-cover" style="height:auto;" alt="webinar Demo Video">
-                        
+
                     </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    
+
     <section class="container course-content-section {{ $course->type }} {{ ($hasBought or $course->isWebinar()) ? 'has-progress-bar' : '' }}">
         <div class="row">
             <div class="col-12 col-lg-8">
                 <div class="course-content-body  user-select-none">
                     <div class="course-body-on-cover text-white">
                         @if(url()->current()!='https://lms.asttrolok.com/course/Free-Astrology-Course')
-                        
-                     {{--   <h2 class="font-30 course-title">
-                            {{ clean($course->title, 't') }}
-                        </h2>
 
-                    @if(!empty($course->category))
-                            <span class="d-block font-16 mt-10">{{ trans('public.in') }} <a href="{{ $course->category->getUrl() }}" target="_blank" class="font-weight-500 text-decoration-underline text-white">{{ $course->category->title }}</a></span>
-                        @endif
-
-                        <div class="d-flex align-items-center">
-                            @include('web.default2.includes.webinar.rate',['rate' => $course->course_rate])
-                            <span class="ml-10 mt-15 font-14">({{ $course->reviews->pluck('creator_id')->count() }} {{ trans('public.ratings') }})</span>
-                        </div>
-
-                        <div class="mt-15">
-                            <span class="font-14">{{ trans('public.created_by') }}</span>
-                            <a href="{{ $course->teacher->getProfileUrl() }}" target="_blank" class="text-decoration-underline text-white font-14 font-weight-500">{{ $course->teacher->full_name }}</a>
-                        </div> 
---}}
                         @php
                             $percent = $course->getProgress();
                         @endphp
 
                         @if($hasBought or $percent)
 
-                            {{-- <div class="mt-30 d-flex align-items-center">
-                                <div class="progress course-progress flex-grow-1 shadow-xs rounded-sm">
-                                    <span class="progress-bar rounded-sm bg-warning" style="width: {{ $percent }}%"></span>
-                                </div>
-
-                                <span class="ml-15 font-14 font-weight-500">
-                                    @if($hasBought and (!$course->isWebinar() or $course->isProgressing()))
-                                        {{ trans('public.course_learning_passed',['percent' => $percent]) }}
-                                    @elseif(!is_null($course->capacity))
-                                        {{ $course->sales_count }}/{{ $course->capacity }} {{ trans('quiz.students') }}
-                                    @else
-                                        {{ trans('public.course_learning_passed',['percent' => $percent]) }}
-                                    @endif
-                                </span>
-                            </div> --}}
                         @endif
                         @else
                         <div class="course-body-on-cover text-white" style="min-height: 240px;"></div>
@@ -250,41 +192,23 @@
                 <span class="mt-10 d-block">70 <br/>Countries</span>
             </a>
         </div>
-  
+
 </div>
                     <div class="mt-35">
-                        <!--<ul class="nav nav-tabs bg-secondary rounded-sm p-15 d-flex align-items-center justify-content-between" id="tabs-tab" role="tablist">-->
-                        <!--    <li class="nav-item">-->
-                        <!--        <a class="position-relative font-14 text-white {{ (request()->get('tab','') == 'information') ? 'active' : '' }}" id="information-tab"-->
-                        <!--           data-toggle="tab" href="#information" role="tab" aria-controls="information"-->
-                        <!--           aria-selected="true">{{ trans('product.information') }}</a>-->
-                        <!--    </li>-->
-                        <!--    <li class="nav-item">-->
-                        <!--        <a class="position-relative font-14 text-white {{ (empty(request()->get('tab','')) or request()->get('tab','') == 'content') ? 'active' : '' }}" id="content-tab" data-toggle="tab"-->
-                        <!--           href="#content" role="tab" aria-controls="content"-->
-                        <!--           aria-selected="false">{{ trans('product.content') }} ({{ $webinarContentCount }})</a>-->
-                        <!--    </li>-->
-                        <!--    <li class="nav-item">-->
-                        <!--        <a class="position-relative font-14 text-white {{ (request()->get('tab','') == 'reviews') ? 'active' : '' }}" id="reviews-tab" data-toggle="tab"-->
-                        <!--           href="#reviews" role="tab" aria-controls="reviews"-->
-                        <!--           aria-selected="false">{{ trans('product.reviews') }} ({{ $course->reviews->count() > 0 ? $course->reviews->pluck('creator_id')->count() : 0 }})</a>-->
-                        <!--    </li>-->
-                        <!--</ul>-->
+
                         <h1 class="font-30 course-h1 text-left py-10">{{ clean($pageH1, 't') }}</h1>
 @include('web.default2'.'.course.tabs.information')
-                      
 
                     </div>
-                    
+
                 </div>
             </div>
 @php
-    $iconSize = 20; 
+    $iconSize = 20;
 @endphp
             <div class="course-content-sidebar col-12 col-lg-4 mt-25 mt-lg-0">
                 <div class="register_desktop1">
                 <div class="rounded-lg shadow-sm">
-                    
 
                     <div class="px-20 pb-30">
                         <form action="/cart/store" method="post">
@@ -358,7 +282,6 @@
                                 @elseif($hasBought or !empty($course->getInstallmentOrder()))
                                     <a href="{{ $course->getLearningPageUrl() }}" class="btn btn-primary">{{ trans('update.go_to_learning_page') }}</a>
                                 @elseif($course->price > 0)
-                                    
 
                                     @if($canSale and $course->subscribe)
                                         <a href="/subscribes/apply/{{ $course->slug }}" class="btn btn-outline-primary btn-subscribe mt-20 @if(!$canSale) disabled @endif">{{ trans('public.subscribe') }}</a>
@@ -381,7 +304,7 @@
                                             {{ trans('update.pay_with_installments') }}
                                         </a>
                                     @endif
-                               
+
                                 <button type="button" class="mt-20 btn btn-primary {{ $canSale ? 'js-course-add-to-cart-btn' : ($course->cantSaleStatus($hasBought) .' disabled ') }}" >
                                         @if(!$canSale)
                                             {{ trans('update.disabled_add_to_cart') }}
@@ -411,10 +334,7 @@
                         </form>
 
                         @if(!empty(getOthersPersonalizationSettings('show_guarantee_text')) and getOthersPersonalizationSettings('show_guarantee_text'))
-                            <!--<div class="mt-20 d-flex align-items-center justify-content-center text-gray">-->
-                            <!--    <i data-feather="thumbs-up" width="20" height="20"></i>-->
-                            <!--    <span class="ml-5 font-14">{{ getOthersPersonalizationSettings('guarantee_text') }}</span>-->
-                            <!--</div>-->
+
                         @endif
 
                         <div class="mt-35">
@@ -434,10 +354,10 @@
                             @endif
                             @if($course->id == 2102)
                                  <div class="mt-20 d-flex align-items-center text-gray">
-                                   
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                                         <line x1="16" y1="2" x2="16" y2="6"/>
@@ -446,12 +366,12 @@
                                     </svg>
                                     <span class="ml-5 font-14 font-weight-500">Start Date – 12th December, 2025</span>
                                 </div>
-                                
+
                                 <div class="mt-20 d-flex align-items-center text-gray">
-                                 
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                         <polyline points="7 10 12 15 17 10"/>
@@ -459,12 +379,12 @@
                                     </svg>
                                     <span class="ml-5 font-14 font-weight-500">Class Time – Every Saturday, 7-9 AM IST</span>
                                 </div>
-                                
+
                                 <div class="mt-20 d-flex align-items-center text-gray">
-                                  
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <circle cx="12" cy="12" r="10"/>
                                         <line x1="2" y1="12" x2="22" y2="12"/>
@@ -472,24 +392,24 @@
                                     </svg>
                                     <span class="ml-5 font-14 font-weight-500">Language – English</span>
                                 </div>
-                                
+
                                 <div class="mt-20 d-flex align-items-center text-gray">
-                                 
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <circle cx="12" cy="8" r="7"/>
                                         <polyline points="8 12 7 22 12 19 17 22 16 12"/>
                                     </svg>
                                     <span class="ml-5 font-14 font-weight-500">Certification Course</span>
                                 </div>
-                                
+
                                 <div class="mt-20 d-flex align-items-center text-gray">
-                                  
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <path d="M9.95 2.58a3.07 3.07 0 0 1 4.1 0l.43.37a2 2 0 0 0 1.18.44h.56a3.07 3.07 0 0 1 3.07 3.07v.56c0 .45.16.89.44 1.18l.37.43a3.07 3.07 0 0 1 0 4.1l-.37.43a2 2 0 0 0-.44 1.18v.56a3.07 3.07 0 0 1-3.07 3.07h-.56a2 2 0 0 0-1.18.44l-.43.37a3.07 3.07 0 0 1-4.1 0l-.43-.37a2 2 0 0 0-1.18-.44h-.56a3.07 3.07 0 0 1-3.07-3.07v-.56c0-.45-.16-.89-.44-1.18l-.37-.43a3.07 3.07 0 0 1 0-4.1l.37-.43a2 2 0 0 0 .44-1.18v-.56A3.07 3.07 0 0 1 8.38 3.4h.56c.45 0 .89-.16 1.18-.44z"/>
                                         <path d="m9 12 2 2 4-4"/>
@@ -500,10 +420,10 @@
                             @endif
                             @if($course->id == 2107)
                                  <div class="mt-20 d-flex align-items-center text-gray">
-                                   
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                                         <line x1="16" y1="2" x2="16" y2="6"/>
@@ -512,12 +432,12 @@
                                     </svg>
                                     <span class="ml-5 font-14 font-weight-500">Start Date – 19th March 2026</span>
                                 </div>
-                                
+
                                 <div class="mt-20 d-flex align-items-center text-gray">
-                                 
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                         <polyline points="7 10 12 15 17 10"/>
@@ -525,12 +445,12 @@
                                     </svg>
                                     <span class="ml-5 font-14 font-weight-500">Class Time – Every Saturday, 7 - 9 PM IST</span>
                                 </div>
-                                
+
                                 <div class="mt-20 d-flex align-items-center text-gray">
-                                  
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <circle cx="12" cy="12" r="10"/>
                                         <line x1="2" y1="12" x2="22" y2="12"/>
@@ -538,24 +458,24 @@
                                     </svg>
                                     <span class="ml-5 font-14 font-weight-500">Language – Hindi</span>
                                 </div>
-                                
+
                                 <div class="mt-20 d-flex align-items-center text-gray">
-                                 
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <circle cx="12" cy="8" r="7"/>
                                         <polyline points="8 12 7 22 12 19 17 22 16 12"/>
                                     </svg>
                                     <span class="ml-5 font-14 font-weight-500">Certification – Course completion</span>
                                 </div>
-                                
+
                                 <div class="mt-20 d-flex align-items-center text-gray">
-                                  
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <path d="M9.95 2.58a3.07 3.07 0 0 1 4.1 0l.43.37a2 2 0 0 0 1.18.44h.56a3.07 3.07 0 0 1 3.07 3.07v.56c0 .45.16.89.44 1.18l.37.43a3.07 3.07 0 0 1 0 4.1l-.37.43a2 2 0 0 0-.44 1.18v.56a3.07 3.07 0 0 1-3.07 3.07h-.56a2 2 0 0 0-1.18.44l-.43.37a3.07 3.07 0 0 1-4.1 0l-.43-.37a2 2 0 0 0-1.18-.44h-.56a3.07 3.07 0 0 1-3.07-3.07v-.56c0-.45-.16-.89-.44-1.18l-.37-.43a3.07 3.07 0 0 1 0-4.1l.37-.43a2 2 0 0 0 .44-1.18v-.56A3.07 3.07 0 0 1 8.38 3.4h.56c.45 0 .89-.16 1.18-.44z"/>
                                         <path d="m9 12 2 2 4-4"/>
@@ -580,40 +500,11 @@
                             @endif
                         </div>
 
-                        <!--<div class="mt-40 p-10 rounded-sm border row align-items-center favorites-share-box">-->
-                        <!--    @if($course->isWebinar())-->
-                        <!--        <div class="col">-->
-                        <!--            <a href="{{ $course->addToCalendarLink() }}" target="_blank" class="d-flex flex-column align-items-center text-center text-gray">-->
-                        <!--                <i data-feather="calendar" width="20" height="20"></i>-->
-                        <!--                <span class="font-12">{{ trans('public.reminder') }}</span>-->
-                        <!--            </a>-->
-                        <!--        </div>-->
-                        <!--    @endif-->
-
-                        <!--    <div class="col">-->
-                        <!--        <a href="/favorites/{{ $course->slug }}/toggle" id="favoriteToggle" class="d-flex flex-column align-items-center text-gray">-->
-                        <!--            <i data-feather="heart" class="{{ !empty($isFavorite) ? 'favorite-active' : '' }}" width="20" height="20"></i>-->
-                        <!--            <span class="font-12">{{ trans('panel.favorite') }}</span>-->
-                        <!--        </a>-->
-                        <!--    </div>-->
-
-                        <!--    <div class="col">-->
-                        <!--        <a href="#" class="js-share-course d-flex flex-column align-items-center text-gray">-->
-                        <!--            <i data-feather="share-2" width="20" height="20"></i>-->
-                        <!--            <span class="font-12">{{ trans('public.share') }}</span>-->
-                        <!--        </a>-->
-                        <!--    </div>-->
-                        <!--</div>-->
-
-                        <!--<div class="mt-30 text-center">-->
-                        <!--    <button type="button" id="webinarReportBtn" class="font-14 text-gray btn-transparent">{{ trans('webinars.report_this_webinar') }}</button>-->
-                        <!--</div>-->
                     </div>
                 </div>
 </div>
                 <div class="register_desktop">
                 <div class="rounded-lg shadow-sm">
-                    
 
                     <div class="px-20 pb-30">
                         <form action="/cart/store" method="post">
@@ -687,7 +578,6 @@
                                 @elseif($hasBought or !empty($course->getInstallmentOrder()))
                                     <a href="{{ $course->getLearningPageUrl() }}" class="btn btn-primary">{{ trans('update.go_to_learning_page') }}</a>
                                 @elseif($course->price > 0)
-                                    
 
                                     @if($canSale and $course->subscribe)
                                         <a href="/subscribes/apply/{{ $course->slug }}" class="btn btn-outline-primary btn-subscribe mt-20 @if(!$canSale) disabled @endif">{{ trans('public.subscribe') }}</a>
@@ -710,7 +600,7 @@
                                             {{ trans('update.pay_with_installments') }}
                                         </a>
                                     @endif
-                                
+
                                 <button type="button" class="mt-20 btn btn-primary {{ $canSale ? 'js-course-add-to-cart-btn' : ($course->cantSaleStatus($hasBought) .' disabled ') }}" >
                                         @if(!$canSale)
                                             {{ trans('update.disabled_add_to_cart') }}
@@ -719,7 +609,7 @@
                                         @endif
                                     </button>
                                     @else
-                                    
+
                                     @if($course->slug == 'learn-free-vedic-astrology-course-online' )
                                         @if(empty($authUser))
                                             <a href="/register-free" class=" btn btn-primary {{ (!$canSale) ? (' disabled ' . $course->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
@@ -733,7 +623,7 @@
                                             <a href="{{ $canSale ? '/course/'. $course->slug .'/free' : '#' }}" class="buy-btn1 btn btn-primary {{ (!$canSale) ? (' disabled ' . $course->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
                                         @endif
                                     @else
-                                        
+
                                         <a href="{{ $canSale ? '/course/'. $course->slug .'/free' : '#' }}" class=" btn btn-primary {{ (!$canSale) ? (' disabled ' . $course->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
                                     @endif
                                 @endif
@@ -742,10 +632,7 @@
                         </form>
 
                         @if(!empty(getOthersPersonalizationSettings('show_guarantee_text')) and getOthersPersonalizationSettings('show_guarantee_text'))
-                            <!--<div class="mt-20 d-flex align-items-center justify-content-center text-gray">-->
-                            <!--    <i data-feather="thumbs-up" width="20" height="20"></i>-->
-                            <!--    <span class="ml-5 font-14">{{ getOthersPersonalizationSettings('guarantee_text') }}</span>-->
-                            <!--</div>-->
+
                         @endif
 
                         <div class="mt-35">
@@ -758,10 +645,10 @@
                             @endif
                @if($course->id == 2102)
                                  <div class="mt-20 d-flex align-items-center text-gray">
-                                   
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                                         <line x1="16" y1="2" x2="16" y2="6"/>
@@ -770,12 +657,12 @@
                                     </svg>
                                     <span class="ml-5 font-14 font-weight-500">Start Date – 12th December, 2025</span>
                                 </div>
-                                
+
                                 <div class="mt-20 d-flex align-items-center text-gray">
-                                 
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                         <polyline points="7 10 12 15 17 10"/>
@@ -783,12 +670,12 @@
                                     </svg>
                                     <span class="ml-5 font-14 font-weight-500">Class Time – Every Saturday, 7-9 AM IST</span>
                                 </div>
-                                
+
                                 <div class="mt-20 d-flex align-items-center text-gray">
-                                  
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <circle cx="12" cy="12" r="10"/>
                                         <line x1="2" y1="12" x2="22" y2="12"/>
@@ -796,24 +683,24 @@
                                     </svg>
                                     <span class="ml-5 font-14 font-weight-500">Language – English</span>
                                 </div>
-                                
+
                                 <div class="mt-20 d-flex align-items-center text-gray">
-                                 
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <circle cx="12" cy="8" r="7"/>
                                         <polyline points="8 12 7 22 12 19 17 22 16 12"/>
                                     </svg>
                                     <span class="ml-5 font-14 font-weight-500">Certification – Course completion</span>
                                 </div>
-                                
+
                                 <div class="mt-20 d-flex align-items-center text-gray">
-                                  
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <path d="M9.95 2.58a3.07 3.07 0 0 1 4.1 0l.43.37a2 2 0 0 0 1.18.44h.56a3.07 3.07 0 0 1 3.07 3.07v.56c0 .45.16.89.44 1.18l.37.43a3.07 3.07 0 0 1 0 4.1l-.37.43a2 2 0 0 0-.44 1.18v.56a3.07 3.07 0 0 1-3.07 3.07h-.56a2 2 0 0 0-1.18.44l-.43.37a3.07 3.07 0 0 1-4.1 0l-.43-.37a2 2 0 0 0-1.18-.44h-.56a3.07 3.07 0 0 1-3.07-3.07v-.56c0-.45-.16-.89-.44-1.18l-.37-.43a3.07 3.07 0 0 1 0-4.1l.37-.43a2 2 0 0 0 .44-1.18v-.56A3.07 3.07 0 0 1 8.38 3.4h.56c.45 0 .89-.16 1.18-.44z"/>
                                         <path d="m9 12 2 2 4-4"/>
@@ -824,10 +711,10 @@
                             @endif
                             @if($course->id == 2107)
                                  <div class="mt-20 d-flex align-items-center text-gray">
-                                   
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                                         <line x1="16" y1="2" x2="16" y2="6"/>
@@ -836,12 +723,12 @@
                                     </svg>
                                     <span class="ml-5 font-14 font-weight-500">Start Date – 19th March 2026</span>
                                 </div>
-                                
+
                                 <div class="mt-20 d-flex align-items-center text-gray">
-                                 
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                         <polyline points="7 10 12 15 17 10"/>
@@ -849,12 +736,12 @@
                                     </svg>
                                     <span class="ml-5 font-14 font-weight-500">Class Time – Every Saturday,7 - 9 PM IST</span>
                                 </div>
-                                
+
                                 <div class="mt-20 d-flex align-items-center text-gray">
-                                  
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <circle cx="12" cy="12" r="10"/>
                                         <line x1="2" y1="12" x2="22" y2="12"/>
@@ -862,24 +749,24 @@
                                     </svg>
                                     <span class="ml-5 font-14 font-weight-500">Language – Hindi</span>
                                 </div>
-                                
+
                                 <div class="mt-20 d-flex align-items-center text-gray">
-                                 
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <circle cx="12" cy="8" r="7"/>
                                         <polyline points="8 12 7 22 12 19 17 22 16 12"/>
                                     </svg>
                                     <span class="ml-5 font-14 font-weight-500">Certification Course</span>
                                 </div>
-                                
+
                                 <div class="mt-20 d-flex align-items-center text-gray">
-                                  
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}" 
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="{{ $iconSize }}" height="{{ $iconSize }}"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                          class="icon flex-shrink-0">
                                         <path d="M9.95 2.58a3.07 3.07 0 0 1 4.1 0l.43.37a2 2 0 0 0 1.18.44h.56a3.07 3.07 0 0 1 3.07 3.07v.56c0 .45.16.89.44 1.18l.37.43a3.07 3.07 0 0 1 0 4.1l-.37.43a2 2 0 0 0-.44 1.18v.56a3.07 3.07 0 0 1-3.07 3.07h-.56a2 2 0 0 0-1.18.44l-.43.37a3.07 3.07 0 0 1-4.1 0l-.43-.37a2 2 0 0 0-1.18-.44h-.56a3.07 3.07 0 0 1-3.07-3.07v-.56c0-.45-.16-.89-.44-1.18l-.37-.43a3.07 3.07 0 0 1 0-4.1l.37-.43a2 2 0 0 0 .44-1.18v-.56A3.07 3.07 0 0 1 8.38 3.4h.56c.45 0 .89-.16 1.18-.44z"/>
                                         <path d="m9 12 2 2 4-4"/>
@@ -908,44 +795,15 @@
                                     <span class="ml-5 font-14 font-weight-500">{{ trans('webinars.instructor_support') }}</span>
                                 </div>
                             @endif
-                            
+
                         </div>
 
-                        <!--<div class="mt-40 p-10 rounded-sm border row align-items-center favorites-share-box">-->
-                        <!--    @if($course->isWebinar())-->
-                        <!--        <div class="col">-->
-                        <!--            <a href="{{ $course->addToCalendarLink() }}" target="_blank" class="d-flex flex-column align-items-center text-center text-gray">-->
-                        <!--                <i data-feather="calendar" width="20" height="20"></i>-->
-                        <!--                <span class="font-12">{{ trans('public.reminder') }}</span>-->
-                        <!--            </a>-->
-                        <!--        </div>-->
-                        <!--    @endif-->
-
-                        <!--    <div class="col">-->
-                        <!--        <a href="/favorites/{{ $course->slug }}/toggle" id="favoriteToggle" class="d-flex flex-column align-items-center text-gray">-->
-                        <!--            <i data-feather="heart" class="{{ !empty($isFavorite) ? 'favorite-active' : '' }}" width="20" height="20"></i>-->
-                        <!--            <span class="font-12">{{ trans('panel.favorite') }}</span>-->
-                        <!--        </a>-->
-                        <!--    </div>-->
-
-                        <!--    <div class="col">-->
-                        <!--        <a href="#" class="js-share-course d-flex flex-column align-items-center text-gray">-->
-                        <!--            <i data-feather="share-2" width="20" height="20"></i>-->
-                        <!--            <span class="font-12">{{ trans('public.share') }}</span>-->
-                        <!--        </a>-->
-                        <!--    </div>-->
-                        <!--</div>-->
-
-                        <!--<div class="mt-30 text-center">-->
-                        <!--    <button type="button" id="webinarReportBtn" class="font-14 text-gray btn-transparent">{{ trans('webinars.report_this_webinar') }}</button>-->
-                        <!--</div>-->
                     </div>
                 </div>
 </div>
-                {{-- Cashback Alert --}}
+
                 @include('web.default2.includes.cashback_alert',['itemPrice' => $course->price])
 
-                {{-- Gift Card --}}
                 @if($course->canSale() and !empty(getGiftsGeneralSettings('status')) and !empty(getGiftsGeneralSettings('allow_sending_gift_for_courses')))
                     <a href="/gift/course/{{ $course->slug }}" class="d-flex d-none align-items-center mt-30 rounded-lg border p-15">
                         <div class="size-40 d-flex-center rounded-circle bg-gray200">
@@ -987,48 +845,13 @@
                             </div>
                         @endif
 
-                        <!--<div class="mt-20 d-flex align-items-center justify-content-between text-gray">-->
-                        <!--    <div class="d-flex align-items-center">-->
-                        <!--        <i data-feather="user" width="20" height="20"></i>-->
-                        <!--        <span class="ml-5 font-14 font-weight-500">{{ trans('public.capacity') }}:</span>-->
-                        <!--    </div>-->
-                        <!--    @if(!is_null($course->capacity))-->
-                        <!--        <span class="font-14">{{ $course->capacity }} {{ trans('quiz.students') }}</span>-->
-                        <!--    @else-->
-                        <!--        <span class="font-14">{{ trans('update.unlimited') }}</span>-->
-                        <!--    @endif-->
-                        <!--</div>-->
-
-                        <!--<div class="mt-20 d-flex align-items-center justify-content-between text-gray">-->
-                        <!--    <div class="d-flex align-items-center">-->
-                        <!--        <i data-feather="clock" width="20" height="20"></i>-->
-                        <!--        <span class="ml-5 font-14 font-weight-500">{{ trans('public.duration') }}:</span>-->
-                        <!--    </div>-->
-                        <!--    <span class="font-14">{{ convertMinutesToHourAndMinute(!empty($course->duration) ? $course->duration : 0) }} {{ trans('home.hours') }}</span>-->
-                        <!--</div>-->
-
-                        <!--<div class="mt-20 d-flex align-items-center justify-content-between text-gray">-->
-                        <!--    <div class="d-flex align-items-center">-->
-                        <!--        <i data-feather="users" width="20" height="20"></i>-->
-                        <!--        <span class="ml-5 font-14 font-weight-500">{{ trans('quiz.students') }}:</span>-->
-                        <!--    </div>-->
-                        <!--    @if(url()->current()=='https://lms.asttrolok.com/course/Free-Astrology-Course')-->
-                        <!--    <span class="font-14">3200</span>-->
-                            
-                        <!--    @else-->
-                        <!--    <span class="font-14">{{ $course->sales_count }}</span>-->
-                            
-                        <!--    @endif-->
-                            
-                        <!--</div>-->
-
                         @if($course->isWebinar())
                             <div class="mt-20 d-flex align-items-center justify-content-between text-gray">
                                 <div class="d-flex align-items-center">
                                     <img loading="lazy" decoding="async" src="{{ config('app.js_css_url') }}/assets2/default/img/icons/sessions.svg" width="20" alt="sessions">
                                     <span class="ml-5 font-14 font-weight-500">{{ trans('public.sessions') }}:</span>
                                 </div>
-                                <!--<span class="font-14">{{ $course->sessions->count() }}</span>-->
+
                             </div>
                         @endif
 
@@ -1072,11 +895,10 @@
                     </div>
                 </div>
 
-                {{-- organization --}}
                 @if($course->creator_id != $course->teacher_id && 1==2)
                     @include('web.default2.course.sidebar_instructor_profile', ['courseTeacher' => $course->creator])
                 @endif
-                {{-- teacher --}}
+
                  @if(1==2)
                 @include('web.default2.course.sidebar_instructor_profile', ['courseTeacher' => $course->teacher])
  @endif
@@ -1087,9 +909,7 @@
                     @endforeach
                 @endif
                 @endif
-                {{-- ./ teacher --}}
 
-                {{-- tags --}}
                 @if($course->tags->count() > 0)
                     <div class="rounded-lg tags-card shadow-sm mt-35 px-25 py-20  d-none ">
                         <h3 class="sidebar-title font-16 text-secondary font-weight-bold">{{ trans('public.tags') }}</h3>
@@ -1101,105 +921,14 @@
                         </div>
                     </div>
                 @endif
-           
+
                 <div class="row  d-none ">
-                       
-                            <!--<div class="rounded-lg sidebar-ads mt-35 col-12">-->
-                            <!--    <a href="https://lms.asttrolok.com/course/Astromani_2023">-->
-                            <!--        <img loading="lazy" decoding="async" src="/store/1/default_images/banners/Astromany-course.jpg" class="img-cover rounded-lg" alt="">-->
-                            <!--    </a>-->
-                            <!--</div>-->
-                            <!--  <div class="rounded-lg sidebar-ads mt-35 col-12">-->
-                            <!--    <a href="https://lms.asttrolok.com/course/Professional-Astrology-Course">-->
-                            <!--        <img loading="lazy" decoding="async" src="/store/1/default_images/banners/Asttrology-course.jpg" class="img-cover rounded-lg" alt="">-->
-                            <!--    </a>-->
-                            <!--</div>-->
-                            
-{{--                             
-         <div class="col-12 col-lg-12 mt-20  d-none ">
-             <div class="webinar-card">
-    <figure>
-        <div class="image-box">
-           <span class="badge badge-primary">Course</span>
-            
-            <a href="https://lms.asttrolok.com/course/{{ $astromani_23->slug }}">
-                <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $astromani_23->thumbnail }}" class="img-cover" alt="{{ $astromani_23->slug }}">
-            </a>
 
-            </div>
-
-        <figcaption class="webinar-card-body">
-            <div class="user-inline-avatar d-flex align-items-center">
-                <div class="avatar bg-gray200">
-                    <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $astromani_23->teacher->avatar }}" class="img-cover" alt="{{ $astromani_23->full_name }}">
-                </div>
-                <a href="{{ $astromani_23->teacher->getProfileUrl() }}" target="_blank" class="user-name ml-5 font-14">{{ $astromani_23->teacher->full_name }}</a>
-            </div>
-
-            <a href="https://lms.asttrolok.com/course/{{ $astromani_23->slug }}">
-                <h3 class="mt-15  font-weight-bold font-16 text-dark-blue">{{ clean($astromani_23->title,'title') }}</h3>
-            </a>
-           
-        </figcaption>
-    </figure>
-     </div>
-         </div>
-         
-         <div class="col-12 col-lg-12 mt-20">
-             <div class="webinar-card">
-    <figure>
-        <div class="image-box">
-           <span class="badge badge-primary">Course</span>
-            
-            <a href="https://lms.asttrolok.com/course/{{ $course_Professional->slug }}">
-                <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $course_Professional->thumbnail }}" class="img-cover" alt="{{ $course_Professional->slug }}">
-            </a>
-
-            </div>
-
-        <figcaption class="webinar-card-body">
-            <div class="user-inline-avatar d-flex align-items-center">
-                <div class="avatar bg-gray200">
-                    <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $course_Professional->teacher->avatar }}" class="img-cover" alt="{{ $course_Professional->full_name }}">
-                </div>
-                <a href="{{ $course_Professional->teacher->getProfileUrl() }}" target="_blank" class="user-name ml-5 font-14">{{ $course_Professional->teacher->full_name }}</a>
-            </div>
-
-            <a href="https://lms.asttrolok.com/course/{{ $course_Professional->slug }}">
-                <h3 class="mt-15  font-weight-bold font-16 text-dark-blue">{{ clean($course_Professional->title,'title') }}</h3>
-            </a>
-           
-        </figcaption>
-    </figure>
-     </div>
-         </div>
-         
-          --}}
-         
-         
-         
-         
-         
            </div>
-                
-                
-                {{-- ads --}}
-                <!--@if(!empty($advertisingBannersSidebar) and count($advertisingBannersSidebar))-->
-                <!--    <div class="row">-->
-                <!--        @foreach($advertisingBannersSidebar as $sidebarBanner)-->
-                <!--            <div class="rounded-lg sidebar-ads mt-35 col-{{ $sidebarBanner->size }}">-->
-                <!--                <a href="{{ $sidebarBanner->link }}">-->
-                <!--                    <img loading="lazy" decoding="async" src="{{ $sidebarBanner->image }}" class="img-cover rounded-lg" alt="{{ $sidebarBanner->title }}">-->
-                <!--                </a>-->
-                <!--            </div>-->
-                <!--        @endforeach-->
-                <!--    </div>-->
 
-                <!--@endif-->
             </div>
         </div>
 
-        {{-- Ads Bannaer --}}
         @if(!empty($advertisingBanners) and count($advertisingBanners))
             <div class="mt-30 mt-md-50  d-none ">
                 <div class="row">
@@ -1213,7 +942,7 @@
                 </div>
             </div>
         @endif
-        {{-- ./ Ads Bannaer --}}
+
     </section>
 
     <div id="webinarReportModal" class="d-none">
@@ -1247,25 +976,21 @@
         </form>
     </div>
 <div class="container demo  d-none ">
-	
-	
+
 	<div class="text-center d-none">
-	
+
 		<button type="button" class="btn btn-demo" data-toggle="modal" data-target="#myModal2">
 			Right Sidebar Modal
 		</button>
 	</div>
 
-
-	
-	<!-- Modal -->
 	<div class="modal right fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					
+
 				</div>
 
 				<div class="modal-body">
@@ -1324,20 +1049,18 @@
         </div>
 				</div>
 
-			</div><!-- modal-content -->
-		</div><!-- modal-dialog -->
-	</div><!-- modal -->
-	
-	
-</div><!-- container -->
+			</div>
+		</div>
+	</div>
 
+</div>
 
     @include('web.default2.course.share_modal')
     @include('web.default2.course.buy_with_point_modal')
     @include('web.default2.course.login_modal')
      @include('web.default2.course.pop_up')
     @include('web.default2.course.buynow_modal')
-   
+
 @endsection
 
 @push('scripts_bottom')
@@ -1378,7 +1101,7 @@
             // alert('');
             $('.buy_now').click();
         }
-       
+
     </script>
 @if(Session::has('addtocart'))
 <script>
@@ -1389,10 +1112,10 @@ $("#myModal2").modal('show');
     // $('.modal-dialog').addClass('afterpop');
 </script>
 @endif
-@php 
-    Illuminate\Support\Facades\Session::forget('addtocart');  
+@php
+    Illuminate\Support\Facades\Session::forget('addtocart');
 @endphp
-<!--<?php   //unset($_SESSION['addtocart']); ?>-->
+
     <script>
         var webinarDemoLang = '{{ trans('webinars.webinar_demo') }}';
         var replyLang = '{{ trans('panel.reply') }}';
@@ -1449,8 +1172,7 @@ $("#myModal2").modal('show');
                         $('.register_desktop').css("display", "none");
                         $('.register_desktop1').css("display", "block");
                     }
-                    
-                   
+
                 });
 </script>
     <script src="{{ config('app.js_css_url') }}/assets2/default/js/parts/comment.min.js"></script>
@@ -1463,4 +1185,3 @@ $("#myModal2").modal('show');
     display:none !important;
 }
 </style>
-

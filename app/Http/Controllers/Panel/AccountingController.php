@@ -20,16 +20,103 @@ use App\Models\WebinarPartPayment;
 
 class AccountingController extends Controller
 {
-    public function index()
-    {
-        $userAuth = auth()->user();
+    // public function index()
+    // {
+    //     $userAuth = auth()->user();
 
+    //     $accountings = Accounting::where('user_id', $userAuth->id)
+    //         ->where('system', false)
+    //         ->where('tax', false)
+    //         ->with([
+    //             'webinar',
+    //             // 'promotion',
+    //             'subscribe',
+    //             'meetingTime' => function ($query) {
+    //                 $query->with(['meeting' => function ($query) {
+    //                     $query->with(['creator' => function ($query) {
+    //                         $query->select('id', 'full_name');
+    //                     }]);
+    //                 }]);
+    //             }
+    //         ])
+    //         ->orderBy('created_at', 'desc')
+    //         ->orderBy('id', 'desc')
+    //         ->paginate(10);
+            
+    //         $sales1 = Sale::where(['buyer_id'=> $userAuth->id, 'status'=> null])->get();
+    //         // echo "<pre>";
+    //         // print_r($sales1);
+    //         $amount_paid=[];
+    //         foreach($sales1 as $sales2){
+    //             if($sales2->webinar_id){
+    //                 $webinars1 = Webinar:: where('id', $sales2->webinar_id)
+    //         ->first();
+    //                 $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $webinars1->title ,$sales2->id,$sales2->webinar_id,'course',$sales2->type];
+    //             }
+    //             if($sales2->meeting_id){
+    //         //         $webinars1 = Webinar:: where('id', $sales2->webinar_id)
+    //         // ->frist();
+    //                 $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Meeting',$sales2->id,$sales2->meeting_id,'meeting',$sales2->type ];
+    //             }
+                
+    //             if($sales2->bundle){
+    //         //         $webinars1 = Webinar:: where('id', $sales2->webinar_id)
+    //         // ->frist();
+    //         // print_r($sales2);die();
+    //                 $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Bundle Course',$sales2->id,$sales2->bundle_id,'bundle',$sales2->type ];
+    //             }
+                
+    //             if($sales2->subscription_id){
+    //                 $Subscription = Subscription::where('id', $sales2->subscription_id)->first();
+    //         // print_r($sales2);die();
+    //                 $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $Subscription->title,$sales2->id,$sales2->subscription_id,'subscription',$sales2->type ];
+    //             }
+                
+    //             if($sales2->product_order_id){
+    //                 // $Subscription = Subscription::where('id', $sales2->subscription_id)->first();
+    //         // print_r($sales2);die();
+    //                 $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Product' ,$sales2->id,$sales2->product_order_id,'product',$sales2->type ];
+    //             }
+    //         }
+            
+    //         $WebinarPartPayment =  WebinarPartPayment :: where('user_id',$userAuth->id)->get();
+                    
+    //         foreach ($WebinarPartPayment as $WebinarPartPayment1){
+    //             $webinars1 = Webinar:: where('id', $WebinarPartPayment1->webinar_id)
+    //         ->first();
+    //             $amount_paid[]=[ $WebinarPartPayment1->amount , strtotime($WebinarPartPayment1->created_at) , $webinars1->title,$WebinarPartPayment1->id,$WebinarPartPayment1->webinar_id,'part',''];
+    //         }
+    //         usort($amount_paid, function($a, $b) {
+    //             return $b[1] <=> $a[1];
+    //         });
+    //         $data['amount_paid'] = $amount_paid;
+
+
+    //     $data = [
+    //         'pageTitle' => trans('financial.summary_page_title'),
+    //         'accountings' => $accountings,
+    //         'amount_paid' => $amount_paid,
+    //         'commission' => getFinancialSettings('commission') ?? 0
+    //     ];
+    //     // print_r($data);
+    //     return view(getTemplate() . '.panel.financial.summary', $data);
+    // }
+
+       public function index()
+{
+    try {
+        $userAuth = auth()->user();
+        
+        if (!$userAuth) {
+            return redirect()->route('login')->with('error', 'Please login first');
+        }
+
+        // Accounting records fetch करें
         $accountings = Accounting::where('user_id', $userAuth->id)
             ->where('system', false)
             ->where('tax', false)
             ->with([
                 'webinar',
-                // 'promotion',
                 'subscribe',
                 'meetingTime' => function ($query) {
                     $query->with(['meeting' => function ($query) {
@@ -42,55 +129,119 @@ class AccountingController extends Controller
             ->orderBy('created_at', 'desc')
             ->orderBy('id', 'desc')
             ->paginate(10);
-            
-            $sales1 = Sale::where(['buyer_id'=> $userAuth->id, 'status'=> null])->get();
-            // echo "<pre>";
-            // print_r($sales1);
-            $amount_paid=[];
-            foreach($sales1 as $sales2){
-                if($sales2->webinar_id){
-                    $webinars1 = Webinar:: where('id', $sales2->webinar_id)
-            ->first();
-                    $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $webinars1->title ,$sales2->id,$sales2->webinar_id,'course',$sales2->type];
-                }
-                if($sales2->meeting_id){
-            //         $webinars1 = Webinar:: where('id', $sales2->webinar_id)
-            // ->frist();
-                    $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Meeting',$sales2->id,$sales2->meeting_id,'meeting',$sales2->type ];
-                }
-                
-                if($sales2->bundle){
-            //         $webinars1 = Webinar:: where('id', $sales2->webinar_id)
-            // ->frist();
-            // print_r($sales2);die();
-                    $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Bundle Course',$sales2->id,$sales2->bundle_id,'bundle',$sales2->type ];
-                }
-                
-                if($sales2->subscription_id){
-                    $Subscription = Subscription::where('id', $sales2->subscription_id)->first();
-            // print_r($sales2);die();
-                    $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $Subscription->title,$sales2->id,$sales2->subscription_id,'subscription',$sales2->type ];
-                }
-                
-                if($sales2->product_order_id){
-                    // $Subscription = Subscription::where('id', $sales2->subscription_id)->first();
-            // print_r($sales2);die();
-                    $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Product' ,$sales2->id,$sales2->product_order_id,'product',$sales2->type ];
-                }
-            }
-            
-            $WebinarPartPayment =  WebinarPartPayment :: where('user_id',$userAuth->id)->get();
-                    
-            foreach ($WebinarPartPayment as $WebinarPartPayment1){
-                $webinars1 = Webinar:: where('id', $WebinarPartPayment1->webinar_id)
-            ->first();
-                $amount_paid[]=[ $WebinarPartPayment1->amount , strtotime($WebinarPartPayment1->created_at) , $webinars1->title,$WebinarPartPayment1->id,$WebinarPartPayment1->webinar_id,'part',''];
-            }
-            usort($amount_paid, function($a, $b) {
-                return $b[1] <=> $a[1];
-            });
-            $data['amount_paid'] = $amount_paid;
 
+        // Sales records fetch करें
+        $sales = Sale::where(['buyer_id' => $userAuth->id, 'status' => null])->get();
+        $amount_paid = [];
+
+        // Sales data process करें
+        foreach ($sales as $sale) {
+            try {
+                if ($sale->webinar_id) {
+                    $webinar = Webinar::find($sale->webinar_id);
+                    if ($webinar) {
+                        $amount_paid[] = [
+                            $sale->total_amount,
+                            $sale->created_at,
+                            $webinar->title,
+                            $sale->id,
+                            $sale->webinar_id,
+                            'course',
+                            $sale->type
+                        ];
+                    }
+                }
+
+                if ($sale->meeting_id) {
+                    $amount_paid[] = [
+                        $sale->total_amount,
+                        $sale->created_at,
+                        'Meeting',
+                        $sale->id,
+                        $sale->meeting_id,
+                        'meeting',
+                        $sale->type
+                    ];
+                }
+
+                if ($sale->bundle_id) {
+                    $amount_paid[] = [
+                        $sale->total_amount,
+                        $sale->created_at,
+                        'Bundle Course',
+                        $sale->id,
+                        $sale->bundle_id,
+                        'bundle',
+                        $sale->type
+                    ];
+                }
+
+                if ($sale->subscription_id) {
+                    $subscription = Subscription::find($sale->subscription_id);
+                    if ($subscription) {
+                        $amount_paid[] = [
+                            $sale->total_amount,
+                            $sale->created_at,
+                            $subscription->title,
+                            $sale->id,
+                            $sale->subscription_id,
+                            'subscription',
+                            $sale->type
+                        ];
+                    }
+                }
+
+                if ($sale->product_order_id) {
+                    $amount_paid[] = [
+                        $sale->total_amount,
+                        $sale->created_at,
+                        'Product',
+                        $sale->id,
+                        $sale->product_order_id,
+                        'product',
+                        $sale->type
+                    ];
+                }
+            } catch (\Exception $e) {
+                \Log::error('Error processing sale: ' . $e->getMessage(), [
+                    'sale_id' => $sale->id ?? null
+                ]);
+                continue; // अगले sale को process करें
+            }
+        }
+
+        try {
+            $webinarPartPayments = WebinarPartPayment::where('user_id', $userAuth->id)->get();
+
+            foreach ($webinarPartPayments as $payment) {
+                try {
+                    $webinar = Webinar::find($payment->webinar_id);
+                    if ($webinar) {
+                        $amount_paid[] = [
+                            $payment->amount,
+                            strtotime($payment->created_at),
+                            $webinar->title,
+                            $payment->id,
+                            $payment->webinar_id,
+                            'part',
+                            ''
+                        ];
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Error processing part payment: ' . $e->getMessage(), [
+                        'payment_id' => $payment->id ?? null
+                    ]);
+                    continue;
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error fetching part payments: ' . $e->getMessage());
+        }
+
+        
+        usort($amount_paid, function ($a, $b) {
+            return $b[1] <=> $a[1];
+        });
 
         $data = [
             'pageTitle' => trans('financial.summary_page_title'),
@@ -98,9 +249,18 @@ class AccountingController extends Controller
             'amount_paid' => $amount_paid,
             'commission' => getFinancialSettings('commission') ?? 0
         ];
-// print_r($data);
+
         return view(getTemplate() . '.panel.financial.summary', $data);
+
+    } catch (\Exception $e) {
+        \Log::error('Financial summary error: ' . $e->getMessage(), [
+            'user_id' => auth()->id() ?? null,
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return redirect()->back()->with('error', 'Something went wrong. Please try again later.');
     }
+}
 
     public function account($id = null)
     {

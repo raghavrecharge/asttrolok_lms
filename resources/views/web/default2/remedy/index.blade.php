@@ -11,8 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
- <!-- Bootstrap 5 CSS -->
-<!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">-->
+
 <meta name="robots" content="noindex, nofollow" />
 
   <style>
@@ -26,19 +25,11 @@
             font-family: 'main-font-family' !important;
         }
         .course-content-sidebar .course-img.has-video .course-video-icon {
-   
+
     width: 50px;
     height: 50px;
 }
 
-
-
-
-/*******************************
-* MODAL AS LEFT/RIGHT SIDEBAR
-* Add "left" or "right" in modal parent div, after class="modal".
-* Get free snippets on bootpen.com
-*******************************/
 	.modal.left .modal-dialog,
 	.modal.right .modal-dialog {
 		position: fixed;
@@ -52,35 +43,32 @@
 		        transform: translateX(100%);
 	}
 .afterpop{
-    
+
     transition: all 2s  !important;
     transition-timing-function: ease-in  !important;
    -webkit-transform: translateX(0%) !important;
 		    -ms-transform: translateX(0%) !important;
 		     -o-transform: translateX(0%) !important;
 		        transform: translateX(0%) !important;
-		        
+
 }
 	.modal.left .modal-content,
 	.modal.right .modal-content {
 		height: 100%;
 		overflow-y: auto;
 	}
-	
+
 	.modal.left .modal-body,
 	.modal.right .modal-body {
 		padding: 15px 15px 80px;
 	}
 
-
-        
-/*Right*/
 	.modal.right.fade .modal-dialog {
-	    
+
 		right: 0px;
-		        
+
 	}
-	
+
 	.modal.right.fade.in .modal-dialog {
 		right: 0;
 		transition: all .5s;
@@ -88,7 +76,7 @@
     .webinar-card .image-box {
     height: 100px !important;
 }
-/* ----- MODAL STYLE ----- */
+
 	.modal-content {
 		border-radius: 0;
 		border: none;
@@ -101,11 +89,6 @@
 		background-color: #FAFAFA;
 	}
 
-/* ----- v CAN BE DELETED v ----- */
-
-
-
-
     </style>
 @endpush
 {{ session()->put('my_test_key',url()->current())}}
@@ -117,12 +100,12 @@
         <div class="cover-content pt-40">
             <div class="container position-relative">
                 @if(!empty($activeSpecialOffer))
-                    <!-- @include('web.default.course.special_offer') -->
+
                 @endif
             </div>
         </div>
     </section>
-    
+
     <section class="container course-content-section {{ $course->type }} {{ ($hasBought or $course->isRemedy()) ? 'has-progress-bar' : '' }}">
         <div class="row">
             <div class="col-12 col-lg-12">
@@ -151,44 +134,30 @@
         display:none;
     }
 </style>
-                    
-                    
+
                 </div>
             </div>
 
-
-
-
-
-
-
-
-            
         </div>
 
     </section>
 
-    
 <div class="container demo">
-	
-	
+
 	<div class="text-center d-none">
-	
+
 		<button type="button" class="btn btn-demo" data-toggle="modal" data-target="#myModal2">
 			Right Sidebar Modal
 		</button>
 	</div>
 
-
-	
-	<!-- Modal -->
 	<div class="modal right fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					
+
 				</div>
 
 				<div class="modal-body">
@@ -247,28 +216,25 @@
         </div>
 				</div>
 
-			</div><!-- modal-content -->
-		</div><!-- modal-dialog -->
-	</div><!-- modal -->
-	
-	
-</div><!-- container -->
+			</div>
+		</div>
+	</div>
 
+</div>
 
     @include('web.default.course.share_modal')
     @include('web.default.course.buy_with_point_modal')
     @include('web.default.course.login_modal')
     @include('web.default.remedy.file_view')
     @include('web.default.course.buynow_modal')
-    
+
 @endsection
 
 @push('scripts_bottom')
 <script>
-         
-       
+
          function myFunction() {
-             
+
    var dots = document.getElementById("abouthide");
    var gradiant1 = document.getElementById("gradiant1");
    var moreText = document.getElementById("readmore");
@@ -281,7 +247,7 @@
      dots.style.overflow = "hidden";
      dots.style.maxHeight = "100px";
      gradiant1.style.display = "block";
-     
+
      moreText.text = "Read more";
    }
  }
@@ -307,19 +273,18 @@ $(".pdfs").removeClass("active");
 </script>
 @endif
 
-
 <script>
 // Get the modal
 
 function viewfile(src1,id){
-    
+
     var viewfile2 = document.getElementById("pre1");
-    
+
     console.log(viewfile2.src);
     viewfile2.src = src1;
     $('#textpop1').modal();
     console.log(viewfile2.src);
-  
+
 }
 
 </script>
@@ -335,7 +300,7 @@ function viewfile(src1,id){
         // alert('');
         $('.buy_now').click();
     }
-   
+
 </script>
 @if(Session::has('addtocart'))
 <script>
@@ -346,10 +311,10 @@ $("#myModal2").modal('show');
     // $('.modal-dialog').addClass('afterpop');
 </script>
 @endif
-@php 
-    Illuminate\Support\Facades\Session::forget('addtocart');  
+@php
+    Illuminate\Support\Facades\Session::forget('addtocart');
 @endphp
-<!--<?php   //unset($_SESSION['addtocart']); ?>-->
+
     <script>
         var webinarDemoLang = '{{ trans('webinars.webinar_demo') }}';
         var replyLang = '{{ trans('panel.reply') }}';
@@ -389,14 +354,11 @@ $("#myModal2").modal('show');
         var captchaLang = '{{ trans('site.captcha') }}';
     </script>
 
-  
-    <!--<script src="{{ config('app.js_css_url') }}/assets/default/js/parts/comment.min.js"></script>-->
     <script src="{{ config('app.js_css_url') }}/assets/default/js/parts/video_player_helpers.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets/default/js/parts/webinar_show.min.js"></script>
-<!-- Bootstrap 5 JS Bundle -->
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 @endpush
 <style>
 
-    
 </style>

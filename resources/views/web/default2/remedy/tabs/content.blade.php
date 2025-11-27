@@ -1,7 +1,6 @@
 @php
 print_r('mayank');
 @endphp
-{{-- Sessions --}}
 
 @if(!empty($course->chapters) and count($course->chapters))
     <section class="">
@@ -23,23 +22,16 @@ print_r('mayank');
     </section>
 @endif
 
-{{-- Files --}}
-
 @if(!empty($filesWithoutChapter) and count($filesWithoutChapter))
-
-
 
 <div class="container mt-30">
 
         <section class="mt-lg-50 pt-lg-20 mt-md-40 pt-md-40">
             <form action="/classes" method="get" id="filtersForm">
 
-              
-
                 <div class="row mt-20">
                     <div class="col-12 col-lg-3">
 
-                       
                             <div class="row" style="flex-wrap: inherit !important;">
                                 @foreach($filesWithoutChapter as $file)
                                     <div class="col-6 col-lg-3 mt-20">
@@ -48,20 +40,16 @@ print_r('mayank');
                                 @endforeach
                             </div>
 
-                      
-
                     </div>
 
-
-                    
                 </div>
 
             </form>
-            
+
         </section>
     </div>
 @endif
-{{-- TextLessons --}}
+
 @if(!empty($textLessonsWithoutChapter) and count($textLessonsWithoutChapter))
     <section class="mt-20">
         <div class="row">
@@ -76,8 +64,6 @@ print_r('mayank');
     </section>
 @endif
 
-
-{{-- Quizzes --}}
 @if(!empty($quizzes) and $quizzes->count() > 0)
     <section class="mt-20">
         <h2 class="section-title after-line">{{ trans('update.quiz_and_certificates') }}</h2>
@@ -93,13 +79,9 @@ print_r('mayank');
         </div>
     </section>
 
-    {{-- Certificates --}}
-
     <section class="">
         @include('web.default.remedy.tabs.contents.certificate' , ['quizzes' => $course->quizzes])
     </section>
 @endif
 
-
 @include('web.default.remedy.tabs.play_modal.play_modal')
-

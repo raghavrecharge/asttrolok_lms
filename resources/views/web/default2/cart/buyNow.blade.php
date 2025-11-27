@@ -6,22 +6,11 @@
   //border: 16px solid #f3f3f3;
   //border-radius: 50%;
   //border-top: 16px solid #3498db;
-  /*width: 120px;*/
+
   height: 120px;
-  -webkit-animation: spin 2s linear infinite; /* Safari */
+  -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
-
-/* Safari */
-/*@-webkit-keyframes spin {*/
-/*  0% { -webkit-transform: rotate(0deg); }*/
-/*  100% { -webkit-transform: rotate(360deg); }*/
-/*}*/
-
-/*@keyframes spin {*/
-/*  0% { transform: rotate(0deg); }*/
-/*  100% { transform: rotate(360deg); }*/
-/*}*/
 
  #loader {
             position: fixed;
@@ -31,14 +20,12 @@
             display: none;
         }
 
-        /* Disable page */
         .disabled-page {
             pointer-events: none;
             opacity: 0.5;
         }
 </style>
 @endpush
-
 
 @section('content')
     <section class="cart-banner position-relative text-center">
@@ -50,9 +37,9 @@
         @php
         if(!$total)
         $total=$priceWithDiscount['price'];
-        
+
         @endphp
-        
+
         <span class="payment-hint font-20 text-white d-block"> {{ handlePrice($total) }} item 1</span>
         @else
         @php
@@ -86,8 +73,8 @@
         <h2 class="section-title">Please validate any coupon code before use</h2>
         <form action="/cart/coupon/validate2" method="Post">
                     {{ csrf_field() }}
-                    <div class="row"> 
-                    <div class="col-8 col-lg-3"> 
+                    <div class="row">
+                    <div class="col-8 col-lg-3">
                     <div class="form-group">
                         <input type="text" name="coupon" id="coupon_input" class="form-control mt-10 {{ session('discountCoupon') ? (session('discountCoupon')=='no' ? 'is-invalid' : 'is-valid') : '' }}" value="{{ session('discountCoupon') ? (session('discountCoupon')=='no' ? '' : session('discountCoupon')) : '' }}"
                          placeholder="{{ trans('cart.enter_your_code_here') }}">
@@ -99,21 +86,20 @@
                     <div class="col-4 col-lg-3 ">
                     <button type="submit" id="checkCoupon1" class="btn btn-sm btn-primary mt-10">{{ trans('cart.validate') }}</button>
                     </div></div>
-                </form> 
-                 
+                </form>
+
         <h2 class="section-title">Please Fill The Form</h2>
 {{session()->forget('discountCoupon')}}
         <form action="/payments/payment-request" method="post" class=" mt-25"  id="razor-pay-request">
             {{ csrf_field() }}
-           {{-- <input type="hidden" name="order_id" value="{{ $order->id }}"> --}}
+
            <input type="hidden" name="webinar_id" value="{{ $webinar->id }}">
-             
+
             <input type="text" name="name" value="{{ auth()->check() ? auth()->user()->full_name :'' }}" id="customer_name" placeholder="Name" class="form-control mt-25 " >
             <input type="email" name="email" value="{{ auth()->check() ? auth()->user()->email :'' }}" id="customer_email" placeholder="Email" class="form-control mt-25 " >
             <input type="number" name="number" value="{{ auth()->check() ? auth()->user()->mobile :'' }}" id="customer_number" placeholder="Contact Number" class="form-control mt-25 mb-25" >
              <h2 class="section-title d-none">{{ trans('financial.select_a_payment_gateway') }}</h2>
-            
-            
+
             <div class="row d-none">
                 @if(!empty($paymentChannels))
                     @foreach($paymentChannels as $paymentChannel)
@@ -137,21 +123,8 @@
                     @endforeach
                 @endif
 
-               {{-- <div class="col-6 col-lg-4 mb-40 charge-account-radio">
-                    <input type="radio" @if(empty($userCharge) or ($total > $userCharge)) disabled @endif name="gateway" id="offline" value="credit">
-                    <label for="offline" class="rounded-sm p-20 p-lg-45 d-flex flex-column align-items-center justify-content-center">
-                        <img src="/assets2/default/img/activity/pay.svg" width="120" height="60" alt="">
-
-                        <p class="mt-30 mt-lg-50 font-weight-500 text-dark-blue">
-                            {{ trans('financial.account') }}
-                            <span class="font-weight-bold">{{ trans('financial.charge') }}</span>
-                        </p>
-
-                        <span class="mt-5">{{ handlePrice($userCharge) }}</span>
-                    </label>
-                </div> --}}
             </div>
- 
+
             @if(!empty($invalidChannels))
                 <div class="d-flex align-items-center mt-30 rounded-lg border p-15">
                     <div class="size-40 d-flex-center rounded-circle bg-gray200">
@@ -178,7 +151,6 @@
                     @endforeach
                 </div>
             @endif
-            
 
              <center><div class="loader mt-50" id="loader" style="dispay:none ">
             <img width= '80px' height= '80px' src="{{ config('app.js_css_url') }}/assets/default/img/loading.gif">
@@ -189,10 +161,9 @@
             <div class="d-flex align-items-center justify-content-between mt-45">
                 <span class="font-16 font-weight-500 text-gray">{{ trans('financial.total_amount') }} {{ handlePrice($total) }}</span>
                 <button type="button" id="paymentSubmit"  class="btn btn-sm btn-primary ">{{ trans('public.start_payment') }}</button>
-            </div> 
+            </div>
         </form>
 
-      
             <form action="/payments/verify/Razorpay" method="get" id="razorpayvieww">
                 <input type="hidden" name="order_id" value="1">
                 <input type="hidden" name="webinar_id" value="{{ $webinar->id }}">
@@ -200,15 +171,13 @@
                 <input type="hidden" name="email" value="{{ auth()->check() ? auth()->user()->email :'' }}" id="user_email" placeholder="Email" class="form-control mt-25 " required>
                 <input type="hidden" name="number" value="{{ auth()->check() ? auth()->user()->mobile :'' }}" id="user_number" placeholder="Contact Number" class="form-control mt-25 mb-25" required>
                 <input type="hidden" name="discount_id" value="{{ session('discountCouponId') ? session('discountCouponId') : 0 }}" id="discount_id" placeholder="discountCouponId" class="form-control mt-25 mb-25" >
-                
+
                  <input type="hidden" name="razorpay_payment_id" value="" id="razorpay_payment_id" class="form-control mt-25 mb-25">
                  <input type="hidden" name="razorpay_signature" value="" id="razorpay_signature" class="form-control mt-25 mb-25">
-                
-                 
-            </form>
-        
-    </section>
 
+            </form>
+
+    </section>
 
 @endsection
 
@@ -223,22 +192,22 @@
             var $this = $(this);
             var regex = /^[0-9]$/;
             var str = String.fromCharCode(!e.charCode ? e.which : e.charCode);
-            
+
             if ($this.val().length >= 10) {
                 e.preventDefault();
                 return false;
             }
-            
+
             // Prevent numbers starting with 0-5
             if ($this.val().length === 0 && e.charCode >= 48 && e.charCode <= 53) {
                 e.preventDefault();
                 return false;
             }
-            
+
             if (regex.test(str)) {
                 return true;
             }
-            
+
             e.preventDefault();
             return false;
         });
@@ -246,23 +215,23 @@
         // Payment button click handler
         $('#paymentSubmit').on('click', function(e) {
             e.preventDefault();
-            
+
             // Clear previous errors
             $('.error-message').text('');
-            
+
             // Get form values
             var name = $('#customer_name').val().trim();
             var email = $('#customer_email').val().trim();
             var mobile = $('#customer_number').val().trim();
-            
+
             // Validation
             var isValid = true;
-            
+
             if (name === '') {
                 $('#name-error').text('Name field is required');
                 isValid = false;
             }
-            
+
             if (email === '') {
                 $('#email-error').text('Email field is required');
                 isValid = false;
@@ -273,7 +242,7 @@
                     isValid = false;
                 }
             }
-            
+
             if (mobile === '') {
                 $('#mobile-error').text('Mobile field is required');
                 isValid = false;
@@ -281,14 +250,14 @@
                 $('#mobile-error').text('Enter a valid 10-digit mobile number');
                 isValid = false;
             }
-            
+
             if (!isValid) {
                 return false;
             }
-            
+
             // Disable button to prevent double clicks
             $(this).prop('disabled', true);
-            
+
             // Send webhook data
             $.ajax({
                 method: 'POST',
@@ -301,7 +270,7 @@
                     _token: "{{ csrf_token() }}"
                 }
             });
-            
+
             // Initialize Razorpay
             var options = {
                 key: "{{ env('RAZORPAY_API_KEY') }}",
@@ -314,7 +283,7 @@
                     // Show loader
                     $('#loader').show();
                     $('#paymentSubmit').prop('disabled', true);
-                    
+
                     // GTM tracking
                     @if(auth()->check())
                         window.dataLayer = window.dataLayer || [];
@@ -354,7 +323,7 @@
                         })
                         .catch(err => console.error('User lookup failed:', err));
                     @endif
-                    
+
                     // Fill verification form and submit
                     $('#verify_name').val(name);
                     $('#verify_email').val(email);
@@ -382,10 +351,10 @@
                     color: "#43d477"
                 }
             };
-            
+
             var rzp = new Razorpay(options);
             rzp.open();
-            
+
             // Re-enable button after Razorpay modal opens
             setTimeout(function() {
                 $('#paymentSubmit').prop('disabled', false);

@@ -49,24 +49,19 @@
                     <div class="post-img pb-30">
                         <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $post->image }}" alt="{{ $post->title }}">
                     </div>
-                    
-                    
-
 
                     {!! nl2br($post->content) !!}
-                    
-                    
+
                     @php
-                    
-                        $str_arr1 = explode ("/", $_SERVER['REQUEST_URI']); 
-    
-    
+
+                        $str_arr1 = explode ("/", $_SERVER['REQUEST_URI']);
+
                         if(in_array("what-is-pitru-paksha-and-why-it-is-observed", $str_arr1)){
                         @endphp
-                        
+
                         <script async src="https://www.vbt.io/ext/vbtforms.js?lang=en" charset="utf-8"></script>
 <style type="text/css">
-	/* Form Embed Code - No Extra Styling */
+
 	#vboutEmbedFormWrapper-110767 a,#vboutEmbedFormWrapper-110767 div,#vboutEmbedFormWrapper-110767 dl,#vboutEmbedFormWrapper-110767 dt,#vboutEmbedFormWrapper-110767 em,#vboutEmbedFormWrapper-110767 fieldset,
 	#vboutEmbedFormWrapper-110767 form,#vboutEmbedFormWrapper-110767 h1,#vboutEmbedFormWrapper-110767 h2,#vboutEmbedFormWrapper-110767 h3,#vboutEmbedFormWrapper-110767 h4,#vboutEmbedFormWrapper-110767 h5,#vboutEmbedFormWrapper-110767 h6,
 	#vboutEmbedFormWrapper-110767 hr,#vboutEmbedFormWrapper-110767 img,#vboutEmbedFormWrapper-110767 label,#vboutEmbedFormWrapper-110767 li,#vboutEmbedFormWrapper-110767 ol,#vboutEmbedFormWrapper-110767 p,#vboutEmbedFormWrapper-110767 pre,
@@ -78,7 +73,7 @@
 	#vboutEmbedFormWrapper-110767 li{display:list-item}
 	#vboutEmbedFormWrapper-110767 table{border-collapse:collapse;border-spacing:0}
 	#vboutEmbedFormWrapper-110767 th,#vboutEmbedFormWrapper-110767 td,#vboutEmbedFormWrapper-110767 caption{font-weight:normal;vertical-align:top;text-align:left}
-	
+
 	#vboutEmbedFormWrapper-110767 form {display:block; position:relative; text-align:left; padding:10px 0 10px 3%; max-width: 500px;}
 	#vboutEmbedFormWrapper-110767 h1 {font-weight:bold; padding:0; margin:15px 0; font-size:1.4em;}
 	#vboutEmbedFormWrapper-110767 input, #vboutEmbedFormWrapper-110767 .vbt-birthdayfield {border:1px solid #999; -webkit-appearance:none;}
@@ -117,10 +112,10 @@
 	#vboutEmbedFormWrapper-110767 .vfb-submit button,#vboutEmbedFormWrapper-110767 .vfb-submit button:hover,#vboutEmbedFormWrapper-110767 .vfb-submit button:hover:not(.inactive),#vboutEmbedFormWrapper-110767 .vfb-submit button:focus,#vboutEmbedFormWrapper-110767 .vfb-submit button:active,#vboutEmbedFormWrapper-110767 .vfb-submit button:active:not(.inactive):not(.link) {background-image: none;background-color: #A01694;border-color: #A01694;color: #ffffff;}
 
 	#vboutEmbedFormWrapper-110767 form, #vboutEmbedFormWrapper-110767 label, #vboutEmbedFormWrapper-110767 input, #vboutEmbedFormWrapper-110767 select, #vboutEmbedFormWrapper-110767 textarea, #vboutEmbedFormWrapper-110767 .vbt-birthdayfield { font-family: helvetica; }
-	
+
 	#vboutEmbedFormWrapper-110767 form, #vboutEmbedFormWrapper-110767 label { color: #33475b; }
 
-	#vboutEmbedFormWrapper-110767 .iti{display: block;} 
+	#vboutEmbedFormWrapper-110767 .iti{display: block;}
 	#vboutEmbedFormWrapper-110767 input[type=tel]{padding-left: 48px!important;}
 	#vboutEmbedFormWrapper-110767 fieldset{display: block;display: contents;}
 
@@ -155,7 +150,6 @@
 	<form action="https://www.vbt.io/embedcode/submit/110767/?_format=page" target="_blank"  id="vboutEmbedForm-110767" name="vboutEmbedForm-110767" data-vboutform="110767" class="" method="post" enctype="multipart/form-data">
 		<h2>Fill Out Your Details Today & Get Your Custom Pitra Paksh Remedy Report</h2>
 
-	
 		<div id="vboutEmbedFormResponse-110767" style="display: none;"></div>
 		<fieldset>
 <div class="vbf-step">
@@ -171,23 +165,15 @@
 		</fieldset>
 	</form>
 </div>
-                        
+
                         @php
-                        
-                        
+
                         }
-                    
-                    
+
                     @endphp
-                    
-                    
-                    
-                    
-                    
-                    
+
                 </div>
 
-                {{-- post Comments --}}
                 @if($post->enable_comment)
                     @include('web.default.includes.comments',[
                             'comments' => $post->comments,
@@ -195,7 +181,6 @@
                             'inputValue' => $post->id
                         ])
                 @endif
-                {{-- ./ post Comments --}}
 
             </div>
             <div class="col-12 col-lg-4">
@@ -216,7 +201,6 @@
                     </div>
                 @endif
 
-                {{-- categories --}}
                 <div class="p-20 mt-30 rounded-sm shadow-lg border border-gray300">
                     <h3 class="category-filter-title font-16 font-weight-bold text-dark-blue">{{ trans('categories.categories') }}</h3>
 
@@ -227,7 +211,6 @@
                     </div>
                 </div>
 
-                {{-- recent_posts --}}
                 <div class="p-20 mt-30 rounded-sm shadow-lg border border-gray300">
                     <h3 class="category-filter-title font-20 font-weight-bold text-dark-blue">{{ trans('site.recent_posts') }}</h3>
 
@@ -250,8 +233,7 @@
                         <a href="/blog" class="btn btn-sm btn-primary btn-block mt-30">{{ trans('home.view_all') }} {{ trans('site.posts') }}</a>
                     </div>
                 </div>
-                
-                
+
                 <div class="p-20 mt-30 rounded-sm shadow-lg border border-gray300">
                     <h3 class="category-filter-title font-20 font-weight-bold text-dark-blue">Popular Courses</h3>
 
@@ -261,7 +243,7 @@
                         @endphp
 
                         @foreach($popularWebinars as $popularWebinar)
-                            
+
                             @if(in_array($popularWebinar->id, $courses))
                             <div class="popular-post d-flex align-items-start mt-20">
                                 <div class="popular-post-image rounded">
@@ -269,7 +251,7 @@
                                 </div>
                                 <div class="popular-post-content d-flex flex-column ml-10">
                                     <a href="/course/{{$popularWebinar->slug}}">
-                                        <h3 class="text-dark-blue font-14">{{ truncate($popularWebinar->title,50) }}{{--$popularWebinar->id--}}</h3>
+                                        <h3 class="text-dark-blue font-14">{{ truncate($popularWebinar->title,50) }}</h3>
                                     </a>
                                     <span class="mt-auto font-12 text-gray">{{ handlePrice($popularWebinar->bestTicket(), true, true, false, null, true) }}</span>
                                 </div>
@@ -280,15 +262,13 @@
                         <a href="/classes?sort=newest" class="btn btn-sm btn-primary btn-block mt-30">{{ trans('home.view_all') }} Courses</a>
                     </div>
                 </div>
-                
-                
+
                 <div class="p-20 mt-30 rounded-sm shadow-lg border border-gray300">
                     <h3 class="category-filter-title font-20 font-weight-bold text-dark-blue">Consultants</h3>
 
                     <div class="pt-15">
                 <div class="col-12  mt-25 mt-lg-0 " >
-        
-       
+
          <div class="deckteacher teacher-swiper-container1 position-relative d-flex justify-content-center mt-0">
             <div class="swiper-container teacher-swiper-container1 pb-25">
                <div class="swiper-wrapper py-0">
@@ -321,17 +301,13 @@
                        </div>
                     </div>
                  </div>
-                 @endforeach  
-                   
-                  
-                 
-                 
+                 @endforeach
+
                </div>
             </div>
             <div class="swiper-pagination teacher-swiper-pagination1 ast-pagination"></div>
          </div>
-       
-         
+
     </div>
     </div></div>
 

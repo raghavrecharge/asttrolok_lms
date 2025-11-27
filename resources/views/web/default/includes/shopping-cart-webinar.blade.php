@@ -2,7 +2,7 @@
     position: absolute;
     right: 0px;
     bottom: -12px;
-    /* border: 0.1px solid black; */
+
     box-shadow: 0 5px 12px 0 rgba(0, 0, 0, 0.1);
 ">
     <button type="button" {{ (empty($userCarts) or count($userCarts) < 1) ? 'disabled' : '' }} class="btn btn-transparent dropdown-toggle1 js-course-add-to-cart-btn" id="" data-toggle="dropdown1"
@@ -22,9 +22,9 @@
                 padding: 0px !important;
                 width: 12px;
                 height: 12px;">
-               
+
                 {{ count($userCarts) }}
-            
+
                 </span>
                   @endif
                     @endif
@@ -40,9 +40,8 @@
                 height: 12px;">
                   {{ count($userCarts) }}
                 </span>
-                @endif   
-                
-               
+                @endif
+
         @endif
     </button>
 

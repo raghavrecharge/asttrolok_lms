@@ -188,18 +188,6 @@
         </div>
     @endif
 
-    {{--<h2 class="section-title after-line">{{ trans('panel.meeting_list') }}</h2>
-
-    <div class="row mt-30">
-        <div class="col-12">
-            <a href="/panel/meetings/settings" class="text-primary">{{ trans('update.manage_meetings') }}</a>
-
-            <div class="d-flex align-items-center mt-25">
-                <div class="available-meetings">11:30 AM</div>
-                <div class="available-meetings">11:30 AM</div>
-            </div>
-        </div>
-    </div>--}}
 </section>
 
 @push('scripts_bottom')

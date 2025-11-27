@@ -5,7 +5,6 @@
         </div>
     @endif
 
-    {{-- FAQ --}}
     @if(!empty($product->faqs) and $product->faqs->count() > 0)
         <div class="mt-20 mt-lg-30">
             <h2 class="section-title after-line">{{ trans('public.faq') }}</h2>
@@ -29,15 +28,14 @@
             </div>
         </div>
     @endif
-    {{-- ./ FAQ --}}
 
     @if(!empty(getStoreSettings('activate_comments')) and getStoreSettings('activate_comments'))
-        {{-- product Comments --}}
+
         @include('web.default.includes.comments',[
                 'comments' => $product->comments,
                 'inputName' => 'product_id',
                 'inputValue' => $product->id
             ])
-        {{-- ./ product Comments --}}
+
     @endif
 </div>

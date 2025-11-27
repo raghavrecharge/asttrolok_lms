@@ -17,14 +17,10 @@
                 <span class="badge badge-primary">{{ trans('webinars.'.$webinar->type) }}</span>
             @endif
 
-           {{-- @if($webinar->slug == "astromani-2024" or $webinar->slug == "astroshiromani-2024" or $webinar->slug == "astrology-basic-level")
-            <a href="/landingpage/{{ $webinar->slug }}">
-            @else --}}
             <a href="{{ $webinar->getUrl() }}">
-           {{-- @endif --}}
+
                 <img loading="lazy" decoding="async" src="{{ getOptimizedImage($webinar->getImage()) }}" class="img-cover" alt="{{ $webinar->title }}">
             </a>
-
 
             @if($webinar->checkShowProgress())
                 <div class="progress">
@@ -47,12 +43,8 @@
                 <a href="{{ $webinar->teacher->getProfileUrl() }}" target="_blank" class="user-name ml-5 font-14">{{ $webinar->teacher->full_name }}</a>
             </div>
 
-          
-           {{-- @if($webinar->slug == "astromani-2024" or $webinar->slug == "astroshiromani-2024" or $webinar->slug == "astrology-basic-level")
-            <a href="/landingpage/{{ $webinar->slug }}">
-            @else --}}
             <a href="{{ $webinar->getUrl() }}">
-            {{-- @endif --}}
+
                 <h3 class="mt-5 webinar-title font-weight-bold font-16 text-dark-blue">{{ clean($webinar->title,'title') }}</h3>
             </a>
 
@@ -61,21 +53,6 @@
             @endif
 
             @include(getTemplate() . '.includes.webinar.rate',['rate' => $webinar->course_rate])
-            {{--@include(getTemplate() . '.includes.webinar.rate',['rate' => $dynamic_rate_course[$webinar->id]])--}}
-
-            <!--<div class="d-flex justify-content-between mt-5">-->
-            <!--    <div class="d-flex align-items-center">-->
-            <!--        <i data-feather="clock" width="15" height="15" class="webinar-icon"></i>-->
-            <!--        <span class="duration font-14 ml-5">{{ convertMinutesToHourAndMinute($webinar->duration) }} {{ trans('home.hours') }}</span>-->
-            <!--    </div>-->
-
-            <!--    <div class="vertical-line mx-15"></div>-->
-
-            <!--    <div class="d-flex align-items-center">-->
-            <!--        <i data-feather="calendar" width="15" height="15" class="webinar-icon"></i>-->
-            <!--        <span class="date-published font-14 ml-5">{{ dateTimeFormat(!empty($webinar->start_date) ? $webinar->start_date : $webinar->created_at,'j M Y') }}</span>-->
-            <!--    </div>-->
-            <!--</div>-->
 
             <div class="webinar-price-box mt-5">
             @if(!empty($isRewardCourses) and !empty($webinar->points))

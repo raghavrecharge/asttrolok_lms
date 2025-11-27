@@ -2,7 +2,7 @@
 
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/vendors/leaflet/leaflet.css">
-    <!--<link rel="canonical" href="https://www.asttrolok.com/contact" />-->
+
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/mobile-contact.css">
 @endpush
 canonical
@@ -41,45 +41,24 @@ canonical
                         <path d="M26.3802 14.6093H26.161V15.831C26.161 16.3551 25.7346 16.7815 25.2105 16.7815H19.1992V17.7678L19.2754 17.9241H25.2105C26.3646 17.9241 27.3036 16.9851 27.3036 15.831V14.4041C27.0232 14.5355 26.7104 14.6093 26.3802 14.6093Z" fill="#685E68"/>
                         <path d="M19.2755 17.9242H16.5295C16.085 17.9242 15.7246 17.5639 15.7246 17.1193V16.1928C15.7246 15.7483 16.085 15.3879 16.5295 15.3879H18.4705C18.9151 15.3879 19.2754 15.7483 19.2754 16.1928V17.9242H19.2755Z" fill="#7A6D79"/>
                         </svg>
-                        
+
                 </div>
             </div>
 
-    <!--        <div class="row contact-us-head h-100 justify-content-center text-center ">-->
-    <!--<div class="col-12 col-md-9 col-lg-7 ">-->
-    <!--                <div class="top-search-categories-form  accordion-row-top shadow-sm search-bar-1" style="background-color: white;">-->
-    <!--                    {{-- <h1 class="text-white font-30 mb-15">{{ trans('site.contact_us') }}</h1> --}}-->
-    <!--                    <h2>Need Some help with front?</h2> -->
-
-    <!--                     {{-- @include('web.default.pages.includes.top_filters_contact') --}}-->
-
-    <!--                    <h2>Lorem ipsum is simply dummy text</h2> -->
-    <!--                </div>-->
-    <!--            </div>-->
-               
-    <!--        </div>-->
         </div>
     </section>
 
     <div class="container">
         <section class=" ">
             @if(!empty($contactSettings['latitude']) and !empty($contactSettings['longitude']))
-                <!--<div class="contact-map" id="contactMap"-->
-                <!--     data-latitude="{{ $contactSettings['latitude'] }}"-->
-                <!--     data-longitude="{{ $contactSettings['longitude'] }}"-->
-                <!--     data-zoom="{{ $contactSettings['map_zoom'] ?? 12 }}">-->
-                    
-                <!--</div>-->
-            @endif
 
+            @endif
 
             <div class="row">
                 <div class="col-6 col-md-4 mobilegrid1">
                     <a href="https://maps.app.goo.gl/SogMK8SxiX9eHbRc9">
                     <div class="contact-items mt-30 rounded-lg py-20 py-md-40 px-15 px-md-30 text-center">
-                        {{-- <div class="contact-icon-box box-info p-20 d-flex align-items-center justify-content-center mx-auto">
-                            <i data-feather="map-pin" width="50" height="50" class="text-white"></i>
-                        </div> --}}
+
                         <svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="0.745117" y="0.344482" width="45.0353" height="45.0353" rx="5.62942" fill="url(#paint0_linear_1182_4335)"/>
                             <path d="M35.4428 28.7689C35.0262 28.5401 34.5031 28.6923 34.2744 29.1088C34.0455 29.5253 34.1977 30.0485 34.6142 30.2772C35.6392 30.8403 36.2271 31.4646 36.2271 31.9899C36.2271 32.6325 35.3167 33.6283 32.7615 34.4964C30.2371 35.3541 26.8637 35.8264 23.2626 35.8264C19.6615 35.8264 16.288 35.3541 13.7637 34.4964C11.2085 33.6284 10.2981 32.6325 10.2981 31.9899C10.2981 31.4646 10.886 30.8403 11.911 30.2772C12.3275 30.0484 12.4796 29.5252 12.2508 29.1087C12.022 28.6922 11.499 28.5401 11.0823 28.7689C9.93951 29.3967 8.57715 30.4652 8.57715 31.9899C8.57715 33.1587 9.38095 34.825 13.2101 36.1259C15.908 37.0426 19.4781 37.5474 23.2626 37.5474C27.0471 37.5474 30.6171 37.0426 33.3151 36.1259C37.1442 34.825 37.948 33.1587 37.948 31.9899C37.948 30.4652 36.5857 29.3967 35.4428 28.7689Z" fill="white"/>
@@ -92,7 +71,6 @@ canonical
                             </linearGradient>
                             </defs>
                             </svg>
-                            
 
                         <h3 class="mt-10 font-16 font-weight-bold text-dark-blue">{{ trans('site.our_address') }}</h3>
                         @if(!empty($contactSettings['address']))
@@ -107,9 +85,7 @@ canonical
                 <div class="col-6 col-md-4 mobilegrid1">
                     <a href="tel:09174822333">
                     <div class="contact-items mt-30 rounded-lg py-20 py-md-40 px-15 px-md-30 text-center">
-                        {{-- <div class="contact-icon-box box-green p-20 d-flex align-items-center justify-content-center mx-auto">
-                            <i data-feather="phone" width="50" height="50" class="text-white"></i>
-                        </div> --}}
+
                         <svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="0.972656" y="0.344482" width="45.0353" height="45.0353" rx="5.62942" fill="url(#paint0_linear_1182_4345)"/>
                             <path d="M26.5575 36.242C28.2192 36.242 29.777 35.7198 31.1271 34.3622L32.3733 33.1091C33.308 32.1692 33.308 30.7072 32.3733 29.7673L29.1539 26.53C28.2192 25.5901 26.7652 25.5901 25.8306 26.53L25.1036 27.261C24.5843 27.7831 22.715 27.1566 20.8456 25.2768C18.9762 23.3971 18.3531 21.5174 18.8724 20.9952L19.5994 20.2642C20.534 19.3243 20.534 17.8623 19.5994 16.9225L16.4838 13.894C15.5491 12.9541 14.0951 12.9541 13.1604 13.894L11.9142 15.1472C7.96778 19.1155 11.0834 26.0078 15.6529 30.6028C18.8724 33.7356 23.0265 36.242 26.5575 36.242Z" fill="white"/>
@@ -123,7 +99,6 @@ canonical
                             </linearGradient>
                             </defs>
                             </svg>
-                            
 
                         <h3 class="mt-10 font-16 font-weight-bold text-dark-blue">{{ trans('site.phone_number') }}</h3>
                         @if(!empty($contactSettings['phones']))
@@ -138,9 +113,7 @@ canonical
                 <div class="col-6 col-md-4 mobilegrid1">
                     <a href="mailto:astrolok.vedic@gmail.com">
                     <div class="contact-items mt-30 rounded-lg py-20 py-md-40 px-15 px-md-30 text-center">
-                        {{-- <div class="contact-icon-box box-red p-20 d-flex align-items-center justify-content-center mx-auto">
-                            <i data-feather="mail" width="50" height="50" class="text-white"></i>
-                        </div> --}}
+
                         <svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="0.745117" y="0.703369" width="45.0353" height="45.0353" rx="5.62942" fill="url(#paint0_linear_1182_4369)"/>
                             <path d="M36.5244 14.6437L24.8962 25.9454C24.3701 26.4683 23.6788 26.7297 22.9875 26.7297C22.2962 26.7297 21.6049 26.4683 21.0788 25.9454L9.55084 14.4605C9.32781 14.877 9.18945 15.3446 9.18945 15.8484V30.1538C9.18945 30.6569 9.32743 31.1239 9.54993 31.54L15.7885 25.3493C16.14 25.0001 16.7095 25.0001 17.061 25.3493C17.4125 25.6982 17.4125 26.2646 17.061 26.6136L10.8309 32.7959C11.2406 33.0049 11.6977 33.1341 12.189 33.1341H33.786C34.2773 33.1341 34.7345 33.0049 35.1441 32.7959L28.914 26.6135C28.5625 26.2646 28.5625 25.6982 28.914 25.3492C29.2655 25 29.835 25 30.1865 25.3492L36.4251 31.54C36.6476 31.1239 36.7856 30.6569 36.7856 30.1538V15.8484C36.7856 15.419 36.6896 15.0129 36.5244 14.6437Z" fill="#F7F7F7"/>
@@ -152,7 +125,6 @@ canonical
                             </linearGradient>
                             </defs>
                             </svg>
-                            
 
                         <h3 class="mt-10 font-16 font-weight-bold text-dark-blue">{{ trans('public.email') }}</h3>
                         @if(!empty($contactSettings['emails']))
@@ -167,9 +139,7 @@ canonical
                 <div class="col-6 col-md-4 mobilegrid1">
                     <a href="mailto:astrolok.vedic@gmail.com">
                     <div class="contact-items mt-30 rounded-lg py-20 py-md-40 px-15 px-md-30 text-center">
-                        {{-- <div class="contact-icon-box box-red p-20 d-flex align-items-center justify-content-center mx-auto">
-                            <i data-feather="mail" width="50" height="50" class="text-white"></i>
-                        </div> --}}
+
                         <svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="0.782227" y="0.790283" width="45.0353" height="45.0353" rx="5.62942" fill="url(#paint0_linear_1182_4371)"/>
                             <path fill-rule="evenodd" clip-rule="evenodd" d="M26.4803 35.7062C26.4803 34.5914 25.597 33.6877 24.5074 33.6877H22.0916C21.5683 33.6877 21.0665 33.9003 20.6965 34.2789C20.3265 34.6574 20.1187 35.1709 20.1187 35.7062C20.1187 36.821 21.002 37.7248 22.0916 37.7248H24.5074C25.597 37.7248 26.4803 36.821 26.4803 35.7062ZM11.6846 30.5012C12.0142 30.527 12.4129 30.5418 12.8133 30.5178C13.0267 31.6247 13.5567 32.6515 14.3478 33.461C15.3981 34.5355 16.8226 35.1392 18.3079 35.1392H19.0606C19.0274 35.3251 19.0104 35.5148 19.0104 35.7062C19.0104 35.8998 19.0274 36.0894 19.0601 36.2732H18.3079C16.5286 36.2732 14.8222 35.55 13.5641 34.2628C12.5604 33.2358 11.9076 31.917 11.6846 30.5012ZM11.1209 29.2946C10.2459 29.1437 9.43167 28.7181 8.79607 28.0677C7.98997 27.2429 7.53711 26.1243 7.53711 24.9579V22.2778C7.53711 21.1114 7.98997 19.9927 8.79607 19.168C9.60216 18.3432 10.6955 17.8798 11.8355 17.8798H12.1216C12.579 11.9734 17.4088 7.32593 23.2995 7.32593C29.1902 7.32593 34.02 11.9734 34.4773 17.8798H34.7635C35.9035 17.8798 36.9968 18.3432 37.8029 19.168C38.609 19.9927 39.0618 21.1114 39.0618 22.2778V24.9579C39.0618 26.1243 38.609 27.2429 37.8029 28.0677C36.9968 28.8925 35.9035 29.3558 34.7635 29.3558H33.495C32.969 29.3558 32.5425 28.9195 32.5425 28.3813V18.7989C32.5425 13.5759 28.4043 9.34184 23.2995 9.34184C18.1947 9.34184 14.0564 13.5759 14.0564 18.7989V28.3813C14.0564 28.7613 13.8438 29.0906 13.5336 29.2513C12.6798 29.5544 11.3555 29.3351 11.1209 29.2946Z" fill="white"/>
@@ -180,7 +150,6 @@ canonical
                             </linearGradient>
                             </defs>
                             </svg>
-                            
 
                         <h3 class="mt-10 font-16 font-weight-bold text-dark-blue">Help</h3>
                         @if(!empty($contactSettings['emails']))
@@ -302,14 +271,12 @@ canonical
                                     data-toggle="collapse"
                                     aria-expanded="true"
                                 >
-                                    
-        
+
                                     <span class="ml-10 font-weight-bold text-secondary font-14">What is Astrology?</span>
                                 </div>
-        
+
                                 <div class="d-flex align-items-center">
-                                    
-        
+
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="24"
@@ -332,31 +299,24 @@ canonical
                                     </svg>
                                 </div>
                             </div>
-        
+
                             <div id="collapseChapter68" aria-labelledby="chapter_68" class="collapse show" role="tabpanel" style="">
                                 <div class="">
                                     <div class="accordion-row rounded-sm p-10 border-top1">
                                         <div class="d-flex align-items-center justify-content-between" role="tab" id="files_162">
                                             <div class="d-flex align-items-center collapsed" href="#collapseFiles162" aria-controls="collapseFiles162" data-parent="#chaptersAccordion" role="button" data-toggle="collapse" aria-expanded="false">
-                                                
-        
+
                                                 <span class=" ml-10 text-secondary font-14 file-title">It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.</span>
                                             </div>
-                                            
-                                            <!--<i class="collapse-chevron-icon" data-feather="chevron-down" height="20" href="#collapseFiles162" aria-controls="collapseFiles162" data-parent="#chaptersAccordion" role="button" data-toggle="collapse" aria-expanded="true"></i>-->
+
                                         </div>
-        
-                                        
+
                                     </div>
-                                    <!--<script>-->
-                                    <!--    function buy_now(){-->
-                                    <!--        $('.buy_now').click();-->
-                                    <!--    }-->
-                                    <!--</script>-->
+
                                 </div>
                             </div>
                         </div>
-        
+
                         <div class="accordion-row rounded-sm border mt-20">
                             <div class="d-flex align-items-center justify-content-between p-10" role="tab" id="chapter_69">
                                 <div
@@ -368,14 +328,12 @@ canonical
                                     data-toggle="collapse"
                                     aria-expanded="false"
                                 >
-                                    
-        
+
                                     <span class="font-weight-bold text-secondary font-14 ml-10">How does astrology deiffer from astronomy?</span>
                                 </div>
-        
+
                                 <div class="d-flex align-items-center">
-                                    
-        
+
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="24"
@@ -398,31 +356,24 @@ canonical
                                     </svg>
                                 </div>
                             </div>
-        
+
                             <div id="collapseChapter69" aria-labelledby="chapter_69" class="collapse" role="tabpanel">
                                 <div class="">
                                     <div class="accordion-row rounded-sm p-10 border-top1">
                                         <div class="d-flex align-items-center justify-content-between" role="tab" id="files_163">
                                             <div class="d-flex align-items-center collapsed" href="#collapseFiles163" aria-controls="collapseFiles163" data-parent="#chaptersAccordion" role="button" data-toggle="collapse" aria-expanded="false">
-                                                
-        
+
                                                 <span class="ml-10 text-secondary font-14 file-title">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable.</span>
                                             </div>
-                                            
-                                            <!--<i class="collapse-chevron-icon" data-feather="chevron-down" height="20" href="#collapseFiles163" aria-controls="collapseFiles163" data-parent="#chaptersAccordion" role="button" data-toggle="collapse" aria-expanded="true"></i>-->
+
                                         </div>
-        
-                                        
+
                                     </div>
-                                    <!--<script>-->
-                                    <!--    function buy_now(){-->
-                                    <!--        $('.buy_now').click();-->
-                                    <!--    }-->
-                                    <!--</script>-->
+
                                 </div>
                             </div>
                         </div>
-        
+
                         <div class="accordion-row rounded-sm border mt-20">
                             <div class="d-flex align-items-center justify-content-between p-10" role="tab" id="chapter_70">
                                 <div
@@ -434,14 +385,12 @@ canonical
                                     data-toggle="collapse"
                                     aria-expanded="false"
                                 >
-                                    
-        
+
                                     <span class="font-weight-bold text-secondary font-14 ml-10">What are horoscopes and how are they created?</span>
                                 </div>
-        
+
                                 <div class="d-flex align-items-center">
-                                    
-        
+
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="24"
@@ -464,31 +413,24 @@ canonical
                                     </svg>
                                 </div>
                             </div>
-        
+
                             <div id="collapseChapter70" aria-labelledby="chapter_70" class="collapse" role="tabpanel">
                                 <div class="">
                                     <div class="accordion-row rounded-sm p-10 border-top1">
                                         <div class="d-flex align-items-center justify-content-between" role="tab" id="files_164">
                                             <div class="d-flex align-items-center collapsed" href="#collapseFiles164" aria-controls="collapseFiles164" data-parent="#chaptersAccordion" role="button" data-toggle="collapse" aria-expanded="false">
-                                                
-        
+
                                                 <span class="ml-10 text-secondary font-14 file-title">It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).</span>
                                             </div>
-                                            
-                                            <!--<i class="collapse-chevron-icon" data-feather="chevron-down" height="20" href="#collapseFiles164" aria-controls="collapseFiles164" data-parent="#chaptersAccordion" role="button" data-toggle="collapse" aria-expanded="true"></i>-->
+
                                         </div>
-        
-                                        
+
                                     </div>
-                                    <!--<script>-->
-                                    <!--    function buy_now(){-->
-                                    <!--        $('.buy_now').click();-->
-                                    <!--    }-->
-                                    <!--</script>-->
+
                                 </div>
                             </div>
                         </div>
-        
+
                         <div class="accordion-row rounded-sm border mt-20">
                             <div class="d-flex align-items-center justify-content-between p-10" role="tab" id="chapter_95">
                                 <div
@@ -500,14 +442,12 @@ canonical
                                     data-toggle="collapse"
                                     aria-expanded="false"
                                 >
-                                    
-        
+
                                     <span class="font-weight-bold text-secondary font-14 ml-10">Can astrology predict the future?</span>
                                 </div>
-        
+
                                 <div class="d-flex align-items-center">
-                                    
-        
+
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="24"
@@ -530,31 +470,24 @@ canonical
                                     </svg>
                                 </div>
                             </div>
-        
+
                             <div id="collapseChapter95" aria-labelledby="chapter_95" class="collapse" role="tabpanel">
                                 <div class="">
                                     <div class="accordion-row rounded-sm p-10 border-top1">
                                         <div class="d-flex align-items-center justify-content-between" role="tab" id="files_224">
                                             <div class="d-flex align-items-center collapsed" href="#collapseFiles224" aria-controls="collapseFiles224" data-parent="#chaptersAccordion" role="button" data-toggle="collapse" aria-expanded="false">
-                                                
-        
+
                                                 <span class="ml-10 text-secondary font-14 file-title">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable.</span>
                                             </div>
-                                            
-                                            <!--<i class="collapse-chevron-icon" data-feather="chevron-down" height="20" href="#collapseFiles224" aria-controls="collapseFiles224" data-parent="#chaptersAccordion" role="button" data-toggle="collapse" aria-expanded="true"></i>-->
+
                                         </div>
-        
-                                        
+
                                     </div>
-                                    <!--<script>-->
-                                    <!--    function buy_now(){-->
-                                    <!--        $('.buy_now').click();-->
-                                    <!--    }-->
-                                    <!--</script>-->
+
                                 </div>
                             </div>
                         </div>
-        
+
                         <div class="accordion-row rounded-sm border mt-20">
                             <div class="d-flex align-items-center justify-content-between p-10" role="tab" id="chapter_104">
                                 <div
@@ -566,14 +499,12 @@ canonical
                                     data-toggle="collapse"
                                     aria-expanded="false"
                                 >
-                                    
-        
+
                                     <span class="font-weight-bold text-secondary font-14 ml-10">What are the twelve zodiac signs, and what do they reoresent?</span>
                                 </div>
-        
+
                                 <div class="d-flex align-items-center">
-                                    
-        
+
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="24"
@@ -596,27 +527,20 @@ canonical
                                     </svg>
                                 </div>
                             </div>
-        
+
                             <div id="collapseChapter104" aria-labelledby="chapter_104" class="collapse" role="tabpanel">
                                 <div class="">
                                     <div class="accordion-row rounded-sm p-10 border-top1">
                                         <div class="d-flex align-items-center justify-content-between" role="tab" id="files_307">
                                             <div class="d-flex align-items-center collapsed" href="#collapseFiles307" aria-controls="collapseFiles307" data-parent="#chaptersAccordion" role="button" data-toggle="collapse" aria-expanded="false">
-                                                
-        
+
                                                 <span class="ml-10 text-secondary font-14 file-title">It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English.</span>
                                             </div>
-                                            
-                                            <!--<i class="collapse-chevron-icon" data-feather="chevron-down" height="20" href="#collapseFiles307" aria-controls="collapseFiles307" data-parent="#chaptersAccordion" role="button" data-toggle="collapse" aria-expanded="true"></i>-->
+
                                         </div>
-        
-                                        
+
                                     </div>
-                                    <!--<script>-->
-                                    <!--    function buy_now(){-->
-                                    <!--        $('.buy_now').click();-->
-                                    <!--    }-->
-                                    <!--</script>-->
+
                                 </div>
                             </div>
                         </div>
@@ -624,7 +548,6 @@ canonical
                 </div>
             </div>
         </section>
-        
 
     </div>
 @endsection

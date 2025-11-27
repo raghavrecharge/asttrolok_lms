@@ -8,11 +8,10 @@
   //border-top: 16px solid #3498db;
   width: 120px;
   height: 120px;
-  -webkit-animation: spin 2s linear infinite; /* Safari */
+  -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
-/* Safari */
 @-webkit-keyframes spin {
   0% { -webkit-transform: rotate(0deg); }
   100% { -webkit-transform: rotate(360deg); }
@@ -26,17 +25,15 @@
 @endpush
 
 @section('content')
-    <!--<section class="cart-banner1 position-relative text-center  slider-container1">-->
-    <!--    <h1 class="font-30 text-white font-weight-bold">{{ trans('cart.shopping_cart') }}</h1>-->
-    <!--</section>-->
+
     <center><div class="loader mt-50">
 <img loading="lazy"  width= '120px' height= '120px' src="{{ config('app.img_dynamic_url') }}/store/1/default_images/icons8-loading-90.png"></div></center>
  <form action="/razorpay/consultationdetailsshow" method="get">
-                         
+
                             <input type="hidden" name="order_id" value="{{ $orderid }}">
                             <input type="hidden" name="contact_no" value="{{ $contact }}">
                             <input type="hidden" name="name" value="{{ $full_name }}">
-            
+
                             <script   src="https://checkout.razorpay.com/v1/checkout.js"
                                     data-key="{{ env('RAZORPAY_API_KEY') }}"
                                     data-amount="{{ (int)(preg_replace('/[^\d.]/', '', handlePrice($total ))* 100) }}"

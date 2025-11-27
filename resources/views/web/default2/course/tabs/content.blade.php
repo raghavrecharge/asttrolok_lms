@@ -1,5 +1,3 @@
-{{-- Sessions --}}
-
 @if(!empty($course->chapters) and count($course->chapters))
     <section class="">
         @include('web.default.course.tabs.contents.chapter')
@@ -20,8 +18,6 @@
     </section>
 @endif
 
-{{-- Files --}}
-
 @if(!empty($filesWithoutChapter) and count($filesWithoutChapter))
     <section class="mt-20">
         <div class="row">
@@ -35,8 +31,6 @@
         </div>
     </section>
 @endif
-
-{{-- TextLessons --}}
 
 @if(!empty($textLessonsWithoutChapter) and count($textLessonsWithoutChapter))
     <section class="mt-20">
@@ -52,8 +46,6 @@
     </section>
 @endif
 
-
-{{-- Quizzes --}}
 @if(!empty($quizzes) and $quizzes->count() > 0)
     <section class="mt-20">
         <h2 class="section-title after-line">{{ trans('update.quiz_and_certificates') }}</h2>
@@ -69,12 +61,9 @@
         </div>
     </section>
 
-    {{-- Certificates --}}
-
     <section class="">
         @include('web.default.course.tabs.contents.certificate' , ['quizzes' => $course->quizzes])
     </section>
 @endif
-
 
 @include('web.default.course.tabs.play_modal.play_modal')

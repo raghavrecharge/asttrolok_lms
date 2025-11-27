@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/swiper/swiper-bundle.min.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/select2/select2.min.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/mobile-instructors.css">
-    <!--<link rel="canonical" href="https://www.asttrolok.com/consult-with-astrologers" />-->
+
     <link rel="stylesheet" href="assets/default/css/category_slider.css">
 @endpush
 <style>
@@ -24,7 +24,7 @@
 }
 .loadid {
     display:none;
-   
+
 }
 .loadid.display {
 	display: inline-block;
@@ -32,7 +32,7 @@
 @media (min-width: 280px) and (max-width: 425px){
 .mobilegrid {
     flex: 2 0 50% !important;
-    /*max-width: 58% !important;*/
+
     margin-left: -10px !important;
     margin-right: -10px !important;
 }
@@ -90,7 +90,7 @@
 @media (min-width: 425px) and (max-width: 668px){
 .mobilegrid {
     flex: 2 0 50% !important;
-    /*max-width: 58% !important;*/
+
     margin-left: -10px !important;
     margin-right: -10px !important;
 }
@@ -150,30 +150,19 @@
     display: flex;
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
-     min-height: 60px !important; 
-} 
+     min-height: 60px !important;
+}
 </style>
 
 @section('content')
     <section class="cart-banner mobile-home-slider search-top-banner opacity-04 position-relative">
-    <!--<section class="mobile-home-slider site-top-banner search-top-banner opacity-04 position-relative">-->
-    <!--    <img src="{{ config('app.img_dynamic_url') }}{{ getPageBackgroundSettings('instructors') }}" class="banner-redius img-cover" alt="{{ $title }}"/>-->
 
         <div class="container ">
             <div class="row h-100 align-items-center justify-content-center text-center">
                 <div class="col-12 col-md-9 col-lg-7">
                     <div class="top-search-categories-form">
                         <h1 class="text-white font-30 mb-15">{{ $title }} </h1>
-                        <!--<span class="course-count-badge py-5 px-10 text-white rounded">{{ $instructorsCount }} {{ $title }}</span>-->
 
-                        <!--<div class="search-input bg-white p-10 flex-grow-1">-->
-                        <!--    <form action="/{{ $page }}" method="get">-->
-                        <!--        <div class="form-group d-flex align-items-center m-0">-->
-                        <!--            <input type="text" name="search" class="form-control border-0" value="{{ request()->get('search') }}" placeholder="{{ trans('public.search') }} {{ $title }}"/>-->
-                        <!--            <button type="submit" class="btn btn-primary rounded-pill">{{ trans('home.find') }}</button>-->
-                        <!--        </div>-->
-                        <!--    </form>-->
-                        <!--</div>-->
                     </div>
                 </div>
             </div>
@@ -182,16 +171,13 @@
 
     <div class="mob-cat container">
          <form id="filtersForm" class="consult-filter" style="display:block;" action="/{{ $page }}" method="get">
-        
+
         @include('web.default.pages.includes.instructor_top_filters')
          </form>
-       {{-- @include('web.default.pages.includes.category_slider_instructors') --}}
-        
-        
-       
+
         <div class="mt-15">
             <div>
-                {{-- <div class="mob-tab"> --}}
+
                         <ul class="col-12 nav nav-tabs p-15 d-flex align-items-center justify-content-between bg-secondary1 rounded-sm1" id="tabs-tab" role="tablist">
                             <li class="col-6 nav-item" style="display: flex;justify-content: center;">
                                 <a class="position-relative font-14  {{ (empty(request()->get('tab','')) or request()->get('tab','') == 'reviews') ? 'active' : '' }}" id="reviews-tab" data-toggle="tab"
@@ -203,21 +189,20 @@
                                    href="#content" role="tab" aria-controls="content"
                                    aria-selected="false">Instructors</a>
                             </li>
-                           
-                           
+
                         </ul>
             </div>
     <section>
         @php
-                                  
+
             $to_day=date("l");
         @endphp
-        
+
             <div id="instructorsList" class=" mt-15">
-                
+
                 <div class="tab-content " id="nav-tabContent">
                     <div class="tab-pane fade  {{ (empty(request()->get('tab','')) or request()->get('tab','') == 'reviews') ? 'show active' : '' }}" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                      
+
                         <div class="row">
                             @foreach($consult as $instructor2)
                                 @php
@@ -225,18 +210,18 @@
                                     if(!empty($instructor2->meeting) and !$instructor2->meeting->disabled and !empty($instructor2->meeting->meetingTimes) and $instructor2->meeting->meeting_times_count > 0) {
                                         $canReserve2 = true;
                                     }
-                                    
+
                                      if($canReserve2){
-                                     
+
                                 @endphp
                                 @if($instructor2->consultant == 1)
                                          @if(empty(request()->get('card')) or request()->get('card') == 'grid')
-                                <!--<div class="col-12 col-md-6 col-lg-4 loadid">-->
+
                                 <div class="col-12 col-md-6 col-lg-4 ">
                                             @include('web.default.pages.instructor_card1',['instructor' => $instructor2])
                                         </div>
                                 @else
-                                <!--<div class="col-6 col-md-6 col-lg-4 loadid mobilegrid2">-->
+
                                 <div class="col-6 col-md-6 col-lg-4  mobilegrid2">
                                             @include('web.default.pages.instructor_card',['instructor' => $instructor2])
                                         </div>
@@ -247,7 +232,7 @@
                                         }
                                     @endphp
                             @endforeach
-                          
+
                             @foreach($consult as $instructor1)
                                 @php
                                     $canReserve1 = false;
@@ -258,9 +243,9 @@
                                 @endphp
                                     @if($instructor1->consultant == 1)
                                       @if(empty(request()->get('card')) or request()->get('card') == 'grid')
-                                      
+
                                     @if ($instructor1->id ==1525)
-                                    <!--<div class="col-12 col-md-6 col-lg-4 loadid">-->
+
                                     <div class="col-12 col-md-6 col-lg-4 ">
                                                 @include('web.default.pages.instructor_card1',['instructor' => $instructor1])
                                             </div>
@@ -271,12 +256,12 @@
                                     @endif
                                     @else
                                     @if ($instructor1->id ==1525)
-                                    <!--<div class="col-6 col-md-6 col-lg-4 mobilegrid2 loadid">-->
+
                                     <div class="col-6 col-md-6 col-lg-4 mobilegrid2 ">
                                                 @include('web.default.pages.instructor_card',['instructor' => $instructor1])
                                             </div>
                                     @else
-                                    
+
                                     <div class="col-12 col-md-6 col-lg-4 ">
                                                 @include('web.default.pages.instructor_card1',['instructor' => $instructor1])
                                             </div>
@@ -287,11 +272,9 @@
                                      }
                                     @endphp
                             @endforeach
-                            
+
                                 </div>
-            <!--                    <div style="display: flex;align-items: center;justify-content: center;" class="mt-30 ">-->
-            <!--      <a  id="loadMore" class="btn btn-border-white mb-2" >View More</a>-->
-            <!--</div> -->
+
             <br><br>
             <div class="px-20 px-md-0">
         <h3 class="section-title">Why stress
@@ -329,7 +312,7 @@ offering services like kundali and match making. Embrace the power of astrology
 to navigate life's journey with confidence and clarity.</p>
     </div>
                             </div>
-                    
+
                             <div class=" tab-pane fade  {{ (request()->get('tab','') == 'content') ? 'show active' : '' }}" id="content" role="tabpanel" aria-labelledby="content-tab">
                                 <div class="row">
                                     @foreach($instructors as $instructor)
@@ -345,28 +328,16 @@ to navigate life's journey with confidence and clarity.</p>
                                         @endif
                                         @endif
                                     @endforeach
-                                    
-                                    
-                            </div></div>
-                            
-                            
-                           
-                            
-                             
-                </div>
 
-                
+                            </div></div>
+
+                </div>
 
             </div>
 
-           
         </section>
-                       
 
                     </div>
-
-        
-
 
         @if(1==2 and !empty($bestRateInstructors) and !$bestRateInstructors->isEmpty() and (empty(request()->get('sort')) or !in_array(request()->get('sort'),['top_rate','top_sale'])))
             <section class="mt-30 pt-30">
@@ -441,15 +412,15 @@ to navigate life's journey with confidence and clarity.</p>
 //   $("#loadMore").click(function(e){
 //     e.preventDefault();
 //     $(".loadid:hidden").slice(0,10).fadeIn("slow");
-    
+
 //     if($(".loadid:hidden").length == 0){
 //       $("#loadMore").fadeOut("slow");
-       
+
 //       }
 //   });
 //   if($(".loadid").length < 9){
 //       $("#loadMore").hide();
-       
+
 //       }
 // })
 </script>

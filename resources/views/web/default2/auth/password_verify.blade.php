@@ -1,7 +1,7 @@
 @extends('web.default2.layouts.email')
 
 @section('body')
-    <!-- content -->
+
     <td valign="top" class="bodyContent" mc:edit="body_content">
         <div class="container">
             <div class="row justify-content-center">

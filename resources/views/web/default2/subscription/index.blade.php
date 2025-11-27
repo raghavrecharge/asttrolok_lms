@@ -17,14 +17,14 @@
             font-family: 'main-font-family' !important;
         }
         .course-content-sidebar .course-img.has-video .course-video-icon {
-   
+
     width: 50px;
     height: 50px;
-   
+
 }
  .register_desktop{
         position: fixed;
-   
+
     top: 110px;
     width: 27%;
     right: 6.5%;
@@ -33,13 +33,6 @@
         display:none;
     }
 
-
-
-/*******************************
-* MODAL AS LEFT/RIGHT SIDEBAR
-* Add "left" or "right" in modal parent div, after class="modal".
-* Get free snippets on bootpen.com
-*******************************/
 	.modal.left .modal-dialog,
 	.modal.right .modal-dialog {
 		position: fixed;
@@ -53,41 +46,37 @@
 		        transform: translateX(100%);
 	}
 .afterpop{
-    
+
     transition: all 2s  !important;
     transition-timing-function: ease-in  !important;
    -webkit-transform: translateX(0%) !important;
 		    -ms-transform: translateX(0%) !important;
 		     -o-transform: translateX(0%) !important;
 		        transform: translateX(0%) !important;
-		        
+
 }
 	.modal.left .modal-content,
 	.modal.right .modal-content {
 		height: 100%;
 		overflow-y: auto;
 	}
-	
+
 	.modal.left .modal-body,
 	.modal.right .modal-body {
 		padding: 15px 15px 80px;
 	}
 
-
-        
-/*Right*/
 	.modal.right.fade .modal-dialog {
-	    
+
 		right: 0px;
-		        
+
 	}
-	
+
 	.modal.right.fade.in .modal-dialog {
 		right: 0;
 		transition: all .5s;
 	}
 
-/* ----- MODAL STYLE ----- */
 	.modal-content {
 		border-radius: 0;
 		border: none;
@@ -97,11 +86,6 @@
 		border-bottom-color: #EEEEEE;
 		background-color: #FAFAFA;
 	}
-
-/* ----- v CAN BE DELETED v ----- */
-
-
-
 
     </style>
 @endpush
@@ -113,25 +97,15 @@
 
         <div class="cover-content pt-40">
             <div class="container position-relative">
-              {{--  @if(!empty($activeSpecialOffer))
-                    @include('web.default2.subscription.special_offer')
-                @endif --}}
-                
+
                 <h2 class="font-30 course-title text-center py-10">{{ clean($subscription->title, 't') }}</h2>
                 <div class="row">
                     <div class="col-12 col-lg-6 course-section-top">
                         <div class="course-img text-center {{ $subscription->video_demo ? 'has-video' :'' }}">
 
-                      
-
                         @if($subscription->video_demo)
                         <iframe style="border-radius: 30px; cursor:pointer; text-align: center; width:100%; height:280px" src="{{ $subscription->video_demo_source == 'upload' ?  url($subscription->video_demo) : $subscription->video_demo }}" title="Asttrolok" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"  allowfullscreen=""></iframe>
-                            <!--<div id="webinarDemoVideoBtn"-->
-                            <!--     data-video-path="{{ $subscription->video_demo_source == 'upload' ?  url($subscription->video_demo) : $subscription->video_demo }}"-->
-                            <!--     data-video-source="{{ $subscription->video_demo_source }}"-->
-                            <!--     class="subscription-video-icon cursor-pointer d-flex align-items-center justify-content-center">-->
-                            <!--    <i data-feather="play" width="25" height="25"></i>-->
-                            <!--</div>-->
+
                             @else
                               <img src="{{ config('app.img_dynamic_url') }}{{ $subscription->getImage() }}" class="img-cover" alt="webinar Demo Video">
                         @endif
@@ -144,9 +118,9 @@
                         @endphp
                         @if($canSale and !empty(getFeaturesSettings('direct_classes_payment_button_status')))
                         @if($subscription->price > 0)
-                        <!--<button type="button" class="btn-primary btn  buy_now mt-20 js-course-direct-payment">{{ trans('update.buy_now') }}</button>-->
+
                         <a href="/subscriptions/direct-payment/{{$subscription->slug}}" class="mt-10 btn btn-primary">Register Now</a>
-                    
+
                          @else
                                     @if($subscription->slug == 'learn-free-vedic-astrology-course-online' )
                                     <a href="/register-free" class=" btn btn-primary {{ (!$canSale) ? (' disabled ' . $subscription->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
@@ -162,61 +136,21 @@
                         <div class="course-img {{ $subscription->video_demo ? 'has-video' :'' }}">
 
                         <img src="{{ config('app.img_dynamic_url') }}{{ $subscription->getImageCover() }}" class="img-cover" alt="webinar Demo Video">
-                        
+
                     </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    
+
     <section class="container course-content-section {{ $subscription->type }} {{ ($hasBought ) ? 'has-progress-bar' : '' }}">
         <div class="row">
             <div class="col-12 col-lg-8">
                 <div class="course-content-body  user-select-none">
                     <div class="course-body-on-cover text-white">
                         @if(url()->current()!='https://lms.asttrolok.com/subscription/Free-Astrology-Course')
-                        
-                     {{--   <h1 class="font-30 course-title">
-                            {{ clean($subscription->title, 't') }}
-                        </h1>
 
-                    @if(!empty($subscription->category))
-                            <span class="d-block font-16 mt-10">{{ trans('public.in') }} <a href="{{ $subscription->category->getUrl() }}" target="_blank" class="font-weight-500 text-decoration-underline text-white">{{ $subscription->category->title }}</a></span>
-                        @endif
-
-                        <div class="d-flex align-items-center">
-                            @include('web.default2.includes.webinar.rate',['rate' => $subscription->subscription_rate])
-                            <span class="ml-10 mt-15 font-14">({{ $subscription->reviews->pluck('creator_id')->count() }} {{ trans('public.ratings') }})</span>
-                        </div>
-
-                        <div class="mt-15">
-                            <span class="font-14">{{ trans('public.created_by') }}</span>
-                            <a href="{{ $subscription->teacher->getProfileUrl() }}" target="_blank" class="text-decoration-underline text-white font-14 font-weight-500">{{ $subscription->teacher->full_name }}</a>
-                        </div> 
-
-                        @php
-                            $percent = $subscription->getProgress();
-                        @endphp
-
-                        @if($hasBought or $percent)--}}
-
-                            {{-- <div class="mt-30 d-flex align-items-center">
-                                <div class="progress course-progress flex-grow-1 shadow-xs rounded-sm">
-                                    <span class="progress-bar rounded-sm bg-warning" style="width: {{ $percent }}%"></span>
-                                </div>
-
-                                <span class="ml-15 font-14 font-weight-500">
-                                    @if($hasBought and (!$subscription->isWebinar() or $subscription->isProgressing()))
-                                        {{ trans('public.subscription_learning_passed',['percent' => $percent]) }}
-                                    @elseif(!is_null($subscription->capacity))
-                                        {{ $subscription->sales_count }}/{{ $subscription->capacity }} {{ trans('quiz.students') }}
-                                    @else
-                                        {{ trans('public.subscription_learning_passed',['percent' => $percent]) }}
-                                    @endif
-                                </span>
-                            </div> 
-                        @endif--}}
                         @else
                         <div class="course-body-on-cover text-white" style="min-height: 240px;"></div>
                         @endif
@@ -245,12 +179,9 @@
         </div>
                     </div>
                     <div class="mt-35">
-                     
-                   
-                        
+
                        <h1 class="font-30 course-h1 text-left py-10">{{ clean($pageH1, 't') }}</h1>
 @include('web.default2'.'.subscription.tabs.information')
-                      
 
                     </div>
                 </div>
@@ -259,7 +190,6 @@
             <div class="course-content-sidebar col-12 col-lg-4 mt-25 mt-lg-0">
                 <div class="register_desktop1">
                 <div class="rounded-lg shadow-sm">
-                    
 
                     <div class="px-20 pb-30">
                         <form action="/cart/store" method="post">
@@ -333,7 +263,6 @@
                                 @elseif($hasBought or !empty($subscription->getInstallmentOrder()))
                                     <a href="{{ $subscription->getLearningPageUrl() }}" class="btn btn-primary">{{ trans('update.go_to_learning_page') }}</a>
                                 @elseif($subscription->price > 0)
-                                    
 
                                     @if($canSale and $subscription->subscribe)
                                         <a href="/subscribes/apply/{{ $subscription->slug }}" class="btn btn-outline-primary btn-subscribe mt-20 @if(!$canSale) disabled @endif">{{ trans('public.subscribe') }}</a>
@@ -347,9 +276,7 @@
 
                                     @if($canSale and !empty(getFeaturesSettings('direct_classes_payment_button_status')))
                                     <a href="/subscriptions/direct-payment/{{$subscription->slug}}" class="mt-10 btn btn-primary">Register Now</a>
-                                        <!--<button type="button" class="btn btn-outline-danger buy_now mt-20 js-course-direct-payment">-->
-                                        <!--    {{ trans('update.buy_now') }}-->
-                                        <!--</button>-->
+
                                     @endif
 
                                     @if(!empty($installments) and count($installments) and getInstallmentsSettings('display_installment_button'))
@@ -357,14 +284,7 @@
                                             {{ trans('update.pay_with_installments') }}
                                         </a>
                                     @endif
-                               
-                                <!--<button type="button" class="mt-20 btn btn-primary {{ $canSale ? 'js-subscription-add-to-cart-btn' : ($subscription->cantSaleStatus($hasBought) .' disabled ') }}" >-->
-                                <!--        @if(!$canSale)-->
-                                <!--            {{ trans('update.disabled_add_to_cart') }}-->
-                                <!--        @else-->
-                                <!--            {{ trans('public.add_to_cart') }}-->
-                                <!--        @endif-->
-                                <!--    </button>-->
+
                                     @else
                                     @if($subscription->slug == 'learn-free-vedic-astrology-subscription-online' )
                                     <a href="/register-free" class=" btn btn-primary {{ (!$canSale) ? (' disabled ' . $subscription->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
@@ -377,14 +297,11 @@
                         </form>
 
                         @if(!empty(getOthersPersonalizationSettings('show_guarantee_text')) and getOthersPersonalizationSettings('show_guarantee_text'))
-                            <!--<div class="mt-20 d-flex align-items-center justify-content-center text-gray">-->
-                            <!--    <i data-feather="thumbs-up" width="20" height="20"></i>-->
-                            <!--    <span class="ml-5 font-14">{{ getOthersPersonalizationSettings('guarantee_text') }}</span>-->
-                            <!--</div>-->
+
                         @endif
 
                         <div class="mt-35">
-                            <!--<h4 class="mb-20 font-14 font-weight-500 ">💼 714+ Registered Students</h4>-->
+
                            <strong class="d-block text-secondary font-weight-bold">Become an Astrologer for Just ₹2,100/Month</strong>
                               <div class="mt-20 d-flex align-items-center text-gray">
                                 <i data-feather="download-cloud" width="20" height="20"></i>
@@ -398,26 +315,6 @@
                                     <i data-feather="file-text" width="20" height="20"></i>
                                     <span class="ml-5 font-14 font-weight-500">Affordable Monthly Subscription</span>
                                 </div>
-                           {{-- @if($subscription->isDownloadable())
-                                <div class="mt-20 d-flex align-items-center text-gray">
-                                    <i data-feather="download-cloud" width="20" height="20"></i>
-                                    <span class="ml-5 font-14 font-weight-500">{{ trans('webinars.downloadable_content') }}</span>
-                                </div>
-                            @endif 
-
-                            @if($subscription->quizzes->where('certificate', 1)->count() > 0)
-                                <div class="mt-20 d-flex align-items-center text-gray">
-                                    <i data-feather="award" width="20" height="20"></i>
-                                    <span class="ml-5 font-14 font-weight-500">{{ trans('webinars.official_certificate') }}</span>
-                                </div>
-                            @endif 
-
-                            @if($subscription->quizzes->where('status', \App\models\Quiz::ACTIVE)->count() > 0)
-                                <div class="mt-20 d-flex align-items-center text-gray">
-                                    <i data-feather="file-text" width="20" height="20"></i>
-                                    <span class="ml-5 font-14 font-weight-500">{{ trans('webinars.online_quizzes_count',['quiz_count' => $subscription->quizzes->where('status', \App\models\Quiz::ACTIVE)->count()]) }}</span>
-                                </div>
-                            @endif --}}
 
                             @if($subscription->support)
                                 <div class="mt-20 d-flex align-items-center text-gray">
@@ -427,13 +324,11 @@
                             @endif
                         </div>
 
-             
                     </div>
                 </div>
 </div>
                 <div class="register_desktop">
                 <div class="rounded-lg shadow-sm">
-                    
 
                     <div class="px-20 pb-30">
                         <form action="/cart/store" method="post">
@@ -507,7 +402,6 @@
                                 @elseif($hasBought or !empty($subscription->getInstallmentOrder()))
                                     <a href="{{ $subscription->getLearningPageUrl() }}" class="btn btn-primary">{{ trans('update.go_to_learning_page') }}</a>
                                 @elseif($subscription->price > 0)
-                                    
 
                                     @if($canSale and $subscription->subscribe)
                                         <a href="/subscribes/apply/{{ $subscription->slug }}" class="btn btn-outline-primary btn-subscribe mt-20 @if(!$canSale) disabled @endif">{{ trans('public.subscribe') }}</a>
@@ -519,28 +413,16 @@
                                         </a>
                                     @endif
 
-                                    {{--@if($canSale and !empty(getFeaturesSettings('direct_classes_payment_button_status')))
-                                        <button type="button" class="btn btn-outline-danger buy_now mt-20 js-subscription-direct-payment">
-                                            {{ trans('update.buy_now') }}
-                                        </button>
-                                    @endif--}}
-
                                     @if(!empty($installments) and count($installments) and getInstallmentsSettings('display_installment_button'))
                                         <a href="/subscription/{{ $subscription->slug }}/installments" class="btn btn-outline-primary mt-20">
                                             {{ trans('update.pay_with_installments') }}
                                         </a>
                                     @endif
                                  @if($subscription->price > 0)
-                        <!--<button type="button" class="btn-primary btn  buy_now mt-20 js-course-direct-payment">{{ trans('update.buy_now') }}</button>-->
+
                         <a href="/subscriptions/direct-payment/{{$subscription->slug}}" class="mt-10 btn btn-primary">Register Now</a>
                     @endif
-                                {{--<button type="button" class="mt-20 btn btn-primary {{ $canSale ? 'js-subscription-add-to-cart-btn' : ($subscription->cantSaleStatus($hasBought) .' disabled ') }}" >
-                                        @if(!$canSale)
-                                            {{ trans('update.disabled_add_to_cart') }}
-                                        @else
-                                            {{ trans('public.add_to_cart') }}
-                                        @endif
-                                    </button>--}}
+
                                     @else
                                     @if($subscription->slug == 'learn-free-vedic-astrology-subscription-online' )
                                     <a href="/register-free" class=" btn btn-primary {{ (!$canSale) ? (' disabled ' . $subscription->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
@@ -553,14 +435,11 @@
                         </form>
 
                         @if(!empty(getOthersPersonalizationSettings('show_guarantee_text')) and getOthersPersonalizationSettings('show_guarantee_text'))
-                            <!--<div class="mt-20 d-flex align-items-center justify-content-center text-gray">-->
-                            <!--    <i data-feather="thumbs-up" width="20" height="20"></i>-->
-                            <!--    <span class="ml-5 font-14">{{ getOthersPersonalizationSettings('guarantee_text') }}</span>-->
-                            <!--</div>-->
+
                         @endif
 
                         <div class="mt-35">
-                            <!--<h4 class="mb-20 font-14 font-weight-500 ">💼 714+ Registered Students</h4>-->
+
                             <strong class="d-block text-secondary font-weight-bold">Become an Astrologer for Just ₹2,100/Month</strong>
                             <div class="mt-20 d-flex align-items-center text-gray">
                                 <i data-feather="download-cloud" width="20" height="20"></i>
@@ -574,26 +453,6 @@
                                     <i data-feather="file-text" width="20" height="20"></i>
                                     <span class="ml-5 font-14 font-weight-500">Affordable Monthly Subscription</span>
                                 </div>
-                         {{--   @if($subscription->isDownloadable())
-                                <div class="mt-20 d-flex align-items-center text-gray">
-                                    <i data-feather="download-cloud" width="20" height="20"></i>
-                                    <span class="ml-5 font-14 font-weight-500">{{ trans('webinars.downloadable_content') }}</span>
-                                </div>
-                            @endif
-
-                            @if($subscription->quizzes->where('certificate', 1)->count() > 0)
-                                <div class="mt-20 d-flex align-items-center text-gray">
-                                    <i data-feather="award" width="20" height="20"></i>
-                                    <span class="ml-5 font-14 font-weight-500">{{ trans('webinars.official_certificate') }}</span>
-                                </div>
-                            @endif
-
-                            @if($subscription->quizzes->where('status', \App\models\Quiz::ACTIVE)->count() > 0)
-                                <div class="mt-20 d-flex align-items-center text-gray">
-                                    <i data-feather="file-text" width="20" height="20"></i>
-                                    <span class="ml-5 font-14 font-weight-500">{{ trans('webinars.online_quizzes_count',['quiz_count' => $subscription->quizzes->where('status', \App\models\Quiz::ACTIVE)->count()]) }}</span>
-                                </div>
-                            @endif --}}
 
                             @if($subscription->support)
                                 <div class="mt-20 d-flex align-items-center text-gray">
@@ -603,14 +462,12 @@
                             @endif
                         </div>
 
-                       
                     </div>
                 </div>
 </div>
-                {{-- Cashback Alert --}}
+
                 @include('web.default2.includes.cashback_alert',['itemPrice' => $subscription->price])
 
-                {{-- Gift Card --}}
                 @if($subscription->canSale() and !empty(getGiftsGeneralSettings('status')) and !empty(getGiftsGeneralSettings('allow_sending_gift_for_subscriptions')))
                     <a href="/gift/subscription/{{ $subscription->slug }}" class="d-flex d-none align-items-center mt-30 rounded-lg border p-15">
                         <div class="size-40 d-flex-center rounded-circle bg-gray200">
@@ -642,13 +499,6 @@
                     <h3 class="sidebar-title font-16 text-secondary font-weight-bold">{{ trans('webinars.'.$subscription->type) .' '. trans('webinars.specifications') }}</h3>
 
                     <div class="mt-30">
-                       
-
-                       
-
-                        
-
-                       
 
                         @if(!empty($subscription->access_days))
                             <div class="mt-20 d-flex align-items-center justify-content-between text-gray">
@@ -662,11 +512,10 @@
                     </div>
                 </div>
 
-                {{-- organization --}}
                 @if($subscription->creator_id != $subscription->teacher_id && 1==2)
                     @include('web.default2.subscription.sidebar_instructor_profile', ['subscriptionTeacher' => $subscription->creator])
                 @endif
-                {{-- teacher --}}
+
                  @if(1==2)
                 @include('web.default2.subscription.sidebar_instructor_profile', ['subscriptionTeacher' => $subscription->teacher])
  @endif
@@ -677,9 +526,7 @@
                     @endforeach
                 @endif
                 @endif
-                {{-- ./ teacher --}}
 
-                {{-- tags --}}
                 @if($subscription->tags->count() > 0)
                     <div class="rounded-lg tags-card shadow-sm mt-35 px-25 py-20  d-none ">
                         <h3 class="sidebar-title font-16 text-secondary font-weight-bold">{{ trans('public.tags') }}</h3>
@@ -691,105 +538,14 @@
                         </div>
                     </div>
                 @endif
-           
+
                 <div class="row  d-none ">
-                       
-                            <!--<div class="rounded-lg sidebar-ads mt-35 col-12">-->
-                            <!--    <a href="https://lms.asttrolok.com/subscription/Astromani_2023">-->
-                            <!--        <img src="/store/1/default_images/banners/Astromany-subscription.jpg" class="img-cover rounded-lg" alt="">-->
-                            <!--    </a>-->
-                            <!--</div>-->
-                            <!--  <div class="rounded-lg sidebar-ads mt-35 col-12">-->
-                            <!--    <a href="https://lms.asttrolok.com/subscription/Professional-Astrology-subscription">-->
-                            <!--        <img src="/store/1/default_images/banners/Asttrology-subscription.jpg" class="img-cover rounded-lg" alt="">-->
-                            <!--    </a>-->
-                            <!--</div>-->
-                            
-{{--                             
-         <div class="col-12 col-lg-12 mt-20  d-none ">
-             <div class="webinar-card">
-    <figure>
-        <div class="image-box">
-           <span class="badge badge-primary">Subscription</span>
-            
-            <a href="https://lms.asttrolok.com/subscription/{{ $astromani_23->slug }}">
-                <img src="{{ config('app.img_dynamic_url') }}{{ $astromani_23->thumbnail }}" class="img-cover" alt="{{ $astromani_23->slug }}">
-            </a>
 
-            </div>
-
-        <figcaption class="webinar-card-body">
-            <div class="user-inline-avatar d-flex align-items-center">
-                <div class="avatar bg-gray200">
-                    <img src="{{ config('app.img_dynamic_url') }}{{ $astromani_23->teacher->avatar }}" class="img-cover" alt="{{ $astromani_23->full_name }}">
-                </div>
-                <a href="{{ $astromani_23->teacher->getProfileUrl() }}" target="_blank" class="user-name ml-5 font-14">{{ $astromani_23->teacher->full_name }}</a>
-            </div>
-
-            <a href="https://lms.asttrolok.com/subscription/{{ $astromani_23->slug }}">
-                <h3 class="mt-15  font-weight-bold font-16 text-dark-blue">{{ clean($astromani_23->title,'title') }}</h3>
-            </a>
-           
-        </figcaption>
-    </figure>
-     </div>
-         </div>
-         
-         <div class="col-12 col-lg-12 mt-20">
-             <div class="webinar-card">
-    <figure>
-        <div class="image-box">
-           <span class="badge badge-primary">Subscription</span>
-            
-            <a href="https://lms.asttrolok.com/subscription/{{ $subscription_Professional->slug }}">
-                <img src="{{ config('app.img_dynamic_url') }}{{ $subscription_Professional->thumbnail }}" class="img-cover" alt="{{ $subscription_Professional->slug }}">
-            </a>
-
-            </div>
-
-        <figcaption class="webinar-card-body">
-            <div class="user-inline-avatar d-flex align-items-center">
-                <div class="avatar bg-gray200">
-                    <img src="{{ config('app.img_dynamic_url') }}{{ $subscription_Professional->teacher->avatar }}" class="img-cover" alt="{{ $subscription_Professional->full_name }}">
-                </div>
-                <a href="{{ $subscription_Professional->teacher->getProfileUrl() }}" target="_blank" class="user-name ml-5 font-14">{{ $subscription_Professional->teacher->full_name }}</a>
-            </div>
-
-            <a href="https://lms.asttrolok.com/subscription/{{ $subscription_Professional->slug }}">
-                <h3 class="mt-15  font-weight-bold font-16 text-dark-blue">{{ clean($subscription_Professional->title,'title') }}</h3>
-            </a>
-           
-        </figcaption>
-    </figure>
-     </div>
-         </div>
-         
-          --}}
-         
-         
-         
-         
-         
            </div>
-                
-                
-                {{-- ads --}}
-                <!--@if(!empty($advertisingBannersSidebar) and count($advertisingBannersSidebar))-->
-                <!--    <div class="row">-->
-                <!--        @foreach($advertisingBannersSidebar as $sidebarBanner)-->
-                <!--            <div class="rounded-lg sidebar-ads mt-35 col-{{ $sidebarBanner->size }}">-->
-                <!--                <a href="{{ $sidebarBanner->link }}">-->
-                <!--                    <img src="{{ $sidebarBanner->image }}" class="img-cover rounded-lg" alt="{{ $sidebarBanner->title }}">-->
-                <!--                </a>-->
-                <!--            </div>-->
-                <!--        @endforeach-->
-                <!--    </div>-->
 
-                <!--@endif-->
             </div>
         </div>
 
-        {{-- Ads Bannaer --}}
         @if(!empty($advertisingBanners) and count($advertisingBanners))
             <div class="mt-30 mt-md-50  d-none ">
                 <div class="row">
@@ -803,7 +559,7 @@
                 </div>
             </div>
         @endif
-        {{-- ./ Ads Bannaer --}}
+
     </section>
 
     <div id="webinarReportModal" class="d-none">
@@ -837,25 +593,21 @@
         </form>
     </div>
 <div class="container demo  d-none ">
-	
-	
+
 	<div class="text-center d-none">
-	
+
 		<button type="button" class="btn btn-demo" data-toggle="modal" data-target="#myModal2">
 			Right Sidebar Modal
 		</button>
 	</div>
 
-
-	
-	<!-- Modal -->
 	<div class="modal right fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					
+
 				</div>
 
 				<div class="modal-body">
@@ -914,19 +666,12 @@
         </div>
 				</div>
 
-			</div><!-- modal-content -->
-		</div><!-- modal-dialog -->
-	</div><!-- modal -->
-	
-	
-</div><!-- container -->
+			</div>
+		</div>
+	</div>
 
+</div>
 
-   {{-- @include('web.default2.subscription.share_modal')
-    @include('web.default2.subscription.buy_with_point_modal')
-    @include('web.default2.subscription.login_modal')
-     @include('web.default2.subscription.pop_up')
-    @include('web.default2.subscription.buynow_modal')  --}}
    @include('web.default2.subscription.buynow_modal')
 @endsection
 
@@ -949,7 +694,7 @@
         // alert('');
         $('.buy_now').click();
     }
-   
+
 </script>
 @if(Session::has('addtocart'))
 <script>
@@ -960,10 +705,10 @@ $("#myModal2").modal('show');
     // $('.modal-dialog').addClass('afterpop');
 </script>
 @endif
-@php 
-    Illuminate\Support\Facades\Session::forget('addtocart');  
+@php
+    Illuminate\Support\Facades\Session::forget('addtocart');
 @endphp
-<!--<?php   //unset($_SESSION['addtocart']); ?>-->
+
     <script>
         var webinarDemoLang = '{{ trans('webinars.webinar_demo') }}';
         var replyLang = '{{ trans('panel.reply') }}';
@@ -1020,13 +765,10 @@ $("#myModal2").modal('show');
                         $('.register_desktop').css("display", "none");
                         $('.register_desktop1').css("display", "block");
                     }
-                    
-                   
+
                 });
 </script>
     <script src="{{ config('app.js_css_url') }}/assets2/default/js/parts/comment.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets2/default/js/parts/video_player_helpers.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets2/default/js/parts/webinar_show.min.js"></script>
 @endpush
-
-

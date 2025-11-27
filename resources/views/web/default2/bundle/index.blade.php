@@ -16,14 +16,14 @@
             font-family: 'main-font-family' !important;
         }
         .course-content-sidebar .course-img.has-video .course-video-icon {
-   
+
     width: 50px;
     height: 50px;
-   
+
 }
  .register_desktop{
         position: fixed;
-   
+
     top: 110px;
     width: 27%;
     right: 6.5%;
@@ -32,13 +32,6 @@
         display:none;
     }
 
-
-
-/*******************************
-* MODAL AS LEFT/RIGHT SIDEBAR
-* Add "left" or "right" in modal parent div, after class="modal".
-* Get free snippets on bootpen.com
-*******************************/
 	.modal.left .modal-dialog,
 	.modal.right .modal-dialog {
 		position: fixed;
@@ -52,41 +45,37 @@
 		        transform: translateX(100%);
 	}
 .afterpop{
-    
+
     transition: all 2s  !important;
     transition-timing-function: ease-in  !important;
    -webkit-transform: translateX(0%) !important;
 		    -ms-transform: translateX(0%) !important;
 		     -o-transform: translateX(0%) !important;
 		        transform: translateX(0%) !important;
-		        
+
 }
 	.modal.left .modal-content,
 	.modal.right .modal-content {
 		height: 100%;
 		overflow-y: auto;
 	}
-	
+
 	.modal.left .modal-body,
 	.modal.right .modal-body {
 		padding: 15px 15px 80px;
 	}
 
-
-        
-/*Right*/
 	.modal.right.fade .modal-dialog {
-	    
+
 		right: 0px;
-		        
+
 	}
-	
+
 	.modal.right.fade.in .modal-dialog {
 		right: 0;
 		transition: all .5s;
 	}
 
-/* ----- MODAL STYLE ----- */
 	.modal-content {
 		border-radius: 0;
 		border: none;
@@ -97,9 +86,6 @@
 		background-color: #FAFAFA;
 	}
 
-/* ----- v CAN BE DELETED v ----- */
-
-
 .webinar-card.webinar-list .image-box {
     min-height: 260px;
 }
@@ -109,7 +95,6 @@ button.btn.btn-primary.rounded-pill.buynow {
 
     </style>
 @endpush
-
 
 @section('content')
 <section class="course-cover-container {{ empty($activeSpecialOffer) ? 'not-active-special-offer' : '' }}">
@@ -123,16 +108,9 @@ button.btn.btn-primary.rounded-pill.buynow {
                     <div class="col-12 col-lg-6 course-section-top">
                         <div class="course-img text-center {{ $bundle->video_demo ? 'has-video' :'' }}">
 
-                      
-
                         @if($bundle->video_demo)
                         <iframe style="border-radius: 30px; cursor:pointer; text-align: center; width:100%; height:280px" src="{{ $bundle->video_demo_source == 'upload' ?  url($bundle->video_demo) : $bundle->video_demo }}" title="Asttrolok" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"  allowfullscreen=""></iframe>
-                            <!--<div id="webinarDemoVideoBtn"-->
-                            <!--     data-video-path="{{ $bundle->video_demo_source == 'upload' ?  url($bundle->video_demo) : $bundle->video_demo }}"-->
-                            <!--     data-video-source="{{ $bundle->video_demo_source }}"-->
-                            <!--     class="course-video-icon cursor-pointer d-flex align-items-center justify-content-center">-->
-                            <!--    <i data-feather="play" width="25" height="25"></i>-->
-                            <!--</div>-->
+
                             @else
                               <img src="{{ config('app.img_dynamic_url') }}{{ $bundle->getImage() }}" class="img-cover" style="height:auto" alt="webinar Demo Video">
                         @endif
@@ -161,8 +139,6 @@ button.btn.btn-primary.rounded-pill.buynow {
                                     </div>
                                 @endforeach
                             @endif
-
-
 
                             @php
                                 $canSale = ($bundle->canSale() and !$hasBought);
@@ -202,7 +178,6 @@ button.btn.btn-primary.rounded-pill.buynow {
 
                         </form>
 
-
                     </div>
                     </div>
                     </div>
@@ -211,7 +186,6 @@ button.btn.btn-primary.rounded-pill.buynow {
         </div>
     </section>
 
-    
         <section class="container course-content-section {{ $bundle->type }} {{ ($hasBought) ? 'has-progress-bar' : '' }}">
         <div class="row">
             <div class="col-12 col-lg-8">
@@ -239,22 +213,20 @@ button.btn.btn-primary.rounded-pill.buynow {
                 <span class="mt-10 d-block">52 <br/>Countries</span>
             </a>
         </div>
-  
+
 </div>
                     <div class="mt-35">
 
 @include('web.default2'.'.bundle.tabs.information')
-                      
 
                     </div>
-                    
+
                 </div>
             </div>
 
            <div class="course-content-sidebar col-12 col-lg-4 mt-25 mt-lg-0">
                 <div class="register_desktop1">
                 <div class="rounded-lg shadow-sm">
-                    
 
                    <div class="px-20 pb-30">
                         <form action="/cart/store" method="post">
@@ -365,9 +337,7 @@ button.btn.btn-primary.rounded-pill.buynow {
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download-cloud"><polyline points="8 17 12 21 16 17"></polyline><line x1="12" y1="12" x2="12" y2="21"></line><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"></path></svg>
                                     <span class="ml-5 font-14 font-weight-500">Downloadable content</span>
                                 </div>
-                            
-                            
-                            
+
                                                             <div class="mt-20 d-flex align-items-center text-gray">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-headphones"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
                                     <span class="ml-5 font-14 font-weight-500">Instructor support</span>
@@ -379,7 +349,6 @@ button.btn.btn-primary.rounded-pill.buynow {
 </div>
                 <div class="register_desktop">
                 <div class="rounded-lg shadow-sm">
-                    
 
                <div class="px-20 pb-30">
                         <form action="/cart/store" method="post">
@@ -490,9 +459,7 @@ button.btn.btn-primary.rounded-pill.buynow {
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download-cloud"><polyline points="8 17 12 21 16 17"></polyline><line x1="12" y1="12" x2="12" y2="21"></line><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"></path></svg>
                                     <span class="ml-5 font-14 font-weight-500">Downloadable content</span>
                                 </div>
-                            
-                            
-                            
+
                                                             <div class="mt-20 d-flex align-items-center text-gray">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-headphones"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
                                     <span class="ml-5 font-14 font-weight-500">Instructor support</span>
@@ -502,10 +469,9 @@ button.btn.btn-primary.rounded-pill.buynow {
                     </div>
                 </div>
 </div>
-                {{-- Cashback Alert --}}
+
                 @include('web.default2.includes.cashback_alert',['itemPrice' => $bundle->price])
 
-                {{-- Gift Card --}}
                 @if($bundle->canSale() and !empty(getGiftsGeneralSettings('status')) and !empty(getGiftsGeneralSettings('allow_sending_gift_for_courses')))
                     <a href="/gift/course/{{ $bundle->slug }}" class="d-flex d-none align-items-center mt-30 rounded-lg border p-15">
                         <div class="size-40 d-flex-center rounded-circle bg-gray200">
@@ -538,10 +504,6 @@ button.btn.btn-primary.rounded-pill.buynow {
 
                     <div class="mt-30">
 
-
-                   
-
-
                         @if(!empty($bundle->access_days))
                             <div class="mt-20 d-flex align-items-center justify-content-between text-gray">
                                 <div class="d-flex align-items-center">
@@ -554,11 +516,10 @@ button.btn.btn-primary.rounded-pill.buynow {
                     </div>
                 </div>
 
-                {{-- organization --}}
                 @if($bundle->creator_id != $bundle->teacher_id && 1==2)
                     @include('web.default2.course.sidebar_instructor_profile', ['courseTeacher' => $bundle->creator])
                 @endif
-                {{-- teacher --}}
+
                  @if(1==2)
                 @include('web.default2.course.sidebar_instructor_profile', ['courseTeacher' => $bundle->teacher])
  @endif
@@ -569,9 +530,7 @@ button.btn.btn-primary.rounded-pill.buynow {
                     @endforeach
                 @endif
                 @endif
-                {{-- ./ teacher --}}
 
-                {{-- tags --}}
                 @if($bundle->tags->count() > 0)
                     <div class="rounded-lg tags-card shadow-sm mt-35 px-25 py-20  d-none ">
                         <h3 class="sidebar-title font-16 text-secondary font-weight-bold">{{ trans('public.tags') }}</h3>
@@ -583,24 +542,14 @@ button.btn.btn-primary.rounded-pill.buynow {
                         </div>
                     </div>
                 @endif
-           
-                <div class="row  d-none ">
-                       
-                         
-                            
 
-         
-         
-         
-         
-         
+                <div class="row  d-none ">
+
            </div>
-                
 
             </div>
         </div>
 
-        {{-- Ads Bannaer --}}
         @if(!empty($advertisingBanners) and count($advertisingBanners))
             <div class="mt-30 mt-md-50  d-none ">
                 <div class="row">
@@ -614,10 +563,8 @@ button.btn.btn-primary.rounded-pill.buynow {
                 </div>
             </div>
         @endif
-        {{-- ./ Ads Bannaer --}}
-    </section>
-    
 
+    </section>
 
     @include('web.default.bundle.share_modal')
     @include('web.default.bundle.buy_with_point_modal')
@@ -693,8 +640,7 @@ button.btn.btn-primary.rounded-pill.buynow {
                         $('.register_desktop').css("display", "none");
                         $('.register_desktop1').css("display", "block");
                     }
-                    
-                   
+
                 });
 </script>
     <script src="{{ config('app.js_css_url') }}/assets/default/js/parts/comment.min.js"></script>

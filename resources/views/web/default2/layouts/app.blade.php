@@ -7,18 +7,15 @@
 @endphp
 
 <head>
-    
-    
+
     @include('web.default2.includes.metas')
     <title>{{ $pageTitle ?? '' }}{{ !empty($generalSettings['site_name']) ? (' | '.$generalSettings['site_name']) : '' }}</title>
 
-    <!-- General CSS File -->
-    
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/css/app.css" onload="this.rel='stylesheet'">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/vendors/sweetalert2/dist/sweetalert2.min.css" onload="this.rel='stylesheet'">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/vendors/toast/jquery.toast.min.css" onload="this.rel='stylesheet'">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/vendors/simplebar/simplebar.css" onload="this.rel='stylesheet'">
-        
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
@@ -28,7 +25,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
-
 
     @if($isRtl)
         <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/css/rtl-app.css" onload="this.rel='stylesheet'">
@@ -45,52 +41,32 @@
         {!! getThemeColorsSettings() !!}
     </style>
 
-
     @if(!empty($generalSettings['preloading']) and $generalSettings['preloading'] == '1')
         @include('admin.includes.preloading')
     @endif
-   
-   
-   
-   
 
-
-<!-- Facebook Pixel Code -->
 <script defer>
 
   setTimeout(function() {
         $("[href='https://elfsight.com/google-reviews-widget/?utm_source=websites&utm_medium=clients&utm_content=google-reviews&utm_term=www.asttrolok.com&utm_campaign=free-widget']").hide();
     //   $('.WidgetBackground__Content-sc-1ho7q3r-2 > a').find('.inline').last().attr("style", "display:none !important");
-    
-              
+
 }, 3000);
 //   setTimeout(function() {
 //         $("[href='https://elfsight.com/google-reviews-widget/?utm_source=websites&utm_medium=clients&utm_content=google-reviews&utm_term=www.asttrolok.com&utm_campaign=free-widget']").hide();
-//     //   $('.WidgetBackground__Content-sc-1ho7q3r-2 > a').find('.inline').last().attr("style", "display:none !important");   
-              
+//     //   $('.WidgetBackground__Content-sc-1ho7q3r-2 > a').find('.inline').last().attr("style", "display:none !important");
+
 // }, 4000);
 
 //   setTimeout(function() {
-   
 
 </script>
 
-<!-- End Facebook Pixel Code -->
-
-
-<!-- Google Tag Manager -->
 <script defer>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-MH675X5');</script>
-<!-- End Google Tag Manager -->
-
-
-
-<!-- End Google Tag Manager (noscript) -->
-
-
 
 </head>
 
@@ -129,14 +105,11 @@ $dynamic_rate=[
 '2067' =>4.5,
 '2068' =>4.1,
 
-
 ];
 @endphp
 
-<!-- Google Tag Manager (noscript) -->
 <noscript><iframe src=""
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
 
 <div id="app" class="{{ (!empty($floatingBar) and $floatingBar->position == 'top' and $floatingBar->fixed) ? 'has-fixed-top-floating-bar' : '' }}">
     @if(!empty($floatingBar) and $floatingBar->position == 'top')
@@ -154,24 +127,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     @yield('content')
 
+</div>
+</div>
+</div>
 
-</div>
-</div>
-</div>
-   {{-- @if(!isset($appFooter))
-        
-    @endif --}}
     @include('web.default2.includes.footer')
     @include('web.default2.includes.advertise_modal.index')
 
     @if(!empty($floatingBar) and $floatingBar->position == 'bottom')
         @include('web.default2.includes.floating_bar')
     @endif
-    
-    
 
-    
-<!-- Template JS File -->
 <script  src="{{ config('app.js_css_url') }}/assets2/default/js/app.js" ></script>
 <script  src="{{ config('app.js_css_url') }}/assets2/default/vendors/feather-icons/dist/feather.min.js"></script>
 <script  src="{{ config('app.js_css_url') }}/assets2/default/vendors/moment.min.js"></script>
@@ -179,15 +145,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script  src="{{ config('app.js_css_url') }}/assets2/default/vendors/toast/jquery.toast.min.js"></script>
 <script  type="text/javascript" src="{{ config('app.js_css_url') }}/assets2/default/vendors/simplebar/simplebar.min.js"></script>
 
-
-
-
-
 @if(empty($justMobileApp) and checkShowCookieSecurityDialog())
     @include('web.default2.includes.cookie-security')
 @endif
-
-
 
 <script defer>
     var deleteAlertTitle = '{{ trans('public.are_you_sure') }}';
@@ -240,7 +200,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </script>
 
 @include('web.default2.course.pop_up')
- {{-- @include('web.default2.course.pop_up1') --}}
+
 @php
 try{
     if (session_status() == PHP_SESSION_NONE) {
@@ -252,29 +212,26 @@ try{
     catch(Exception $e){
     $str_arr = explode ("/", $_SERVER['REQUEST_URI']);
     }
-    
+
     //print_r($_SERVER['REQUEST_URI']);
     //if(in_array("what-is-pitru-paksha-and-why-it-is-observed", $str_arr)){
-        
+
                 //print_r($str_arr[3]);
-                
+
                 $duration1234 = 0;
                 //unset($_SESSION['duration1234']);
                 //unset($_SESSION['started1234']);
                 if(!empty($_SESSION['started1234']))
                 {
                     // show banner and hide form
-                    
-                
-                   
+
                  $time = ($_SESSION['duration1234'] - (time() - $_SESSION['started1234']));
-                 
-                    
+
                     if($time <= 0)
                     {
                         unset($_SESSION['started1234']);
                         unset($_SESSION['duration1234']);
-                       
+
                     }
                 }
                 else
@@ -285,19 +242,15 @@ try{
                   @endphp
                   <script>
                     // $('#myModal21').modal();
-                    
+
                 //      setTimeout(function() {
                 //     $('#myModal21').modal();
                 // }, 30000);
                 </script>
                 @php
                 }
-            
-            
-      
+
     //}
-
-
 
  $duration123 = 0;
 //unset($_SESSION['duration123']);
@@ -305,17 +258,14 @@ try{
 if(!empty($_SESSION['started123']))
 {
     // show banner and hide form
-    
 
-   
  $time = ($_SESSION['duration123'] - (time() - $_SESSION['started123']));
- 
-    
+
     if($time <= 0)
     {
         unset($_SESSION['started123']);
         unset($_SESSION['duration123']);
-       
+
     }
 }
 else
@@ -325,7 +275,7 @@ else
   $_SESSION['duration123']=$duration123;
   if(!(in_array("what-is-pitru-paksha-and-why-it-is-observed", $str_arr))){
   @endphp
-  
+
 @php
 }
 }
@@ -337,19 +287,7 @@ else
     flex-direction: row-reverse;
 }
 
- 
-/*.cat-dropdown-menu{*/
-/*        opacity: 1;*/
-/*    visibility: visible;*/
-/*    top: 43px;*/
-/*}*/
-
-/*    .xs-categories-toggle:not(:hover) > .cat-dropdown-menu {*/
-/*     visibility: hidden; */
-/*     opacity: 0; */
-/*    transform: translateY(15px);*/
-/*}*/
-@media (max-width: 700px) { 
+@media (max-width: 700px) {
   .mobile4 {
     display: none!important;
   }

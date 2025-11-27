@@ -14,7 +14,6 @@
         </div>
     @endif
 
-    {{-- Installments Overview --}}
     <section>
         <h2 class="section-title">{{ trans('update.installments_overview') }}</h2>
 
@@ -55,7 +54,6 @@
         </div>
     </section>
 
-
     <section class="mt-25">
         <div class="d-flex align-items-start align-items-md-center justify-content-between flex-column flex-md-row">
             <h2 class="section-title">{{ trans('update.installments_list') }}</h2>
@@ -95,8 +93,7 @@
                                     </td>
 
                                     <td class="text-center">
-                                    
-                                    
+
                                     @if($upfrontPayment->status == "paid")
                                             {{ handlePrice($installment->getUpfront($itemPrice)) }}
                                             @php
@@ -108,7 +105,7 @@
                                             $count11 = 1;
                                             @endphp
                                         @endif
-                                        
+
                                         </td>
 
                                     <td class="text-center">-</td>
@@ -134,7 +131,7 @@
                                                         aria-expanded="false">
                                                     <i data-feather="more-vertical" height="20"></i>
                                                 </button>
-                                                
+
                                                 <div class="dropdown-menu menu-lg">
 
                                                     <a href="/register-course/{{$webinar_title}}" target="_blank"
@@ -142,12 +139,11 @@
                                                 </div>
                                             </div>
                                         @endif
-                                        
 
                                     </td>
                                 </tr>
                             @endif
-                                            
+
                             @foreach($installment->steps as $step)
                                 @php
                                     $stepPayment = $payments->where('step_id', $step->id)->where('status', 'paid')->first();
@@ -168,13 +164,13 @@
                                     </td>
 
                                     <td class="text-center">
-                                            
+
                                     @if(!empty($stepPayment))
                                             {{ handlePrice($step->getPrice($itemPrice)) }}
                                             @php
                                             $paidAmount = $paidAmount - $step->getPrice($itemPrice);
                                             @endphp
-                                            
+
                                         @else
                                             @if($paidAmount==0)
                                             {{ handlePrice($step->getPrice($itemPrice)) }} @if($count==0) @php $count=1; @endphp@endif
@@ -182,7 +178,7 @@
                                             {{ handlePrice($step->getPrice($itemPrice)) }} @if($count==0)<span class="text-primary">- {{ handlePrice($paidAmount) }}</span> @php $count=1; @endphp@endif
                                             @endif
                                         @endif
-                                    
+
                                     </td>
 
                                     <td class="text-center">
@@ -210,11 +206,7 @@
                                                         aria-expanded="false">
                                                     <i data-feather="more-vertical" height="20"></i>
                                                 </button>
-                                                <!--<div class="dropdown-menu menu-lg">-->
 
-                                                <!--    <a href="/panel/financial/installments/{{ $order->id }}/steps/{{ $step->id }}/pay" target="_blank"-->
-                                                <!--       class="webinar-actions d-block mt-10 font-weight-normal">{{ trans('panel.pay') }}</a>-->
-                                                <!--</div>-->
                                                 <div class="dropdown-menu menu-lg">
 
                                                     <a href="/panel/financial/installments/{{ $order->id }}/pay_upcoming_part" target="_blank"

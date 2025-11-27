@@ -46,11 +46,10 @@
             </p>
         </div>
 
-        <!-- Progress bar section -->
         <div class="mt-20">
             <label for="videoProgress" class="font-12 text-gray">Progress</label>
             <progress id="videoProgress" value="{{ $Progress }}" max="100" class="progress-bar"></progress>
-            <span id="progressValue" class="font-12 text-gray">{{ $Progress }}%</span> 
+            <span id="progressValue" class="font-12 text-gray">{{ $Progress }}%</span>
         </div>
     </div>
 </div>
@@ -73,12 +72,12 @@
     }
 
     progress::-webkit-progress-value {
-        background-color: #007bff; /* Blue color for progress */
+        background-color: #007bff;
         border-radius: 4px;
     }
 
     progress::-moz-progress-bar {
-        background-color: #007bff; /* Blue color for Firefox */
+        background-color: #007bff;
         border-radius: 4px;
     }
 </style>

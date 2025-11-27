@@ -59,7 +59,7 @@
                 @endphp
 
                 @if(!empty($item))
-                   
+
                         <div class="col-lg-6 mt-15">
                             <div class="webinar-card webinar-list d-flex">
                                 <div class="image-box" style="height:auto !important;">
@@ -95,7 +95,7 @@
                                         @endphp
 
                                         @if(!empty($sale->gift_id) and $sale->buyer_id == $authUser->id)
-                                            {{--  --}}
+
                                         @else
                                             <div class="progress cursor-pointer" data-toggle="tooltip" data-placement="top" title="{{ $progressTitle }}">
                                                 <span class="progress-bar" style="width: {{ $percent }}%"></span>
@@ -270,11 +270,10 @@
                                 </div>
                             </div>
                         </div>
-                   
+
                 @endif
             @endforeach
-            
-            
+
               @foreach($orders as $sale)
                 @php
                     $item = !empty($sale->webinar) ? $sale->webinar : $sale->bundle;
@@ -289,7 +288,7 @@
                 @endphp
 
                 @if(!empty($item))
-                   
+
                         <div class="col-6  mt-15">
                             <div class="webinar-card webinar-list d-flex">
                                 <div class="image-box" style="height:auto !important;">
@@ -325,7 +324,7 @@
                                         @endphp
 
                                         @if(!empty($sale->gift_id) and $sale->buyer_id == $authUser->id)
-                                            {{--  --}}
+
                                         @else
                                             <div class="progress cursor-pointer" data-toggle="tooltip" data-placement="top" title="{{ $progressTitle }}">
                                                 <span class="progress-bar" style="width: {{ $percent }}%"></span>
@@ -382,7 +381,6 @@
                                                             <button type="button" data-webinar-id="{{ $item->id }}" class="join-purchase-webinar webinar-actions btn-transparent d-block mt-10">{{ trans('footer.join') }}</button>
                                                         @endif
 
-                                                       
                                                     @endif
 
                                                     <a href="{{ $item->getUrl() }}?tab=reviews" target="_blank" class="webinar-actions d-block mt-10">{{ trans('public.feedback') }}</a>
@@ -494,7 +492,7 @@
                                 </div>
                             </div>
                         </div>
-                   
+
                 @endif
             @endforeach
              </div>

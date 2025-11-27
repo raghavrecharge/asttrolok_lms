@@ -14,17 +14,14 @@
     </div>
 </section>
 
-{{-- Load Question Card  --}}
 @include('web.default.course.learningPage.components.forum.forum_answer_card')
 
-{{-- Load Answers Card  --}}
 @if(!empty($courseForum) and count($courseForum->answers))
     @foreach($courseForum->answers as $courseForumAnswer)
         @include('web.default.course.learningPage.components.forum.forum_answer_card',['answer' => $courseForumAnswer])
     @endforeach
 @endif
 
-{{-- Post Answer Card  --}}
 <div class="mt-25">
     <h3 class="font-20 font-weight-bold text-secondary px-15">{{ trans('update.write_a_reply') }}</h3>
 
@@ -67,8 +64,6 @@
     </form>
 </div>
 
-{{-- Ask Modal For Edit Forum  --}}
 @include('web.default.course.learningPage.components.forum.ask_question_modal')
 
-{{-- Edit Forum Answer Modal  --}}
 @include('web.default.course.learningPage.components.forum.edit_answer_modal')

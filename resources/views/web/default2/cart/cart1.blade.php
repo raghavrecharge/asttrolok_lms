@@ -5,22 +5,12 @@
   //border: 16px solid #f3f3f3;
   //border-radius: 50%;
   //border-top: 16px solid #3498db;
-  /*width: 80px;*/
+
   height: 80px;
-  -webkit-animation: spin 2s linear infinite; /* Safari */
+  -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
-/* Safari */
-/*@-webkit-keyframes spin {*/
-/*  0% { -webkit-transform: rotate(0deg); }*/
-/*  100% { -webkit-transform: rotate(360deg); }*/
-/*}*/
-
-/*@keyframes spin {*/
-/*  0% { transform: rotate(0deg); }*/
-/*  100% { transform: rotate(360deg); }*/
-/*} */
 #loader {
     position: fixed;
     left: 50%;
@@ -29,7 +19,6 @@
     display: none;
 }
 
-/* Disable page */
 .disabled-page {
     pointer-events: none;
     opacity: 0.5;
@@ -75,11 +64,10 @@
             <input type="text" name="name" value="{{ auth()->check() ? auth()->user()->full_name :'' }}" id="customer_name" placeholder="Name" class="form-control mt-25 " >
             <input type="email" name="email" value="{{ auth()->check() ? auth()->user()->email :'' }}" id="customer_email" placeholder="Email" class="form-control mt-25 " >
             <input type="number" name="number" value="{{ auth()->check() ? auth()->user()->mobile :'' }}" id="customer_number" placeholder="Contact Number" class="form-control mt-25 mb-25" >
-            
 
             <div class="row d-none">
                 @if(!empty($paymentChannels))
-               
+
                     @foreach($paymentChannels as $paymentChannel)
                         @if(!empty($paymentChannel->currencies) and in_array($userCurrency, $paymentChannel->currencies))
                             <div class="col-12 col-lg-6 mb-20 charge-account-radio">
@@ -90,10 +78,7 @@
                                     <p class="mt-30 mt-lg-10 font-weight-500 text-dark-blue">
                                         <span class="font-weight-bold font-14">{{ $paymentChannel->title }}</span>
                                     </p>
-                                    <!--<p class="font-weight-500 text-dark-blue">-->
-                                    <!--    Purchase with your fingertips. Look for us the next time you're paying from a mobile app, and checkout faster on thousands of mobile websites.-->
-                                     
-                                    <!--</p>-->
+
                                     </div>
                                 </label>
                             </div>
@@ -105,26 +90,6 @@
                     @endforeach
                 @endif
 
-                {{--<div class="col-12 col-lg-6 mb-20 charge-account-radio ">
-                   
-                    <label for="offline" class="rounded-sm p-15 p-lg-15 d-flex " style="flex-wrap: nowrap;  align-items: center; justify-content: flex-start;  flex-direction: row;background-color:#fff;">
-                       <input type="radio" @if(empty($userCharge) or ($total > $userCharge)) disabled @endif name="gateway" id="offline" value="credit" style="display: block;    visibility: visible;">
-                        <img src="/assets2/default/img/activity/wallet.png" width="120" height="60" alt="">
-                        <div>
-                         <p class="mt-30 mt-lg-10 font-weight-500 text-dark-blue">
-                               <span class="font-weight-bold font-14">Wallet</span>
-                            <p class="mt-5"></p>
-                        </p>
-
-                        <!--<p class="font-weight-500 text-dark-blue">-->
-                        <!--   Purchase with your fingertips. Look for us the next time you're paying from a mobile app, and checkout faster on thousands of mobile websites.-->
-                        <!--</p>-->
-                        
-                        </div>
-
-                        
-                    </label>
-                </div>--}}
             </div>
 
             @if(!empty($invalidChannels))
@@ -155,10 +120,7 @@
             @endif
 
           <button type="button" id="paymentSubmit"  class="btn btn-sm btn-primary">{{ trans('public.start_payment') }}</button>
-            <!--<div class="d-flex align-items-center justify-content-between mt-45">-->
-            <!--    <span class="font-16 font-weight-500 text-gray">{{ trans('financial.total_amount') }} {{ handlePrice($total) }}</span>-->
-                
-            <!--</div>-->
+
         </form>
         </div>
  <center><div class="loader mt-50" id="loader" style="dispay:none; z-index: 550;">
@@ -166,14 +128,12 @@
             <br>
             <h3>Please do not refresh or close the page while your payment is being processed...</h3>
             </div></center>
-         
-        
-        
+
   </div>
                 <div class="col-12 col-lg-6 ">
-                    
+
 <div class="rounded-sm shadow mt-20 py-25 px-10 px-md-30">
-              
+
                 <h2 class="section-title">Order Summary</h2>
                 <style>
                     .cart-item{
@@ -191,14 +151,14 @@
     background: linear-gradient(to right, #9effc1, var(--primary));
 }
                 </style>
-                
+
                   <div class="cart-item">
                     @php
                       $extra_amount = 0;
-                    @endphp 
-                    
+                    @endphp
+
                 @foreach($carts as $key=>$cart)
-               
+
                   @if(!empty($cart->exists))
                     <div class="row mt-5 cart-row">
                         <div class="col-12 col-lg-10 mb-15 mb-md-0">
@@ -253,30 +213,10 @@
                                             @endif
                                         @endif
 
-                                        
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <!--<div class="col-6 col-lg-2 d-flex flex-md-column align-items-center justify-content-center">-->
-                        <!--    <span class="text-gray d-inline-block d-md-none">{{ trans('public.price') }} :</span>-->
-
-                        <!--    @if(!empty($cartItemInfo['discountPrice']))-->
-                        <!--        <span class="text-gray text-decoration-line-through mx-10 mx-md-0">{{ handlePrice($cartItemInfo['price'], true, true, false, null, true) }}</span>-->
-                        <!--        <span class="font-20 text-primary mt-0 mt-md-5 font-weight-bold">{{ handlePrice($cartItemInfo['discountPrice'], true, true, false, null, true) }}</span>-->
-                        <!--    @else-->
-                        <!--        <span class="font-20 text-primary mt-0 mt-md-5 font-weight-bold">{{ handlePrice($cartItemInfo['price'], true, true, false, null, true) }}</span>-->
-                        <!--    @endif-->
-
-                        <!--    @if(!empty($cartItemInfo['quantity']))-->
-                        <!--        <span class="font-12 text-warning font-weight-500 mt-0 mt-md-5">({{ $cartItemInfo['quantity'] }} {{ trans('update.product') }})</span>-->
-                        <!--    @endif-->
-
-                        <!--    @if(!empty($cartItemInfo['extraPriceHint']))-->
-                        <!--        <span class="font-12 text-gray font-weight-500 mt-0 mt-md-5">{{ $cartItemInfo['extraPriceHint'] }}</span>-->
-                        <!--    @endif-->
-                        <!--</div>-->
 
                         <div class="col-6 col-lg-2 d-flex flex-md-column align-items-center justify-content-center">
                             <span class="text-gray d-inline-block d-md-none mr-10 mr-md-0">{{ trans('public.remove') }} :</span>
@@ -292,14 +232,13 @@
                             <div class="webinar-card webinar-list-cart row">
                                 <div class="col-4">
                                     <div class="image-box" style="height: 85px !important;">
-                                        
-                                         @php 
-              
-                              
+
+                                         @php
+
                                 //echo'<pre>'; print_r($cart[0]);die;
                                  $cartItemInfo = $cart[0];
                                          //print_r($cartItemInfo);die;
-                                            
+
                                         @endphp
                                         <img src="{{ $cartItemInfo['thumbnail'] ?? '' }}" class="img-cover" alt="user avatar">
                                     </div>
@@ -344,30 +283,10 @@
                                             @endif
                                         @endif
 
-                                        
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <!--<div class="col-6 col-lg-2 d-flex flex-md-column align-items-center justify-content-center">-->
-                        <!--    <span class="text-gray d-inline-block d-md-none">{{ trans('public.price') }} :</span>-->
-
-                        <!--    @if(!empty($cartItemInfo['discountPrice']))-->
-                        <!--        <span class="text-gray text-decoration-line-through mx-10 mx-md-0">{{ handlePrice($cartItemInfo['price'], true, true, false, null, true) }}</span>-->
-                        <!--        <span class="font-20 text-primary mt-0 mt-md-5 font-weight-bold">{{ handlePrice($cartItemInfo['discountPrice'], true, true, false, null, true) }}</span>-->
-                        <!--    @else-->
-                        <!--        <span class="font-20 text-primary mt-0 mt-md-5 font-weight-bold">{{ handlePrice($cartItemInfo['price'], true, true, false, null, true) }}</span>-->
-                        <!--    @endif-->
-
-                        <!--    @if(!empty($cartItemInfo['quantity']))-->
-                        <!--        <span class="font-12 text-warning font-weight-500 mt-0 mt-md-5">({{ $cartItemInfo['quantity'] }} {{ trans('update.product') }})</span>-->
-                        <!--    @endif-->
-
-                        <!--    @if(!empty($cartItemInfo['extraPriceHint']))-->
-                        <!--        <span class="font-12 text-gray font-weight-500 mt-0 mt-md-5">{{ $cartItemInfo['extraPriceHint'] }}</span>-->
-                        <!--    @endif-->
-                        <!--</div>-->
 
                         <div class="col-6 col-lg-2 d-flex flex-md-column align-items-center justify-content-center">
                             <span class="text-gray d-inline-block d-md-none mr-10 mr-md-0">{{ trans('public.remove') }} :</span>
@@ -377,61 +296,33 @@
                             </a>
                         </div>
                     </div>
-                    
-                    
+
                      @endif
                 @endforeach
 </div>
-               
-           
+
         <form action="/cart" method="post" id="cartForm">
             {{ csrf_field() }}
             <input type="hidden" name="discount_id" value="">
-            
+
  @if(!empty($hasPhysicalProduct))
-           
+
                 @include('web.default2.cart.includes.shipping_and_delivery')
             @endif
 
             <div class="row mt-5">
-                 
-                <!--<div class="col-12 col-lg-12">-->
-                <!--    <section class="mt-45">-->
-                <!--        <h3 class="section-title">{{ trans('cart.coupon_code') }}</h3>-->
-                <!--        <div class="rounded-sm shadow mt-20 py-25 px-20">-->
-                <!--            <p class="text-gray font-14">{{ trans('cart.coupon_code_hint') }}</p>-->
-
-                <!--            @if(!empty($userGroup) and !empty($userGroup->discount))-->
-                <!--                <p class="text-gray mt-25">{{ trans('cart.in_user_group',['group_name' => $userGroup->name , 'percent' => $userGroup->discount]) }}</p>-->
-                <!--            @endif-->
-
-                <!--            <form action="/carts/coupon/validate" method="Post">-->
-                <!--                {{ csrf_field() }}-->
-                <!--                <div class="form-group">-->
-                <!--                    <input type="text" name="coupon" id="coupon_input" class="form-control mt-25"-->
-                <!--                           placeholder="{{ trans('cart.enter_your_code_here') }}">-->
-                <!--                    <span class="invalid-feedback">{{ trans('cart.coupon_invalid') }}</span>-->
-                <!--                    <span class="valid-feedback">{{ trans('cart.coupon_valid') }}</span>-->
-                <!--                </div>-->
-
-                <!--                <button type="submit" id="checkCoupon"-->
-                <!--                        class="btn btn-sm btn-primary mt-50">{{ trans('cart.validate') }}</button>-->
-                <!--            </form>-->
-                <!--        </div>-->
-                <!--    </section>-->
-                <!--</div>-->
 
                 <div class="col-12 col-lg-12">
-                  
+
                     <section class="mt-20">
-                      
+
                         @if(!empty($cartInstallment1))
 
                      @foreach($cartInstallment1 as $cartInstallment)
                             <form action="/carts/coupon/validate" method="Post">
                     {{ csrf_field() }}
-                    <div class="row"> 
-                    <div class="col-12 col-lg-9"> 
+                    <div class="row">
+                    <div class="col-12 col-lg-9">
                     <div class="form-group">
                         <input readonly type="text" name="coupon" id="coupon_input" class="form-control mt-25 "
                         value="{{ !empty(session('coupon')) ? session('coupon') : '' }}"
@@ -441,7 +332,7 @@
                     </div>
                     </div><div class="col-12 col-lg-3">
                     <button type="submit" id="checkCoupon" class="btn btn-sm btn-primary mt-25 d" disabled>{{ trans('cart.validate') }}</button></div></div>
-                </form> 
+                </form>
                             <div class="cart-checkout-item">
                                 <h4 class="text-secondary font-14 font-weight-500">{{ trans('cart.sub_total') }}</h4>
                                 <span class="font-14 text-gray font-weight-bold">{{!empty($cartInstallment->discount_price) ? (handlePrice($cartInstallment->discount_price + $subTotal)):handlePrice( $subTotal) }}</span>
@@ -477,13 +368,13 @@
                             </div>
                              @endforeach
                             @endif
-                            
+
                 @if(!empty($cartInstallment1))
-                            
+
                    <form action="/carts/coupon/validate" method="Post">
                     {{ csrf_field() }}
-                    <div class="row"> 
-                    <div class="col-12 col-lg-9"> 
+                    <div class="row">
+                    <div class="col-12 col-lg-9">
                     <div class="form-group">
                         <input type="text" name="coupon" id="coupon_input" class="form-control mt-25 {{ !empty(session('total_discount')) ? 'is-valid' : '' }}"
                         value="{{ !empty(session('coupon')) ? session('coupon') : '' }}"
@@ -493,8 +384,8 @@
                     </div>
                     </div><div class="col-12 col-lg-3">
                     <button type="submit" id="checkCoupon" class="btn btn-sm btn-primary mt-25">{{ trans('cart.validate') }}</button></div></div>
-                </form> 
-                
+                </form>
+
                             <div class="cart-checkout-item">
                                 <h4 class="text-secondary font-14 font-weight-500">{{ trans('cart.sub_total') }}</h4>
                                 <span class="font-14 text-gray font-weight-bold">{{ handlePrice($subTotal) }}</span>
@@ -533,7 +424,7 @@
                                     <span class="font-14 text-gray font-weight-bold"><span id="taxPrice">{{ !empty(session('total_tax')) ? session('total_tax') :handlePrice($productDeliveryFee) }}</span></span>
                                 </div>
                             @endif
-                            
+
                             <div class="cart-checkout-item border-0">
                                 <h4 class="text-secondary font-14 font-weight-500">{{ trans('cart.total') }}</h4>
                                 <span class="font-14 text-gray font-weight-bold">
@@ -541,14 +432,12 @@
                                 </span>
                             </div>
                             @else
-                            
-                            
+
                             @endif
                              <div class="d-flex align-items-center justify-content-between mt-45">
-            <!--<button type="button" id="paymentSubmit" disabled class="btn btn-sm btn-primary">{{ trans('public.start_payment') }}</button>-->
+
                             <button type="submit" id="autosubmit" class="autosubmit btn btn-sm btn-primary mt-15 d-none">{{ trans('cart.checkout') }}</button>
-                         <!--<button type="button" onclick="window.history.back()" class="btn btn-sm btn-primary">{{ trans('cart.continue_shopping') }}</button>-->
-                
+
             </div>
 
                     </section>
@@ -559,27 +448,16 @@
        </div>
     </div>
       @if(!empty($razorpay) and $razorpay)
-         
+
             <form action="/payments/verify/Razorpay" method="get" id="razorpayview">
-             
+
                 <input type="hidden" name="order_id"  value="{{$order->id ?? 1}}">
                 <input type="hidden" name="name" value="{{ auth()->check() ? auth()->user()->full_name :'' }}" id="user_name" placeholder="Name" class="form-control mt-25 " required>
                 <input type="hidden" name="email" value="{{ auth()->check() ? auth()->user()->email :'' }}" id="user_email" placeholder="Email" class="form-control mt-25 " required>
                 <input type="hidden" name="number" value="{{ auth()->check() ? auth()->user()->mobile :'' }}" id="user_number" placeholder="Contact Number" class="form-control mt-25 mb-25" required>
                 <input type="hidden" name="total" value="{{ $total }}" id="total" placeholder="Contact Number" class="form-control mt-25 mb-25" required>
                 <input type="hidden" name="extra_amount" value="{{ $extra_amount }}" id="extra_amount" placeholder="Contact Number" class="form-control mt-25 mb-25" required>
-                <!--<script src="https://checkout.razorpay.com/v1/checkout.js"-->
-                <!--        data-key="{{ env('RAZORPAY_API_KEY') }}"-->
-                <!--        data-amount="{{ (int)($total  * 100) }}"-->
-                <!--        data-buttontext="product_price"-->
-                <!--        data-description="Rozerpay"-->
-                <!--        data-currency="{{ currency() }}"-->
-                <!--        data-image="{{ $generalSettings['logo'] ?? '' }}"-->
-                <!--        data-prefill.name="{{ $order->user->full_name ??  '' }}"-->
-                <!--        data-prefill.email="{{ $order->user->email ?? '' }}"-->
-                <!--        data-theme.color="#43d477">-->
-                <!--</script>-->
-                
+
                 <input type="hidden" name="razorpay_payment_id" value="" id="razorpay_payment_id" class="form-control mt-25 mb-25">
                 <input type="hidden" name="razorpay_signature" value="" id="razorpay_signature" class="form-control mt-25 mb-25">
                  @if(!empty($hasPhysicalProduct))
@@ -591,9 +469,8 @@
                         <input type="hidden" id="user_message" name="message">
                 @endif
             </form>
-       
+
         @endif
-        
 
 @php
 session()->forget('discount_id');
@@ -603,12 +480,8 @@ session()->forget('total_amount');
 session()->forget('coupon');
 session()->forget('discountCouponId');
 
-
-
 @endphp
-    
-    
-    
+
 @endsection
 
 @push('scripts_bottom')
@@ -625,17 +498,14 @@ if(@json($hasPhysicalProduct)){
             var address = $('textarea[name="address"]').val().trim();
             var message = $('textarea[name="message"]').val().trim();
 
-             
-             
-             
             var countrySelect = document.getElementById("country");
             var stateSelect = document.getElementById("state");
             var citySelect = document.getElementById("city");
-            
+
             var countryName = countrySelect.options[countrySelect.selectedIndex].text;
             var stateName = stateSelect.options[stateSelect.selectedIndex].text;
             var cityName = citySelect.options[citySelect.selectedIndex].text;
-            
+
             document.getElementById("user_country").value = countryName;
             document.getElementById("user_state").value = stateName;
             document.getElementById("user_city").value = cityName;
@@ -646,23 +516,22 @@ if(@json($hasPhysicalProduct)){
             document.getElementById("user_address").value = address;
             document.getElementById("user_message").value = message;
          }
-         
+
 document.getElementById('paymentSubmit').addEventListener('click', function(e) {
     e.preventDefault();
     if(@json($hasPhysicalProduct)){
     var countrySelect = document.getElementById("country");
             var stateSelect = document.getElementById("state");
             var citySelect = document.getElementById("city");
-            
+
             var countryName = countrySelect.options[countrySelect.selectedIndex].text;
             var stateName = stateSelect.options[stateSelect.selectedIndex].text;
             var cityName = citySelect.options[citySelect.selectedIndex].text;
-            
-            
+
             var pin_code = document.getElementById('pin_code').value;
             var address = document.getElementById('address').value;
             var message = document.getElementById('message').value;
-            
+
             document.getElementById("user_country").value = countryName;
     }
     const userDetails = {

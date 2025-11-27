@@ -9,22 +9,12 @@
       //border: 16px solid #f3f3f3;
       //border-radius: 50%;
       //border-top: 16px solid #3498db;
-      /*width: 80px;*/
+
       height: 80px;
-      -webkit-animation: spin 2s linear infinite; /* Safari */
+      -webkit-animation: spin 2s linear infinite;
       animation: spin 2s linear infinite;
     }
-    
-    /* Safari */
-    /*@-webkit-keyframes spin {*/
-    /*  0% { -webkit-transform: rotate(0deg); }*/
-    /*  100% { -webkit-transform: rotate(360deg); }*/
-    /*}*/
-    
-    /*@keyframes spin {*/
-    /*  0% { transform: rotate(0deg); }*/
-    /*  100% { transform: rotate(360deg); }*/
-    /*}*/
+
     #loader {
     position: fixed;
     left: 50%;
@@ -33,7 +23,6 @@
     display: none;
 }
 
-/* Disable page */
 .disabled-page {
     pointer-events: none;
     opacity: 0.5;
@@ -49,9 +38,9 @@
         @php
         if(!$total)
         $total=$priceWithDiscount['price'];
-        
+
         @endphp
-        
+
         <span class="payment-hint font-20 text-white d-block"> {{ handlePrice($total) }} item 1</span>
         @else
         @php
@@ -83,53 +72,31 @@
         @endphp
 
          <h2 class="section-title">Please validate any coupon code before use</h2>
-       {{-- <form action="/cart/coupon/validate2" method="Post">
-                    {{ csrf_field() }}
-                    <div class="row" style="display: flex;justify-content: space-evenly;"> 
-                    <div class="col-11 col-lg-3"> 
-                    <div class="form-group">
-                        <input type="text" name="coupon" id="coupon_input" class="form-control mt-10 {{ session('discountCoupon') ? (session('discountCoupon')=='no' ? 'is-invalid' : 'is-valid') : '' }}" value="{{ session('discountCoupon') ? (session('discountCoupon')=='no' ? '' : session('discountCoupon')) : '' }}"
-                         placeholder="{{ trans('cart.enter_your_code_here') }}" style="border-radius: 20px !important;">
-                        <input type="hidden" name="item_id" id="web_id1" value="{{$subscription_id}}" class="form-control mt-25" >
-                        <span class="invalid-feedback">{{ trans('cart.coupon_invalid') }}</span>
-                        <span class="valid-feedback">{{ trans('cart.coupon_valid') }}</span>
-                    </div>
-                    </div>
-                    <div class="col-5 col-lg-3 " style="margin-top: 3px;margin-right:-21px; position: absolute !important; right: 21px;">
-                    <button type="submit" id="checkCoupon1" class="btn btn-sm btn-primary mt-10" style=" height: 35px !important; border-radius: 20px !important;">{{ trans('cart.validate') }}</button>
-                    </div></div>
-                </form> --}}
 
         <h2 class="section-title">Fill all the Details here:</h2>
         {{session()->forget('discountCoupon')}}
         <form action="/payments/payment-request" method="post" class=" mt-25"  id="razor-pay-request">
             {{ csrf_field() }}
-           {{-- <input type="hidden" name="order_id" value="{{ $order->id }}"> --}}
+
            <input type="hidden" name="subscription_id" value="{{ $subscription->id }}">
-             
+
            <input type="text" name="name" value="{{ auth()->check() ? auth()->user()->full_name :'' }}" id="customer_name" placeholder="Name" class="form-control mt-25 " >
             <input type="email" name="email" value="{{ auth()->check() ? auth()->user()->email  :'' }}" id="customer_email" placeholder="Email" class="form-control mt-25 " >
             <input type="number" name="number" value="{{ auth()->check() ? auth()->user()->mobile :'' }}" id="customer_number" placeholder="Contact Number" class="form-control mt-25 mb-25" >
              <h2 class="section-title d-none">Payment Option</h2>
              <br>
-           
-            
+
             <div class="row d-none">
                 @if(!empty($paymentChannels))
                     @foreach($paymentChannels as $paymentChannel)
                         @if(!empty($paymentChannel->currencies) and in_array($userCurrency, $paymentChannel->currencies))
-                        
-                            
+
                             <div class="col-12 col-lg-4 mb-10 charge-account-radio">
                                 <label for="{{ $paymentChannel->title }}" class="rounded-sm p-15 p-lg-15 d-flex " style="flex-wrap: nowrap;  align-items: center; justify-content: flex-start;  flex-direction: row;background-color:#fff;">
                                 <input type="radio" name="gateway" id="{{ $paymentChannel->title }}" data-class="{{ $paymentChannel->class_name }}" value="{{ $paymentChannel->id }}"  style="display: block;    visibility: visible;">
-                                <!--<label for="{{ $paymentChannel->title }}" class=" p-10 p-lg-20 d-flex align-items-center justify-content-center">-->
+
                                      <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $paymentChannel->image }}" class="ml-30" width="" height="35px" alt="">
 
-                                    <!--<p class="mt-lg-50 font-weight-500 text-dark-blue">-->
-                                    <!--    {{-- {{ trans('financial.pay_via') }} --}}-->
-                                    <!--    <span class="font-weight-bold font-30">{{ $paymentChannel->title }}</span>-->
-                                    <!--</p>-->
                                 </label>
                             </div>
                         @else
@@ -139,29 +106,9 @@
                         @endif
                     @endforeach
                 @endif
-              
-                {{--<div class="col-12 col-lg-6 mb-20 charge-account-radio ">
-                    <label for="offline" class="rounded-sm p-15 p-lg-15 d-flex " style="flex-wrap: nowrap;  align-items: center; justify-content: flex-start;  flex-direction: row;background-color:#fff;">
-                    <input type="radio" @if(empty($userCharge) or ($total > $userCharge)) disabled @endif name="gateway" id="offline" value="credit"  style="display: block;    visibility: visible;">
-                    <!--<label for="offline" class="rounded-sm p-10 p-lg-45 d-flex  align-items-center justify-content-center">-->
-                        <img loading="lazy" src="{{ config('app.img_dynamic_url') }}/store/1/default_images/payment gateways/wallet1.png" class="ml-30" height="45" alt="">
 
-                        <p class=" mt-lg-50 font-weight-500 text-dark-blue">
-                          {{ trans('financial.account') }} 
-                            <span class="font-35 font-weight-bold">
-                                 {{ trans('financial.charge') }} 
-                                Wallet
-                            </span>
-                        </p>
-
-                        <span class="font-25">(₹{{ handlePrice($userCharge) }})</span>
-                    </label>
-                </div> --}}
-                
-               
-                
             </div>
- 
+
             @if(!empty($invalidChannels))
                 <div class="d-flex align-items-center mt-30 rounded-lg border p-15">
                     <div class="size-40 d-flex-center rounded-circle bg-gray200">
@@ -195,15 +142,14 @@
     </div></center>
 
             <div class="d-flex align-items-center justify-content-between">
-                {{-- <span class="font-16 font-weight-500 text-gray">{{ trans('financial.total_amount') }} {{ handlePrice($total) }}</span> --}}
+
                 <button type="button" id="paymentSubmit" class="btn btn-sm btn-primary" style="width:;">
-                    {{-- {{ trans('public.start_payment') }} --}}
+
                     Pay Now
                 </button>
             </div>
         </form>
 
-      
             <form action="/payments/verify/Razorpay" method="get" id="razorpayvieww">
                 <input type="hidden" name="order_id" value="2">
                 <input type="hidden" name="subscription_id" value="{{ $subscription->id }}">
@@ -211,12 +157,12 @@
                 <input type="hidden" name="email" value="{{ auth()->check() ? auth()->user()->email :'' }}" id="user_email" placeholder="Email" class="form-control mt-25 " required>
                 <input type="hidden" name="number" value="{{ auth()->check() ? auth()->user()->mobile :'' }}" id="user_number" placeholder="Contact Number" class="form-control mt-25 mb-25" required>
                 <input type="hidden" name="discount_id" value="{{ session('discountCouponId') ? session('discountCouponId') : 0 }}" id="discount_id" placeholder="discountCouponId" class="form-control mt-25 mb-25" >
-               
+
                  <input type="hidden" name="razorpay_payment_id" value="" id="razorpay_payment_id" class="form-control mt-25 mb-25">
                  <input type="hidden" name="razorpay_signature" value="" id="razorpay_signature" class="form-control mt-25 mb-25">
-                 
+
             </form>
-        
+
     </section>
 
 @endsection
@@ -227,7 +173,7 @@
 <script defer>
 document.getElementById('paymentSubmit').addEventListener('click', function(e) {
     e.preventDefault();
-    
+
     const userDetails = {
         name: document.getElementById('customer_name').value,
         email: document.getElementById('customer_email').value,

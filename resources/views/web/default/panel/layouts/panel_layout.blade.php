@@ -9,7 +9,6 @@
     @include(getTemplate().'.includes.metas')
     <title>{{ $pageTitle ?? '' }}{{ !empty($generalSettings['site_name']) ? (' | '.$generalSettings['site_name']) : '' }}</title>
 
-    <!-- General CSS File -->
     <link href="{{ config('app.js_css_url') }}/assets/default/css/font.css" rel="stylesheet">
 
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/sweetalert2/dist/sweetalert2.min.css">
@@ -50,15 +49,15 @@
        @if($authUser->isUser())
 <div class="container">
     <div class="d-flex justify-content-end">
-     
+
          @include(getTemplate(). '.panel.includes.sidebar1')
         @else
         <div class="container-fluid">
     <div class="d-flex justify-content-end">
          @include(getTemplate(). '.panel.includes.sidebar')
-        
+
             @endif
-       
+
 <div class="panel-content">
         <div class="content">
             @yield('content')
@@ -69,7 +68,7 @@
     @include('web.default.includes.advertise_modal.index')
     </div>
 </div>
-<!-- Template JS File -->
+
 <script   src="{{ config('app.js_css_url') }}/assets/default/js/app.js"></script>
 <script   src="{{ config('app.js_css_url') }}/assets/default/vendors/moment.min.js"></script>
 <script   src="{{ config('app.js_css_url') }}/assets/default/vendors/feather-icons/dist/feather.min.js"></script>
@@ -131,6 +130,6 @@
 
     {!! !empty(getCustomCssAndJs('js')) ? getCustomCssAndJs('js') : '' !!}
 </script>
- 
+
 </body>
 </html>

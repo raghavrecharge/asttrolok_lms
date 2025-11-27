@@ -1,9 +1,8 @@
 @extends(getTemplate().'.layouts.app')
 
-
 @section('content')
-    <section class="cart-banner1 position-relative text-center slider-container1"> 
-        
+    <section class="cart-banner1 position-relative text-center slider-container1">
+
         <h1 class="font-30 text-white font-weight-bold">{{ trans('cart.shopping_cart') }}</h1>
         <span class="payment-hint font-20 text-white d-block"> {{ handlePrice($subTotal) . ' ' . trans('cart.for_items',['count' => $carts->count()]) }}</span>
     </section>
@@ -28,14 +27,12 @@
             <h2 class="section-title">{{ trans('cart.cart_items') }}</h2>
 
             <div class="rounded-sm shadow mt-20 py-25 px-10 px-md-30">
-              
-                
+
                 @if($carts->count() > 0)
                     <div class="row d-none d-md-flex">
                         <div class="col-12 col-lg-10"><span
                                 class="text-gray font-weight-500">{{ trans('cart.item') }}</span></div>
-                        <!--<div class="col-6 col-lg-2 text-center"><span-->
-                        <!--        class="text-gray font-weight-500">{{ trans('public.price') }}</span></div>-->
+
                         <div class="col-6 col-lg-2 text-center"><span
                                 class="text-gray font-weight-500">{{ trans('public.remove') }}</span></div>
                     </div>
@@ -111,25 +108,6 @@
                             </div>
                         </div>
 
-                        <!--<div class="col-6 col-lg-2 d-flex flex-md-column align-items-center justify-content-center">-->
-                        <!--    <span class="text-gray d-inline-block d-md-none">{{ trans('public.price') }} :</span>-->
-
-                        <!--    @if(!empty($cartItemInfo['discountPrice']))-->
-                        <!--        <span class="text-gray text-decoration-line-through mx-10 mx-md-0">{{ handlePrice($cartItemInfo['price'], true, true, false, null, true) }}</span>-->
-                        <!--        <span class="font-20 text-primary mt-0 mt-md-5 font-weight-bold">{{ handlePrice($cartItemInfo['discountPrice'], true, true, false, null, true) }}</span>-->
-                        <!--    @else-->
-                        <!--        <span class="font-20 text-primary mt-0 mt-md-5 font-weight-bold">{{ handlePrice($cartItemInfo['price'], true, true, false, null, true) }}</span>-->
-                        <!--    @endif-->
-
-                        <!--    @if(!empty($cartItemInfo['quantity']))-->
-                        <!--        <span class="font-12 text-warning font-weight-500 mt-0 mt-md-5">({{ $cartItemInfo['quantity'] }} {{ trans('update.product') }})</span>-->
-                        <!--    @endif-->
-
-                        <!--    @if(!empty($cartItemInfo['extraPriceHint']))-->
-                        <!--        <span class="font-12 text-gray font-weight-500 mt-0 mt-md-5">{{ $cartItemInfo['extraPriceHint'] }}</span>-->
-                        <!--    @endif-->
-                        <!--</div>-->
-
                         <div class="col-6 col-lg-2 d-flex flex-md-column align-items-center justify-content-center">
                             <span class="text-gray d-inline-block d-md-none mr-10 mr-md-0">{{ trans('public.remove') }} :</span>
 
@@ -145,7 +123,6 @@
         </section>
   </div>
                 <div class="col-12 col-lg-6 ">
-                    
 
         <form action="/cart/checkout" method="post" id="cartForm">
             {{ csrf_field() }}
@@ -156,44 +133,18 @@
             @endif
 
             <div class="row mt-45">
-                 
-                <!--<div class="col-12 col-lg-12">-->
-                <!--    <section class="mt-45">-->
-                <!--        <h3 class="section-title">{{ trans('cart.coupon_code') }}</h3>-->
-                <!--        <div class="rounded-sm shadow mt-20 py-25 px-20">-->
-                <!--            <p class="text-gray font-14">{{ trans('cart.coupon_code_hint') }}</p>-->
 
-                <!--            @if(!empty($userGroup) and !empty($userGroup->discount))-->
-                <!--                <p class="text-gray mt-25">{{ trans('cart.in_user_group',['group_name' => $userGroup->name , 'percent' => $userGroup->discount]) }}</p>-->
-                <!--            @endif-->
-
-                <!--            <form action="/carts/coupon/validate" method="Post">-->
-                <!--                {{ csrf_field() }}-->
-                <!--                <div class="form-group">-->
-                <!--                    <input type="text" name="coupon" id="coupon_input" class="form-control mt-25"-->
-                <!--                           placeholder="{{ trans('cart.enter_your_code_here') }}">-->
-                <!--                    <span class="invalid-feedback">{{ trans('cart.coupon_invalid') }}</span>-->
-                <!--                    <span class="valid-feedback">{{ trans('cart.coupon_valid') }}</span>-->
-                <!--                </div>-->
-
-                <!--                <button type="submit" id="checkCoupon"-->
-                <!--                        class="btn btn-sm btn-primary mt-50">{{ trans('cart.validate') }}</button>-->
-                <!--            </form>-->
-                <!--        </div>-->
-                <!--    </section>-->
-                <!--</div>-->
    <h3 class="section-title">{{ trans('cart.cart_totals') }}</h3>
                 <div class="col-12 col-lg-12">
-                  
+
                     <section class="mt-20">
-                      
-                        
+
                         <div class="rounded-sm shadow mt-20 pb-20 px-20">
-                            
+
 <form action="/carts/coupon/validate" method="Post">
                                 {{ csrf_field() }}
-                                <div class="row"> 
-                                <div class="col-12 col-lg-9"> 
+                                <div class="row">
+                                <div class="col-12 col-lg-9">
                                 <div class="form-group">
                                     <input type="text" name="coupon" id="coupon_input" class="form-control mt-25"
                                            placeholder="{{ trans('cart.enter_your_code_here') }}">

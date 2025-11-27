@@ -9,17 +9,13 @@
             </div>
             <div class="col-10 ">
             <div class="">
-              {{--  @include(getTemplate() . '.includes.webinar.rate',[
-                    'rate' => round($course->getRate(),1),
-                    'dontShowRate' => true,
-                    'className' => 'mt-0'
-                ]) --}}
+
                 @include(getTemplate() . '.includes.webinar.rate',[
                     'rate' => round($course->course_rate,1),
                     'dontShowRate' => true,
                     'className' => 'mt-0'
                 ])
-                <!--<div class="">{{ $course->reviews->pluck('creator_id')->count() }}  {{ trans('product.reviews') }}</div>-->
+
                 <div class="">Based on Rating</div>
             </div>
             </div>
@@ -41,7 +37,7 @@
             @php
             $i = 5;
             @endphp
-            
+
             @while(--$i >= 5 - round($course->reviews->avg('content_quality'), 1))
             <div style="width: 20%;height: 5px;background-color: #32ba7c;"> </div>
             @endwhile
@@ -49,7 +45,7 @@
                 <div style="width: 20%;height: 5px;background-color: #d9d9d9;"> </div>
             @endwhile
             </div>
-            
+
             <div class="mt-20 d-flex align-items-center" style="
     display: flex !important;
     justify-content: space-between;
@@ -64,7 +60,7 @@
             @php
             $i = 5;
             @endphp
-            
+
             @while(--$i >= 5 - round($course->reviews->avg('instructor_skills'), 1))
             <div style="width: 20%;height: 5px;background-color: #32ba7c;"> </div>
             @endwhile
@@ -87,7 +83,7 @@
             @php
             $i = 5;
             @endphp
-            
+
             @while(--$i >= 5 - round($course->reviews->avg('purchase_worth'), 1))
             <div style="width: 20%;height: 5px;background-color: #32ba7c;"> </div>
             @endwhile
@@ -110,7 +106,7 @@
             @php
             $i = 5;
             @endphp
-            
+
             @while(--$i >= 5 - round($course->reviews->avg('support_quality'), 1))
             <div style="width: 20%;height: 5px;background-color: #32ba7c;"> </div>
             @endwhile
@@ -120,16 +116,14 @@
             </div>
 
         </div>
-      
+
     </div>
 </div>
 
 <section class="mt-20">
-    
 
     <div class="">
-        <!--<h2 class="section-title after-line">{{ trans('product.reviews') }} ({{ $course->reviews->pluck('creator_id')->count() }})</h2>-->
-        
+
         @if($course->reviews->count() > 0)
             @foreach($course->reviews as $review)
 
@@ -142,7 +136,7 @@
                             <div class="d-flex flex-column ml-5">
                                 <span class="font-weight-500 text-secondary">{{ $review->creator->full_name }}</span>
                                 <span class="font-12 text-gray mr-10">{{ dateTimeFormat($review->created_at, 'j M Y | H:i') }}</span>
-<?php 
+<?php
 //       print_r($review);
 //     die();
   ?>
@@ -155,7 +149,6 @@
                         </div>
 
                         <div class="d-flex align-items-center">
-                            
 
                             <div class="btn-group dropdown table-actions">
                                 <button type="button" class="btn-transparent dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -215,7 +208,7 @@
         @endif
     </div>
     <h2 class="mt-30 section-title after-line">{{ trans('product.reviews') }} ({{ $course->reviews->pluck('creator_id')->count() }})</h2>
-  
+
     <form action="/reviews/store" class="mt-20" method="post">
         {{ csrf_field() }}
         <input type="hidden" name="webinar_id" value="{{ $course->id }}"/>

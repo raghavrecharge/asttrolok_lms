@@ -1,10 +1,8 @@
-
 @extends(getTemplate() .'.panel.layouts.panel_layout')
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/chartjs/chart.min.css"/>
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/apexcharts/apexcharts.css"/>
-    
-     <!--<link rel="stylesheet" href="https://themewagon.github.io/stisla-1/assets/modules/bootstrap/css/bootstrap.min.css">-->
+
       <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/owl.carousel.min.css">
   <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/owl.theme.default.min.css">
    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/daterangepicker/daterangepicker.min.css">
@@ -28,9 +26,7 @@
 .no-finace::-webkit-scrollbar-thumb {
   background: linear-gradient(to right, #9effc1, lightgrey);
 }
-/*#slider2 .owl-item{*/
-/*    width: 525px !important;*/
-/*}*/
+
         .finace{
             min-height: 200px;
     max-height: 200px;
@@ -41,7 +37,7 @@
            min-height: 400px;
     max-height: 400px;
     overflow-x: hidden;
-    overflow-y: scroll; 
+    overflow-y: scroll;
         }
         .dashboard-banner{
             width: 100%;
@@ -80,7 +76,7 @@
     justify-content: space-evenly;
 }
 .dashboard-stats span{
-    /*font-size:15px;*/
+
 }
 .dashboard-stats .stat-icon {
     width: 75px !important;
@@ -95,12 +91,10 @@
     .image-banner{
         display:none;
     }
-    
-    
+
 }
         </style>
-            
-           
+
     <section class="dashboard">
         <div class="row">
             <div class="col-12 col-lg-9">
@@ -112,9 +106,9 @@
                         <img src="{{ config('app.js_css_url') }}/assets/default/img/default/avatar-1.png" alt="" class="imgs" >
                     </div>
                     <div class="ml-15">
-                      
+
                         <span class="font-16 text-gray dash-box font-weight-500">Welcome {{ $authUser->full_name }}</span>
-                        
+
                     </div>
                 </div>
                 <div class="d-flex justify-content">
@@ -124,7 +118,7 @@
                        <span class="font-30 text-secondary">{{ !empty($pendingAppointments) ? $pendingAppointments : (!empty($webinarsCount) ? $webinarsCount : 0) }}</span>
                     </div>
                     <span class="px-5 font-16 text-gray dash-box font-weight-500">My Courses</span>
-             
+
                  </div>
                     </div>
                   <div>
@@ -134,18 +128,18 @@
                     </div>
                       <span class="font-16 text-gray dash-box font-weight-500">Learning {{ trans('home.hours') }}</span>
                  </div>
-                
+
                </div>
                 </div>
                       </div>
                   <div class="col-12 col-lg-6">
                       <div class="image-banner"><img src="{{ config('app.js_css_url') }}/store/1/dashboards.png" alt="" class="imgs"></div>
-                
+
                 </div>
                 </div>
             </div>
             </div>
-         
+
             <div class="col-12 col-lg-3">
                 <div class="dashboard-stats rounded-sm panel-shadow p-10 p-md-5 d-flex align-items-center">
                     <div class="stat-icon ">
@@ -157,9 +151,7 @@
                           <a href="/panel/financial/account" class="font-14 font-weight-bold text-dark-blue">{{ trans('financial.charge_account') }}</a>
                     </div>
                     <div class="border-gray300 align-items-center  justify-content-center ">
-                       
-                            
-                       
+
                     </div>
                 </div>
 
@@ -170,9 +162,9 @@
                     <div class="d-flex flex-column ml-1">
                         <span class="font-30 text-secondary">{{ !empty($openInstallmentsCount) ? $openInstallmentsCount : 0 }}</span>
                         <span class="font-14 text-gray dash-box font-weight-500" style="min-height: 42px;">{{ trans('update.open_installments') }}</span>
-                        
+
                     </div>
-                    
+
                 </a>
             </div>
             </div>
@@ -181,7 +173,7 @@
                        <div class="d-flex align-items-start align-items-md-center justify-content-between flex-column flex-md-row">
             <h2 class="section-title">{{ trans('panel.my_purchases') }}</h2>
         </div>
-        
+
         @if((!empty($sales) and !$sales->isEmpty()) || (!empty($orders) and !$orders->isEmpty()))
         @if(!empty($sales) and !$sales->isEmpty() )
          <div class="row mt-30">
@@ -201,7 +193,7 @@
                 @endphp
 
                 @if(!empty($item))
-                   
+
                         <div class="col-12">
                             <div class="webinar-card webinar-list d-flex">
                                 <div class="image-box" style="height:auto !important;">
@@ -237,7 +229,7 @@
                                         @endphp
 
                                         @if(!empty($sale->gift_id) and $sale->buyer_id == $authUser->id)
-                                            {{--  --}}
+
                                         @else
                                             <div class="progress cursor-pointer" data-toggle="tooltip" data-placement="top" title="{{ $progressTitle }}">
                                                 <span class="progress-bar" style="width: {{ $percent }}%"></span>
@@ -412,7 +404,7 @@
                                 </div>
                             </div>
                         </div>
-                   
+
                 @endif
                 </div>
             @endforeach
@@ -437,7 +429,7 @@
                 @endphp
 
                 @if(!empty($item))
-                   
+
                         <div class="col-12">
                             <div class="webinar-card webinar-list d-flex">
                                 <div class="image-box" style="height:auto !important;">
@@ -473,7 +465,7 @@
                                         @endphp
 
                                         @if(!empty($sale->gift_id) and $sale->buyer_id == $authUser->id)
-                                            {{--  --}}
+
                                         @else
                                             <div class="progress cursor-pointer" data-toggle="tooltip" data-placement="top" title="{{ $progressTitle }}">
                                                 <span class="progress-bar" style="width: {{ $percent }}%"></span>
@@ -648,14 +640,14 @@
                                 </div>
                             </div>
                         </div>
-                   
+
                 @endif
                 </div>
             @endforeach
              </div>
              </div>
             @endif
-           
+
         @else
             @include(getTemplate() . '.includes.no-result',[
             'file_name' => 'student.png',
@@ -664,24 +656,13 @@
             'btn' => ['url' => '/classes?sort=newest','text' => trans('panel.start_learning')]
         ])
         @endif
-            <!--<div class="card-body">-->
-            <!--        <div class="owl-carousel owl-theme slider" id="slider1">-->
-            <!--          <div><img alt="image" src="{{ config('app.js_css_url') }}/store/1/dashboards.png"></div>-->
-            <!--          <div><img alt="image" src="{{ config('app.js_css_url') }}/store/1/dashboards.png"></div>-->
-            <!--          <div><img alt="image" src="{{ config('app.js_css_url') }}/store/1/dashboards.png"></div>-->
-            <!--          <div><img alt="image" src="{{ config('app.js_css_url') }}/store/1/dashboards.png"></div>-->
-            <!--        </div>-->
-            <!--      </div>-->
+
                 </div>
             </div>
-            
-            
-            
-            <!--##############################################   METING    ####################################################-->
-            
+
             <div class="row  mt-35">
                 <div class="col-12 col-lg-12  mt-35">
-           
+
               <div class="d-flex align-items-start align-items-md-center justify-content-between flex-column flex-md-row">
               <h2 class="section-title">{{ trans('panel.meeting_list') }}</h2>
 
@@ -778,9 +759,8 @@
                 </div>
             </form>
         </div>
-            
+
     <section class="mt-35">
-       
 
         @if($reserveMeetings->count() > 0)
 
@@ -861,13 +841,11 @@
                                             @endswitch
                                         </td>
 
-
                                         <td class="align-middle text-right">
                                             @if($ReserveMeeting->status != \App\Models\ReserveMeeting::$finished)
 
                                                 <input type="hidden" class="js-meeting-password-{{ $ReserveMeeting->id }}" value="{{ $ReserveMeeting->password }}">
                                                 <input type="hidden" class="js-meeting-link-{{ $ReserveMeeting->id }}" value="{{ $ReserveMeeting->link }}">
-
 
                                                 <div class="btn-group dropdown table-actions">
                                                     <button type="button" class="btn-transparent dropdown-toggle"
@@ -928,13 +906,10 @@
     @include('web.default.panel.meeting.meeting_create_session_modal')
             </div>
             </div>
-            
-            
-                <!--##############################################   financial    ####################################################-->
-            
+
                <div class="row">
             <div class="col-12 col-lg-7 mt-35">
-            
+
             <section class="">
         <div class="d-flex align-items-start align-items-md-center justify-content-between flex-column flex-md-row">
             <h2 class="section-title">{{ trans('update.my_installments') }}</h2>
@@ -955,7 +930,7 @@
                 @endphp
 
                 @if(!empty($orderItem))
-                 
+
                         <div class="col-lg-12">
                             <div class="webinar-card webinar-list panel-installment-card d-flex">
                                 <div class="image-box" style="height:auto !important;">
@@ -1017,10 +992,6 @@
                                                         <a href="{{ $orderItem->getLearningPageUrl() }}" target="_blank" class="webinar-actions d-block mt-10">{{ trans('update.learning_page') }}</a>
                                                     @endif
 
-                                                    {{--@if($order->isCompleted() or $order->status == "open")
-                                                        <a href="/panel/financial/installments/{{ $order->id }}/refund" class="webinar-actions d-block mt-10 delete-action">{{ trans('update.refund') }}</a>
-                                                    @endif--}}
-
                                                     @if($order->status == "pending_verification" and getInstallmentsSettings("allow_cancel_verification"))
                                                         <a href="/panel/financial/installments/{{ $order->id }}/cancel" class="webinar-actions d-block mt-10 text-danger delete-action" data-title="{{ trans('public.deleteAlertHint') }}" data-confirm="{{ trans('update.yes_cancel') }}">{{ trans('public.cancel') }}</a>
                                                     @endif
@@ -1076,7 +1047,7 @@
                                 </div>
                             </div>
                         </div>
-                    
+
                 @endif
                 </div>
             @endforeach
@@ -1095,8 +1066,7 @@
                 ])
         @endif
     </section>
-            
-            
+
             </div>
             <div class="col-12 col-lg-5 mt-30">
                  <h2 class="section-title">{{ trans('financial.financial_documents') }}</h2>
@@ -1110,7 +1080,7 @@
                                     <th>{{ trans('public.title') }}</th>
                                     <th>{{ trans('public.description') }}</th>
                                     <th class="text-center">{{ trans('panel.amount') }} ({{ $currency }})</th>
-                                    <!--<th class="text-center">{{ trans('public.creator') }}</th>-->
+
                                     <th class="text-center">{{ trans('public.date') }}</th>
                                 </tr>
                                 </thead>
@@ -1206,7 +1176,7 @@
                                                     @break;
                                             @endswitch
                                         </td>
-                                        <!--<td class="text-center align-middle">{{ trans('public.'.$accounting->store_type) }}</td>-->
+
                                         <td class="text-center align-middle">
                                             <span>{{ dateTimeFormat($accounting->created_at, 'j M Y') }}</span>
                                         </td>
@@ -1217,41 +1187,14 @@
                         </div>
                     </div>
                 </div>
-            
-            </div>
-            
-            </div>
-            </div>
-            
-                <!--##############################################   financial    ####################################################-->
-            
-            
-            
-            
-            
-            
-            <!--<div class="col-12 col-lg-6 mt-35">-->
-            <!--    <div class="bg-white monthly-sales-card rounded-sm panel-shadow py-10 py-md-20 px-15 px-md-30">-->
-            <!--        <div class="d-flex align-items-center justify-content-between">-->
-            <!--            <h3 class="font-16 text-dark-blue font-weight-bold">{{ ($authUser->isUser()) ? trans('panel.learning_statistics') : trans('panel.monthly_sales') }}</h3>-->
 
-            <!--            <span class="font-16 font-weight-500 text-gray">{{ dateTimeFormat(time(),'M Y') }}</span>-->
-            <!--        </div>-->
+            </div>
 
-            <!--        <div class="monthly-sales-chart">-->
-            <!--            <canvas id="myChart"></canvas>-->
-            <!--        </div>-->
-            <!--    </div>-->
-            <!--</div>-->
-            
-            
-            
-               <!--##############################################   end    ####################################################-->
-            
+            </div>
+            </div>
+
         <div class="row">
             <div class="col-12 col-lg-3 mt-35">
-             
-                  
 
                     @php
                         $getFinancialSettings = getFinancialSettings();
@@ -1259,15 +1202,11 @@
                         $can_drawable = 0;
                     @endphp
 
-                  
-                
             </div>
 
         </div>
 
-       
     </section>
-
 
     <div class="d-none" id="iNotAvailableModal">
         <div class="offline-modal">
@@ -1298,13 +1237,12 @@
 @endsection
 
 @push('scripts_bottom')
- <!--<script src="{{ config('app.js_css_url') }}/assets/default/vendors/jquery.min.js"></script>-->
+
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/apexcharts/apexcharts.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/chartjs/chart.min.js"></script>
 <script src="{{ config('app.js_css_url') }}/assets/default/vendors/owl.carousel.min.js"></script>
   <script src="{{ config('app.js_css_url') }}/assets/default/vendors/modules-slider.js"></script>
-  <!--<script src="{{ config('app.js_css_url') }}/assets/default/vendors/scripts.js"></script>-->
-  
+
     <script>
         var offlineSuccess = '{{ trans('panel.offline_success') }}';
         var $chartDataMonths = @json($monthlyChart['months']);
@@ -1347,4 +1285,3 @@
         </script>
     @endpush
 @endif
-

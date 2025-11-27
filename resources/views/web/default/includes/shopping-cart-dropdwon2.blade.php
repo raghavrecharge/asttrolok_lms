@@ -2,7 +2,7 @@
     position: absolute;
     right: -2px;
     bottom: -2px;
-    /* border: 0.1px solid black; */
+
     box-shadow: 0 5px 12px 0 rgba(0, 0, 0, 0.1);
 ">
     <button type="button" {{ (empty($userCarts) or count($userCarts) < 1) ? 'disabled' : '' }} class="btn btn-transparent dropdown-toggle" id="navbarShopingCart" data-toggle="dropdown"

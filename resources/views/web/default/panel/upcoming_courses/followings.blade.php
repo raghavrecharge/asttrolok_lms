@@ -20,12 +20,6 @@
                             <div class="image-box">
                                 <img src="{{ config('app.img_dynamic_url') }}{{ $upcomingCourse->getImage() }}" class="img-cover" alt="">
 
-                                {{--@if(!empty($upcomingCourse->webinar_id))
-                                    <span class="badge badge-secondary">{{  trans('update.released') }}</span>
-                                @elseif($upcomingCourse->status == \App\Models\UpcomingCourse::$active)
-                                    <span class="badge badge-primary">{{  trans('public.published') }}</span>
-                                @endif--}}
-
                                 @if(!empty($upcomingCourse->course_progress))
                                     <div class="progress">
                                         <span class="progress-bar {{ ($upcomingCourse->course_progress < 50) ? 'bg-warning' : '' }}" style="width: {{ $upcomingCourse->course_progress }}%"></span>

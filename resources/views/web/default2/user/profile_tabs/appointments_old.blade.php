@@ -4,12 +4,7 @@
     font-size: 0.875rem !important;
     font-weight: 900 !important;
     }
-/*    .datepicker-plot-area .datepicker-day-view .table-days td.today span {*/
-/*    background-color: #fff !important;*/
-/*    color: #000 !important;*/
-/*    border: 0;*/
-/*    text-shadow: none;*/
-/*}*/
+
 .date-active{
     background-color: #43d477 !important;
     font-weight: 600 !important;
@@ -31,11 +26,10 @@
   //border-top: 16px solid #3498db;
   width: 120px;
   height: 120px;
-  -webkit-animation: spin 2s linear infinite; /* Safari */
+  -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
-/* Safari */
 @-webkit-keyframes spin {
   0% { -webkit-transform: rotate(0deg); }
   100% { -webkit-transform: rotate(360deg); }
@@ -55,7 +49,7 @@
     font-size: 0.875rem;
 }
 .datepicker-plot-area .datepicker-day-view .table-days td.today span {
-    /*background-color: #bbd6ff69;*/
+
     color: #1000ff;
     border-radius: 50px;
     border: 0;
@@ -127,7 +121,7 @@
     <div class="mt-40 align-items-center" >
         <h3 class="mt-40 font-16 font-weight-bold text-dark-blue align-items-center" style="text-align: center;">Select Time Slot</h3>
         <div id="slotsTime" class="d-flex flex-wrap align-items-center mt-25" style="justify-content: center !important;">
-            
+
             <div class="position-relative available-times1 text-center rounded-lg  font-14 text-gray border date-active" style="justify-content: center !important;">
                 <input type="radio" name="time1" id="slotTime30" value="30" data-type="online" checked style="visibility: hidden;display: none;">
                 <label for="slotTime30" class="mt-10 mx-20 font-weight-bold">30 Min</label>
@@ -140,9 +134,6 @@
         </div>
 
         <h3 class="mt-40 font-16 font-weight-bold text-dark-blue align-items-center" style="text-align: center;">Check available Date</h3>
-        
-        
-        
 
         <div class="mt-35">
             <div class="row align-items-center justify-content-center">
@@ -150,62 +141,6 @@
                 <div class="inline-reservation-calender"></div>
             </div>
         </div>
-        
-        
-        
-        
-
-        
-        
-<!--        <div class="slider-container p-10 mt-20 justify-content-center" style="display: flex; gap:5px; overflow: hidden;">-->
-<!--    <div class="slider-button preview-button text-center rounded-lg py-15 px-20 font-14 text-gray  date1" style="display: flex;align-items: center;">-->
-        <!-- Preview Button SVG -->
-<!--        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"-->
-<!--	 viewBox="0 0 492 492" style="enable-background:new 0 0 492 492; height: 20px;" xml:space="preserve">-->
-<!--<g>-->
-<!--	<g>-->
-<!--		<path d="M198.608,246.104L382.664,62.04c5.068-5.056,7.856-11.816,7.856-19.024c0-7.212-2.788-13.968-7.856-19.032l-16.128-16.12-->
-<!--			C361.476,2.792,354.712,0,347.504,0s-13.964,2.792-19.028,7.864L109.328,227.008c-5.084,5.08-7.868,11.868-7.848,19.084-->
-<!--			c-0.02,7.248,2.76,14.028,7.848,19.112l218.944,218.932c5.064,5.072,11.82,7.864,19.032,7.864c7.208,0,13.964-2.792,19.032-7.864-->
-<!--			l16.124-16.12c10.492-10.492,10.492-27.572,0-38.06L198.608,246.104z"/>-->
-<!--	</g>-->
-<!--	</g>-->
-<!--</svg>-->
-<!--    </div>-->
-<!--    <div class="slider-item text-center rounded-lg py-15 px-20 font-14 text-gray border date1 pratul">1<br>SUN-->
-<!--      <input type="hidden"  class="form-control " value="1714372200000">-->
-<!--    </div>-->
-<!--    <div class="slider-item text-center rounded-lg py-15 px-20 font-14 text-gray border date-active date1 pratul">2<br>MON-->
-<!--    <input type="hidden"  class="form-control " value="1714458600000"></div>-->
-<!--    <div class="slider-item text-center rounded-lg py-15 px-20 font-14 text-gray border date1">3<br>TUE</div>-->
-<!--    <div class="slider-item text-center rounded-lg py-15 px-20 font-14 text-gray border date1">5<br>THU</div>-->
-<!--    <div class="slider-item text-center rounded-lg py-15 px-20 font-14 text-gray border date1">6<br>FRI</div>-->
-<!--    <div class="slider-item text-center rounded-lg py-15 px-20 font-14 text-gray border date1">8<br>SUN</div>-->
-<!--    <div class="slider-item text-center rounded-lg py-15 px-20 font-14 text-gray border date1">9<br>MON</div>-->
-<!--    <div class="slider-item text-center rounded-lg py-15 px-20 font-14 text-gray border date1">11<br>WED</div>-->
-<!--    <div class="slider-item text-center rounded-lg py-15 px-20 font-14 text-gray border date1">12<br>THU</div>-->
-<!--    <div class="slider-item text-center rounded-lg py-15 px-20 font-14 text-gray border date1">15<br>SUN</div>-->
-<!--    <div class="slider-item text-center rounded-lg py-15 px-20 font-14 text-gray border date1">16<br>MON</div>-->
-<!--    <div class="slider-item text-center rounded-lg py-15 px-20 font-14 text-gray border date1">17<br>TUE</div>-->
-<!--    <div class="slider-item text-center rounded-lg py-15 px-20 font-14 text-gray border date1" >18<br>WED</div>-->
-    <!-- Add more slider items as needed -->
-<!--    <div class="slider-button next-button text-center rounded-lg py-15 px-20 font-14 text-gray  date1" style="display: flex;align-items: center;">-->
-        <!-- Next Button SVG -->
-<!--        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"-->
-<!--	 viewBox="0 0 492.004 492.004" style="enable-background:new 0 0 492.004 492.004; height: 20px;" xml:space="preserve">-->
-<!--<g>-->
-<!--	<g>-->
-<!--		<path d="M382.678,226.804L163.73,7.86C158.666,2.792,151.906,0,144.698,0s-13.968,2.792-19.032,7.86l-16.124,16.12-->
-<!--			c-10.492,10.504-10.492,27.576,0,38.064L293.398,245.9l-184.06,184.06c-5.064,5.068-7.86,11.824-7.86,19.028-->
-<!--			c0,7.212,2.796,13.968,7.86,19.04l16.124,16.116c5.068,5.068,11.824,7.86,19.032,7.86s13.968-2.792,19.032-7.86L382.678,265-->
-<!--			c5.076-5.084,7.864-11.872,7.848-19.088C390.542,238.668,387.754,231.884,382.678,226.804z"/>-->
-<!--	</g>-->
-<!--	</g>-->
-
-<!--</svg>-->
-        
-<!--    </div>-->
-<!--</div>-->
 
 <script>
     // // JavaScript to handle slider functionality
@@ -254,27 +189,17 @@
     // sliderItems.forEach(item => item.addEventListener('click', handleSliderItemClick));
 </script>
 
-        
-        
     </div>
-    {{-- @php
-        $webinar_id =0;
-        @endphp
-        @foreach($carts as $cart)
-        @php
-        $webinar_id= $cart->webinar_id;
-        @endphp
-        
-        @endforeach --}}
+
         <h3 class="font-16 font-weight-bold text-dark-blue mt-20">Please validate any coupon code before use</h3>
         <form  id="cartForm15" method="Post">
                     {{ csrf_field() }}
-                    <div class="row"> 
-                    <div class="col-8 col-lg-3"> 
+                    <div class="row">
+                    <div class="col-8 col-lg-3">
                     <div class="form-group">
                         <input type="text" name="coupon" id="coupon_input" class="form-control mt-10 {{ session('discountCoupon') ? (session('discountCoupon')=='no' ? 'is-invalid' : 'is-valid') : '' }}" value="{{ session('discountCoupon') ? (session('discountCoupon')=='no' ? '' : session('discountCoupon')) : '' }}"
                          placeholder="{{ trans('cart.enter_your_code_here') }}">
-                        {{-- <input type="hidden" name="item_id" id="web_id1" value="{{$webinar_id}}" class="form-control mt-25" > --}}
+
                         <span class="invalid-feedback">{{ trans('cart.coupon_invalid') }}</span>
                         <span class="valid-feedback">{{ trans('cart.coupon_valid') }}</span>
                         <input type='hidden' name='user_id' value='{{ $user["id"] }}'>
@@ -287,32 +212,18 @@
 
     <div class="pick-a-time d-none" id="PickTimeContainer" data-user-id="{{ $user["id"] }}">
 
-        <!--<div class="d-flex align-items-center my-40 rounded-lg border px-10 py-5">-->
-            <!--<div class="appointment-timezone-icon">-->
-            <!--    <img src="{{ config('app.js_css_url') }}/assets/default/img/icons/timezone.svg" alt="appointment timezone">-->
-            <!--</div>-->
-            <!--<div class="ml-15">-->
-            <!--    <div class="font-16 font-weight-bold text-dark-blue">{{ trans('update.note') }}:</div>-->
-            <!--    <p class="font-14 font-weight-500 text-gray">{{ trans('update.appointment_timezone_note_hint',['timezone' => $meetingTimezone .' '. toGmtOffset($meetingTimezone)]) }}</p>-->
-            <!--</div>-->
-        <!--</div>-->
-
-
-        {{-- Cashback Alert --}}
         @include('web.default.includes.cashback_alert',['itemPrice' => $meeting->amount, 'classNames' => 'mt-0 mb-40', 'itemType' => 'meeting'])
-
 
         <div class="loading-img d-none text-center">
             <img src="{{ config('app.js_css_url') }}/assets/default/img/loading.gif" width="80" height="80">
         </div>
- 
-                
+
         <form action="{{ (!$meeting->disabled) ? '/meetings/reserve' : '' }}" method="post" id="PickTimeBody" class="d-none">
             <input type="hidden" name="_token" value="{{ csrf_token() }}">
             <input type="hidden" name="day" id="selectedDay" value="">
 
             <h3 class="font-16 font-weight-bold text-dark-blue d-none">
-              
+
                 @if($meeting->disabled)
                     {{ trans('public.unavailable') }}
                 @else
@@ -460,19 +371,12 @@
                     <input name="mobile" type="number" class="form-control"  placeholder="Contact*" maxlength="10">
                 </div>
 
-                
-
-                <!--<div class="  form-group mt-30">-->
-                <!--    <label class="input-label">{{ trans('public.description') }}</label>-->
-                <!--    <textarea name="description" class="form-control" rows="5" placeholder="{{ trans('update.reserve_time_description_placeholder') }}"></textarea>-->
-                <!--</div>-->
-
                 <div class=" align-items-center justify-content-end mt-30">
                     <button type="button" class="js-submit-form btn btn-primary">{{ trans('meeting.reserve_appointment') }}</button>
                 </div>
             @endif
         </form>
-      
+
     </div>
 
     @push('scripts_bottom')
@@ -490,11 +394,11 @@ $(document).ready(function() {
     $('#slotsTime input[type="radio"]').change(function() {
         // Remove 'date-active' class from all elements
         $('.available-times1').removeClass('date-active');
-        
+
         // Add 'date-active' class to the selected radio button's parent element
         $(this).closest('.available-times1').addClass('date-active');
         $('#PickTimeBody').addClass('d-none');
-        
+
     });
 });
 </script>

@@ -24,11 +24,11 @@
 
                     <form method="Post" action="/login-free" class="mt-35">
                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                       
+
                         @if (session()->has('my_test_key'))
      <input type="hidden" name="rd" value="{{ session()->get('my_test_key') }}">
 @endif
-                        
+
                         <div class="form-group">
                             <label class="input-label" for="username">{{ trans('auth.email_or_mobile') }}:</label>
                             <input name="username" maxlength="60" type="text" class="form-control @error('username') is-invalid @enderror" id="username"
@@ -69,17 +69,6 @@
                             </div>
                         </div>
                     @endif
-
-                    <!--<div class="text-center mt-20">-->
-                    <!--    <span class="badge badge-circle-gray300 text-secondary d-inline-flex align-items-center justify-content-center">{{ trans('auth.or') }}</span>-->
-                    <!--</div>-->
-
-                    <!--@if(!empty(getFeaturesSettings('show_google_login_button')))-->
-                    <!--    <a href="/google" target="_blank" class="social-login mt-20 p-10 text-center d-flex align-items-center justify-content-center" >-->
-                    <!--        <img loading="lazy" src="/assets/default/img/auth/google.svg" class="mr-auto" alt=" google svg"/>-->
-                    <!--        <span class="flex-grow-1">{{ trans('auth.google_login') }}</span>-->
-                    <!--    </a>-->
-                    <!--@endif-->
 
                     @if(!empty(getFeaturesSettings('show_facebook_login_button')))
                         <a href="{{url('/facebook/redirect')}}" target="_blank" class="social-login mt-20 p-10 text-center d-flex align-items-center justify-content-center ">

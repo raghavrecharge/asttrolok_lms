@@ -64,46 +64,27 @@
         <i data-feather="x" width="24" height="24"></i>
     </button>
 
-    <!--<div class="user-info d-flex align-items-center flex-row flex-lg-column justify-content-lg-center">-->
-    <!--    <a href="/panel" class="user-avatar bg-gray200">-->
-    <!--        <img src="{{ $authUser->getAvatar(100) }}" class="img-cover" alt="{{ $authUser->full_name }}">-->
-    <!--    </a>-->
-
-    <!--    <div class="d-flex flex-column align-items-center justify-content-center">-->
-    <!--        <a href="/panel" class="user-name mt-15">-->
-    <!--            <h3 class="font-16 font-weight-bold text-center">{{ $authUser->full_name }}</h3>-->
-    <!--        </a>-->
-
-    <!--        @if(!empty($authUser->getUserGroup()))-->
-    <!--            <span class="create-new-user mt-10">{{ $authUser->getUserGroup()->name }}</span>-->
-    <!--        @endif-->
-    <!--    </div>-->
-    <!--</div>-->
-
     <div class="d-flex sidebar-user-stats" style="min-width: 215px;">
         @if($authUser->isUser())
-        
+
          <div class="sidebar-user-stat-item d-flex flex-column">
-            <!--<strong class="text-center">{{ $authUser->webinars()->count() }}</strong>-->
-            <!--<span class="font-12">{{ trans('panel.classes') }}</span>-->
+
         </div>
-        
+
          @else
-         
+
           <div class="sidebar-user-stat-item d-flex flex-column">
             <strong class="text-center">{{ $authUser->webinars()->count() }}</strong>
             <span class="font-12">{{ trans('panel.classes') }}</span>
         </div>
-         
+
           @endif
-       
 
         <div class="border-left mx-30"></div>
 
         @if($authUser->isUser())
             <div class="sidebar-user-stat-item d-flex flex-column">
-                <!--<strong class="text-center">{{ $authUser->following()->count() }}</strong>-->
-                <!--<span class="font-12">{{ trans('panel.following') }}</span>-->
+
             </div>
         @else
             <div class="sidebar-user-stat-item d-flex flex-column">
@@ -295,7 +276,6 @@
             </li>
         @endif
 
-
         <li class="sidenav-item {{ (request()->is('panel/meetings') or request()->is('panel/meetings/*')) ? 'sidenav-item-active' : '' }}">
             <a class="d-flex align-items-center" data-toggle="collapse" href="#meetingCollapse" role="button" aria-expanded="false" aria-controls="meetingCollapse">
                 <span class="sidenav-item-icon mr-10">
@@ -462,18 +442,6 @@
                         <a href="/panel/financial/summary">{{ trans('financial.financial_summary') }}</a>
                     </li>
 
-                    <!--<li class="mt-5 {{ (request()->is('panel/financial/payout')) ? 'active' : '' }}">-->
-                    <!--    <a href="/panel/financial/payout">{{ trans('financial.payout') }}</a>-->
-                    <!--</li>-->
-
-                    <!--<li class="mt-5 {{ (request()->is('panel/financial/account')) ? 'active' : '' }}">-->
-                    <!--    <a href="/panel/financial/account">{{ trans('financial.charge_account') }}</a>-->
-                    <!--</li>-->
-
-                    <!--<li class="mt-5 {{ (request()->is('panel/financial/subscribes')) ? 'active' : '' }}">-->
-                    <!--    <a href="/panel/financial/subscribes">{{ trans('financial.subscribes') }}</a>-->
-                    <!--</li>-->
-
                     @if(($authUser->isOrganization() || $authUser->isTeacher()) and getRegistrationPackagesGeneralSettings('status'))
                         <li class="mt-5 {{ (request()->is('panel/financial/registration-packages')) ? 'active' : '' }}">
                             <a href="{{ route('panelRegistrationPackagesLists') }}">{{ trans('update.registration_packages') }}</a>
@@ -577,7 +545,6 @@
                 </div>
             </li>
         @endif
-
 
         @if($authUser->isTeacher())
             <li class="sidenav-item {{ (request()->is('panel/blog') or request()->is('panel/blog/*')) ? 'sidenav-item-active' : '' }}">
@@ -691,16 +658,9 @@
             </a>
         </li>
         <li class="sidenav-item">
-            
+
         </li>
     </ul>
 
-    <!--@if(!empty($getPanelSidebarSettings) and !empty($getPanelSidebarSettings['background']))-->
-        <!--<div class="sidebar-create-class d-none d-md-block">-->
-        <!--    <a href="{{ !empty($getPanelSidebarSettings['link']) ? $getPanelSidebarSettings['link'] : '' }}" class="sidebar-create-class-btn d-block text-right p-5">-->
-        <!--        <img src="{{ !empty($getPanelSidebarSettings['background']) ? $getPanelSidebarSettings['background'] : '' }}" alt="">-->
-        <!--    </a>-->
-        <!--</div>-->
-    <!--@endif-->
     </div>
 </div>

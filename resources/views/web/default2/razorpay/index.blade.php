@@ -14,9 +14,7 @@
 
     <div class="container">
         <div class="row login-container1">
-            <!--<div class="col-12 col-md-6 pl-0"  style="display: flex;flex-wrap: nowrap;align-items: center;">-->
-            <!--    <img src="{{ getPageBackgroundSettings('register') }}"  style="height:auto;" class="img-cover" alt="Login">-->
-            <!--</div>-->
+
             <div class="col-12 col-md-12">
                 <div class="login-card">
                     <h1 class="font-20 font-weight-bold">Payment by Razorpay</h1>
@@ -46,8 +44,6 @@
                             </div>
                         @endif
 
-                       
-
                         <div class="form-group">
                             <label class="input-label" for="full_name">{{ trans('auth.full_name') }}:</label>
                             <input name="full_name" type="text" value="{{ old('full_name') }}" class="form-control @error('full_name') is-invalid @enderror">
@@ -57,7 +53,7 @@
                             </div>
                             @enderror
                         </div>
-                        
+
                          @if($registerMethod == 'mobile')
                             @include('web.default.auth.register_includes.mobile_field')
 
@@ -66,15 +62,9 @@
                             @endif
                         @else
                         @include('web.default.auth.register_includes.mobile_field',['optional' => false])
-                            
 
-                            <!--@if($showOtherRegisterMethod)-->
-                            <!--    @include('web.default.auth.register_includes.mobile_field',['optional' => true])-->
-                            <!--@endif-->
                              @include('web.default.auth.register_includes.email_field')
                         @endif
-                        
-                     
 
                         <div class="form-group">
                             <label class="input-label" for="amount">Amount:</label>
@@ -87,9 +77,6 @@
                             </div>
                             @enderror
                         </div>
-
-              
-                
 
                         @if(getFeaturesSettings('timezone_in_register'))
                             @php
@@ -112,16 +99,8 @@
                             </div>
                         @endif
 
-                  
-
-                        
-
                         <button type="submit" class="btn btn-primary btn-block mt-20">Pay Now</button>
                     </form>
-
-                  
-                        
-                    
 
                 </div>
             </div>

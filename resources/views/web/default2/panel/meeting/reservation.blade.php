@@ -127,7 +127,6 @@
         </div>
     </section>
 
-
     <section class="mt-35">
         <div class="d-flex align-items-start align-items-md-center justify-content-between flex-column flex-md-row">
             <h2 class="section-title">{{ trans('panel.meeting_list') }}</h2>
@@ -172,7 +171,7 @@
                                                 </div>
                                                 <div class=" ml-5">
                                                     <span class="d-block font-weight-500">{{ $ReserveMeeting->meeting->creator->full_name }}</span>
-                                                    <!--<span class="mt-5 font-12 text-gray d-block">{{ $ReserveMeeting->meeting->creator->email }}</span>-->
+
                                                 </div>
                                             </div>
                                         </td>
@@ -220,13 +219,11 @@
                                             @endswitch
                                         </td>
 
-
                                         <td class="align-middle text-right">
                                             @if($ReserveMeeting->status != \App\Models\ReserveMeeting::$finished)
 
                                                 <input type="hidden" class="js-meeting-password-{{ $ReserveMeeting->id }}" value="{{ $ReserveMeeting->password }}">
                                                 <input type="hidden" class="js-meeting-link-{{ $ReserveMeeting->id }}" value="{{ $ReserveMeeting->link }}">
-
 
                                                 <div class="btn-group dropdown table-actions">
                                                     <button type="button" class="btn-transparent dropdown-toggle"
@@ -250,12 +247,6 @@
 
                                                         <a href="{{ $ReserveMeeting->addToCalendarLink() }}" target="_blank"
                                                            class="webinar-actions d-block mt-10 font-weight-normal">{{ trans('public.add_to_calendar') }}</a>
-
-                                                        <!--<button type="button"-->
-                                                        <!--        data-user-id="{{ $ReserveMeeting->meeting->creator_id }}"-->
-                                                        <!--        data-item-id="{{ $ReserveMeeting->id }}"-->
-                                                        <!--        data-user-type="instructor"-->
-                                                        <!--        class="contact-info btn-transparent webinar-actions d-block mt-10">{{ trans('panel.contact_instructor') }}</button>-->
 
                                                         <button type="button" data-id="{{ $ReserveMeeting->id }}" class="webinar-actions js-finish-meeting-reserve d-block btn-transparent mt-10 font-weight-normal">{{ trans('panel.finish_meeting') }}</button>
                                                     </div>

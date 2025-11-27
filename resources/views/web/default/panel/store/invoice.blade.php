@@ -4,10 +4,9 @@
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
     <title>{{ $pageTitle ?? '' }} </title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <!-- General CSS File -->
+
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/admin/vendor/bootstrap/bootstrap.min.css"/>
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/vendors/fontawesome/css/all.min.css"/>
-
 
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/admin/css/style.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/admin/css/custom.css">
@@ -49,7 +48,7 @@
                                                                 </address>
 
                                                                 <address class="mt-2">
-                                                                    
+
                                                                     @if(isset($orderAddress->Address))
                                                                     <strong>Delivery Address:</strong><br>
                                                                         {{ $orderAddress->Address }}, {{ $orderAddress->City }},  {{ $orderAddress->PostalCode }}, {{ $orderAddress->StateProvince }}, {{ $orderAddress->Country }}
@@ -63,7 +62,7 @@
                                                                 <address>
                                                                     <strong>{{ trans('home.platform_address') }}:</strong><br>
                                                                     {!! nl2br(getContactPageSettings('address')) !!}
-                                                                    
+
                                                                 </address>
                                                             </div>
                                                         </div>
@@ -239,7 +238,6 @@
                                             </div>
                                         </div>
                                     </div>
-
 
                                 </div>
                             </div>

@@ -6,22 +6,12 @@
   //border: 16px solid #f3f3f3;
   //border-radius: 50%;
   //border-top: 16px solid #3498db;
-  /*width: 120px;*/
+
   height: 120px;
-  -webkit-animation: spin 2s linear infinite; /* Safari */
+  -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
-/* Safari */
-/*@-webkit-keyframes spin {*/
-/*  0% { -webkit-transform: rotate(0deg); }*/
-/*  100% { -webkit-transform: rotate(360deg); }*/
-/*}*/
-
-/*@keyframes spin {*/
-/*  0% { transform: rotate(0deg); }*/
-/*  100% { transform: rotate(360deg); }*/
-/*}*/
 #loader {
     position: fixed;
     left: 50%;
@@ -30,7 +20,6 @@
     display: none;
 }
 
- /*//Disable page */
 .disabled-page {
     pointer-events: none;
     opacity: 0.5;
@@ -45,8 +34,8 @@
 
 @section('content')
     <section class="container mt-45" style="background-color: whitesmoke;">
-        <div class="row"> 
-          <div class="col-12"> 
+        <div class="row">
+          <div class="col-12">
         <h2 class="section-title">Please Fill The Extend(Direct) Access Form</h2>
         <br><br>
         <form id="paymentForm">
@@ -85,15 +74,15 @@
             <br>
             <h3>Please do not refresh or close the page request is processing...</h3>
             </div></center>
-              
+
               <div class="col-8 col-lg-3">
-            </div> 
+            </div>
              <div class="col-4 col-lg-3 ">
                <div class="d-flex align-items-right justify-content-between mt-45">
                 <button class="form-control btn btn-primary rounded-pill" type="submit">Submit</button>
-            </div> 
-            </div> 
-            
+            </div>
+            </div>
+
         </form>
 </div>
 </div>
@@ -103,14 +92,14 @@
 
 @push('scripts_bottom')
    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-   
+
 <script>
 $(document).ready(function() {
     $("#loader").css("display", "none");
-     
+
 });
 document.getElementById('paymentForm').addEventListener('submit', function(event) {
-  event.preventDefault(); 
+  event.preventDefault();
   clearErrors();
   let isValid = validateForm();
   if (isValid) {
@@ -120,7 +109,6 @@ document.getElementById('paymentForm').addEventListener('submit', function(event
 
 function validateForm() {
   let isValid = true;
-
 
   let email = document.getElementById('email').value;
   if (email.trim() === '') {
@@ -135,7 +123,7 @@ function validateForm() {
   if (mobile.trim() === '') {
     showError('mobileError', 'Mobile number is required.');
     isValid = false;
-  } 
+  }
 //   else if (!/^\d{14}$/.test(mobile)) {
 //     showError('mobileError', 'Please enter a valid 10-digit mobile number.');
 //     isValid = false;
@@ -155,14 +143,12 @@ function validateForm() {
     showError('amountError', 'Percentage must be greater than 0.');
     isValid = false;
   }
-  
+
   let paidAmount = document.getElementById('expire').value;
   if (paidAmount.trim() === '') {
     showError('paidAmountError', 'Expire amount is required.');
     isValid = false;
-  } 
-
-  
+  }
 
   return isValid;
 }
@@ -189,7 +175,7 @@ function validateEmail(email) {
 function submitForm() {
    document.body.classList.add('disabled-page');
    document.getElementById('loader').style.display = 'block';
-        
+
     // Collect form data
     var formData = {
       email: $('#email').val(),
@@ -202,7 +188,7 @@ function submitForm() {
 var   url="{{ url('/directaccess')}}";
     // AJAX request
     $.ajax({
-      url: url, 
+      url: url,
       type: 'POST',
       data: formData,
       success: function(response) {
@@ -216,7 +202,7 @@ var   url="{{ url('/directaccess')}}";
             title: 'Success',
             text: 'Data received successfully!',
           }).then(() => {
-            
+
             $('#paymentForm')[0].reset();
           });
         } else {
@@ -240,28 +226,27 @@ var   url="{{ url('/directaccess')}}";
 </script>
 
 <script>
-     
+
 //   $("#loader").css("display", "none");
-  
+
     $(document).ready(function(){
-        
+
          $('body').on('click', '#fullaccesss', function (e) {
             addscript();
          });
-       
-    
+
     $('body').on('change paste keyup', '#customer_email', function (e) {
         e.preventDefault();
         document.getElementById("user_email").value = $(this).val();
-        
-    });   
-    
+
+    });
+
     $('body').on('change', '#customer_number', function (e) {
         e.preventDefault();
         document.getElementById("user_number").value = $(this).val();
-       
-    });   
-  
+
+    });
+
 });
 
 $(document).ready(function() {
@@ -274,7 +259,7 @@ $('#customer_number').on('keypress', function(e) {
     e.preventDefault();
     return false;
   }
- 
+
   if (e.charCode < 54 && e.charCode > 47) {
       if ($this.val().length == 0) {
         e.preventDefault();

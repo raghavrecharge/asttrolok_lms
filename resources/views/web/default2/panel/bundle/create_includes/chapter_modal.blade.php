@@ -5,7 +5,6 @@
         <div class="js-content-form chapter-form mt-20" data-action="/panel/chapters/store">
 
             <input type="hidden" name="ajax[chapter][webinar_id]" class="js-chapter-webinar-id" value="">
-            {{--<input type="hidden" name="ajax[chapter][type]" class="js-chapter-type" value="">--}}
 
             @if(!empty(getGeneralSettings('content_translate')))
 
@@ -26,7 +25,6 @@
             @else
                 <input type="hidden" name="ajax[chapter][locale]" value="{{ $defaultLocale }}">
             @endif
-
 
             <div class="form-group">
                 <label class="input-label">{{ trans('public.chapter_title') }}</label>

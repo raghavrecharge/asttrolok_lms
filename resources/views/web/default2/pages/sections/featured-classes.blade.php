@@ -1,4 +1,3 @@
-{{-- Featured Classes Desktop Section --}}
 <section class="home-sections home-sections-swiper container find-instructor-section position-relative">
     <div class="d-flex justify-content-between">
         <div>
@@ -17,8 +16,8 @@
                             <figure>
                                 <div class="image-box">
                                     <a href="{{ $featureWebinar->getUrl() }}">
-                                        <img src="{{ $featureWebinar->getImage() }}" 
-                                             class="img-cover" 
+                                        <img src="{{ $featureWebinar->getImage() }}"
+                                             class="img-cover"
                                              alt="{{ $featureWebinar->title }}">
                                     </a>
                                     @if($featureWebinar->bestTicket())
@@ -31,12 +30,12 @@
                             <div class="webinar-card-body">
                                 <div class="user-inline-avatar d-flex align-items-center">
                                     <div class="avatar">
-                                        <img src="{{ $featureWebinar->teacher->getAvatar() }}" 
-                                             class="img-cover" 
+                                        <img src="{{ $featureWebinar->teacher->getAvatar() }}"
+                                             class="img-cover"
                                              alt="{{ $featureWebinar->teacher->full_name }}">
                                     </div>
-                                    <a href="{{ $featureWebinar->teacher->getProfileUrl() }}" 
-                                       target="_blank" 
+                                    <a href="{{ $featureWebinar->teacher->getProfileUrl() }}"
+                                       target="_blank"
                                        class="user-name ml-5 font-14">
                                         {{ $featureWebinar->teacher->full_name }}
                                     </a>

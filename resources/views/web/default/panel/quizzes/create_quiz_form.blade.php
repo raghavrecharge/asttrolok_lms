@@ -181,7 +181,6 @@
         </div>
     </div>
 
-    <!-- Modal -->
 @if(!empty($quiz))
     @include(getTemplate() .'.panel.quizzes.modals.multiple_question',['quiz' => $quiz])
     @include(getTemplate() .'.panel.quizzes.modals.descriptive_question',['quiz' => $quiz])

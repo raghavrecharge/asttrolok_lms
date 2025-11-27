@@ -16,19 +16,11 @@
             font-family: 'main-font-family' !important;
         }
         .course-content-sidebar .course-img.has-video .course-video-icon {
-   
+
     width: 50px;
     height: 50px;
 }
 
-
-
-
-/*******************************
-* MODAL AS LEFT/RIGHT SIDEBAR
-* Add "left" or "right" in modal parent div, after class="modal".
-* Get free snippets on bootpen.com
-*******************************/
 	.modal.left .modal-dialog,
 	.modal.right .modal-dialog {
 		position: fixed;
@@ -42,41 +34,37 @@
 		        transform: translateX(100%);
 	}
 .afterpop{
-    
+
     transition: all 2s  !important;
     transition-timing-function: ease-in  !important;
    -webkit-transform: translateX(0%) !important;
 		    -ms-transform: translateX(0%) !important;
 		     -o-transform: translateX(0%) !important;
 		        transform: translateX(0%) !important;
-		        
+
 }
 	.modal.left .modal-content,
 	.modal.right .modal-content {
 		height: 100%;
 		overflow-y: auto;
 	}
-	
+
 	.modal.left .modal-body,
 	.modal.right .modal-body {
 		padding: 15px 15px 80px;
 	}
 
-
-        
-/*Right*/
 	.modal.right.fade .modal-dialog {
-	    
+
 		right: 0px;
-		        
+
 	}
-	
+
 	.modal.right.fade.in .modal-dialog {
 		right: 0;
 		transition: all .5s;
 	}
 
-/* ----- MODAL STYLE ----- */
 	.modal-content {
 		border-radius: 0;
 		border: none;
@@ -86,11 +74,6 @@
 		border-bottom-color: #EEEEEE;
 		background-color: #FAFAFA;
 	}
-
-/* ----- v CAN BE DELETED v ----- */
-
-
-
 
     </style>
 @endpush
@@ -108,14 +91,14 @@
             </div>
         </div>
     </section>
-    
+
     <section class="container course-content-section {{ $course->type }} {{ ($hasBought or $course->isRemedy()) ? 'has-progress-bar' : '' }}">
         <div class="row">
             <div class="col-12 col-lg-12">
                 <div class="course-content-body mt-50 user-select-none">
                     <div class="course-body-on-cover ">
                         @if(url()->current()!='https://lms.asttrolok.com/course/Free-Astrology-Course')
-                        
+
                         <h1 class="font-30 course-title">
                             {{ clean($course->title, 't') }}
                         </h1>
@@ -140,21 +123,6 @@
 
                         @if($hasBought or $percent)
 
-                            {{-- <div class="mt-30 d-flex align-items-center">
-                                <div class="progress course-progress flex-grow-1 shadow-xs rounded-sm">
-                                    <span class="progress-bar rounded-sm bg-warning" style="width: {{ $percent }}%"></span>
-                                </div>
-
-                                <span class="ml-15 font-14 font-weight-500">
-                                    @if($hasBought and (!$course->isRemedy() or $course->isProgressing()))
-                                        {{ trans('public.course_learning_passed',['percent' => $percent]) }}
-                                    @elseif(!is_null($course->capacity))
-                                        {{ $course->sales_count }}/{{ $course->capacity }} {{ trans('quiz.students') }}
-                                    @else
-                                        {{ trans('public.course_learning_passed',['percent' => $percent]) }}
-                                    @endif
-                                </span>
-                            </div> --}}
                         @endif
                         @else
                         <div class="course-body-on-cover text-white" style="min-height: 240px;"></div>
@@ -162,22 +130,11 @@
                     </div>
                     @include('web.default2'.'.remedy.tabs.content')
 
-                    
-                    
                 </div>
             </div>
 
-
-
-
-
-
-
-
-            
         </div>
 
-        {{-- Ads Bannaer --}}
         @if(!empty($advertisingBanners) and count($advertisingBanners))
             <div class="mt-30 mt-md-50">
                 <div class="row">
@@ -191,22 +148,12 @@
                 </div>
             </div>
         @endif
-        {{-- ./ Ads Bannaer --}}
+
     </section>
 
-   
-
-
-
-
-    
 @endsection
 
 @push('scripts_bottom')
-
-
-
-
 
     <script src="{{ config('app.js_css_url') }}/assets/default/js/parts/time-counter-down.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/barrating/jquery.barrating.min.js"></script>
@@ -215,9 +162,6 @@
      <script src="{{ config('app.js_css_url') }}/assets/default/vendors/video/1212youtube.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/video/vimeo.js"></script>
 
-
-
-<!--<?php   //unset($_SESSION['addtocart']); ?>-->
     <script>
         var webinarDemoLang = '{{ trans('webinars.webinar_demo') }}';
         var replyLang = '{{ trans('panel.reply') }}';
@@ -257,8 +201,6 @@
         var captchaLang = '{{ trans('site.captcha') }}';
     </script>
 
-  
-    <!--<script src="{{ config('app.js_css_url') }}/assets/default/js/parts/comment.min.js"></script>-->
     <script src="{{ config('app.js_css_url') }}/assets/default/js/parts/video_player_helpers.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets/default/js/parts/webinar_show.min.js"></script>
 @endpush
@@ -267,7 +209,7 @@
   #pre1 {
       width: -webkit-fill-available;
     height: 283px;
-  
+
   }
   .pdf {
       display:none !important;
@@ -275,14 +217,14 @@
 }
 @media screen and (min-width: 991px) {
   #pre1 {
-      width:-webkit-fill-available; 
+      width:-webkit-fill-available;
       height:450px;
   }
   #mob1 {
-      
+
       display:none !important;
   }
-  
+
 }
-    
+
 </style>

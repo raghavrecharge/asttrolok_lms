@@ -4,8 +4,6 @@
     $requirementsExtraDescription = !empty($course->webinarExtraDescription) ? $course->webinarExtraDescription->where('type','requirements') : null;
 @endphp
 
-
-{{-- Installments --}}
 @if(!empty($installments) and count($installments) and getInstallmentsSettings('installment_plans_position') == 'top_of_page')
     @foreach($installments as $installmentRow)
         @include('web.default2.installment.card',['installment' => $installmentRow, 'itemPrice' => $course->getPrice(), 'itemId' => $course->id, 'itemType' => 'course'])
@@ -25,17 +23,15 @@
     </div>
 @endif
 
-{{--course description--}}
 @if($course->description)
     <div class="mt-20">
         <h2 class="section-title after-line">{{ trans('product.Webinar_description') }}</h2>
         <div class="mt-15 course-description">
-            <!--{!! clean($course->description) !!}-->
+
             {!! $course->description !!}
         </div>
     </div>
 @endif
-{{-- ./ course description--}}
 
 @if(!empty($companyLogosExtraDescription) and count($companyLogosExtraDescription))
     <div class="mt-20 rounded-sm border bg-white p-15">
@@ -67,7 +63,6 @@
     </div>
 @endif
 
-{{-- course prerequisites --}}
 @if(!empty($course->prerequisites) and $course->prerequisites->count() > 0)
 
     <div class="mt-20">
@@ -80,9 +75,7 @@
         @endforeach
     </div>
 @endif
-{{-- ./ course prerequisites --}}
 
-{{-- course FAQ --}}
 @if(!empty($course->faqs) and $course->faqs->count() > 0)
     <div class="mt-20">
         <h2 class="section-title after-line">{{ trans('public.faq') }}</h2>
@@ -106,19 +99,9 @@
         </div>
     </div>
 @endif
-{{-- ./ course FAQ --}}
 
-{{-- Installments --}}
-{{--@if(!empty($installments) and count($installments) and getInstallmentsSettings('installment_plans_position') == 'bottom_of_page')
-    @foreach($installments as $installmentRow)
-        @include('web.default2.installment.card',['installment' => $installmentRow, 'itemPrice' => $course->getPrice(), 'itemId' => $course->id, 'itemType' => 'course'])
-    @endforeach
-@endif--}}
-
-{{-- course Comments --}}
 @include('web.default2.includes.comments',[
         'comments' => $course->comments,
         'inputName' => 'webinar_id',
         'inputValue' => $course->id
     ])
-{{-- ./ course Comments --}}

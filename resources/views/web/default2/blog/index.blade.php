@@ -13,7 +13,7 @@
     <link rel="canonical" href="{{ $blog->url($blog->currentPage()) }}">
 @endsection
 @section('content')
-    <!--<section class="site-top-banner search-top-banner opacity-04 position-relative">-->
+
     <section class="site-top-banner search-top-banner opacity-04 position-relative" >
         <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ getPageBackgroundSettings('blog') }}" class="img-cover" alt="{{ $pageTitle }}"/>
 
@@ -21,17 +21,7 @@
             <div class="row h-100 align-items-center justify-content-center text-center">
                 <div class="col-12 col-md-9 col-lg-7">
                     <div class="top-search-categories-form">
-                        
-                        <!--<span class="course-count-badge py-5 px-10 text-white rounded">{{ $blogCount }} {{ trans('site.posts') }}</span>-->
 
-                        <!--<div class="search-input bg-white p-10 flex-grow-1">-->
-                        <!--    <form action="/blog" method="get">-->
-                        <!--        <div class="form-group d-flex align-items-center m-0">-->
-                        <!--            <input type="text" name="search" class="form-control border-0" value="{{ request()->get('search') }}" placeholder="{{ trans('home.blog_search_placeholder') }}"/>-->
-                        <!--            <button type="submit" class="btn btn-primary rounded-pill">{{ trans('home.find') }}</button>-->
-                        <!--        </div>-->
-                        <!--    </form>-->
-                        <!--</div>-->
                     </div>
                 </div>
             </div>
@@ -62,7 +52,7 @@
                         @foreach($blogCategories as $blogCategory)
                             <a href="{{ route('blog.category', ['category' => $blogCategory->slug]) }}" class="font-14 text-dark-blue d-block mt-15">{{ $blogCategory->title }}</a>
                         @endforeach
-               
+
                     </div>
                 </div>
 
@@ -88,7 +78,7 @@
                         <a href="/blog" class="btn btn-sm btn-primary btn-block mt-30">{{ trans('home.view_all') }} {{ trans('site.posts') }}</a>
                     </div>
                 </div>
-                
+
                 <div class="p-20 mt-30 rounded-sm shadow-lg border border-gray300">
                     <h3 class="category-filter-title font-20 font-weight-bold text-dark-blue">Popular Courses</h3>
 
@@ -98,7 +88,7 @@
                         @endphp
 
                         @foreach($popularWebinars as $popularWebinar)
-                            
+
                             @if(in_array($popularWebinar->id, $courses))
                             <div class="popular-post d-flex align-items-start mt-20">
                                 <div class="popular-post-image rounded">
@@ -106,7 +96,7 @@
                                 </div>
                                 <div class="popular-post-content d-flex flex-column ml-10">
                                     <a href="/course/{{$popularWebinar->slug}}">
-                                        <h3 class="text-dark-blue font-14">{{ truncate($popularWebinar->title,50) }}{{--$popularWebinar->id--}}</h3>
+                                        <h3 class="text-dark-blue font-14">{{ truncate($popularWebinar->title,50) }}</h3>
                                     </a>
                                     <span class="mt-auto font-12 text-gray">{{$popularWebinar->bestTicket()}}</span>
                                 </div>

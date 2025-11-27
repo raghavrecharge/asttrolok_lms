@@ -9,21 +9,19 @@
     display: none!important;
 }
     </style>
-    <!-- Event snippet for Booked Appointment conversion page -->
 
 @endpush
-
 
 {{session()->put('my_test_key',url()->full())}}
 
 @if(!(auth()->check()))
-    
+
     @push('scripts_top')
     <script>
        // window.location.href = "/login";
     </script>
     @endpush
-    
+
 @endif
 
 @section('content')
@@ -58,9 +56,8 @@
   }
 </style>
     <section class="site-top-banner position-relative">
-        <!--<img src="{{ config('app.img_dynamic_url') }}{{ $user->getCover() }}" class="img-cover" alt=""/>-->
-    </section>
 
+    </section>
 
     <section class="container">
         <div class="rounded-lg shadow-sm px-25 py-20 px-lg-50 py-lg-35 position-relative user-profile-info bg-white">
@@ -83,24 +80,21 @@
                         <h1 class="font-24 font-weight-bold text-dark-blue">{{ $user["full_name"] }} </h1>
                         <span class="text-gray">{{ $user["headline"] }}</span>
 
-                        
                         <div class="ml-15 font-14 text-gray text-left align-items-center">
                             @if(!empty($user["bio"]))
                             <pre class="mt-10 font-14  text-dark-blue " style="font-family: var(--font-family-base) !important;">{{$user["bio"]}}</pre>
                         <div class="stars-card d-flex align-items-center">
-                          {{--  @include('web.default2.includes.webinar.rate',['rate' => $ratings[$user["id"]]]) --}}
+
                             @include('web.default2.includes.webinar.rate',['rate' => $user["rating"]])
                         </div>
                             @endif
                             @if($meeting)
                             <div class="mt-5">
-                           {{--<span class=" font-20 text-primary font-weight-500">{{ handlePrice($meeting->amount/30) }}</span><span class="text-dark-blue" style="font-size: small!important;"> / Min</span>--}}
+
                             </div>
                             @endif
                         </div>
-                        
 
-                        <!--<div class="w-100 mt-10 d-none d-flex align-items-center justify-content-center justify-content-lg-start">-->
                         <div class="w-100 mt-10 d-none  align-items-center justify-content-center justify-content-lg-start">
                             <div class="d-flex flex-column followers-status">
                                 <span class="font-20 font-weight-bold text-dark-blue">{{ $userFollowers->count() }}</span>
@@ -114,7 +108,7 @@
                         </div>
 
                         <div class="user-reward-badges d-none flex-wrap align-items-center mt-15">
-                        <!--<div class="user-reward-badges d-flex flex-wrap align-items-center mt-15">-->
+
                             @if(!empty($userBadges))
                                 @foreach($userBadges as $userBadge)
                                     <div class="mr-15" data-toggle="tooltip" data-placement="bottom" data-html="true" title="{!! (!empty($userBadge->badge_id) ? nl2br($userBadge->badge->description) : nl2br($userBadge->description)) !!}">
@@ -126,7 +120,6 @@
                     </div>
                 </div>
 
-                <!--<div class="user-actions d-flex flex-column">-->
                 <div class="user-actions d-none flex-column">
                     <button type="button" id="followToggle" data-user-id="{{ $user['id'] }}" class="btn btn-{{ (!empty($authUserIsFollower) and $authUserIsFollower) ? 'danger' : 'primary' }} btn-sm">
                         @if(!empty($authUserIsFollower) and $authUserIsFollower)
@@ -142,43 +135,7 @@
                 </div>
             </div>
 <div class=" homehide">
-            <!--<div class="mt-40 border-top"></div>-->
 
-            <!--<div class="row mt-30 w-100 d-flex align-items-center justify-content-around">-->
-            <!--    <div class="col-6 col-md-3 user-profile-state d-flex flex-column align-items-center">-->
-            <!--        <div class="state-icon orange p-15 rounded-lg">-->
-            <!--            <img src="/assets/default/img/profile/students.svg" alt="">-->
-            <!--        </div>-->
-            <!--        <span class="font-20 text-dark-blue font-weight-bold mt-5">{{ $user->students_count }}</span>-->
-            <!--        <span class="font-14 text-gray">{{ trans('quiz.students') }}</span>-->
-            <!--    </div>-->
-
-            <!--    <div class="col-6 col-md-3 user-profile-state d-flex flex-column align-items-center">-->
-            <!--        <div class="state-icon blue p-15 rounded-lg">-->
-            <!--            <img src="/assets/default/img/profile/webinars.svg" alt="">-->
-            <!--        </div>-->
-            <!--        <span class="font-20 text-dark-blue font-weight-bold mt-5">{{ count($webinars) }}</span>-->
-            <!--        <span class="font-14 text-gray">{{ trans('webinars.classes') }}</span>-->
-            <!--    </div>-->
-
-            <!--    <div class="col-6 col-md-3 mt-20 mt-md-0 user-profile-state d-flex flex-column align-items-center">-->
-            <!--        <div class="state-icon green p-15 rounded-lg">-->
-            <!--            <img src="/assets/default/img/profile/reviews.svg" alt="">-->
-            <!--        </div>-->
-            <!--        <span class="font-20 text-dark-blue font-weight-bold mt-5">{{ $user->reviewsCount() }}</span>-->
-            <!--        <span class="font-14 text-gray">{{ trans('product.reviews') }}</span>-->
-            <!--    </div>-->
-
-
-            <!--    <div class="col-6 col-md-3 mt-20 mt-md-0 user-profile-state d-flex flex-column align-items-center">-->
-            <!--        <div class="state-icon royalblue p-15 rounded-lg">-->
-            <!--            <img src="/assets/default/img/profile/appointments.svg" alt="">-->
-            <!--        </div>-->
-            <!--        <span class="font-20 text-dark-blue font-weight-bold mt-5">{{ $appointments }}</span>-->
-            <!--        <span class="font-14 text-gray">{{ trans('site.appointments') }}</span>-->
-            <!--    </div>-->
-
-            <!--</div>-->
             </div>
         </div>
     </section>
@@ -189,36 +146,19 @@
                 <li class="nav-item mr-20 mr-lg-50 mt-30">
                     <a class="position-relative text-dark-blue font-weight-500 font-16 {{ (request()->get('tab') or request()->get('tab') == 'about') ? 'active' : ''  }}" id="about-tab" data-toggle="tab" href="#about" role="tab" aria-controls="about" aria-selected="true">{{ trans('site.about') }}</a>
                 </li>
-                <!--<li class="nav-item mr-20 mr-lg-50 mt-30">-->
-                <!--    <a class="position-relative text-dark-blue font-weight-500 font-16 {{ (request()->get('tab') == 'webinars') ? 'active' : ''  }}" id="webinars-tab" data-toggle="tab" href="#webinars" role="tab" aria-controls="webinars" aria-selected="false">{{ trans('panel.classes') }}</a>-->
-                <!--</li>-->
 
                 @if($user->isOrganization())
-                    <!--<li class="nav-item mr-20 mr-lg-50 mt-30">-->
-                    <!--    <a class="position-relative text-dark-blue font-weight-500 font-16 {{ (request()->get('tab') == 'instructors') ? 'active' : ''  }}" id="instructors-tab" data-toggle="tab" href="#instructors" role="tab" aria-controls="instructors" aria-selected="false">{{ trans('home.instructors') }}</a>-->
-                    <!--</li>-->
+
                 @endif
 
                 @if(!empty(getStoreSettings('status')) and getStoreSettings('status'))
-                    <!--<li class="nav-item mr-20 mr-lg-50 mt-30">-->
-                    <!--    <a class="position-relative text-dark-blue font-weight-500 font-16 {{ (request()->get('tab') == 'products') ? 'active' : ''  }}" id="webinars-tab" data-toggle="tab" href="#products" role="tab" aria-controls="products" aria-selected="false">{{ trans('update.products') }}</a>-->
-                    <!--</li>-->
-                @endif
 
-                <!--<li class="nav-item mr-20 mr-lg-50 mt-30">-->
-                <!--    <a class="position-relative text-dark-blue font-weight-500 font-16 {{ (request()->get('tab') == 'posts') ? 'active' : ''  }}" id="webinars-tab" data-toggle="tab" href="#posts" role="tab" aria-controls="posts" aria-selected="false">{{ trans('update.articles') }}</a>-->
-                <!--</li>-->
+                @endif
 
                 @if(!empty(getFeaturesSettings('forums_status')) and getFeaturesSettings('forums_status'))
-                    <!--<li class="nav-item mr-20 mr-lg-50 mt-30">-->
-                    <!--    <a class="position-relative text-dark-blue font-weight-500 font-16 {{ (request()->get('tab') == 'forum') ? 'active' : ''  }}" id="webinars-tab" data-toggle="tab" href="#forum" role="tab" aria-controls="forum" aria-selected="false">{{ trans('update.forum') }}</a>-->
-                    <!--</li>-->
+
                 @endif
 
-                <!--<li class="nav-item mr-20 mr-lg-50 mt-30">-->
-                <!--    <a class="position-relative text-dark-blue font-weight-500 font-16 {{ (request()->get('tab') == 'badges') ? 'active' : ''  }}" id="badges-tab" data-toggle="tab" href="#badges" role="tab" aria-controls="badges" aria-selected="false">{{ trans('site.badges') }}</a>-->
-                <!--</li>-->
-                  
                 <li class="nav-item mr-20 mr-lg-50 mt-30">
                     <a class="position-relative text-dark-blue font-weight-500 font-16 {{ (empty(request()->get('tab')) == 'appointments') ? 'active' : ''  }}" id="appointments-tab" data-toggle="tab" href="#appointments" role="tab" aria-controls="appointments" aria-selected="false">Book a Consultation</a>
                 </li>

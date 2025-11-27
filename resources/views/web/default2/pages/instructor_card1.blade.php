@@ -21,12 +21,12 @@
     @endif
 <div class="row">
     <div class="col-3 col-md-6 col-lg-3" style="padding:0;">
-    
+
         <a href="{{ $instructor->getProfileUrl() }}{{ ($canReserve) ? '?tab=appointments' : '' }}" class="text-left d-flex flex-column align-items-left justify-content-left">
             <div class=" teacher-avatar mt-5 position-relative">
-                
+
                 <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $instructor->getAvatar(190) }}" class="img-cover" alt="{{ $instructor->full_name }}">
-    
+
                 @if($instructor->offline)
                     <span class="user-circle-badge unavailable d-flex align-items-left justify-content-left">
                     <i data-feather="slash" width="20" height="20" class="text-white"></i>
@@ -36,18 +36,16 @@
                         <i data-feather="check" width="20" height="20" class="text-white"></i>
                     </span>
                 @endif
-                
+
             </div>
         <div class="stars-card d-flex align-items-center mt-10">
-            <!--@include('web.default2.includes.webinar.rate',['rate' => $instructor->rates()])-->
-           {{-- @include('web.default2.includes.webinar.rate1',['rate' => $ratings[$instructor->id]]) --}}
+
             @include('web.default2.includes.webinar.rate1',['rate' => $instructor->rating])
         </div>
-    
-            
+
         </a>
     </div>
-    
+
     <div class="col-9 col-md-6 col-lg-9" >
         <h3 class="font-16 font-weight-bold text-dark-blue text-left  ml-10">{{ $instructor->full_name }}</h3>
         <div class="mt-5 font-14 text-gray text-left  ml-10">
@@ -55,31 +53,18 @@
             <pre class="mt-10 font-13  text-dark-blue " style="font-family: var(--font-family-base) !important;">{{$instructor->bio}}</pre>
             @endif
         </div>
-           
+
             @php
             if(isset($ratings[$instructor->id]))
             {
-          
-           
-           
+
             @endphp
-      
-            
-        
-        
+
         @php
            }
-           
-           
+
             @endphp
-    
-        <!--<div class="d-flex align-items-left mt-20 >-->
-        <!--    @foreach($instructor->getBadges() as $badge)-->
-        <!--        <div class="mr-15 mt-5" data-toggle="tooltip" data-placement="bottom" data-html="true" title="{!! (!empty($badge->badge_id) ? nl2br($badge->badge->description) : nl2br($badge->description)) !!}">-->
-        <!--            <img loading="lazy" decoding="async" src="{{ !empty($badge->badge_id) ? $badge->badge->image : $badge->image }}" width="32" height="32" alt="{{ !empty($badge->badge_id) ? $badge->badge->title : $badge->title }}">-->
-        <!--        </div>-->
-        <!--    @endforeach-->
-        <!--</div>-->
+
         <div class="row ">
     <div class="col-7 col-md-7 col-lg-7">
         <div class="mt-15 pl-10">
@@ -88,14 +73,13 @@
                     <span class="font-20 text-primary font-weight-bold">{{ handlePrice($instructor->meeting->amount - (($instructor->meeting->amount * $instructor->meeting->discount) / 100)) }}</span>
                     <span class="font-14 text-gray text-decoration-line-through ml-10">{{ handlePrice($instructor->meeting->amount) }}</span>
                 @else
-                    <span class="font-20 text-primary font-weight-500">{{ handlePrice($instructor->meeting->amount/30) }}</span><span class="text-dark-blue" style="font-size: small!important;"> / Min</span> 
+                    <span class="font-20 text-primary font-weight-500">{{ handlePrice($instructor->meeting->amount/30) }}</span><span class="text-dark-blue" style="font-size: small!important;"> / Min</span>
                 @endif
             @else
                 <span class="py-10">&nbsp;</span>
             @endif
         </div>
-    
-        
+
     </div>
     <div class="col-5 col-md-5 col-lg-5" style="padding:0;">
         <div class=" align-items-right justify-content-right w-100" >
@@ -110,8 +94,7 @@
     </div>
     </div>
     </div>
-        
+
 </div>
-    
-  
+
 </div>

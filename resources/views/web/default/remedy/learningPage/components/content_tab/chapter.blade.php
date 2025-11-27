@@ -74,8 +74,7 @@
 
                 <div id="collapseChapter{{ $chapter->id  }}" aria-labelledby="chapter_{{ $chapter->id  }}" class="collapse" role="tabpanel">
                     <div class="panel-collapse text-gray">
-                        <!--<h2 class="font-20 text-dark-blue px-15">{{ trans('update.access_denied') }}</h2>-->
-                        <!--<p class="font-14 font-weight-500 text-gray px-15">{{ trans('update.you_have_an_overdue_installment_please_pay_it_to_access_this_course') }}</p>-->
+
  @if(!empty($chapter->chapterItems) and count($chapter->chapterItems))
                             @foreach($chapter->chapterItems as $chapterItem)
                                 @if($chapterItem->type == \App\Models\WebinarChapterItem::$chapterSession and !empty($chapterItem->session) and $chapterItem->session->status == 'active')
@@ -84,10 +83,7 @@
                                     @include('web.default.course.learningPage.components.content_tab.content1' , ['item' => $chapterItem->file, 'type' => 'file'])
                                 @elseif($chapterItem->type == \App\Models\WebinarChapterItem::$chapterTextLesson and !empty($chapterItem->textLesson) and $chapterItem->textLesson->status == 'active')
                                     @include('web.default.course.learningPage.components.content_tab.content1' , ['item' => $chapterItem->textLesson, 'type' => 'text_lesson'])
-                                <!--@elseif($chapterItem->type == \App\Models\WebinarChapterItem::$chapterAssignment and !empty($chapterItem->assignment) and $chapterItem->assignment->status == 'active')-->
-                                <!--    @include('web.default.course.learningPage.components.content_tab.assignment-content-tab' ,['item' => $chapterItem->assignment])-->
-                                <!--@elseif($chapterItem->type == \App\Models\WebinarChapterItem::$chapterQuiz and !empty($chapterItem->quiz) and $chapterItem->quiz->status == 'active')-->
-                                <!--    @include('web.default.course.learningPage.components.quiz_tab.quiz' ,['item' => $chapterItem->quiz, 'type' => 'quiz'])-->
+
                                 @endif
                             @endforeach
                         @endif

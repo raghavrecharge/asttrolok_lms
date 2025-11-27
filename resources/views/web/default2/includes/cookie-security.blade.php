@@ -72,6 +72,6 @@
         var oopsLang = '{{ trans('update.oops') }}';
         var somethingWentWrongLang = '{{ trans('update.something_went_wrong') }}';
     </script>
-    <!--<script type="text/javascript" src="{{ config('app.js_css_url') }}/assets/default/js/parts/cookie-security.min.js"></script>-->
+
     <script defer type="text/javascript" src="https://storage.googleapis.com/astrolok/public/assets/default/js/parts/cookie-security.min.js"></script>
 @endif

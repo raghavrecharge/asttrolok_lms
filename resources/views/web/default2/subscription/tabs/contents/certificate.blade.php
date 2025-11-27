@@ -1,7 +1,7 @@
 <div class="row">
     <div class="col-12">
         <div class="accordion-content-wrapper" id="certificateAccordion" role="tablist" aria-multiselectable="true">
-            {{--@foreach($quizzes as $quiz) --}}
+
                 @if(!empty($quiz->certificate))
                     <div class="accordion-row rounded-sm border mt-20 p-15">
                         <div class="d-flex align-items-center justify-content-between" role="tab" id="quizCertificate_{{ $quiz->id }}">
@@ -47,7 +47,7 @@
                         </div>
                     </div>
                 @endif
-           {{-- @endforeach --}}
+
         </div>
     </div>
 </div>

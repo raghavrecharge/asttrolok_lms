@@ -7,21 +7,6 @@
                 <p class="text-gray font-14 text-ellipsis1">{!! nl2br($installment->description) !!}</p>
             </div>
 
-          {{--  @if(!empty($installment->capacity))
-                @php
-                    $reachedCapacityPercent = $installment->reachedCapacityPercent();
-                @endphp
-
-                @if($reachedCapacityPercent > 0)
-                    <div class="mt-20 d-flex align-items-center">
-                        <div class="progress card-progress flex-grow-1">
-                            <span class="progress-bar rounded-sm {{ $reachedCapacityPercent > 50 ? 'bg-danger' : 'bg-primary' }}" style="width: {{ $reachedCapacityPercent }}%"></span>
-                        </div>
-                        <div class="ml-10 font-12 text-danger">{{ trans('update.percent_capacity_reached',['percent' => $reachedCapacityPercent]) }}</div>
-                    </div>
-                @endif
-            @endif --}}
-
              @if(!empty($installment->banner))
                 <div class="mt-20">
                     <img src="{{ config('app.img_dynamic_url') }}{{ $installment->banner }}" alt="{{ $installment->main_title }}" class="img-fluid">
@@ -66,11 +51,11 @@
                         <div class="installment-step d-flex align-items-center font-12 text-gray">{{ $installmentStep->getDeadlineTitle($itemPrice) }}</div>
                     @endforeach
                 </div>
-                
+
                 <form action="/cart/coupon/validate1" method="Post">
                     {{ csrf_field() }}
-                    <div class="row"> 
-                    <div class="col-12 col-lg-9"> 
+                    <div class="row">
+                    <div class="col-12 col-lg-9">
                     <div class="form-group">
                         <input type="text" name="coupon" id="coupon_input" class="form-control mt-25"
                          placeholder="{{ trans('cart.enter_your_code_here') }}">
@@ -88,8 +73,6 @@
         </div>
     </div>
 </div>
-
-
 
 @push('scripts_bottom')
 <script type="text/javascript">

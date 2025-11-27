@@ -6,10 +6,10 @@
         @foreach($course->chapters as $chapter)
         @php
         $ci++;
-     
+
        @endphp
         @if($limit >= $ci)
-       
+
             <div class="accordion-row bg-white rounded-sm border border-gray200 mb-2">
                 <div class="d-flex align-items-center justify-content-between p-10" role="tab" id="chapter_{{ $chapter->id  }}">
                     <div class="d-flex align-items-center" href="#collapseChapter{{ $chapter->id  }}" aria-controls="collapseChapter{{ $chapter->id  }}" data-parent="#chapterAccordion" role="button" data-toggle="collapse" aria-expanded="true">
@@ -34,22 +34,15 @@
                 <div id="collapseChapter{{ $chapter->id  }}" aria-labelledby="chapter_{{ $chapter->id  }}" class="collapse" role="tabpanel">
                     <div class="panel-collapse text-gray">
 
-                   
-                         
-                           
                                 @foreach($chapter->chapterItems as $chapterItem)
-                                
-                         
-                                    
-                               
+
                                         @if($chapterItem->type == \App\Models\WebinarChapterItem::$chapterFile and !empty($chapterItem->file) and $chapterItem->file->status == 'active')
                                         @include('web.default.course.learningPage.components.content_for_progress.content1' , ['item' => $chapterItem->file, 'type' => 'file'])
-                        
+
                                         @endif
-                                   
+
                                 @endforeach
-                           
-                      
+
                     </div>
                 </div>
             </div>
@@ -77,8 +70,7 @@
 
                 <div id="collapseChapter{{ $chapter->id  }}" aria-labelledby="chapter_{{ $chapter->id  }}" class="collapse" role="tabpanel">
                     <div class="panel-collapse text-gray">
-                        <!--<h2 class="font-20 text-dark-blue px-15">{{ trans('update.access_denied') }}</h2>-->
-                        <!--<p class="font-14 font-weight-500 text-gray px-15">{{ trans('update.you_have_an_overdue_installment_please_pay_it_to_access_this_course') }}</p>-->
+
  @if(!empty($chapter->chapterItems) and count($chapter->chapterItems))
                             @foreach($chapter->chapterItems as $chapterItem)
                                 @if($chapterItem->type == \App\Models\WebinarChapterItem::$chapterSession and !empty($chapterItem->session) and $chapterItem->session->status == 'active')
@@ -87,10 +79,7 @@
                                     @include('web.default.course.learningPage.components.content_for_progress.content1' , ['item' => $chapterItem->file, 'type' => 'file'])
                                 @elseif($chapterItem->type == \App\Models\WebinarChapterItem::$chapterTextLesson and !empty($chapterItem->textLesson) and $chapterItem->textLesson->status == 'active')
                                     @include('web.default.course.learningPage.components.content_for_progress.content1' , ['item' => $chapterItem->textLesson, 'type' => 'text_lesson'])
-                                <!--@elseif($chapterItem->type == \App\Models\WebinarChapterItem::$chapterAssignment and !empty($chapterItem->assignment) and $chapterItem->assignment->status == 'active')-->
-                                <!--    @include('web.default.course.learningPage.components.content_for_progress.assignment-content-tab' ,['item' => $chapterItem->assignment])-->
-                                <!--@elseif($chapterItem->type == \App\Models\WebinarChapterItem::$chapterQuiz and !empty($chapterItem->quiz) and $chapterItem->quiz->status == 'active')-->
-                                <!--    @include('web.default.course.learningPage.components.quiz_tab.quiz' ,['item' => $chapterItem->quiz, 'type' => 'quiz'])-->
+
                                 @endif
                             @endforeach
                         @endif

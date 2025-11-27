@@ -1,4 +1,3 @@
-{{-- Upcoming Courses Section --}}
 <section class="home-sections container mt-50">
     <div class="d-flex justify-content-between align-items-center">
         <div>
@@ -16,8 +15,8 @@
                         <figure>
                             <div class="image-box">
                                 <a href="{{ $course->getUrl() }}">
-                                    <img src="{{ $course->getImage() }}" 
-                                         class="img-cover" 
+                                    <img src="{{ $course->getImage() }}"
+                                         class="img-cover"
                                          alt="{{ $course->title }}">
                                 </a>
                                 <span class="badge badge-warning">{{ trans('public.upcoming') }}</span>
@@ -26,12 +25,12 @@
                         <div class="webinar-card-body">
                             <div class="user-inline-avatar d-flex align-items-center">
                                 <div class="avatar">
-                                    <img src="{{ $course->teacher->getAvatar() }}" 
-                                         class="img-cover" 
+                                    <img src="{{ $course->teacher->getAvatar() }}"
+                                         class="img-cover"
                                          alt="{{ $course->teacher->full_name }}">
                                 </div>
-                                <a href="{{ $course->teacher->getProfileUrl() }}" 
-                                   target="_blank" 
+                                <a href="{{ $course->teacher->getProfileUrl() }}"
+                                   target="_blank"
                                    class="user-name ml-5 font-14">
                                     {{ $course->teacher->full_name }}
                                 </a>

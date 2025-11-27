@@ -6,20 +6,14 @@
             <div class="">
                 <p class="text-gray font-14 text-ellipsis">{!!($installment->description) !!}</p>
             </div>
-            
-               
+
             @if(!empty($installment->capacity))
                 @php
                     $reachedCapacityPercent = $installment->reachedCapacityPercent();
                 @endphp
 
                 @if($reachedCapacityPercent > 0)
-                    <!--<div class="mt-20 d-flex align-items-center">-->
-                    <!--    <div class="progress card-progress flex-grow-1">-->
-                    <!--        <span class="progress-bar rounded-sm {{ $reachedCapacityPercent > 50 ? 'bg-danger' : 'bg-primary' }}" style="width: {{ $reachedCapacityPercent }}%"></span>-->
-                    <!--    </div>-->
-                    <!--    <div class="ml-10 font-12 text-danger">{{ trans('update.percent_capacity_reached',['percent' => $reachedCapacityPercent]) }}</div>-->
-                    <!--</div>-->
+
                 @endif
             @endif
 
@@ -28,7 +22,7 @@
                     <img src="{{ config('app.img_dynamic_url') }}{{ $installment->banner }}" alt="{{ $installment->main_title }}" class="img-fluid">
                 </div>
                 @else
-                
+
                 <div class="default-package-icon mt-20">
                 <img src="/assets2/default/img/become-instructor/default.png" class="img-cover" alt="{{ trans('update.installment_overview') }}" width="176" height="144">
             </div>
@@ -72,12 +66,11 @@
                         <div class="installment-step d-flex align-items-center font-12 text-gray">{{ $installmentStep->getDeadlineTitle($itemPrice) }}</div>
                     @endforeach
                 </div>
-                
-                
+
                 <form action="/cart/coupon/validate1" method="Post">
                     {{ csrf_field() }}
-                    <div class="row"> 
-                    <div class="col-12 col-lg-9"> 
+                    <div class="row">
+                    <div class="col-12 col-lg-9">
                     <div class="form-group">
                         <input type="text" name="coupon" id="coupon_input" class="form-control mt-25"
                          placeholder="{{ trans('cart.enter_your_code_here') }}">
@@ -90,7 +83,7 @@
                     <button type="submit" id="checkCoupon1" class="btn btn-sm btn-primary mt-25">{{ trans('cart.validate') }}</button></div></div>
                 </form>
  <a href="/installments/{{ $installment->id }}?item={{ $itemId }}&item_type={{ $itemType }}&{{ http_build_query(request()->all()) }}#Payment-Option" class=" btn btn-primary btn-block mt-auto">{{ trans('update.pay_with_installments') }}</a>
-                <!--<a href="/installments/{{ $installment->id }}?item={{ $itemId }}&item_type={{ $itemType }}&{{ http_build_query(request()->all()) }}" target="_blank" class="btn btn-primary btn-block mt-25">{{ trans('update.pay_with_installments') }}</a>-->
+
             </div>
         </div>
     </div>

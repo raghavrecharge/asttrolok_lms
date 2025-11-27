@@ -21,29 +21,13 @@
         @php
     $limit1--;
     @endphp
-    
 
-         {{--   @if(!empty($sessionsWithoutChapter) and count($sessionsWithoutChapter))
-                @foreach($sessionsWithoutChapter as $session)
-                    @include('web.default.subscription.learningPage.components.content_tab.content',['item' => $session, 'type' => \App\Models\WebinarChapter::$chapterSession])
-                @endforeach
-            @endif
-    
-            @if(!empty($textLessonsWithoutChapter) and count($textLessonsWithoutChapter))
-                @foreach($textLessonsWithoutChapter as $textLesson)
-                    @include('web.default.subscription.learningPage.components.content_tab.content',['item' => $textLesson, 'type' => \App\Models\WebinarChapter::$chapterTextLesson])
-                @endforeach
-            @endif--}}
-    
             @if(!empty($chapterItem->file))
-              {{--  @foreach($filesWithoutChapter as $file) --}}
+
                     @include('web.default.subscription.learningPage.components.content_tab.content',['item' => $chapterItem->file, 'type' => \App\Models\WebinarChapter::$chapterFile])
-               {{-- @endforeach --}}
+
             @endif
-    
-           {{-- @if(!empty($subscription->chapters) and count($subscription->chapters))
-                @include('web.default.subscription.learningPage.components.content_tab.chapter')
-            @endif --}}
+
         @endforeach
     @endif
 </div>

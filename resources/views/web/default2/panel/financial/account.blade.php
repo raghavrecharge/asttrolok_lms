@@ -156,7 +156,7 @@
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text text-white font-16">
-                                    {{--<i data-feather="dollar-sign" width="18" height="18" class="text-white"></i>--}}
+
                                     {{ $currency }}
                                 </span>
                             </div>

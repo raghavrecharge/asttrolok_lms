@@ -23,19 +23,11 @@
             font-family: 'main-font-family' !important;
         }
         .course-content-sidebar .course-img.has-video .course-video-icon {
-   
+
     width: 50px;
     height: 50px;
 }
 
-
-
-
-/*******************************
-* MODAL AS LEFT/RIGHT SIDEBAR
-* Add "left" or "right" in modal parent div, after class="modal".
-* Get free snippets on bootpen.com
-*******************************/
 	.modal.left .modal-dialog,
 	.modal.right .modal-dialog {
 		position: fixed;
@@ -49,35 +41,32 @@
 		        transform: translateX(100%);
 	}
 .afterpop{
-    
+
     transition: all 2s  !important;
     transition-timing-function: ease-in  !important;
    -webkit-transform: translateX(0%) !important;
 		    -ms-transform: translateX(0%) !important;
 		     -o-transform: translateX(0%) !important;
 		        transform: translateX(0%) !important;
-		        
+
 }
 	.modal.left .modal-content,
 	.modal.right .modal-content {
 		height: 100%;
 		overflow-y: auto;
 	}
-	
+
 	.modal.left .modal-body,
 	.modal.right .modal-body {
 		padding: 15px 15px 80px;
 	}
 
-
-        
-/*Right*/
 	.modal.right.fade .modal-dialog {
-	    
+
 		right: 0px;
-		        
+
 	}
-	
+
 	.modal.right.fade.in .modal-dialog {
 		right: 0;
 		transition: all .5s;
@@ -85,7 +74,7 @@
     .webinar-card .image-box {
     height: 100px !important;
 }
-/* ----- MODAL STYLE ----- */
+
 	.modal-content {
 		border-radius: 0;
 		border: none;
@@ -98,13 +87,8 @@
 		background-color: #FAFAFA;
 	}
 
-/* ----- v CAN BE DELETED v ----- */
-
-
-
-
     </style>
-   
+
 @endpush
 {{ session()->put('my_test_key',url()->current())}}
 
@@ -115,12 +99,12 @@
         <div class="cover-content pt-40">
             <div class="container position-relative">
                 @if(!empty($activeSpecialOffer))
-                    <!-- @include('web.default.course.special_offer') -->
+
                 @endif
             </div>
         </div>
     </section>
-    
+
     <section class="container course-content-section {{ $course->type }} {{ ($hasBought or $course->isRemedy()) ? 'has-progress-bar' : '' }}">
         <div class="row">
             <div class="col-12 col-lg-12">
@@ -135,7 +119,7 @@
 <div id="gradiant1" style="
     width: 100%;
     height: 80px;
-    /* background-color: white; */
+
     position: absolute;
     bottom: 187px;
     background-image: linear-gradient(#ffffff30, white);
@@ -144,84 +128,14 @@
 <div class="readmore">
             <a  id="readmore" onclick="myFunction();">Read More</a>
                         </div>
-                    <!-- <div class="course-body-on-cover text-white">
-                        @if(url()->current()!='https://lms.asttrolok.com/course/Free-Astrology-Course')
-                        
-                        <h1 class="font-30 course-title">
-                            {{ clean($course->title, 't') }}
-                        </h1>
 
-                        @if(!empty($course->category))
-                            <span class="d-block font-16 mt-10">{{ trans('public.in') }} <a href="{{ $course->category->getUrl() }}" target="_blank" class="font-weight-500 text-decoration-underline text-white">{{ $course->category->title }}</a></span>
-                        @endif
-
-                        <div class="d-flex align-items-center">
-                            @include('web.default.includes.webinar.rate',['rate' => $course->getRate()])
-                            <span class="ml-10 mt-15 font-14">({{ $course->reviews->pluck('creator_id')->count() }} {{ trans('public.ratings') }})</span>
-                        </div>
-
-                        <div class="mt-15">
-                            <span class="font-14">{{ trans('public.created_by') }}</span>
-                            <a href="{{ $course->teacher->getProfileUrl() }}" target="_blank" class="text-decoration-underline text-white font-14 font-weight-500">{{ $course->teacher->full_name }}</a>
-                        </div>
-
-                        @php
-                            $percent = $course->getProgress();
-                        @endphp
-
-                        @if($hasBought or $percent)
-
-                            {{-- <div class="mt-30 d-flex align-items-center">
-                                <div class="progress course-progress flex-grow-1 shadow-xs rounded-sm">
-                                    <span class="progress-bar rounded-sm bg-warning" style="width: {{ $percent }}%"></span>
-                                </div>
-
-                                <span class="ml-15 font-14 font-weight-500">
-                                    @if($hasBought and (!$course->isRemedy() or $course->isProgressing()))
-                                        {{ trans('public.course_learning_passed',['percent' => $percent]) }}
-                                    @elseif(!is_null($course->capacity))
-                                        {{ $course->sales_count }}/{{ $course->capacity }} {{ trans('quiz.students') }}
-                                    @else
-                                        {{ trans('public.course_learning_passed',['percent' => $percent]) }}
-                                    @endif
-                                </span>
-                            </div> --}}
-                        @endif
-                        @else
-                        <div class="course-body-on-cover text-white" style="min-height: 240px;"></div>
-                        @endif
-                    </div> -->
-            <!--        <div class="mt-20">-->
-                
-            <!--            <ul class="col-12 nav nav-tabs p-15 d-flex bg-secondary rounded-sm align-items-center justify-content-between" id="tabs-tab" role="tablist">-->
-            <!--                <li class="col-6 nav-item" style="display: flex;justify-content: center;">-->
-            <!--                    <a class="position-relative font-14 pdfs active" onclick="view('pdf');">PDF</a>-->
-            <!--                </li>-->
-            <!--                <li class="col-6 nav-item" style="display: flex;justify-content: center;">-->
-            <!--                    <a class="position-relative font-14 vdo  "   onclick="view('video');">Video</a>-->
-            <!--                </li>-->
-                           
-                           
-            <!--            </ul>-->
-            <!--</div>-->
                     @include(getTemplate().'.remedy.tabs.content')
 
-                    
-                    
                 </div>
             </div>
 
-
-
-
-
-
-
-
-            
         </div>
 
-        {{-- Ads Bannaer --}}
         @if(!empty($advertisingBanners) and count($advertisingBanners))
             <div class="mt-30 mt-md-50">
                 <div class="row">
@@ -235,7 +149,7 @@
                 </div>
             </div>
         @endif
-        {{-- ./ Ads Bannaer --}}
+
     </section>
 
     <div id="webinarReportModal" class="d-none">
@@ -269,25 +183,21 @@
         </form>
     </div>
 <div class="container demo">
-	
-	
+
 	<div class="text-center d-none">
-	
+
 		<button type="button" class="btn btn-demo" data-toggle="modal" data-target="#myModal2">
 			Right Sidebar Modal
 		</button>
 	</div>
 
-
-	
-	<!-- Modal -->
 	<div class="modal right fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					
+
 				</div>
 
 				<div class="modal-body">
@@ -346,28 +256,25 @@
         </div>
 				</div>
 
-			</div><!-- modal-content -->
-		</div><!-- modal-dialog -->
-	</div><!-- modal -->
-	
-	
-</div><!-- container -->
+			</div>
+		</div>
+	</div>
 
+</div>
 
     @include('web.default.course.share_modal')
     @include('web.default.course.buy_with_point_modal')
     @include('web.default.course.login_modal')
     @include('web.default.remedy.file_view')
     @include('web.default.course.buynow_modal')
-    
+
 @endsection
 
 @push('scripts_bottom')
 <script>
-         
-       
+
          function myFunction() {
-             
+
    var dots = document.getElementById("abouthide");
    var gradiant1 = document.getElementById("gradiant1");
    var moreText = document.getElementById("readmore");
@@ -380,7 +287,7 @@
      dots.style.overflow = "hidden";
      dots.style.maxHeight = "100px";
      gradiant1.style.display = "block";
-     
+
      moreText.text = "Read more";
    }
  }
@@ -406,19 +313,18 @@ $(".pdfs").removeClass("active");
 </script>
 @endif
 
-
 <script>
 // Get the modal
 
 function viewfile(src1,id){
-    
+
     var viewfile2 = document.getElementById("pre1");
-    
+
     console.log(viewfile2.src);
     viewfile2.src = src1;
     $('#textpop1').modal();
     console.log(viewfile2.src);
-  
+
 }
 
 </script>
@@ -434,7 +340,7 @@ function viewfile(src1,id){
         // alert('');
         $('.buy_now').click();
     }
-   
+
 </script>
 @if(Session::has('addtocart'))
 <script>
@@ -445,10 +351,10 @@ $("#myModal2").modal('show');
     // $('.modal-dialog').addClass('afterpop');
 </script>
 @endif
-@php 
-    Illuminate\Support\Facades\Session::forget('addtocart');  
+@php
+    Illuminate\Support\Facades\Session::forget('addtocart');
 @endphp
-<!--<?php   //unset($_SESSION['addtocart']); ?>-->
+
     <script>
         var webinarDemoLang = '{{ trans('webinars.webinar_demo') }}';
         var replyLang = '{{ trans('panel.reply') }}';
@@ -488,8 +394,6 @@ $("#myModal2").modal('show');
         var captchaLang = '{{ trans('site.captcha') }}';
     </script>
 
-  
-    <!--<script src="{{ config('app.js_css_url') }}/assets/default/js/parts/comment.min.js"></script>-->
     <script src="{{ config('app.js_css_url') }}/assets/default/js/parts/video_player_helpers.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets/default/js/parts/webinar_show.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -499,7 +403,7 @@ $("#myModal2").modal('show');
   #pre1 {
       width: -webkit-fill-available;
     height: 283px;
-  
+
   }
   .pdf {
       display:none !important;
@@ -507,14 +411,14 @@ $("#myModal2").modal('show');
 }
 @media screen and (min-width: 991px) {
   #pre1 {
-      width:-webkit-fill-available; 
+      width:-webkit-fill-available;
       height:450px;
   }
   #mob1 {
-      
+
       display:none !important;
   }
-  
+
 }
-    
+
 </style>

@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/mobile-blog.css">
 @endpush
 @section('content')
-    <!--<section class="site-top-banner search-top-banner opacity-04 position-relative">-->
+
     <section class="mobile-home-slider site-top-banner search-top-banner opacity-04 position-relative" >
         <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ getPageBackgroundSettings('blog') }}" class="img-cover blog-br" alt="{{ $pageTitle }}"/>
 
@@ -11,17 +11,7 @@
             <div class="row h-100 align-items-center justify-content-center text-center">
                 <div class="col-12 col-md-9 col-lg-7">
                     <div class="top-search-categories-form">
-                        <!--<h1 class="text-white font-30 mb-15">{{ $pageTitle }}</h1>-->
-                        <!--<span class="course-count-badge py-5 px-10 text-white rounded">{{ $blogCount }} {{ trans('site.posts') }}</span>-->
 
-                        <!--<div class="search-input bg-white p-10 flex-grow-1">-->
-                        <!--    <form action="/blog" method="get">-->
-                        <!--        <div class="form-group d-flex align-items-center m-0">-->
-                        <!--            <input type="text" name="search" class="form-control border-0" value="{{ request()->get('search') }}" placeholder="{{ trans('home.blog_search_placeholder') }}"/>-->
-                        <!--            <button type="submit" class="btn btn-primary rounded-pill">{{ trans('home.find') }}</button>-->
-                        <!--        </div>-->
-                        <!--    </form>-->
-                        <!--</div>-->
                     </div>
                 </div>
             </div>
@@ -30,7 +20,7 @@
 
     <section class="container mt-10 mt-md-40">
         <form id="filtersForm" class="consult-filter" style="display:block;" action="/{{ $page }}" method="get">
-        
+
         @include('web.default.pages.includes.blog_top_filters')
          </form>
         <div class="row">
@@ -81,7 +71,7 @@
                         <a href="/blog" class="btn btn-sm btn-primary btn-block mt-30">{{ trans('home.view_all') }} {{ trans('site.posts') }}</a>
                     </div>
                 </div>
-                
+
                 <div class="p-20 mt-30 rounded-sm shadow-lg border border-gray300">
                     <h3 class="category-filter-title font-20 font-weight-bold text-dark-blue">Popular Courses</h3>
 
@@ -91,7 +81,7 @@
                         @endphp
 
                         @foreach($popularWebinars as $popularWebinar)
-                            
+
                             @if(in_array($popularWebinar->id, $courses))
                             <div class="popular-post d-flex align-items-start mt-20">
                                 <div class="popular-post-image rounded">
@@ -99,7 +89,7 @@
                                 </div>
                                 <div class="popular-post-content d-flex flex-column ml-10">
                                     <a href="/course/{{$popularWebinar->slug}}">
-                                        <h3 class="text-dark-blue font-14">{{ truncate($popularWebinar->title,50) }}{{--$popularWebinar->id--}}</h3>
+                                        <h3 class="text-dark-blue font-14">{{ truncate($popularWebinar->title,50) }}</h3>
                                     </a>
                                     <span class="mt-auto font-12 text-gray">{{$popularWebinar->bestTicket()}}</span>
                                 </div>

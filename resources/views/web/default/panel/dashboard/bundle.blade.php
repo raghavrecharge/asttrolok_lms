@@ -27,15 +27,15 @@
                                     <tr>
                                         <td class="text-left">
                                             <div class="d-block font-16 font-weight-500 text-dark-blue">
-                                             <a href="/course/{{ $webinar->webinar->slug }}" 
+                                             <a href="/course/{{ $webinar->webinar->slug }}"
                                                target="_blank"  >
                                                     {{ $webinar->webinar->title }}
                                                     </a>
                                             </div>
                                         </td>
                                         <td class="text-center">
-                                            <a href="/course/learning/{{ $webinar->webinar->slug }}" 
-                                               target="_blank" 
+                                            <a href="/course/learning/{{ $webinar->webinar->slug }}"
+                                               target="_blank"
                                                class="btn btn-sm btn-primary my-10 w-100 mt-2">
                                                {{ trans('update.learning_page') }}
                                             </a>
@@ -49,7 +49,7 @@
                 </div>
             </div>
         </div>
- <!--      Products -->
+
 <div class="mt-30 d-flex justify-content-between align-items-center">
         <h2 class="section-title after-line">{{ trans('product.products') }}</h2>
 </div>
@@ -71,15 +71,15 @@
                                     <tr>
                                         <td class="text-left">
                                             <div class="d-block font-16 font-weight-500 text-dark-blue">
-                                             <a href="/products/{{ $product->product->slug }}" 
+                                             <a href="/products/{{ $product->product->slug }}"
                                                target="_blank"  >
                                                  {{ $product->product->title }}
                                                </a>
                                             </div>
                                         </td>
                                           <td class="text-center">
-                                            <a href="/panel/store/purchases" 
-                                               target="_blank" 
+                                            <a href="/panel/store/purchases"
+                                               target="_blank"
                                                class="btn btn-sm btn-primary my-10 w-100 mt-2">
                                                {{ trans('public.view') }}
                                             </a>
@@ -93,7 +93,7 @@
                 </div>
             </div>
         </div>
-<!--Consultation-->
+
 <div class="mt-30 d-flex justify-content-between align-items-center">
         <h2 class="section-title after-line">{{ trans('product.consultations') }}</h2>
 </div>
@@ -115,18 +115,17 @@
                             </tr>
                             </thead>
                             <tbody>
-                            {{-- Consultations --}}
+
                             @foreach($bundle->bundleWebinars as $bundleWebinar)
                                 @if(!empty($bundleWebinar->consultation_type))
                                     <tr>
                                        <td class="text-left">
                                             <div class="d-block font-16 font-weight-500 text-dark-blue">
                                                 {{ ucfirst($bundleWebinar->consultation_type) }}
-                                                <!--<span class="badge badge-info ml-2">Consultation</span>-->
+
                                             </div>
                                         </td>
-                                    
-                                        {{-- Consultant Name --}}
+
                                         <td class="text-left">
                                             @if($bundleWebinar->consultation_type == 'specific')
                                                 <span class="text-muted">{{ optional($userConsultants->firstWhere('id', $bundleWebinar->consultant_id))->full_name }}</span>
@@ -134,13 +133,12 @@
                                                 <span class="text-muted">Any Consultant</span>
                                             @endif
                                         </td>
-                                    
-                                        {{-- Price --}}
+
                                         <td class="text-left">
                                             @php
                                                 $amount = optional(optional($userConsultants->firstWhere('id', $bundleWebinar->consultant_id))->meeting)->amount;
                                             @endphp
-                                    
+
                                             @if($bundleWebinar->consultation_type == 'specific' && $bundleWebinar->slot_time)
                                                 @if($bundleWebinar->slot_time == 'both')
                                                     ₹{{ $amount / 2 }} - ₹{{ $amount }} /-
@@ -155,8 +153,7 @@
                                                 Any price
                                             @endif
                                         </td>
-                                    
-                                        {{-- Slot Time --}}
+
                                         <td class="text-center">
                                             @if($bundleWebinar->slot_time == 'both')
                                                 15 min , 30 min
@@ -183,14 +180,14 @@
                                                     Book Now
                                                 </a>
                                                 @endif
-                                       
+
                                     </td>
                                     </tr>
                                 @endif
                             @endforeach
                             </tbody>
                         </table>
-                        
+
                     </div>
                 </div>
             </div>

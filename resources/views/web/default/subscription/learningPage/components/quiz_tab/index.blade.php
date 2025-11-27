@@ -3,7 +3,7 @@
 @endphp
 <div class="content-tab p-15 pb-50">
     @if(!empty($chapterItems))
-       {{-- @foreach($course->quizzes as $quiz) --}}
+
         @foreach($chapterItems as $chapterItem)
             @php
             $limit1--;

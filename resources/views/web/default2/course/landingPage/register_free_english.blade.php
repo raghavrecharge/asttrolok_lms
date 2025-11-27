@@ -46,8 +46,6 @@
                             </div>
                         @endif
 
-                       
-
                         <div class="form-group">
                             <label class="input-label" for="full_name">{{ trans('auth.full_name') }}:</label>
                             <input name="full_name" maxlength="50" type="text" value="{{ old('full_name') }}" class="form-control @error('full_name') is-invalid @enderror">
@@ -57,9 +55,9 @@
                             </div>
                             @enderror
                         </div>
-                        
+
                          @if($registerMethod == 'mobile')
-                           {{-- @include('web.default2.auth.register_includes.mobile_field') --}}
+
                            <div class="row">
                                 <div class="col-5">
                                     <div class="form-group">
@@ -67,12 +65,11 @@
                                         <select name="country_code" class="form-control select2 @error('country_code') is-invalid @enderror">
                                             <option value="">{{ trans('public.select') }}</option>
                                             @foreach(getCountriesMobileCode() as $country => $code)
-                                             <!--<option value="{{ $code }}" @if($code == old('country_code')) selected @endif>{{ $country }}</option>-->
-                                                <!--<option value="{{ $code }}" @if($code == '+91')) selected @endif>{{ $country }}</option>-->
+
                                                 <option value="{{ $code }}">{{ $country }}</option>
                                             @endforeach
                                         </select>
-                            
+
                                         @error('country_code')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -80,13 +77,13 @@
                                         @enderror
                                     </div>
                                 </div>
-                            
+
                                 <div class="col-7">
                                     <div class="form-group">
                                         <label class="input-label" for="mobile">{{ trans('auth.mobile') }} {{ !empty($optional) ? "(". trans('public.optional') .")" : '' }}:</label>
                                         <input name="mobile" maxlength="10" type="text" class="form-control @error('mobile') is-invalid @enderror"
                                                value="{{ old('mobile') }}" id="mobile" aria-describedby="mobileHelp">
-                            
+
                                         @error('mobile')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -100,8 +97,7 @@
                                 @include('web.default2.auth.register_includes.email_field',['optional' => true])
                             @endif
                         @else
-                       {{-- @include('web.default2.auth.register_includes.mobile_field',['optional' => false])--}}
-                       
+
                        <div class="row">
                                 <div class="col-5">
                                     <div class="form-group">
@@ -110,11 +106,10 @@
                                             <option value="">{{ trans('public.select') }}</option>
                                             @foreach(getCountriesMobileCode() as $country => $code)
                                              <option value="{{ $code }}" @if($code == old('country_code')) selected @endif>{{ $country }}</option>
-                                                <!--<option value="{{ $code }}" @if($code == '+91')) selected @endif>{{ $country }}</option>-->
-                                                <!--<option value="{{ $code }}">{{ $country }}</option>-->
+
                                             @endforeach
                                         </select>
-                            
+
                                         @error('country_code')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -122,13 +117,13 @@
                                         @enderror
                                     </div>
                                 </div>
-                            
+
                                 <div class="col-7">
                                     <div class="form-group">
                                         <label class="input-label" for="mobile">{{ trans('auth.mobile') }} {{ !empty($optional) ? "(". trans('public.optional') .")" : '' }}:</label>
                                         <input name="mobile" maxlength="10" type="text" class="form-control @error('mobile') is-invalid @enderror"
                                                value="{{ old('mobile') }}" id="mobile" aria-describedby="mobileHelp">
-                            
+
                                         @error('mobile')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -137,11 +132,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
 
-                            <!--@if($showOtherRegisterMethod)-->
-                            <!--    @include('web.default2.auth.register_includes.mobile_field',['optional' => true])-->
-                            <!--@endif-->
                              @include('web.default2.auth.register_includes.email_field')
                         @endif
                         <div class="form-group">
@@ -159,7 +150,7 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div class="form-group">
                             <label class="input-label" for="confirm_password">{{ trans('auth.retype_password') }}:</label>
                             <div class="input-group">

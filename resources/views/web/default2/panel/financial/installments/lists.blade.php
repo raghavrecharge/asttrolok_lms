@@ -14,7 +14,6 @@
         </div>
     @endif
 
-    {{-- Installments Overview --}}
     <section>
         <h2 class="section-title">{{ trans('update.installments_overview') }}</h2>
 
@@ -55,7 +54,6 @@
         </div>
     </section>
 
-
     <section class="mt-25">
         <div class="d-flex align-items-start align-items-md-center justify-content-between flex-column flex-md-row">
             <h2 class="section-title">{{ trans('update.my_installments') }}</h2>
@@ -71,7 +69,7 @@
                 @endphp
 
                 @if(!empty($orderItem))
-                   
+
                         <div class="col-lg-6">
                             <div class="webinar-card webinar-list panel-installment-card d-flex">
                                 <div class="image-box" style="height:auto !important;">
@@ -133,10 +131,6 @@
                                                         <a href="{{ $orderItem->getLearningPageUrl() }}" target="_blank" class="webinar-actions d-block mt-10">{{ trans('update.learning_page') }}</a>
                                                     @endif
 
-                                                    {{--@if($order->isCompleted() or $order->status == "open")
-                                                        <a href="/panel/financial/installments/{{ $order->id }}/refund" class="webinar-actions d-block mt-10 delete-action">{{ trans('update.refund') }}</a>
-                                                    @endif--}}
-
                                                     @if($order->status == "pending_verification" and getInstallmentsSettings("allow_cancel_verification"))
                                                         <a href="/panel/financial/installments/{{ $order->id }}/cancel" class="webinar-actions d-block mt-10 text-danger delete-action" data-title="{{ trans('public.deleteAlertHint') }}" data-confirm="{{ trans('update.yes_cancel') }}">{{ trans('public.cancel') }}</a>
                                                     @endif
@@ -192,7 +186,7 @@
                                 </div>
                             </div>
                         </div>
-                    
+
                 @endif
             @endforeach
 </div>

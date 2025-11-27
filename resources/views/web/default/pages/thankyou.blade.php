@@ -5,29 +5,16 @@
 @endpush
 
 @section('content')
- 
 
     <div class="container">
         <div class="row login-container1">
-            <!--<div class="col-12 col-md-6 pl-0"  style="display: flex;flex-wrap: nowrap;align-items: center;">-->
-            <!--    <img src="{{ getPageBackgroundSettings('register') }}"  style="height:auto;" class="img-cover" alt="Login">-->
-            
-            <!--</div>-->
-            
-            
+
             <div class="col-12 col-md-12">
                 <div class="login-card">
                     <h1 class="font-20 font-weight-bold" style="font-size:50px;">Thank You!</h1>
-                    
+
                     <p > Thank you for contacting us! <br> We've received your message and will be in touch shortly. We appreciate your interest.
                     </p>
-                        
-
-                    
-
-                  
-                        
-                    
 
                 </div>
             </div>

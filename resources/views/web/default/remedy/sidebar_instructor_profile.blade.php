@@ -22,14 +22,6 @@
 
     @include('web.default.includes.webinar.rate',['rate' => $courseTeacher->rates()])
 
-    <!--<div class="user-reward-badges d-flex flex-wrap align-items-center mt-20">-->
-    <!--    @foreach($courseTeacher->getBadges() as $userBadge)-->
-    <!--        <div class="mr-15 mt-10" data-toggle="tooltip" data-placement="bottom" data-html="true" title="{!! (!empty($userBadge->badge_id) ? nl2br($userBadge->badge->description) : nl2br($userBadge->description)) !!}">-->
-    <!--            <img loading="lazy" src="{{ !empty($userBadge->badge_id) ? $userBadge->badge->image : $userBadge->image }}" width="32" height="32" alt="{{ !empty($userBadge->badge_id) ? $userBadge->badge->title : $userBadge->title }}">-->
-    <!--        </div>-->
-    <!--    @endforeach-->
-    <!--</div>-->
-
     @php
         $hasMeeting = !empty($courseTeacher->hasMeeting());
     @endphp

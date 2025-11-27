@@ -4,8 +4,6 @@
     $requirementsExtraDescription = !empty($bundle->webinarExtraDescription) ? $bundle->webinarExtraDescription->where('type','requirements') : null;
 @endphp
 
-
-{{-- Installments --}}
 @if(!empty($installments) and count($installments) and getInstallmentsSettings('installment_plans_position') == 'top_of_page')
     @foreach($installments as $installmentRow)
         @include('web.default2.installment.card',['installment' => $installmentRow, 'itemPrice' => $bundle->getPrice(), 'itemId' => $bundle->id, 'itemType' => 'course'])
@@ -13,25 +11,7 @@
 @endif
 
  <style>
-    /*  .course-description p span{*/
-    /*      font-family:'Poppins', Sans-serif !important;*/
-    /*      color: #000 !important;*/
-    /*  }*/
-    /*     body{*/
-    /*      font-family:'Poppins', Sans-serif !important;*/
-    /*      color: #000 !important;*/
-    /*          background-color: #ffffff !important;*/
-    /*  }  */
-    /*  .course-description p{*/
-    /*      font-family:'Poppins', Sans-serif !important;*/
-    /*      color: #000 !important;*/
-    /*  }*/
-    /*  .text-gray {*/
-    /*    color: #000000 !important;*/
-    /*}*/
-    /*.text-dark {*/
-    /*    color: #000000 !important;*/
-    /*}*/
+
     .highlight_review {
         margin-top: 70px;
         border-radius: 20px;
@@ -123,7 +103,6 @@
     }
  </style>
 
-{{--course description--}}
 @if($bundle->description)
     <div class="mt-20">
         <h2 class="section-title after-line">About this bundle</h2>
@@ -132,68 +111,37 @@
         </div>
     </div>
 @endif
-{{-- ./ course description--}}
+
 @if(!empty($learningMaterialsExtraDescription) and count($learningMaterialsExtraDescription))
     <div class="mt-40">
         <h2 class="section-title after-line">What You will get?</h2>
 
         @foreach($learningMaterialsExtraDescription as $learningMaterial)
-     
-        <!--<div class="d-flex align-items-center mt-20 shadow-lg " style="    border-top-left-radius: 30px;     border-bottom-left-radius: 30px;">-->
-        <!--                <div class="" style="width: 130px; min-width: 130px;border-radius: 30px; ">-->
-        <!--                    <img src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/img/32-Live-Classes-min.png" class="img-cover rounded-circle1" alt="Robert Ransdell" style="border-radius: 30px; ">-->
-        <!--                </div>-->
-        <!--                <div class="ml-10 mw-100">-->
-        <!--                   <h3 class="font-16 text-secondary font-weight-bold">{{ $learningMaterial->value }}</h3>-->
-        <!--                         <span class="d-flex align-items-start font-14 text-gray ">Dive deep into astrology with dynamic live sessions taught by the renowned astrologer & trainer.</span>-->
-        <!--                </div>-->
-        <!--            </div>-->
+
                  <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 shadow-lg rounded-lg mt-15">
-                    <!--  <div class="forums-featured-card-icon">-->
-                    <!--    <img src="/store/1/default_images/forums/icons/marketing.svg" alt="What is social media?" class="img-cover">-->
-                    <!--</div>-->
+
                     <div class="forums-featured-card-icon" style="width: 130px; min-width: 130px; ">
                         <img src="{{ config('app.img_dynamic_url') }}{{ $learningMaterial->img }}" alt="What is social media?" class="img-cover">
                     </div>
 
                     <div class="ml-15">
-                        
+
                             <h4 class="font-16 font-weight-bold text-dark">{{ $learningMaterial->value }}</h4>
-                       
+
                         <p class="font-16 text-gray">{{ $learningMaterial->description }}</p>
-                       
+
                     </div>
-                </div>     
-                    
-                    
-                    
-                    
-            <!--<p class="d-flex align-items-start font-14 text-gray mt-10">-->
-                <!--<i data-feather="check" width="18" height="18" class="mr-10 webinar-extra-description-check-icon"></i>-->
-            <!--    <img src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/img/32-Live-Classes-min.png" alt="32 Live Classes - Asttrolok">-->
-            <!--    <span class="">{{ $learningMaterial->value }}</span>-->
-            <!--     <span class="">Dive deep into astrology with dynamic live sessions taught by the renowned astrologer & trainer.</span>-->
-            <!--</p>-->
+                </div>
+
         @endforeach
     </div>
 @endif
  <div class="mt-40">
-      <!--<h2 class="section-title after-line">What all you will learn?</h2>-->
-        <!--<h3 class="font-16 text-secondary font-weight-bold mb-15">What all you will learn?</h3>-->
- {{--@include('web.default2'.'.course.tabs.content') --}}
+
  @include('web.default'.'.bundle.tabs.content')
- 
-
-
-
-
-
-
-
 
  </div>
- 
- <!--How this Course can benefit you?-->
+
     <div class="mt-30">
         <h2 class="section-title after-line">How this Course can benefit you?</h2>
 
@@ -252,9 +200,7 @@
             </div>
         </div>
     </div>
-    <!--How this Course can benefit you?-->
-    
-    <!--Meet your Mentor-->
+
     @if($bundle->teacher->id == 1015)
     <div class="mt-30">
         <h2 class="section-title after-line">Meet your Mentor</h2>
@@ -273,32 +219,28 @@
         </div>
     </div>
     @endif
-    <!--Meet your Mentor-->
-    
-    <!--About Asttrolok-->
+
      <div class="mt-40">
         <h2 class="section-title after-line">About Asttrolok</h2>
         <div class="mt-15 course-description">
-            <!--{!! clean($bundle->description) !!}-->
+
             <div>Asttrolok, founded in 2016, stands as one of the top three reputable online Vedic institutes in the country, dedicated to dispelling misconceptions and championing fact-based knowledge of Vedic Science in the fields of Astrology, Numerology, Palmistry, Yoga, Ayurveda & Scriptures. With students hailing from over 50+ countries, including professionals like lawyers, doctors, IITians, and actors, Asttrolok boasts a diverse and esteemed student body.</div>
 
             <div class="mt-20">The institute's reputation is further enhanced by its association with the Founder, Renowned Astrologer & Trainer Mr. Alok Khandelwal & 50+ other mentors & panelists, who all bring their extensive expertise and experience to the teaching. Asttrolok's commitment to protecting & spreading the knowledge that liberates & transforms solidifies its standing as a leading institution in the realm of Vedic astrology.</div>
         </div>
     </div>
-    <!--About Asttrolok-->   
-    
-    <!--People are saying-->
+
      <div class="mt-40">
         <h2 class="section-title after-line">People are saying</h2>
         <div class="mt-15 course-description">
-            <!--{!! clean($bundle->description) !!}-->
+
             <div><b>35,000+ people have already completed the Most Popular Astrology Course</b></div>
-            
+
             <div class="row">
                 <div class="col-lg-12 pt-4 main_video pe-0 pe-sm-5 d-flex align-content-end" style="margin-bottom: 5%;">
                     <div class="col-lg-12 video_container top_video p-0 me-0 me-sm-5" id="thumb_0">
                         <iframe style="border-radius: 30px; cursor:pointer; text-align: center; width:100%; height:400px;" src="https://www.youtube.com/embed/7fCFk8leidM?si=ncBQnaUKr9ru9lLG" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen=""></iframe>
-                        <br> 
+                        <br>
                     </div>
                 </div>
                 <div class="col-sn-12 col-nd-5 col-lg-4" style="margin-top:5%;">
@@ -317,13 +259,13 @@
                                     <img src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/img/star.png" alt="Star" width="20" height="19">
                                 </div>
                                 <div class="review_detail show-read-more">
-                                   I am a 25-year-old guy who has learned Jyotish from Alok Khandelwal Sir to break the stereotype thinking that it is only for old aged people. 
+                                   I am a 25-year-old guy who has learned Jyotish from Alok Khandelwal Sir to break the stereotype thinking that it is only for old aged people.
                                Astrology is the first step of enlightenment. I think Alok Sir has made a group of people who are devoted to god and it's called Asttrolok.
                                      </div>
                             </div>
                         </div>
                     </center>
-                </div> 
+                </div>
                 <div class="col-sn-12 col-nd-7 col-lg-8">
                     <div id="one" class="testimonial active">
                         <div class="people_block">
@@ -358,7 +300,7 @@
                         <div class="detail show-read-more">
                             I joined Asttrolok last year. After coming to Asttrolok, I realized how important the guidance of a guru is in life. Ever since I joined this community, <a class="show_hide" data-content="toggle-text" style="color: #244A82 !important;    font-weight: 600;">Read More</a>
                             <div class="testinomial-content-more" id="more-data" style="display: none;">I have come to know how astrology can change your life. I also came to know that astrology is such a thing that if you know astrology, it has the power to change your whole life.</div>
-            
+
                         </div>
                         <div class="people_block">
                             <img class="person" src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/img/review_images/04-min.jpg" alt="People" width="100" height="100">
@@ -373,9 +315,7 @@
                         </div><br><br>
                         <div class="detail show-read-more">
                             I am a student of Astro Shiromani 2022 in Asttrolok. I started my journey in Vedic science from here. And I've learned how to live life in a new way from here.
-                            <!--<a class="show_hide" data-content="toggle-text">Read More</a>-->
-                            <!--<div class="testinomial-content-more" id="more-data">After the session on relationships, I went to their home and apologised. It wasn't easy, it was difficult. But, it was worth it. After doing so, I felt so light in my heart. I can't put it into words. It felt-->
-                            <!--    as if the weight that I was carrying for many many years, had started shedding off. </div>-->
+
                         </div>
                          <div class="people_block">
                             <img class="person" src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/img/review_images/01-min.jpg" alt="People" width="100" height="100">
@@ -386,7 +326,7 @@
                                 <img src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/img/star.webp.html" alt="Star" width="20" height="19">
                                 <img src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/img/star.webp.html" alt="Star" width="20" height="19">
                             </div>
-                           
+
                             <div class="review_name">Aarti Puri</div>
                             <div class="review_location"> Mumbai </div>
                         </div><br>
@@ -397,16 +337,14 @@
                     </div>
                 </div>
             </div>
-            
+
         </div>
     </div>
-    <!--People are saying-->
-    
-    <!--Who should Enroll?-->
+
     <div class="mt-40">
         <h2 class="section-title after-line">Who should Enroll?</h2>
         <div class="mt-15 course-description">
-            <!--{!! clean($bundle->description) !!}-->
+
             <div class="row mt-40">
                 <div class="col-lg-6 px-md-32">
                     <img src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/img/review_images/For Entrepreneurs-min.png" alt="healthy" height="50">
@@ -420,7 +358,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="row mt-40">
                 <div class="col-lg-6 px-md-32">
                     <img src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/img/review_images/Housewife Icon-min.png" alt="healthy" height="50">
@@ -435,10 +373,10 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="row mt-40">
                 <div class="col-lg-6 px-md-32">
-                    <!--<img  src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/img/review_images/For Working Professionals-min.png" alt="healthy" height="50"  />-->
+
                     <img src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/img/review_images/For Student-min.png" alt="healthy" height="50">
                     <h3 class="heading_who px-md-3">For Students:</h3>
                     <div class="text_who px-2 px-md-3">Unlock your potential and discover new opportunities by exploring the world of astrology and astrology can provide valuable insights into personality traits, strengths, and weaknesses, helping students make informed
@@ -450,72 +388,42 @@
                     <h3 class="heading_who px-md-3">For Spiritual Seekers:</h3>
                     <div class="text_who px-2 px-md-3">Astrology can help spiritual seekers better understand themselves, their purpose, and their connection to the universe, leading to a deeper sense of fulfillment and spiritual growth.
 
-
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <!--Who should Enroll?--> 
-    
+
 @if(!empty($requirementsExtraDescription) and count($requirementsExtraDescription))
     <div class="mt-30">
-        <!--<h3 class="font-16 text-secondary font-weight-bold mb-15">{{ trans('update.requirements') }}</h3>-->
+
         <h2 class="section-title after-line">Bonuses with this Astrology Course</h2>
-<!--<h3 class="font-16 text-secondary font-weight-bold mb-15">Bonuses with this Astrology Course</h3>-->
+
         @foreach($requirementsExtraDescription as $requirementExtraDescription)
-         <!--<div class="d-flex align-items-center mt-20">-->
-         <!--               <div class="" style="width: 100px; min-width: 100px;height: 100px;">-->
-         <!--                   <img src="/store/1015/avatar/617a4f2fb8a6d.png" class="img-cover rounded-circle" alt="Robert Ransdell">-->
-         <!--               </div>-->
-         <!--               <div class="ml-10 mw-100">-->
-         <!--                  <p class="">{{ $requirementExtraDescription->value }}</p>-->
-         <!--                        <span class="d-flex align-items-start font-14 text-gray mt-10">Dive deep into astrology with dynamic live sessions taught by the renowned astrologer & trainer.</span>-->
-         <!--               </div>-->
-         <!--           </div>-->
-                    
-                    
-                    
-                    
-                    
-                    
-                    
+
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 shadow-lg rounded-lg mt-15">
                         <div class="forums-featured-card-icon" style="width: 130px; min-width: 130px; ">
                         <img src="{{ config('app.img_dynamic_url') }}{{ $requirementExtraDescription->img }}" alt="What is social media?" class="img-cover">
                     </div>
-                    <!--<div class="forums-featured-card-icon">-->
-                    <!--    <img src="/store/1/default_images/forums/icons/marketing.svg" alt="What is social media?" class="img-cover">-->
-                    <!--</div>-->
 
                     <div class="ml-15">
-                        
+
                             <h4 class="font-16 font-weight-bold text-dark">{{ $requirementExtraDescription->value }}</h4>
-                       
+
                         <p class="font-16 text-gray">{{ $requirementExtraDescription->description }}.</p>
-                       
+
                     </div>
                 </div>
-            <!--<p class="d-flex align-items-start font-14 text-gray mt-10">-->
-            <!--    <i data-feather="check" width="18" height="18" class="mr-10 webinar-extra-description-check-icon"></i>-->
-            <!--    <span class="">{{ $requirementExtraDescription->value }}</span>-->
-            <!--</p>-->
+
         @endforeach
     </div>
 @endif
 @if(!empty($companyLogosExtraDescription) and count($companyLogosExtraDescription))
-    <!--<div class="mt-20 ">-->
-       
-    <!--              <h2 class="section-title after-line">About Asttrolok</h2>-->
-    <!--               <div class="mb-15">-->
-            <!--<h3 class="font-16 text-secondary font-weight-bold">{{ trans('update.suggested_by_top_companies') }}</h3>-->
-            <!--<p class="font-14 text-gray mt-5">{{ trans('update.suggested_by_top_companies_hint') }}</p>-->
-                        
-    <!--    </div>-->
+
  <div class="mt-40">
         <h2 class="section-title after-line">About Asttrolok</h2>
         <div class="mt-15 course-description">
-            <!--{!! clean($bundle->description) !!}-->
+
 <div>Asttrolok, founded in 2016, stands as one of the top three reputable online Vedic institutes in the country, dedicated to dispelling misconceptions and championing fact-based knowledge of Vedic Science in the fields of Astrology, Numerology, Palmistry, Yoga, Ayurveda & Scriptures. With students hailing from over 50+ countries, including professionals like lawyers, doctors, IITians, and actors, Asttrolok boasts a diverse and esteemed student body.</div>
 
 <div class="mt-20">The institute's reputation is further enhanced by its association with the Founder, Renowned Astrologer & Trainer Mr. Alok Khandelwal & 50+ other mentors & panelists, who all bring their extensive expertise and experience to the teaching. Asttrolok's commitment to protecting & spreading the knowledge that liberates & transforms solidifies its standing as a leading institution in the realm of Vedic astrology.</div>
@@ -529,10 +437,9 @@
                 </div>
             @endforeach
         </div>
-   
+
 @endif
 
-{{-- course FAQ --}}
 @if(!empty($bundle->faqs) and $bundle->faqs->count() > 0)
     <div class="mt-20">
         <h2 class="section-title after-line">{{ trans('public.faq') }}</h2>
@@ -556,21 +463,15 @@
         </div>
     </div>
 @endif
-{{-- ./ course FAQ --}}
 
-
-{{-- Installments --}}
 @if(!empty($installments) and count($installments) and getInstallmentsSettings('installment_plans_position') == 'bottom_of_page')
     @foreach($installments as $installmentRow)
         @include('web.default.installment.card',['installment' => $installmentRow, 'itemPrice' => $bundle->getPrice(), 'itemId' => $bundle->id, 'itemType' => 'bundles'])
     @endforeach
 @endif
 
-{{-- course Comments --}}
 @include('web.default.includes.comments',[
         'comments' => $bundle->comments,
         'inputName' => 'bundle_id',
         'inputValue' => $bundle->id
     ])
-{{-- ./ course Comments --}}
-

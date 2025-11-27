@@ -42,9 +42,9 @@
                     </div>
 
                     <div class="d-flex align-items-center mt-20">
-                        <!--<i data-feather="dollar-sign" width="20" height="20" class="text-gray"></i>-->
+
                         <i  class="fa fa-inr text-gray" width="20" height="20"></i>
-                        
+
                         <span class="font-14 text-gray ml-5">{{ handlePrice($installment->totalPayments($itemPrice)) }} {{ trans('financial.total_amount') }}</span>
                     </div>
 
@@ -64,8 +64,6 @@
             <input type="hidden" name="totalDiscount" value="{{ $totalDiscount }}">
             <input type="hidden" name="discount_id" value="{{ $discountId }}">
 
-
-            {{-- Verify Section --}}
             @if($installment->request_uploads or $installment->needToVerify())
                 <div class="border rounded-lg p-15 mt-20">
                     @if($installment->needToVerify())
@@ -73,12 +71,10 @@
 
                         <div class="font-16 text-gray mt-10">{!! nl2br($installment->verification_description) !!}</div>
 
-                        {{-- Banner --}}
                         @if(!empty($installment->verification_banner))
                             <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $installment->verification_banner }}" alt="{{ $installment->main_title }}" class="img-fluid mt-30">
                         @endif
 
-                        {{-- Video --}}
                         @if(!empty($installment->verification_video))
                             <div class="installment-video-card mt-50">
                                 <video
@@ -138,8 +134,6 @@
                 </div>
             @endif
 
-
-            {{-- Installment Terms & Rules --}}
             <div class="border rounded-lg p-15 mt-30">
                 <h3 class="font-16 font-weight-bold text-dark-blue">{{ trans('update.installment_terms_&_rules') }}</h3>
 

@@ -1,9 +1,9 @@
 <div class="webinar-card grid-card">
     <figure>
-       
+
         <div class="image-box str">
             <div class="star-rating">
-               {{-- @include(getTemplate() . '.includes.webinar.rate1',['rate' => $webinar->getRate()]) --}}
+
                @include(getTemplate() . '.includes.webinar.rate1',['rate' => $webinar->course_rate])
                 </div>
             @if($webinar->bestTicket() < $webinar->price)
@@ -22,11 +22,8 @@
                 <span class="badge badge-primary hide">{{ trans('webinars.'.$webinar->type) }}</span>
             @endif
 
-           {{-- @if($webinar->slug == "astromani-2024" or $webinar->slug == "astroshiromani-2024" or $webinar->slug == "astrology-basic-level")
-            <a href="/landingpage/{{ $webinar->slug }}">
-            @else --}}
             <a href="{{ $webinar->getUrl() }}">
-           {{-- @endif --}}
+
                 <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $webinar->getImage() }}" class="img-cover" alt="{{ $webinar->title }}">
             </a>
             <div class="d-flex justify-content-between mt-auto">
@@ -35,7 +32,7 @@
                             {{ csrf_field() }}
                             <input type="hidden" name="item_id" value="{{ $webinar->id }}">
                             <input type="hidden" name="item_name" value="webinar_id">
-                       
+
             @include(getTemplate().'.includes.shopping-cart-webinar')
             </form>
                </div>
@@ -54,11 +51,9 @@
         </div>
 
         <figcaption class="webinar-card-body">
-          {{--  @if($webinar->slug == "astromani-2024" or $webinar->slug == "astroshiromani-2024" or $webinar->slug == "astrology-basic-level")
-            <a href="/landingpage/{{ $webinar->slug }}">
-            @else --}}
+
             <a href="{{ $webinar->getUrl() }}">
-           {{-- @endif --}}
+
                 <h3 class="mt-5 webinar-title webinartitle font-weight-bold font-16 text-dark-blue">{{ clean($webinar->title,'title') }}</h3>
             </a>
             <div class="user-inline-avatar d-flex align-items-center">
@@ -68,28 +63,6 @@
                 <a href="{{ $webinar->teacher->getProfileUrl() }}" target="_blank" class="user-name ml-5 font-14">{{ $webinar->teacher->full_name }}</a>
             </div>
             <hr />
-          
-{{-- 
-            @if(!empty($webinar->category))
-                <span class="d-block font-14 mt-5">{{ trans('public.in') }} <a href="{{ $webinar->category->getUrl() }}" target="_blank" class="text-decoration-underline">{{ $webinar->category->title }}</a></span>
-            @endif --}}
-
-            <!--@include(getTemplate() . '.includes.webinar.rate',['rate' => $webinar->getRate()])-->
-           
-
-            <!--<div class="d-flex justify-content-between mt-5">-->
-            <!--    <div class="d-flex align-items-center">-->
-            <!--        <i data-feather="clock" width="15" height="15" class="webinar-icon"></i>-->
-            <!--        <span class="duration font-14 ml-5">{{ convertMinutesToHourAndMinute($webinar->duration) }} {{ trans('home.hours') }}</span>-->
-            <!--    </div>-->
-
-            <!--    <div class="vertical-line mx-15"></div>-->
-
-            <!--    <div class="d-flex align-items-center">-->
-            <!--        <i data-feather="calendar" width="15" height="15" class="webinar-icon"></i>-->
-            <!--        <span class="date-published font-14 ml-5">{{ dateTimeFormat(!empty($webinar->start_date) ? $webinar->start_date : $webinar->created_at,'j M Y') }}</span>-->
-            <!--    </div>-->
-            <!--</div>-->
 
             <div class="webinar-price-box mt-5">
             @if(!empty($isRewardCourses) and !empty($webinar->points))
@@ -104,14 +77,12 @@
                 @else
                     <span class="real font-14">{{ trans('public.free') }}</span>
                 @endif
-              {{--  @if($webinar->slug == "astromani-2024" or $webinar->slug == "astroshiromani-2024" or $webinar->slug == "astrology-basic-level")
-            <a href="/landingpage/{{ $webinar->slug }}">
-            @else --}}
+
             <a href="{{ $webinar->getUrl() }}">
-            {{-- @endif --}}
+
                     <button type="submit" class="btn btn-primary rounded-pill buynow homehide1">{{isset($hasBoughtCourse)?(in_array($webinar->id,$hasBoughtCourse)?'DETAILS':'BUY NOW'):'BUY NOW'}}</button>
                     </a>
-                
+
             </div>
         </figcaption>
     </figure>

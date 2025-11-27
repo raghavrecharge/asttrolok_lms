@@ -289,7 +289,7 @@ class InstallmentsController extends Controller
                 'webinar_title' => $webinar_title,
             ];
 
-            return view('web.default.panel.financial.installments.details', $data);
+            return view('web.default2.panel.financial.installments.details', $data);
         }
 
         abort(404);

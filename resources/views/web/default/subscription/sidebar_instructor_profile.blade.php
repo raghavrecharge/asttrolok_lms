@@ -22,20 +22,12 @@
 
     @include('web.default.includes.webinar.rate',['rate' => $subscriptionTeacher->rates()])
 
-    <!--<div class="user-reward-badges d-flex flex-wrap align-items-center mt-20">-->
-    <!--    @foreach($subscriptionTeacher->getBadges() as $userBadge)-->
-    <!--        <div class="mr-15 mt-10" data-toggle="tooltip" data-placement="bottom" data-html="true" title="{!! (!empty($userBadge->badge_id) ? nl2br($userBadge->badge->description) : nl2br($userBadge->description)) !!}">-->
-    <!--            <img loading="lazy" src="{{ !empty($userBadge->badge_id) ? $userBadge->badge->image : $userBadge->image }}" width="32" height="32" alt="{{ !empty($userBadge->badge_id) ? $userBadge->badge->title : $userBadge->title }}">-->
-    <!--        </div>-->
-    <!--    @endforeach-->
-    <!--</div>-->
-
     @php
         $hasMeeting = !empty($subscriptionTeacher->hasMeeting());
     @endphp
 
     <div class="mt-25 d-flex flex-row align-items-center justify-content-center w-100">
-        <!--<a href="{{ $subscriptionTeacher->getProfileUrl() }}" target="_blank" class="btn btn-sm btn-primary {{ $hasMeeting ? 'teacher-btn-action' : 'btn-block' }}">{{ trans('public.profile') }}</a>-->
+
 @if($subscriptionTeacher->full_name!='Mr.Alok Khandelwal')
         @if($hasMeeting)
             <a href="{{ $subscriptionTeacher->getProfileUrl() }}" class="btn btn-sm btn-primary teacher-btn-action ml-15">{{ trans('public.book_a_meeting') }}</a>

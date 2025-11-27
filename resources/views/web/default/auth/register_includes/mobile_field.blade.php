@@ -4,7 +4,7 @@
             <label class="input-label" for="mobile">{{ trans('auth.country') }}:</label>
             <select name="country_code" class="form-control select2">
                 @foreach(getCountriesMobileCode() as $country => $code)
-                 <!--<option value="{{ $code }}" @if($code == old('country_code')) selected @endif>{{ $country }}</option>-->
+
                     <option value="{{ $code }}" @if($code == '+91')) selected @endif>{{ $country }}</option>
                 @endforeach
             </select>

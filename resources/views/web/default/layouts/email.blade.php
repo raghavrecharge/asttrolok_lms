@@ -3,14 +3,13 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
-    {{-- <link rel="stylesheet" type="text/css" href="{{ url('/css/email.css') }}"> --}}
+
     <style type="text/css">
-        /* /\/\/\/\/\/\/\/\/ CLIENT-SPECIFIC STYLES /\/\/\/\/\/\/\/\/ */
+
         #outlook a {
             padding: 0;
         }
 
-        /* Force Outlook to provide a "view in browser" message */
         .ReadMsgBody {
             width: 100%;
         }
@@ -19,30 +18,24 @@
             width: 100%;
         }
 
-        /* Force Hotmail to display emails at full width */
         .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div {
             line-height: 100%;
         }
 
-        /* Force Hotmail to display normal line spacing */
         body, table, td, p, a, li, blockquote {
             -webkit-text-size-adjust: 100%;
             -ms-text-size-adjust: 100%;
         }
 
-        /* Prevent WebKit and Windows mobile changing default text sizes */
         table, td {
             mso-table-lspace: 0pt;
             mso-table-rspace: 0pt;
         }
 
-        /* Remove spacing between tables in Outlook 2007 and up */
         img {
             -ms-interpolation-mode: bicubic;
         }
 
-        /* Allow smoother rendering of resized image in Internet Explorer */
-        /* /\/\/\/\/\/\/\/\/ RESET STYLES /\/\/\/\/\/\/\/\/ */
         body {
             margin: 0;
             padding: 0;
@@ -67,8 +60,6 @@
             width: 100% !important;
         }
 
-        /* /\/\/\/\/\/\/\/\/ TEMPLATE STYLES /\/\/\/\/\/\/\/\/ */
-        /* ========== Page Styles ========== */
         * {
             font-family: Tahoma, Geneva, sans-serif !important;
         }
@@ -151,10 +142,8 @@
             text-align: left;
         }
 
-        /* ========== Header Styles ========== */
         #templatePreheader {
-            /* background-color:#F4F4F4;*/
-            /* border-bottom:1px solid #CCCCCC;*/
+
         }
 
         .preheaderContent {
@@ -199,14 +188,8 @@
             max-width: 600px;
         }
 
-        /* ========== Body Styles ========== */
         #templateBody {
-            /*
 
-        @editable   border-top:1px solid #FFFFFF;*/
-            /*
-
-        @editable   border-bottom:1px solid #CCCCCC;*/
         }
 
         .bodyContent {
@@ -233,11 +216,8 @@
             max-width: 560px;
         }
 
-        /* ========== Footer Styles ========== */
         #templateFooter {
-            /*
 
-        @editable   border-top:1px solid #FFFFFF;*/
         }
 
         .footerContent {
@@ -258,27 +238,21 @@
             text-decoration: none;
         }
 
-        /* /\/\/\/\/\/\/\/\/ MOBILE STYLES /\/\/\/\/\/\/\/\/ */
         @media only screen and (max-width: 480px) {
-            /* /\/\/\/\/\/\/ CLIENT-SPECIFIC MOBILE STYLES /\/\/\/\/\/\/ */
+
             body, table, td, p, a, li, blockquote {
                 -webkit-text-size-adjust: none !important;
             }
 
-            /* Prevent Webkit platforms from changing default text sizes */
             body {
                 width: 100% !important;
                 min-width: 100% !important;
             }
 
-            /* Prevent iOS Mail from adding padding to the body */
-            /* /\/\/\/\/\/\/ MOBILE RESET STYLES /\/\/\/\/\/\/ */
             #bodyCell {
                 padding: 0px !important;
             }
 
-            /* /\/\/\/\/\/\/ MOBILE TEMPLATE STYLES /\/\/\/\/\/\/ */
-            /* ======== Page Styles ======== */
             #templateContainer {
                 max-width: 600px !important;
                 width: 100% !important;
@@ -303,9 +277,6 @@
                 line-height: 100% !important;
             }
 
-            /* ======== Header Styles ======== */
-            /*#templatePreheader{display:none !important;}*/
-            /* Hide the template preheader to save space */
             #headerImage {
                 height: auto !important;
                 max-width: 600px !important;
@@ -317,19 +288,16 @@
                 line-height: 125% !important;
             }
 
-            /* ======== Body Styles ======== */
             .bodyContent {
                 font-size: 16px !important;
                 line-height: 125% !important;
             }
 
-            /* ======== Footer Styles ======== */
             .footerContent {
                 font-size: 14px !important;
                 line-height: 115% !important;
             }
 
-            /* ======== Column Styles ======== */
             .templateColumnContainer {
                 display: table !important;
                 width: 100% !important;
@@ -416,22 +384,10 @@
             padding: 20px 10px 10px 10px !important;
         }
 
-        /* ========== Column Styles ========== */
         .templateColumnContainer {
             width: 260px;
         }
 
-        /**
-        *
-        @tab
-        Columns
-                *
-        @
-        section left column text
-                *
-        @tip
-        Set the styling for your email's left column content text. Choose a size and color that is easy to read.
-                */
         .leftColumnContent {
             color: #505050;
             font-size: 14px;
@@ -449,17 +405,6 @@
             text-decoration: none;
         }
 
-        /**
-        *
-        @tab
-        Columns
-                *
-        @
-        section right column text
-                *
-        @tip
-        Set the styling for your email's right column content text. Choose a size and color that is easy to read.
-                */
         .rightColumnContent {
             color: #505050;
             font-size: 14px;
@@ -470,17 +415,6 @@
             padding-left: 20px;
         }
 
-        /**
-        *
-        @tab
-        Columns
-                *
-        @
-        section right column link
-                *
-        @tip
-        Set the styling for your email's right column content links. Choose a color that helps them stand out from your text.
-                */
         .rightColumnContent a:link, .rightColumnContent a:visited,
         .rightColumnContent a .yshortcuts {
             font-weight: bold;
@@ -521,11 +455,11 @@
     <table align="center" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="bodyTable">
         <tr>
             <td align="center" valign="top" id="bodyCell">
-                <!-- BEGIN TEMPLATE // -->
+
                 <table border="0" cellpadding="0" cellspacing="0" id="templateContainer">
                     <tr>
                         <td align="center" valign="top">
-                            <!-- BEGIN PREHEADER // -->
+
                             <table border="0" cellpadding="0" cellspacing="0" width="100%" id="templatePreheader">
                                 <tr>
                                     <td class="headerContent" width="100%">
@@ -533,41 +467,37 @@
                                     </td>
                                 </tr>
                             </table>
-                            <!-- // END PREHEADER -->
+
                         </td>
                     </tr>
                     <tr>
                         <td align="center" valign="top">
-                            <!-- BEGIN BODY // -->
+
                             <table border="0" cellpadding="0" cellspacing="0" width="100%" id="templateBody">
                                 <tr>
                                     @yield('body')
 
                                 </tr>
                             </table>
-                            <!-- // END BODY -->
+
                         </td>
                     </tr>
                     <tr>
                         <td align="center" valign="top">
-                            <!-- BEGIN FOOTER // -->
+
                             <table border="0" cellpadding="0" cellspacing="0" width="100%" id="templateFooter">
                                 <tr>
                                     <td valign="top" class="footerContent" style="padding-top:0; padding-bottom:40px;" mc:edit="footer_content02">
                                         @yield('cancel')
                                     </td>
                                 </tr>
-                                {{--   <tr>
-                                       <td valign="top" class="footerContent" mc:edit="footer_content00">
-                                           <a href="*|TWITTER:PROFILEURL|*">Follow on Twitter</a>&nbsp;&nbsp;&nbsp;<a href="*|FACEBOOK:PROFILEURL|*">Friend on Facebook</a>&nbsp;&nbsp;&nbsp;<a href="*|FORWARD|*">Forward to Friend</a>&nbsp;
-                                       </td>
-                                   </tr>--}}
+
                             </table>
-                            <!-- // END FOOTER -->
+
                         </td>
                     </tr>
                 </table>
-                <!-- // END TEMPLATE -->
+
             </td>
         </tr>
     </table>

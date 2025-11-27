@@ -1,6 +1,6 @@
 <div class="webinar-card list-card webinar-list webinar-list-2 d-flex mt-20 loadmorelist">
     <div class="image-box">
-           
+
             <a href="{{ $product->getUrl() }}">
             <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $product->getImage() }}" class="img-cover" alt="{{ $product->title }}">
         </a>
@@ -12,7 +12,7 @@
 
     <div class="webinar-card-body w-100 d-flex flex-column">
         <div class="d-flex align-items-center justify-content-between">
-            
+
             <a href="{{ $product->getUrl() }}">
                 <h3 class="mt-15 webinar-title font-weight-bold font-16 text-dark-blue">{{ clean($product->title,'title') }}</h3>
             </a>
@@ -27,17 +27,16 @@
             </div>
             <a href="{{ $product->creator->getProfileUrl() }}" target="_blank" class="user-name ml-5 font-14">{{ $product->creator->full_name }}</a>
         </div>
-        
-       {{-- @include(getTemplate() . '.includes.webinar.rate3',['rate' => $product->getRate()]) --}}
+
         @include(getTemplate() . '.includes.webinar.rate3',['rate' => $product->rate])
         <div class="hrline mt-5"></div>
         <div class="d-flex justify-content-between mt-auto">
-            
+
             <div class="d-flex align-items-center hide">
                 @if($product->delivery_estimated_time)
                 <div class="d-flex align-items-center">
                     <i data-feather="clock" width="20" height="20" class="webinar-icon"></i>
-                    
+
                     <span class="duration ml-5 font-14">{{ $product->delivery_estimated_time }} Days</span>
                 </div>
 

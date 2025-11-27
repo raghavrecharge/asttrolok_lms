@@ -6,7 +6,7 @@
 
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/video/video-js.min.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/mobile-course-detailes.css">
-    
+
     <style>
         .course-description p{
             font-family: 'main-font-family' !important;
@@ -18,19 +18,11 @@
             font-family: 'main-font-family' !important;
         }
         .course-content-sidebar .course-img.has-video .course-video-icon {
-   
+
     width: 50px;
     height: 50px;
 }
 
-
-
-
-/*******************************
-* MODAL AS LEFT/RIGHT SIDEBAR
-* Add "left" or "right" in modal parent div, after class="modal".
-* Get free snippets on bootpen.com
-*******************************/
 	.modal.left .modal-dialog,
 	.modal.right .modal-dialog {
 		position: fixed;
@@ -44,41 +36,37 @@
 		        transform: translateX(100%);
 	}
 .afterpop{
-    
+
     transition: all 2s  !important;
     transition-timing-function: ease-in  !important;
    -webkit-transform: translateX(0%) !important;
 		    -ms-transform: translateX(0%) !important;
 		     -o-transform: translateX(0%) !important;
 		        transform: translateX(0%) !important;
-		        
+
 }
 	.modal.left .modal-content,
 	.modal.right .modal-content {
 		height: 100%;
 		overflow-y: auto;
 	}
-	
+
 	.modal.left .modal-body,
 	.modal.right .modal-body {
 		padding: 15px 15px 80px;
 	}
 
-
-        
-/*Right*/
 	.modal.right.fade .modal-dialog {
-	    
+
 		right: 0px;
-		        
+
 	}
-	
+
 	.modal.right.fade.in .modal-dialog {
 		right: 0;
 		transition: all .5s;
 	}
 
-/* ----- MODAL STYLE ----- */
 	.modal-content {
 		border-radius: 0;
 		border: none;
@@ -89,18 +77,13 @@
 		background-color: #FAFAFA;
 	}
 
-/* ----- v CAN BE DELETED v ----- */
-
-
-
-
     </style>
 @endpush
 
 @section('content')
     <section class=" course-cover-container {{ empty($activeSpecialOffer) ? 'not-active-special-offer' : '' }}">
         <img loading="lazy" src="{{ asset('assets/default/img/course/video-banner.svg') }}" class=" course-cover-img" alt="{{ $bundle->title }}"/>
-        
+
         <div class="cover-content pt-40 pt-80">
             <div class="container position-relative">
                 <div class="row">
@@ -137,45 +120,7 @@
                     </div>
                 </div>
                 @include('web.default.includes.webinar.rate4',['rate' => $bundle->course_rate])
-            
-<!--                <div class=" abouthide" id="abouthide" style=" max-height: 176px;overflow: hidden;">-->
-<!--                <p class="duration course-description font-16 ml-5">-->
-<!--                    <div class="mt-20">-->
-<!--                        <h2 class=" after-line font-14" style="-->
-<!--    font-weight: 600;-->
-<!--">{{ trans('product.Webinar_description') }}</h2>-->
-<!--                        <div class="mt-15 course-description">-->
-                            <!--{!! clean($bundle->description) !!}-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                    </p>-->
-<!--                <div id="gradiant1" style="-->
-<!--    width: 100%;-->
-<!--    height: 80px;-->
-<!--    /* background-color: white; */-->
-<!--    position: absolute;-->
-<!--    bottom: 134px;-->
-<!--    background-image: linear-gradient(#ffffff30, white);-->
-<!--"></div>-->
-<!--</div>-->
-<!--<div class="readmore">-->
-<!--            <a  id="readmore" onclick="myFunction();">Read More</a>-->
-<!--                        </div>-->
-                    <!--    <div class="mt-5">-->
-                    <!--        <div class="stars-card d-flex align-items-center pd-star">-->
-    
-                    <!--            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star active grid-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>-->
-                    <!--        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star active grid-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>-->
-                    <!--        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star active grid-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>-->
-                    <!--        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star active grid-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>-->
-                    <!--                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star grid-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>-->
-                
-                        
-                    <!--<span class="badge badge-primary ml-10 rating-course"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star active"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> 4.9</span>-->
-                    <!--</div>-->
-                    <!--        Born brought up and educated in kolkata I am associated with Asttrolok since the past 2 years as a Student of Astrology. A keen interest to learn new things has me delving into a variety of subjects such as graphology music philisophy and spirituality. I have been also teaching meditation for the past 5 years and have been associated with the Art of Living foundation as a faculty. With a sincere will to help people with this knowledge I offer you my service. Jai Gurudev.-->
-                    <!--        <div class="read-more-Wd3" id="864:10410">Read More</div>-->
-                    <!--    </div>-->
+
                         <div class="pt-50  align-items-left align-items-start justify-content-between ">
                             <div class="d-flex frame-427322372-acu" id="1017:948">
                                 <div class="auto-group-eond-RX3" id="DPMWvH8SZiH7QxWwGEzUkM">
@@ -190,10 +135,10 @@
                                 <img loading="lazy" class="frame-427322370-8wF" src="{{ asset('assets/default/img/course/green-video-icon (2).svg') }}" id="1017:939"/>
                                 <div class="on-demand-videos-XwT" id="864:10422">
                                 Certified
-                                
+
                                 <br/>
                                 Course
-                                
+
                                 </div>
                                 </div>
                                 <div class="auto-group-eond-RX3 ml-10" id="DPMX8BxG9LFjFzh6H3sZ17">
@@ -211,7 +156,7 @@
                             </div>
                                  @include(getTemplate().'.bundle.tabs.information')
                     </div>
-                    
+
                     </div>
                     </div>
                 </div>
@@ -247,16 +192,15 @@
                 <span class="col-6 mt-5 d-block p-0"><b>52</b> <br/>Countries</span>
             </a>
         </div>
-  
+
 </div>
     </section>
-    
+
     <section class="container course-content-section course-content-top {{ $bundle->type }} {{ ($hasBought) ? 'has-progress-bar' : '' }}">
         <div class="row">
 
             <div class="course-content-sidebar col-12 col-lg-4 mt-25 mt-lg-0 homehide">
                 <div class="rounded-lg shadow-sm">
-                    
 
                     <div class="px-20 pb-30">
                         <form action="{{ (auth()->check()) ? '/cart/store' : '/course/buy-now' }}" method="post">
@@ -349,13 +293,13 @@
                                     @endif
 
                                     @if($canSale and !empty(getFeaturesSettings('direct_classes_payment_button_status')))
-                                    
+
                                     @if(auth()->check())
                                        <button type="button" class="btn btn-outline-danger buy_now mt-20 js-course-direct-payment">
                                            {{ trans('update.buy_now') }}
                                        </button>
                                         @else
-                                   
+
                                        <button type="submit" class="btn btn-outline-danger buy_now mt-20">
                                            {{ trans('update.buy_now') }}
                                        </button>
@@ -389,15 +333,11 @@
                         </form>
 
                         @if(!empty(getOthersPersonalizationSettings('show_guarantee_text')) and getOthersPersonalizationSettings('show_guarantee_text'))
-                            <!--<div class="mt-20 d-flex align-items-center justify-content-center text-gray">-->
-                            <!--    <i data-feather="thumbs-up" width="20" height="20"></i>-->
-                            <!--    <span class="ml-5 font-14">{{ getOthersPersonalizationSettings('guarantee_text') }}</span>-->
-                            <!--</div>-->
+
                         @endif
 
                         <div class="mt-35">
                             <strong class="d-block text-secondary font-weight-bold">{{ trans('webinars.this_webinar_includes',['classes' => trans('webinars.'.$bundle->type)]) }}</strong>
-                           
 
                             @if($bundle->support)
                                 <div class="mt-20 d-flex align-items-center text-gray">
@@ -410,10 +350,8 @@
                     </div>
                 </div>
 
-                {{-- Cashback Alert --}}
                 @include('web.default.includes.cashback_alert',['itemPrice' => $bundle->price])
 
-                {{-- Gift Card --}}
                 @if($bundle->canSale() and !empty(getGiftsGeneralSettings('status')) and !empty(getGiftsGeneralSettings('allow_sending_gift_for_courses')))
                     <a href="/gift/course/{{ $bundle->slug }}" class="d-flex align-items-center mt-30 rounded-lg border p-15">
                         <div class="size-40 d-flex-center rounded-circle bg-gray200">
@@ -446,9 +384,6 @@
 
                     <div class="mt-30">
 
-
-
-
                         @if(!empty($bundle->access_days))
                             <div class="mt-20 d-flex align-items-center justify-content-between text-gray">
                                 <div class="d-flex align-items-center">
@@ -461,15 +396,12 @@
                     </div>
                 </div>
 
-                {{-- organization --}}
                 @if($bundle->creator_id != $bundle->teacher_id)
                     @include('web.default.course.sidebar_instructor_profile', ['courseTeacher' => $bundle->creator])
                 @endif
-                {{-- teacher --}}
+
                 @include('web.default.course.sidebar_instructor_profile', ['courseTeacher' => $bundle->teacher])
 
-
-                {{-- tags --}}
                 @if($bundle->tags->count() > 0)
                     <div class="rounded-lg tags-card shadow-sm mt-35 px-25 py-20">
                         <h3 class="sidebar-title font-16 text-secondary font-weight-bold">{{ trans('public.tags') }}</h3>
@@ -481,92 +413,14 @@
                         </div>
                     </div>
                 @endif
-                
+
                 <div class="row">
-                       
-                            <!--<div class="rounded-lg sidebar-ads mt-35 col-12">-->
-                            <!--    <a href="https://lms.asttrolok.com/course/Astromani_2023">-->
-                            <!--        <img src="/store/1/default_images/banners/Astromany-course.jpg" class="img-cover rounded-lg" alt="">-->
-                            <!--    </a>-->
-                            <!--</div>-->
-                            <!--  <div class="rounded-lg sidebar-ads mt-35 col-12">-->
-                            <!--    <a href="https://lms.asttrolok.com/course/Professional-Astrology-Course">-->
-                            <!--        <img src="/store/1/default_images/banners/Asttrology-course.jpg" class="img-cover rounded-lg" alt="">-->
-                            <!--    </a>-->
-                            <!--</div>-->
-                            
-{{--                             
-         <div class="col-12 col-lg-12 mt-20">
-             <div class="webinar-card">
-    <figure>
-        <div class="image-box">
-           <span class="badge badge-primary">Course</span>
-            
-            <a href="https://asttrolok.com/course/{{ $astromani_23->slug }}">
-                <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $astromani_23->thumbnail }}" class="img-cover" alt="{{ $astromani_23->slug }}">
-            </a>
 
-            </div>
-
-        <figcaption class="webinar-card-body">
-            <div class="user-inline-avatar d-flex align-items-center">
-                <div class="avatar bg-gray200">
-                    <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $astromani_23->teacher->avatar }}" class="img-cover" alt="{{ $astromani_23->full_name }}">
-                </div>
-                <a href="{{ $astromani_23->teacher->getProfileUrl() }}" target="_blank" class="user-name ml-5 font-14">{{ $astromani_23->teacher->full_name }}</a>
-            </div>
-
-            <a href="https://asttrolok.com/course/{{ $astromani_23->slug }}">
-                <h3 class="mt-15  font-weight-bold font-16 text-dark-blue">{{ clean($astromani_23->title,'title') }}</h3>
-            </a>
-           
-        </figcaption>
-    </figure>
-     </div>
-         </div>
-         
-         <div class="col-12 col-lg-12 mt-20">
-             <div class="webinar-card">
-    <figure>
-        <div class="image-box">
-           <span class="badge badge-primary">Course</span>
-            
-            <a href="https://asttrolok.com/course/{{ $bundle_Professional->slug }}">
-                <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $bundle_Professional->thumbnail }}" class="img-cover" alt="{{ $bundle_Professional->slug }}">
-            </a>
-
-            </div>
-
-        <figcaption class="webinar-card-body">
-            <div class="user-inline-avatar d-flex align-items-center">
-                <div class="avatar bg-gray200">
-                    <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $bundle_Professional->teacher->avatar }}" class="img-cover" alt="{{ $bundle_Professional->full_name }}">
-                </div>
-                <a href="{{ $bundle_Professional->teacher->getProfileUrl() }}" target="_blank" class="user-name ml-5 font-14">{{ $bundle_Professional->teacher->full_name }}</a>
-            </div>
-
-            <a href="https://asttrolok.com/course/{{ $bundle_Professional->slug }}">
-                <h3 class="mt-15  font-weight-bold font-16 text-dark-blue">{{ clean($bundle_Professional->title,'title') }}</h3>
-            </a>
-           
-        </figcaption>
-    </figure>
-     </div>
-         </div>
-         
-          --}}
-         
-         
-         
-         
-         
            </div>
-                
 
             </div>
         </div>
 
-        {{-- Ads Bannaer --}}
         @if(!empty($advertisingBanners) and count($advertisingBanners))
             <div class="mt-30 mt-md-50">
                 <div class="row">
@@ -580,7 +434,7 @@
                 </div>
             </div>
         @endif
-        {{-- ./ Ads Bannaer --}}
+
     </section>
 
     <div id="webinarReportModal" class="d-none">
@@ -613,27 +467,23 @@
             </div>
         </form>
     </div>
-    
+
 <div class="container demo">
-	
-	
+
 	<div class="text-center d-none">
-	
+
 		<button type="button" class="btn btn-demo" data-toggle="modal" data-target="#myModal2">
 			Right Sidebar Modal
 		</button>
 	</div>
 
-
-	
-	<!-- Modal -->
 	<div class="modal right fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" style="z-index: 52022;">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					
+
 				</div>
 
 				<div class="modal-body">
@@ -692,14 +542,11 @@
         </div>
 				</div>
 
-			</div><!-- modal-content -->
-		</div><!-- modal-dialog -->
-	</div><!-- modal -->
-	
-	
-	
-	
-</div><!-- container -->
+			</div>
+		</div>
+	</div>
+
+</div>
     @if($hasBought or !empty($bundle->getInstallmentOrder()))
     <a href="{{ $bundle->getLearningPageUrl() }}" class="buy-btn1 btn btn-primary">{{ trans('update.go_to_learning_page') }}</a>
     @else
@@ -720,7 +567,7 @@
             <button type="button" data-toggle="modal" data-target="#buynow_modal" class=" btn btn-primary btn-sm disabled px-25 buy-btn1" >
                 BUY NOW
             </button>
-            
+
             @endif
         @endif
     @endif
@@ -728,7 +575,7 @@
     @include('web.default.bundle.share_modal')
     @include('web.default.bundle.buy_with_point_modal')
     @include('web.default.bundle.buynow_modal')
-   
+
 @endsection
 
 @push('scripts_bottom')
@@ -753,9 +600,9 @@
     </script>
 @if(empty($authUser))
 <script   >
-       
+
 //          function myFunction() {
-             
+
 //   var dots = document.getElementById("abouthide");
 //   var gradiant1 = document.getElementById("gradiant1");
 //   var moreText = document.getElementById("readmore");
@@ -768,7 +615,7 @@
 //      dots.style.overflow = "hidden";
 //      dots.style.maxHeight = "176px";
 //      gradiant1.style.display = "block";
-     
+
 //      moreText.text = "Read more";
 //   }
 //  }
@@ -788,7 +635,7 @@
         // alert('');
         $('.buy_now').click();
     }
-   
+
 </script   >
 @if(Session::has('addtocart'))
 <script   >
@@ -799,10 +646,10 @@ $("#myModal2").modal('show');
     // $('.modal-dialog').addClass('afterpop');
 </script>
 @endif
-@php 
-    Illuminate\Support\Facades\Session::forget('addtocart');  
+@php
+    Illuminate\Support\Facades\Session::forget('addtocart');
 @endphp
-<!--<?php   //unset($_SESSION['addtocart']); ?>-->
+
     <script   >
         var webinarDemoLang = '{{ trans('webinars.webinar_demo') }}';
         var replyLang = '{{ trans('panel.reply') }}';
