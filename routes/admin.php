@@ -44,6 +44,9 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
             Route::post('/getNetProfitChart', 'DashboardController@getNetProfitChartAjax');
         });
 
+        Route::get('/app-update', [App\Http\Controllers\Admin\AppUpdateController::class, 'index']);
+        Route::post('/app-update/update', [App\Http\Controllers\Admin\AppUpdateController::class, 'update']);
+
         Route::group(['prefix' => 'roles'], function () {
             Route::get('/', 'RoleController@index');
             Route::get('/create', 'RoleController@create');

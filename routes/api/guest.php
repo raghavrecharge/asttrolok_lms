@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 
+
+    Route::get('/app-update-check', [App\Http\Controllers\Api\Web\AppUpdateController::class, 'check']);
+
 // Route::group([], function () {
 Route::group(['middleware' => ['api.auth']], function () {
     Route::group(['prefix' => 'courses'], function () {

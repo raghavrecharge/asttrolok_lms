@@ -1596,6 +1596,16 @@
                 <li class="menu-header">{{ trans('admin/main.settings') }}</li>
             @endif
 
+            {{-- App Update Settings - Add here --}}
+                @can('admin_settings')
+                    <li class="{{ (request()->is(getAdminPanelUrl('/app-update', false))) ? 'active' : '' }}">
+                        <a href="{{ getAdminPanelUrl() }}/app-update" class="nav-link">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span>App Version Settings</span>
+                        </a>
+                    </li>
+                @endcan
+
             @can('admin_settings')
                 @php
                     $settingClass ='';
