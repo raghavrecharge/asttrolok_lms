@@ -10,7 +10,6 @@ use App\Http\Controllers\Controller;
 use App\Mail\SendNotifications;
 use App\Models\Newsletter;
 use App\Models\NewsletterHistory;
-use Exception;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
