@@ -432,7 +432,7 @@ public function content(Request $request, $id)
             if ($isPrivate && $hasBought) $isPrivate = false;
             if ($isPrivate) return back();
 
-            $isFavorite = $user ? Favorite::where('webinar_id', $course->id)->where('user_id', $user->id)->isNotEmpty() : false;
+            $isFavorite = $user ? Favorite::where('webinar_id', $course->id)->where('user_id', $user->id)->exists() : false;
 
             $advertisingBanners = AdvertisingBanner::where('published', true)
             ->whereIn('position', ['course', 'course_sidebar'])->get();
