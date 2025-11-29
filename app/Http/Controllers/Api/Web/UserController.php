@@ -20,7 +20,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Api\Setting;
-use Exception;
+
 use Illuminate\Support\Facades\Mail;
 use App\PaymentChannels\ChannelManager;
 use App\Models\Cart;
