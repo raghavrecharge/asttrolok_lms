@@ -33,7 +33,6 @@ class RegistrationPackage extends Model implements TranslatableContract
         return $this->hasMany('App\Models\Sale','registration_package_id','id');
     }
 
-
     public function activeSpecialOffer()
     {
         $activeSpecialOffer = SpecialOffer::where('registration_package_id', $this->id)

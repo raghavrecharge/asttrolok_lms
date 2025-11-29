@@ -66,7 +66,6 @@
             </div>
         @endif
 
-
         <div class="form-group mt-15 ">
             <label class="input-label d-block">{{ trans('admin/main.select_a_instructor') }}</label>
 
@@ -86,7 +85,6 @@
             </div>
             @enderror
         </div>
-
 
         <div class="form-group mt-15">
             <label class="input-label">{{ trans('public.seo_description') }}</label>
@@ -121,7 +119,6 @@
             </div>
         </div>
 
-
         <div class="form-group mt-15">
             <label class="input-label">{{ trans('public.cover_image') }}</label>
             <div class="input-group">
@@ -146,7 +143,6 @@
 
         <div class="form-group mt-25">
             <label class="input-label">{{ trans('public.demo_video') }} ({{ trans('public.optional') }})</label>
-
 
             <div class="">
                 <label class="input-label font-12">{{ trans('public.source') }}</label>

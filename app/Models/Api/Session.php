@@ -28,7 +28,7 @@ class Session extends WebSession
             'can_join'=>(apiAuth() and !$this->isFinished() and time() > $this->date ) ,
             'session_api' => $this->session_api,
             'zoom_start_link' => $this->zoom_start_link,
-            // 'session_api' => $this->session_api,
+
             'api_secret' => $this->api_secret,
             'description' => $this->description,
             'created_at' => $this->created_at,
@@ -47,7 +47,7 @@ class Session extends WebSession
                 'user_id' => apiAuth()->id,
                 'session_id' => $this->id,
             ]);
-            //  $link = url('panel/sessions/' . $this->id . '/joinToBigBlueButton');
+
         }
 
         if ($zoom_start_link and auth('api')->check() and auth('api')->id() == $this->creator_id and $this->session_api == 'zoom') {
@@ -55,11 +55,7 @@ class Session extends WebSession
         }
 
         if ($this->session_api == 'agora') {
-            //  $link = url('panel/sessions/' . $this->id . '/joinToAgora');
-           /* $link = route('agora', [
-                'user_id' => apiAuth()->id,
-                'session_id' => $this->id,
-            ]);*/
+
             $link=null;
         }
 
@@ -86,9 +82,6 @@ class Session extends WebSession
 
         return ($this->learningStatus()->where('user_id', $user->id)->count()) ? true : false;
 
-
     }
 }
-
-
 

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CartResource;
 use App\Models\Product;
@@ -20,522 +23,615 @@ use App\Models\Order;
 use Illuminate\Support\Facades\URL;
 use App\Http\Controllers\Web\WebinarController;
 
-
-
 class CartController extends Controller
 {
-   
+
     public function index()
     {
-        $user = apiAuth();
-        $carts = Cart::where('creator_id', $user->id)
-            ->with([
-                'productOrder' => function ($query) {
-                    $query->whereHas('product');
-                }
-            ])
-            ->get();
-        $cartt = null;
+        try {
+            $user = apiAuth();
+            $carts = Cart::where('creator_id', $user->id)
+                ->with([
+                    'productOrder' => function ($query) {
+                        $query->whereHas('product');
+                    }
+                ])
+                ->get();
+            $cartt = null;
 
-        if (!empty($carts) and !$carts->isEmpty()) {
-            $calculate = $this->calculatePrice($carts, $user);
+            if (!empty($carts) and !$carts->isEmpty()) {
+                $calculate = $this->calculatePrice($carts, $user);
 
-            $hasPhysicalProduct = $carts->where('productOrder.product.type', Product::$physical);
+                $hasPhysicalProduct = $carts->where('productOrder.product.type', Product::$physical);
 
-            $deliveryEstimateTime = 0;
+                $deliveryEstimateTime = 0;
 
-            if (!empty($hasPhysicalProduct) and count($hasPhysicalProduct)) {
-                foreach ($hasPhysicalProduct as $physicalProductCart) {
-                    if (!empty($physicalProductCart->productOrder) and
-                        !empty($physicalProductCart->productOrder->product) and
-                        !empty($physicalProductCart->productOrder->product->delivery_estimated_time) and
-                        $physicalProductCart->productOrder->product->delivery_estimated_time > $deliveryEstimateTime
-                    ) {
-                        $deliveryEstimateTime = $physicalProductCart->productOrder->product->delivery_estimated_time;
+                if (!empty($hasPhysicalProduct) and count($hasPhysicalProduct)) {
+                    foreach ($hasPhysicalProduct as $physicalProductCart) {
+                        if (!empty($physicalProductCart->productOrder) and
+                            !empty($physicalProductCart->productOrder->product) and
+                            !empty($physicalProductCart->productOrder->product->delivery_estimated_time) and
+                            $physicalProductCart->productOrder->product->delivery_estimated_time > $deliveryEstimateTime
+                        ) {
+                            $deliveryEstimateTime = $physicalProductCart->productOrder->product->delivery_estimated_time;
+                        }
                     }
                 }
+
+                if (!empty($calculate)) {
+
+                    $cartt = [
+
+                        'items' => CartResource::collection($carts),
+                        'amounts' => $calculate,
+                        'user_group' => $user->userGroup ? $user->userGroup->group : null,
+                    ];
+
+                }
             }
 
-            if (!empty($calculate)) {
-
-                $cartt = [
-                    /*    'items' => $carts->map(function ($cart) {
-                            return $cart->details;
-                        }),*/
-                    'items' => CartResource::collection($carts),
-                    'amounts' => $calculate,
-                    'user_group' => $user->userGroup ? $user->userGroup->group : null,
-                ];
-
-            }
+            return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), [$cartt]);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), [$cartt]);
-
     }
 
     public function destroy($id)
     {
-        $user_id = apiAuth()->id;
-        $cart = Cart::where('id', $id)
-            ->where('creator_id', $user_id)
-            ->first();
-               if (!$cart) {
-                return response()->json([
-                    'success' => false,
-                    'status' => 'not_found',
-                    'message' => 'Cart item not found',
-                    'data' => null
-                ], 404); // 404 Not Found
-            }
-
-        if (!empty($cart->reserve_meeting_id)) {
-            $reserve = ReserveMeeting::where('id', $cart->reserve_meeting_id)
-                ->where('user_id', $user_id)
+        try {
+            $user_id = apiAuth()->id;
+            $cart = Cart::where('id', $id)
+                ->where('creator_id', $user_id)
                 ->first();
+                   if (!$cart) {
+                    return response()->json([
+                        'success' => false,
+                        'status' => 'not_found',
+                        'message' => 'Cart item not found',
+                        'data' => null
+                    ], 404);
+                }
 
-            if (!empty($reserve)) {
-                $reserve->delete();
+            if (!empty($cart->reserve_meeting_id)) {
+                $reserve = ReserveMeeting::where('id', $cart->reserve_meeting_id)
+                    ->where('user_id', $user_id)
+                    ->first();
+
+                if (!empty($reserve)) {
+                    $reserve->delete();
+                }
             }
+
+            $cart->delete();
+            return apiResponse2(1, 'deleted', trans('api.public.deleted'));
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $cart->delete();
-        return apiResponse2(1, 'deleted', trans('api.public.deleted'));
-
-
     }
 
     public function store(Request $request)
     {
-        $user = apiAuth();
+        try {
+            $user = apiAuth();
 
-        validateParam($request->all(),
-            [
-                'webinar_id' => ['required',
-                    Rule::exists('webinars', 'id')->where('private', false)
-                        ->where('status', 'active')
-                ],
-                'ticket_id' => 'nullable',
-            ]
-        );
+            validateParam($request->all(),
+                [
+                    'webinar_id' => ['required',
+                        Rule::exists('webinars', 'id')->where('private', false)
+                            ->where('status', 'active')
+                    ],
+                    'ticket_id' => 'nullable',
+                ]
+            );
 
-        $webinar_id = $request->get('webinar_id');
-        $ticket_id = $request->input('ticket_id');
+            $webinar_id = $request->get('webinar_id');
+            $ticket_id = $request->input('ticket_id');
 
-        $webinar = Webinar::find($webinar_id);
+            $webinar = Webinar::find($webinar_id);
 
+            $checkCourseForSale = $webinar->canAddToCart();
 
-        $checkCourseForSale = $webinar->canAddToCart();
+            if ($checkCourseForSale != 'ok') {
+                return apiResponse2(0, $checkCourseForSale, trans('api.course.purchase.' . $checkCourseForSale));
+            }
 
-        if ($checkCourseForSale != 'ok') {
-            return apiResponse2(0, $checkCourseForSale, trans('api.course.purchase.' . $checkCourseForSale));
+            $activeSpecialOffer = $webinar->activeSpecialOffer();
+
+            Cart::updateOrCreate([
+                'creator_id' => $user->id,
+                'webinar_id' => $webinar_id,
+            ], [
+                'ticket_id' => $ticket_id,
+                'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
+                'created_at' => time()
+            ]);
+
+            return apiResponse2(1, 'stored', "Item added to cart successfully.");
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $activeSpecialOffer = $webinar->activeSpecialOffer();
-
-
-        Cart::updateOrCreate([
-            'creator_id' => $user->id,
-            'webinar_id' => $webinar_id,
-        ], [
-            'ticket_id' => $ticket_id,
-            'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
-            'created_at' => time()
-        ]);
-
-        return apiResponse2(1, 'stored', "Item added to cart successfully.");
-
     }
 
     public function validateCoupon(Request $request)
     {
-        $user = apiAuth();
-        $coupon = $request->get('coupon');
-        
-        if(empty($coupon)){
-            return apiResponse2(0, 'invalid', "Please enter valid coupon code ");
-        }
+        try {
+            $user = apiAuth();
+            $coupon = $request->get('coupon');
 
-        $discountCoupon = Discount::where('code', $coupon)
-            ->where('expired_at', '>', time())
-            ->first();
+            if(empty($coupon)){
+                return apiResponse2(0, 'invalid', "Please enter valid coupon code ");
+            }
 
-        if (!$discountCoupon || !$discountCoupon->checkValidDiscount($user)) {
-            return apiResponse2(0, 'invalid', "The coupon code you entered was not found or has expired");
+            $discountCoupon = Discount::where('code', $coupon)
+                ->where('expired_at', '>', time())
+                ->first();
 
-        }
-
-        $carts = Cart::where('creator_id', $user->id)
-            ->get();
-
-        if (!empty($carts) and !$carts->isEmpty()) {
-            $calculate = $this->calculatePrice($carts, $user, $discountCoupon);
-
-            if (!empty($calculate)) {
-
-
-                return apiResponse2(1, 'valid', "Coupon applied successfully.", [
-                    'amounts' => $calculate,
-                    'discount' => $discountCoupon,
-                ]);
+            if (!$discountCoupon || !$discountCoupon->checkValidDiscount($user)) {
+                return apiResponse2(0, 'invalid', "The coupon code you entered was not found or has expired");
 
             }
+
+            $carts = Cart::where('creator_id', $user->id)
+                ->get();
+
+            if (!empty($carts) and !$carts->isEmpty()) {
+                $calculate = $this->calculatePrice($carts, $user, $discountCoupon);
+
+                if (!empty($calculate)) {
+
+                    return apiResponse2(1, 'valid', "Coupon applied successfully.", [
+                        'amounts' => $calculate,
+                        'discount' => $discountCoupon,
+                    ]);
+
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('validateCoupon error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-
     }
-    
+
     public function validateCoupon3(Request $request)
     {
-        $user = apiAuth();
-        
-        $coupon = $request->get('coupon');
-        $user_id = $request->get('user_id');
-        $discountCoupon = Discount::where('code', $coupon)
-            ->first();
+        try {
+            $user = apiAuth();
+
+            $coupon = $request->get('coupon');
+            $user_id = $request->get('user_id');
+            $discountCoupon = Discount::where('code', $coupon)
+                ->first();
+
+            if (!empty($discountCoupon)) {
+
+                if(!empty($user)){
+
+                    $checkDiscount = $discountCoupon->checkValidDiscount();
+                if ($discountCoupon->source != 'meeting' || $discountCoupon->status != 'active') {
+                    session(['meeting_discount_id' => 0 ]);
+                    return response()->json([
+                        'status' => 422,
+                        'msg' => 'Invalid code'
+                    ]);
+                }
+
+                        return response()->json([
+                            'status' => 200,
+                            'meeting_discount_id' => $discountCoupon->id,
+                            'percent' => $discountCoupon->percent,
+                        ], 200);
+                }else{}
+            }
+
+            return response()->json([
+                'status' => 422,
+                'msg' => trans('cart.coupon_invalid')
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('validateCoupon3 error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
-        if (!empty($discountCoupon)) {
-            
-            if(!empty($user)){
-                
-                $checkDiscount = $discountCoupon->checkValidDiscount();
-            if ($discountCoupon->source != 'meeting' || $discountCoupon->status != 'active') {
-                session(['meeting_discount_id' => 0 ]);
-                return response()->json([
-                    'status' => 422,
-                    'msg' => 'Invalid code'
-                ]);
+            throw $e;
+        }
+    }
+
+    public function validateCoupon2(Request $request)
+    {
+        try {
+            $user = apiAuth();
+            $coupon = $request->get('coupon');
+            $web_id1 = $request->get('item_id');
+
+             $webinarController = new WebinarController();
+
+            $discountCoupon = Discount::where('code', $coupon)
+                ->first();
+
+            if (!empty($discountCoupon)) {
+                $checkDiscount = $discountCoupon->checkValidDiscount1($web_id1);
+
+                if ($checkDiscount == 'ok') {
+
+                    return response()->json([
+                            'status' => 200,
+                            'discountCouponId' => $discountCoupon->id,
+                            'percent' => $discountCoupon->percent,
+                        ], 200);
+                }
+
             }
 
                     return response()->json([
-                        'status' => 200,
-                        'meeting_discount_id' => $discountCoupon->id,  
-                        'percent' => $discountCoupon->percent,  
-                    ], 200);
-            }else{}
-        }
-
-        return response()->json([
-            'status' => 422,
-            'msg' => trans('cart.coupon_invalid')
-        ]);
-    }
-    
-    public function validateCoupon2(Request $request)
-    {
-    //  buy now  
-        $user = apiAuth();
-        $coupon = $request->get('coupon');
-        $web_id1 = $request->get('item_id');
-        
-         $webinarController = new WebinarController();
-        
-
-        $discountCoupon = Discount::where('code', $coupon)
-            ->first();
+                'status' => 422,
+                'msg' => trans('cart.coupon_invalid')
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('validateCoupon2 error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
-        if (!empty($discountCoupon)) {
-            $checkDiscount = $discountCoupon->checkValidDiscount1($web_id1);
-            // echo $checkDiscount;
-            if ($checkDiscount == 'ok') {
-                
-                
-                return response()->json([
-                        'status' => 200,
-                        'discountCouponId' => $discountCoupon->id,  
-                        'percent' => $discountCoupon->percent,  
-                    ], 200);
-            }
-
+            throw $e;
         }
-                   
-                return response()->json([
-            'status' => 422,
-            'msg' => trans('cart.coupon_invalid')
-        ]);
     }
-    
+
     public function validateCoupon1(Request $request)
     {
-         $user = apiAuth();
-        $coupon = $request->get('coupon');
-        $web_id1 = $request->get('web_id1');
+        try {
+            $user = apiAuth();
+            $coupon = $request->get('coupon');
+            $web_id1 = $request->get('web_id1');
 
-        $discountCoupon = Discount::where('code', $coupon)
-            ->first();
-            
-            
+            $discountCoupon = Discount::where('code', $coupon)
+                ->first();
 
-        if (!empty($discountCoupon) and !empty($web_id1)) {
-            $checkDiscount = $discountCoupon->checkValidDiscount1($web_id1);
-            // print_r($checkDiscount);die();
-            // echo $checkDiscount;
-            if ($checkDiscount == 'ok') {
-                
-                
-                return response()->json([
-                        'status' => 200,
-                        'discountId' => $discountCoupon->id,  
-                        'percent' => $discountCoupon->percent,  
-                        // 'discountCoupon' => $discountCoupon,  
-                    ], 200);
+            if (!empty($discountCoupon) and !empty($web_id1)) {
+                $checkDiscount = $discountCoupon->checkValidDiscount1($web_id1);
+
+                if ($checkDiscount == 'ok') {
+
+                    return response()->json([
+                            'status' => 200,
+                            'discountId' => $discountCoupon->id,
+                            'percent' => $discountCoupon->percent,
+
+                        ], 200);
+                }
+
             }
 
+                    return response()->json([
+                'status' => 422,
+                'msg' => trans('cart.coupon_invalid')
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('validateCoupon1 error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-                   
-                return response()->json([
-            'status' => 422,
-            'msg' => trans('cart.coupon_invalid')
-        ]);
     }
 
     public function createOrderAndOrderItems($carts, $calculate, $user, $discountCoupon = null)
     {
-        $order = Order::create([
-            'user_id' => $user->id,
-            'status' => Order::$pending,
-            'amount' => $calculate["sub_total"],
-            'tax' => $calculate["tax_price"],
-            'total_discount' => $calculate["total_discount"],
-            'total_amount' => $calculate["total"],
-            'created_at' => time(),
-        ]);
-
-        foreach ($carts as $cart) {
-            $price = 0;
-            $discount = 0;
-            $discountCouponPrice = 0;
-            $sellerUser = null;
-
-            if (!empty($cart->webinar_id)) {
-                $price = $cart->webinar->price;
-                $discount = $cart->webinar->getDiscount($cart->ticket, $user);
-                $sellerUser = $cart->webinar->creator;
-            } elseif (!empty($cart->reserve_meeting_id)) {
-                $price = $cart->reserveMeeting->paid_amount;
-                $discount = $price * $cart->reserveMeeting->discount / 100;
-                $sellerUser = $cart->reserveMeeting->meeting->creator;
-            }
-
-            if (!empty($discountCoupon)) {
-                if ($discountCoupon->discount_type == Discount::$discountTypeFixedAmount) {
-                    $discountCouponPrice = $discountCoupon->amount;
-                } else {
-                    $couponAmount = $price * $discountCoupon->percent / 100;
-
-                    if (!empty($discountCoupon->amount) and $couponAmount > $discountCoupon->amount) {
-                        $discountCouponPrice += $discountCoupon->amount;
-                    } else {
-                        $discountCouponPrice += $couponAmount;
-                    }
-                }
-            }
-
-
-            $financialSettings = getFinancialSettings();
-            $commission = $financialSettings['commission'] ?? 0;
-            $tax = $financialSettings['tax'] ?? 0;
-
-            if (!empty($sellerUser)) {
-                $commission = $sellerUser->getCommission();
-            }
-
-            $allDiscountPrice = $discount + $discountCouponPrice;
-            $subAmount = $price - $allDiscountPrice;
-
-            if ($allDiscountPrice > $price) {
-                $subAmount = 0;
-            }
-
-            $taxPrice = ($tax and $subAmount > 0) ? ($subAmount * $tax) / 100 : 0;
-            $commissionPrice = $subAmount > 0 ? ($subAmount * $commission) / 100 : 0;
-            $totalAmount = $subAmount + $taxPrice;
-
-            $ticket = $cart->ticket;
-            if (!empty($ticket) and !$ticket->isValid()) {
-                $ticket = null;
-            }
-
-            OrderItem::create([
+        try {
+            $order = Order::create([
                 'user_id' => $user->id,
-                'order_id' => $order->id,
-                'webinar_id' => $cart->webinar_id ?? null,
-                'reserve_meeting_id' => $cart->reserve_meeting_id ?? null,
-                'subscribe_id' => $cart->subscribe_id ?? null,
-                'promotion_id' => $cart->promotion_id ?? null,
-                'ticket_id' => !empty($ticket) ? $ticket->id : null,
-                'discount_id' => $discountCoupon ? $discountCoupon->id : null,
-                'amount' => $price,
-                'total_amount' => $totalAmount,
-                'tax' => $tax,
-                'tax_price' => $taxPrice,
-                'commission' => $commission,
-                'commission_price' => $commissionPrice,
-                'discount' => $discount + $discountCouponPrice,
+                'status' => Order::$pending,
+                'amount' => $calculate["sub_total"],
+                'tax' => $calculate["tax_price"],
+                'total_discount' => $calculate["total_discount"],
+                'total_amount' => $calculate["total"],
                 'created_at' => time(),
             ]);
-        }
 
-        return $order;
+            foreach ($carts as $cart) {
+                $price = 0;
+                $discount = 0;
+                $discountCouponPrice = 0;
+                $sellerUser = null;
+
+                if (!empty($cart->webinar_id)) {
+                    $price = $cart->webinar->price;
+                    $discount = $cart->webinar->getDiscount($cart->ticket, $user);
+                    $sellerUser = $cart->webinar->creator;
+                } elseif (!empty($cart->reserve_meeting_id)) {
+                    $price = $cart->reserveMeeting->paid_amount;
+                    $discount = $price * $cart->reserveMeeting->discount / 100;
+                    $sellerUser = $cart->reserveMeeting->meeting->creator;
+                }
+
+                if (!empty($discountCoupon)) {
+                    if ($discountCoupon->discount_type == Discount::$discountTypeFixedAmount) {
+                        $discountCouponPrice = $discountCoupon->amount;
+                    } else {
+                        $couponAmount = $price * $discountCoupon->percent / 100;
+
+                        if (!empty($discountCoupon->amount) and $couponAmount > $discountCoupon->amount) {
+                            $discountCouponPrice += $discountCoupon->amount;
+                        } else {
+                            $discountCouponPrice += $couponAmount;
+                        }
+                    }
+                }
+
+                $financialSettings = getFinancialSettings();
+                $commission = $financialSettings['commission'] ?? 0;
+                $tax = $financialSettings['tax'] ?? 0;
+
+                if (!empty($sellerUser)) {
+                    $commission = $sellerUser->getCommission();
+                }
+
+                $allDiscountPrice = $discount + $discountCouponPrice;
+                $subAmount = $price - $allDiscountPrice;
+
+                if ($allDiscountPrice > $price) {
+                    $subAmount = 0;
+                }
+
+                $taxPrice = ($tax and $subAmount > 0) ? ($subAmount * $tax) / 100 : 0;
+                $commissionPrice = $subAmount > 0 ? ($subAmount * $commission) / 100 : 0;
+                $totalAmount = $subAmount + $taxPrice;
+
+                $ticket = $cart->ticket;
+                if (!empty($ticket) and !$ticket->isValid()) {
+                    $ticket = null;
+                }
+
+                OrderItem::create([
+                    'user_id' => $user->id,
+                    'order_id' => $order->id,
+                    'webinar_id' => $cart->webinar_id ?? null,
+                    'reserve_meeting_id' => $cart->reserve_meeting_id ?? null,
+                    'subscribe_id' => $cart->subscribe_id ?? null,
+                    'promotion_id' => $cart->promotion_id ?? null,
+                    'ticket_id' => !empty($ticket) ? $ticket->id : null,
+                    'discount_id' => $discountCoupon ? $discountCoupon->id : null,
+                    'amount' => $price,
+                    'total_amount' => $totalAmount,
+                    'tax' => $tax,
+                    'tax_price' => $taxPrice,
+                    'commission' => $commission,
+                    'commission_price' => $commissionPrice,
+                    'discount' => $discount + $discountCouponPrice,
+                    'created_at' => time(),
+                ]);
+            }
+
+            return $order;
+        } catch (\Exception $e) {
+            \Log::error('createOrderAndOrderItems error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function webCheckoutGenerator(Request $request)
     {
-        return apiResponse2(1, 'generated', trans('api.link.generated'),
-            [
-                'link' => URL::signedRoute('my_api.web.checkout', [apiAuth()->id, 'discount_id' => $request->input('discount_id')])
-                ,
-            ]
-        );
+        try {
+            return apiResponse2(1, 'generated', trans('api.link.generated'),
+                [
+                    'link' => URL::signedRoute('my_api.web.checkout', [apiAuth()->id, 'discount_id' => $request->input('discount_id')])
+                    ,
+                ]
+            );
+        } catch (\Exception $e) {
+            \Log::error('webCheckoutGenerator error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function webCheckoutRender(Request $request, User $user)
     {
-        $discount_id = $request->input('discount_id');
-        Auth::login($user);
+        try {
+            $discount_id = $request->input('discount_id');
+            Auth::login($user);
 
-        return view('api.checkout', compact('discount_id'));
+            return view('api.checkout', compact('discount_id'));
+        } catch (\Exception $e) {
+            \Log::error('webCheckoutRender error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
-
 
     public function PaymentChannel()
     {
-        $paymentChannels = PaymentChannel::where('status', 'active')->get();
-        
-        return apiResponse2(1, 'PaymentChannel', [$paymentChannels]);
+        try {
+            $paymentChannels = PaymentChannel::where('status', 'active')->get();
+
+            return apiResponse2(1, 'PaymentChannel', [$paymentChannels]);
+        } catch (\Exception $e) {
+            \Log::error('PaymentChannel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
     public function checkout(Request $request)
     {
+        try {
+            $discountId = $request->input('discount_id');
 
-        $discountId = $request->input('discount_id');
+            $paymentChannels = PaymentChannel::where('status', 'active')->get();
 
-        $paymentChannels = PaymentChannel::where('status', 'active')->get();
+            $discountCoupon = Discount::where('id', $discountId)->first();
 
-        $discountCoupon = Discount::where('id', $discountId)->first();
-
-        if (empty($discountCoupon) or !$discountCoupon->checkValidDiscount()) {
-            $discountCoupon = null;
-        }
-
-        $user = apiAuth();
-        $carts = Cart::where('creator_id', $user->id)
-            ->get();
-
-        if (!empty($carts) and !$carts->isEmpty()) {
-            $calculate = $this->calculatePrice($carts, $user, $discountCoupon);
-
-            $order = $this->createOrderAndOrderItems($carts, $calculate, $user, $discountCoupon);
-
-            if (!empty($order) and $order->total_amount > 0) {
-                $razorpay = false;
-                foreach ($paymentChannels as $paymentChannel) {
-                    if ($paymentChannel->class_name == 'Razorpay') {
-                        $razorpay = true;
-                    }
-                }
-
-                $data = [
-                    //      'pageTitle' => trans('public.checkout_page_title'),
-                    'paymentChannels' => $paymentChannels,
-                    'carts' => $carts->map(function ($cart) {
-                        return $cart->details;
-                    }),
-                    // 'subTotal' => $calculate["sub_total"],
-                    // 'totalDiscount' => $calculate["total_discount"],
-                    //  'tax' => $calculate["tax"],
-                    //   'taxPrice' => $calculate["tax_price"],
-                    //     'total' => $calculate["total"],
-                    'user_group' => $user->userGroup ? $user->userGroup->group : null,
-                    'order' => $order,
-                    'count' => $carts->count(),
-                    'userCharge' => $user->getAccountingCharge(),
-                    'razorpay' => $razorpay,
-                    'amounts' => $calculate,
-                ];
-
-                return apiResponse2(1, 'checkout', trans('api.cart.checkout'), $data);
-
-
-            } else {
-                return $this->handlePaymentOrderWithZeroTotalAmount($order);
+            if (empty($discountCoupon) or !$discountCoupon->checkValidDiscount()) {
+                $discountCoupon = null;
             }
+
+            $user = apiAuth();
+            $carts = Cart::where('creator_id', $user->id)
+                ->get();
+
+            if (!empty($carts) and !$carts->isEmpty()) {
+                $calculate = $this->calculatePrice($carts, $user, $discountCoupon);
+
+                $order = $this->createOrderAndOrderItems($carts, $calculate, $user, $discountCoupon);
+
+                if (!empty($order) and $order->total_amount > 0) {
+                    $razorpay = false;
+                    foreach ($paymentChannels as $paymentChannel) {
+                        if ($paymentChannel->class_name == 'Razorpay') {
+                            $razorpay = true;
+                        }
+                    }
+
+                    $data = [
+
+                        'paymentChannels' => $paymentChannels,
+                        'carts' => $carts->map(function ($cart) {
+                            return $cart->details;
+                        }),
+
+                        'user_group' => $user->userGroup ? $user->userGroup->group : null,
+                        'order' => $order,
+                        'count' => $carts->count(),
+                        'userCharge' => $user->getAccountingCharge(),
+                        'razorpay' => $razorpay,
+                        'amounts' => $calculate,
+                    ];
+
+                    return apiResponse2(1, 'checkout', trans('api.cart.checkout'), $data);
+
+                } else {
+                    return $this->handlePaymentOrderWithZeroTotalAmount($order);
+                }
+            }
+
+            return apiResponse2(0, 'empty_cart', trans('api.payment.empty_cart'));
+        } catch (\Exception $e) {
+            \Log::error('checkout error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return apiResponse2(0, 'empty_cart', trans('api.payment.empty_cart'));
-
     }
     public function buyNowcheckout(Request $request)
     {
+        try {
+            $discountId = $request->input('discount_id');
 
-        $discountId = $request->input('discount_id');
+             $name = $request->input('name');
+             $email = $request->input('email');
+             $mobile = $request->input('mobile');
 
-         $name = $request->input('name');
-         $email = $request->input('email');
-         $mobile = $request->input('mobile');
-        
+            $paymentChannels = PaymentChannel::where('status', 'active')->get();
 
-        $paymentChannels = PaymentChannel::where('status', 'active')->get();
+            $discountCoupon = Discount::where('id', $discountId)->first();
 
-        $discountCoupon = Discount::where('id', $discountId)->first();
-
-        if (empty($discountCoupon) or !$discountCoupon->checkValidDiscount()) {
-            $discountCoupon = null;
-        }
-
-        $user = apiAuth();
-        
-        if(!empty($name) && !empty($email)){
-            $user->full_name =$name;
-            $user->email =$email;
-            $user->save();
-            // $user->full_name =$name;
-        }
-        
-        $carts = Cart::where('creator_id', $user->id)
-            ->get();
-
-        if (!empty($carts) and !$carts->isEmpty()) {
-            $calculate = $this->calculatePrice($carts, $user, $discountCoupon);
-
-            $order = $this->createOrderAndOrderItems($carts, $calculate, $user, $discountCoupon);
-
-            if (!empty($order) and $order->total_amount > 0) {
-                $razorpay = false;
-                foreach ($paymentChannels as $paymentChannel) {
-                    if ($paymentChannel->class_name == 'Razorpay') {
-                        $razorpay = true;
-                    }
-                }
-
-                $data = [
-                    //      'pageTitle' => trans('public.checkout_page_title'),
-                    'paymentChannels' => $paymentChannels,
-                    'carts' => $carts->map(function ($cart) {
-                        return $cart->details;
-                    }),
-                    // 'subTotal' => $calculate["sub_total"],
-                    // 'totalDiscount' => $calculate["total_discount"],
-                    //  'tax' => $calculate["tax"],
-                    //   'taxPrice' => $calculate["tax_price"],
-                    //     'total' => $calculate["total"],
-                    'user_group' => $user->userGroup ? $user->userGroup->group : null,
-                    'order' => $order,
-                    'count' => $carts->count(),
-                    'userCharge' => $user->getAccountingCharge(),
-                    'razorpay' => $razorpay,
-                    'amounts' => $calculate,
-                ];
-
-                return apiResponse2(1, 'checkout', trans('api.cart.checkout'), $data);
-
-
-            } else {
-                return $this->handlePaymentOrderWithZeroTotalAmount($order);
+            if (empty($discountCoupon) or !$discountCoupon->checkValidDiscount()) {
+                $discountCoupon = null;
             }
+
+            $user = apiAuth();
+
+            if(!empty($name) && !empty($email)){
+                $user->full_name =$name;
+                $user->email =$email;
+                $user->save();
+
+            }
+
+            $carts = Cart::where('creator_id', $user->id)
+                ->get();
+
+            if (!empty($carts) and !$carts->isEmpty()) {
+                $calculate = $this->calculatePrice($carts, $user, $discountCoupon);
+
+                $order = $this->createOrderAndOrderItems($carts, $calculate, $user, $discountCoupon);
+
+                if (!empty($order) and $order->total_amount > 0) {
+                    $razorpay = false;
+                    foreach ($paymentChannels as $paymentChannel) {
+                        if ($paymentChannel->class_name == 'Razorpay') {
+                            $razorpay = true;
+                        }
+                    }
+
+                    $data = [
+
+                        'paymentChannels' => $paymentChannels,
+                        'carts' => $carts->map(function ($cart) {
+                            return $cart->details;
+                        }),
+
+                        'user_group' => $user->userGroup ? $user->userGroup->group : null,
+                        'order' => $order,
+                        'count' => $carts->count(),
+                        'userCharge' => $user->getAccountingCharge(),
+                        'razorpay' => $razorpay,
+                        'amounts' => $calculate,
+                    ];
+
+                    return apiResponse2(1, 'checkout', trans('api.cart.checkout'), $data);
+
+                } else {
+                    return $this->handlePaymentOrderWithZeroTotalAmount($order);
+                }
+            }
+
+            return apiResponse2(0, 'empty_cart', trans('api.payment.empty_cart'));
+        } catch (\Exception $e) {
+            \Log::error('buyNowcheckout error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return apiResponse2(0, 'empty_cart', trans('api.payment.empty_cart'));
-
     }
 
     private function handlePaymentOrderWithZeroTotalAmount($order)
@@ -660,9 +756,8 @@ class CartController extends Controller
         $tax = (!empty($financialSettings['tax']) and $financialSettings['tax'] > 0) ? $financialSettings['tax'] : 0;
         $taxPrice = 0;
         $commissionPrice = 0;
-        
+
         $commission =  0;
-        // $commission = $seller->getCommission() ?? 0;
 
         if (!empty($cart->webinar_id) or !empty($cart->bundle_id)) {
             $item = !empty($cart->webinar_id) ? $cart->webinar : $cart->bundle;
@@ -729,7 +824,6 @@ class CartController extends Controller
             $totalDiscount = $subTotal;
         }
 
-
         return [
             'sub_total' => round($subTotal, 2),
             'total_discount' => round($totalDiscount, 2),
@@ -737,7 +831,7 @@ class CartController extends Controller
             'tax_price' => round($taxPrice, 2),
             'commission' => $commission,
             'commission_price' => round($commissionPrice, 2),
-            //'product_delivery_fee' => round($productDeliveryFee, 2),
+
             'tax_is_different' => $taxIsDifferent
         ];
     }
@@ -798,7 +892,7 @@ class CartController extends Controller
     }
      private function handleDiscountPrice($discount, $carts, $subTotal)
     {
-        //$user = auth()->user();
+
         $user = apiAuth();
         $percent = $discount->percent ?? 1;
         $totalDiscount = 0;
@@ -807,27 +901,23 @@ class CartController extends Controller
             $totalWebinarsAmount = 0;
             $webinarOtherDiscounts = 0;
             $discountWebinarsIds = $discount->discountCourses()->pluck('course_id')->toArray();
-//print_r($carts);die;
+
             foreach ($carts as $cart) {
                 if(!empty($cart->webinar)){
                     $webinar = $cart->webinar;
                 }else{
                      $webinar=Webinar::where('id',$cart['item_id'])->first();
                 }
-               
-                
+
                 if (!empty($webinar) and in_array($webinar->id, $discountWebinarsIds)) {
                     $totalWebinarsAmount += $webinar->price;
-                    //$webinarOtherDiscounts += $webinar->getDiscount($cart->ticket, $user);
+
                 }
             }
 
             if ($discount->discount_type == Discount::$discountTypeFixedAmount) {
                 $totalDiscount = ($totalWebinarsAmount > $discount->amount) ? $discount->amount : $totalWebinarsAmount;
 
-                /*if (!empty($webinarOtherDiscounts)) {
-                    $totalDiscount = $totalDiscount - (int)$webinarOtherDiscounts;
-                }*/
             } else {
                 $totalDiscount = ($totalWebinarsAmount > 0) ? $totalWebinarsAmount * $percent / 100 : 0;
             }
@@ -840,16 +930,13 @@ class CartController extends Controller
                 $bundle = $cart->bundle;
                 if (!empty($bundle) and in_array($bundle->id, $discountBundlesIds)) {
                     $totalBundlesAmount += $bundle->price;
-                    //$bundleOtherDiscounts += $bundle->getDiscount($cart->ticket, $user);
+
                 }
             }
 
             if ($discount->discount_type == Discount::$discountTypeFixedAmount) {
                 $totalDiscount = ($totalBundlesAmount > $discount->amount) ? $discount->amount : $totalBundlesAmount;
 
-                /*if (!empty($bundleOtherDiscounts)) {
-                    $totalDiscount = $totalDiscount - (int)$bundleOtherDiscounts;
-                }*/
             } else {
                 $totalDiscount = ($totalBundlesAmount > 0) ? $totalBundlesAmount * $percent / 100 : 0;
             }
@@ -863,7 +950,7 @@ class CartController extends Controller
 
                     if (!empty($product) and ($discount->product_type == 'all' or $discount->product_type == $product->type)) {
                         $totalProductsAmount += ($product->price * $cart->productOrder->quantity);
-                        //$productOtherDiscounts += $product->getDiscountPrice();
+
                     }
                 }
             }
@@ -871,9 +958,6 @@ class CartController extends Controller
             if ($discount->discount_type == Discount::$discountTypeFixedAmount) {
                 $totalDiscount = ($totalProductsAmount > $discount->amount) ? $discount->amount : $totalProductsAmount;
 
-                /*if (!empty($productOtherDiscounts)) {
-                    $totalDiscount = $totalDiscount - (int)$productOtherDiscounts;
-                }*/
             } else {
                 $totalDiscount = ($totalProductsAmount > 0) ? $totalProductsAmount * $percent / 100 : 0;
             }
@@ -886,16 +970,13 @@ class CartController extends Controller
 
                 if (!empty($reserveMeeting)) {
                     $totalMeetingAmount += $reserveMeeting->paid_amount;
-                    //$meetingOtherDiscounts += $reserveMeeting->getDiscountPrice($user);
+
                 }
             }
 
             if ($discount->discount_type == Discount::$discountTypeFixedAmount) {
                 $totalDiscount = ($totalMeetingAmount > $discount->amount) ? $discount->amount : $totalMeetingAmount;
 
-                /*if (!empty($meetingOtherDiscounts)) {
-                    $totalDiscount = $totalDiscount - $meetingOtherDiscounts;
-                }*/
             } else {
                 $totalDiscount = ($totalMeetingAmount > 0) ? $totalMeetingAmount * $percent / 100 : 0;
             }
@@ -910,16 +991,13 @@ class CartController extends Controller
 
                 if (!empty($webinar) and in_array($webinar->category_id, $categoriesIds)) {
                     $totalCategoriesAmount += $webinar->price;
-                    //$categoriesOtherDiscounts += $webinar->getDiscount($cart->ticket, $user);
+
                 }
             }
 
             if ($discount->discount_type == Discount::$discountTypeFixedAmount) {
                 $totalDiscount = ($totalCategoriesAmount > $discount->amount) ? $discount->amount : $totalCategoriesAmount;
 
-                /*if (!empty($categoriesOtherDiscounts)) {
-                    $totalDiscount = $totalDiscount - $categoriesOtherDiscounts;
-                }*/
             } else {
                 $totalDiscount = ($totalCategoriesAmount > 0) ? $totalCategoriesAmount * $percent / 100 : 0;
             }
@@ -933,21 +1011,18 @@ class CartController extends Controller
 
                 if (!empty($webinar)) {
                     $totalCartAmount += $webinar->price;
-                    //$totalCartOtherDiscounts += $webinar->getDiscount($cart->ticket, $user);
+
                 }
 
                 if (!empty($reserveMeeting)) {
                     $totalCartAmount += $reserveMeeting->paid_amount;
-                    //$totalCartOtherDiscounts += $reserveMeeting->getDiscountPrice($user);
+
                 }
             }
 
             if ($discount->discount_type == Discount::$discountTypeFixedAmount) {
                 $totalDiscount = ($totalCartAmount > $discount->amount) ? $discount->amount : $totalCartAmount;
 
-                /*if (!empty($totalCartOtherDiscounts)) {
-                    $totalDiscount = $totalDiscount - $totalCartOtherDiscounts;
-                }*/
             } else {
                 $totalDiscount = ($totalCartAmount > 0) ? $totalCartAmount * $percent / 100 : 0;
             }

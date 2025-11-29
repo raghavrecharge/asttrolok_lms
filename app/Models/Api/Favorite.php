@@ -8,7 +8,7 @@ class Favorite extends WebFavorite{
     {
         return $this->belongsTo('App\Models\Api\Webinar', 'webinar_id', 'id');
     }
-    
+
     public function user()
     {
         return $this->belongsTo('App\Models\Api\User', 'user_id', 'id');

@@ -77,7 +77,6 @@
         </div>
     </section>
 
-
     <section class="mt-25">
         <div class="d-flex align-items-start align-items-md-center justify-content-between flex-column flex-md-row">
             <h2 class="section-title">{{ trans('panel.organization_classes') }}</h2>

@@ -6,7 +6,6 @@ use App\Models\GroupUser as Model;
 
 class GroupUser extends Model
 {
-    //
 
     public function getBriefAttribute(){
 
@@ -18,7 +17,7 @@ class GroupUser extends Model
             'name'=>$this->group->name ,
             'status'=>$this->group->status ,
             'commission'=>$this->group->commission ,
-            'discount'=>$this->group->discount 
+            'discount'=>$this->group->discount
         ] ;
     }
 }

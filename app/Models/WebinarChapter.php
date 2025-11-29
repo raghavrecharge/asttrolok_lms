@@ -35,7 +35,6 @@ class WebinarChapter extends Model implements TranslatableContract
         return getTranslateAttributeValue($this, 'title');
     }
 
-
     public function sessions()
     {
         return $this->hasMany('App\Models\Session', 'chapter_id', 'id');
@@ -82,7 +81,6 @@ class WebinarChapter extends Model implements TranslatableContract
         return $time;
     }
 
-
     public function getTopicsCount($withQuiz = false)
     {
         $count = 0;
@@ -95,8 +93,6 @@ class WebinarChapter extends Model implements TranslatableContract
         if ($withQuiz) {
             $count += $this->quizzes->where('status', 'active')->count();
         }
-
-
 
         return $count;
     }

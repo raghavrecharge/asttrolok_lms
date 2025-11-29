@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin\Store;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\ProductCategory;
 use App\Models\ProductFilter;
@@ -14,206 +17,284 @@ class FilterController extends Controller
 {
     public function index()
     {
-        removeContentLocale();
+        try {
+            removeContentLocale();
 
-        $this->authorize('admin_store_filters_list');
+            $this->authorize('admin_store_filters_list');
 
-        $filters = ProductFilter::with('category')
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+            $filters = ProductFilter::with('category')
+                ->orderBy('id', 'desc')
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('admin/main.filters_list_page_title'),
-            'filters' => $filters
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.filters_list_page_title'),
+                'filters' => $filters
+            ];
 
-        return view('admin.store.filters.lists', $data);
+            return view('admin.store.filters.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function create()
     {
-        $this->authorize('admin_store_filters_create');
+        try {
+            $this->authorize('admin_store_filters_create');
 
-        $categories = ProductCategory::where('parent_id', null)
-            ->with('subCategories')
-            ->get();
+            $categories = ProductCategory::where('parent_id', null)
+                ->with('subCategories')
+                ->get();
 
-        $data = [
-            'pageTitle' => trans('admin/main.filter_new_page_title'),
-            'categories' => $categories
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.filter_new_page_title'),
+                'categories' => $categories
+            ];
 
-        return view('admin.store.filters.create', $data);
+            return view('admin.store.filters.create', $data);
+        } catch (\Exception $e) {
+            \Log::error('create error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function store(Request $request)
     {
-        $this->authorize('admin_store_filters_create');
+        try {
+            $this->authorize('admin_store_filters_create');
 
-        $this->validate($request, [
-            'title' => 'required|min:3|max:128',
-            'category_id' => 'required|exists:product_categories,id',
-        ]);
+            $this->validate($request, [
+                'title' => 'required|min:3|max:128',
+                'category_id' => 'required|exists:product_categories,id',
+            ]);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $filter = ProductFilter::create([
-            'category_id' => $data['category_id'],
-        ]);
+            $filter = ProductFilter::create([
+                'category_id' => $data['category_id'],
+            ]);
 
-        ProductFilterTranslation::updateOrCreate([
-            'product_filter_id' => $filter->id,
-            'locale' => mb_strtolower($data['locale']),
-        ], [
-            'title' => $data['title'],
-        ]);
+            ProductFilterTranslation::updateOrCreate([
+                'product_filter_id' => $filter->id,
+                'locale' => mb_strtolower($data['locale']),
+            ], [
+                'title' => $data['title'],
+            ]);
 
+            $filterOptions = !empty($data['sub_filters']) ? $data['sub_filters'] : [];
+            $this->setSubFilters($filter, $filterOptions, $data['locale']);
 
-        $filterOptions = !empty($data['sub_filters']) ? $data['sub_filters'] : [];
-        $this->setSubFilters($filter, $filterOptions, $data['locale']);
+            removeContentLocale();
 
-        removeContentLocale();
-
-        return redirect(getAdminPanelUrl().'/store/filters');
+            return redirect(getAdminPanelUrl().'/store/filters');
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function edit(Request $request, $id)
     {
-        $this->authorize('admin_store_filters_edit');
+        try {
+            $this->authorize('admin_store_filters_edit');
 
-        $filter = ProductFilter::findOrFail($id);
-        $categories = ProductCategory::where('parent_id', null)
-            ->with('subCategories')
-            ->get();
+            $filter = ProductFilter::findOrFail($id);
+            $categories = ProductCategory::where('parent_id', null)
+                ->with('subCategories')
+                ->get();
 
-        $filterOptions = ProductFilterOption::where('filter_id', $filter->id)
-            ->orderBy('order', 'asc')
-            ->get();
+            $filterOptions = ProductFilterOption::where('filter_id', $filter->id)
+                ->orderBy('order', 'asc')
+                ->get();
 
-        $locale = $request->get('locale', app()->getLocale());
-        storeContentLocale($locale, $filter->getTable(), $filter->id);
+            $locale = $request->get('locale', app()->getLocale());
+            storeContentLocale($locale, $filter->getTable(), $filter->id);
 
-        $data = [
-            'pageTitle' => trans('admin/main.admin_filters_edit'),
-            'filter' => $filter,
-            'categories' => $categories,
-            'filterOptions' => $filterOptions,
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.admin_filters_edit'),
+                'filter' => $filter,
+                'categories' => $categories,
+                'filterOptions' => $filterOptions,
+            ];
 
-        return view('admin.store.filters.create', $data);
+            return view('admin.store.filters.create', $data);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $this->authorize('admin_store_filters_edit');
+        try {
+            $this->authorize('admin_store_filters_edit');
 
-        $this->validate($request, [
-            'title' => 'required|min:3|max:128',
-            'category_id' => 'required|exists:product_categories,id',
-        ]);
+            $this->validate($request, [
+                'title' => 'required|min:3|max:128',
+                'category_id' => 'required|exists:product_categories,id',
+            ]);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $filter = ProductFilter::findOrFail($id);
-        $filter->update([
-            'category_id' => $data['category_id'],
-        ]);
+            $filter = ProductFilter::findOrFail($id);
+            $filter->update([
+                'category_id' => $data['category_id'],
+            ]);
 
-        ProductFilterTranslation::updateOrCreate([
-            'product_filter_id' => $filter->id,
-            'locale' => mb_strtolower($data['locale']),
-        ], [
-            'title' => $data['title'],
-        ]);
+            ProductFilterTranslation::updateOrCreate([
+                'product_filter_id' => $filter->id,
+                'locale' => mb_strtolower($data['locale']),
+            ], [
+                'title' => $data['title'],
+            ]);
 
-        $filterOptions = !empty($data['sub_filters']) ? $data['sub_filters'] : [];
-        $this->setSubFilters($filter, $filterOptions, $data['locale']);
+            $filterOptions = !empty($data['sub_filters']) ? $data['sub_filters'] : [];
+            $this->setSubFilters($filter, $filterOptions, $data['locale']);
 
-        removeContentLocale();
+            removeContentLocale();
 
-        return back();
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function destroy(Request $request, $id)
     {
-        $this->authorize('admin_store_filters_delete');
+        try {
+            $this->authorize('admin_store_filters_delete');
 
-        ProductFilter::find($id)->delete();
+            ProductFilter::find($id)->delete();
 
-        removeContentLocale();
+            removeContentLocale();
 
-        return redirect(getAdminPanelUrl().'/store/filters');
+            return redirect(getAdminPanelUrl().'/store/filters');
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function setSubFilters(ProductFilter $filter, $filterOptions, $locale)
     {
+        try {
+            $allFilterOptionsIds = $filter->options->pluck('id')->toArray();
 
-        $allFilterOptionsIds = $filter->options->pluck('id')->toArray();
+            if (!empty($filterOptions) and count($filterOptions)) {
+                $order = 1;
 
-        if (!empty($filterOptions) and count($filterOptions)) {
-            $order = 1;
+                foreach ($filterOptions as $key => $filterOption) {
+                    if (!empty($filterOption['title'])) {
+                        $oldFilterOption = ProductFilterOption::where('filter_id', $filter->id)
+                            ->where('id', $key)
+                            ->first();
 
-            foreach ($filterOptions as $key => $filterOption) {
-                if (!empty($filterOption['title'])) {
-                    $oldFilterOption = ProductFilterOption::where('filter_id', $filter->id)
-                        ->where('id', $key)
-                        ->first();
+                        if (!empty($oldFilterOption)) {
 
-                    if (!empty($oldFilterOption)) {
+                            $oldIdsSearch = array_search($key, $allFilterOptionsIds);
 
-                        $oldIdsSearch = array_search($key, $allFilterOptionsIds);
+                            if ($oldIdsSearch !== -1) {
+                                unset($allFilterOptionsIds[$oldIdsSearch]);
+                            }
 
-                        if ($oldIdsSearch !== -1) {
-                            unset($allFilterOptionsIds[$oldIdsSearch]);
+                            $oldFilterOption->update([
+                                'order' => $order,
+                            ]);
+
+                            ProductFilterOptionTranslation::updateOrCreate([
+                                'product_filter_option_id' => $oldFilterOption->id,
+                                'locale' => mb_strtolower($locale),
+                            ], [
+                                'title' => $filterOption['title'],
+                            ]);
+                        } else {
+                            $option = ProductFilterOption::create([
+                                'title' => $filterOption['title'],
+                                'filter_id' => $filter->id,
+                                'order' => $order,
+                            ]);
+
+                            ProductFilterOptionTranslation::updateOrCreate([
+                                'product_filter_option_id' => $option->id,
+                                'locale' => mb_strtolower($locale),
+                            ], [
+                                'title' => $filterOption['title'],
+                            ]);
                         }
 
-                        $oldFilterOption->update([
-                            'order' => $order,
-                        ]);
-
-                        ProductFilterOptionTranslation::updateOrCreate([
-                            'product_filter_option_id' => $oldFilterOption->id,
-                            'locale' => mb_strtolower($locale),
-                        ], [
-                            'title' => $filterOption['title'],
-                        ]);
-                    } else {
-                        $option = ProductFilterOption::create([
-                            'title' => $filterOption['title'],
-                            'filter_id' => $filter->id,
-                            'order' => $order,
-                        ]);
-
-                        ProductFilterOptionTranslation::updateOrCreate([
-                            'product_filter_option_id' => $option->id,
-                            'locale' => mb_strtolower($locale),
-                        ], [
-                            'title' => $filterOption['title'],
-                        ]);
+                        $order += 1;
                     }
-
-                    $order += 1;
                 }
             }
-        }
 
-        if (!empty($allFilterOptionsIds) and count($allFilterOptionsIds)) {
-            ProductFilterOption::whereIn('id', $allFilterOptionsIds)->delete();
+            if (!empty($allFilterOptionsIds) and count($allFilterOptionsIds)) {
+                ProductFilterOption::whereIn('id', $allFilterOptionsIds)->delete();
+            }
+        } catch (\Exception $e) {
+            \Log::error('setSubFilters error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
     }
 
     public function getByCategoryId($categoryId)
     {
-        $filters = ProductFilter::where('category_id', $categoryId)
-            ->with([
-                'options' => function ($query) {
-                    $query->orderBy('order', 'asc');
-                },
-            ])
-            ->get();
+        try {
+            $filters = ProductFilter::where('category_id', $categoryId)
+                ->with([
+                    'options' => function ($query) {
+                        $query->orderBy('order', 'asc');
+                    },
+                ])
+                ->get();
 
-        return response()->json([
-            'filters' => $filters,
-        ], 200);
+            return response()->json([
+                'filters' => $filters,
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('getByCategoryId error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

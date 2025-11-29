@@ -55,7 +55,6 @@
                                             </button>
                                         </div>
 
-
                                         <div class="form-group">
                                             <label class="input-label">{{ trans('public.description') }}</label>
                                             <textarea id="summernote" name="description" class="form-control"></textarea>
@@ -87,7 +86,6 @@
                                     </form>
                                 </div>
                             </div>
-
 
                             <div class="mt-4">
                                 <h3 class="font-16 font-weight-bold">{{ trans('update.topic_actions') }}</h3>

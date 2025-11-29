@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Exports\ConsultantsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Group;
@@ -18,70 +21,80 @@ class ConsultantsController extends Controller
 {
     public function index(Request $request, $exportExcel = false)
     {
-        $this->authorize('admin_consultants_lists');
+        try {
+            $this->authorize('admin_consultants_lists');
 
-        $query = User::whereIn('role_name', [Role::$teacher, Role::$organization])
-            ->join('meetings', 'meetings.creator_id', '=', 'users.id')
-            ->select('users.*', 'meetings.amount', 'meetings.discount', 'meetings.disabled')
-            ->groupBy('users.id');
+            $query = User::whereIn('role_name', [Role::$teacher, Role::$organization])
+                ->join('meetings', 'meetings.creator_id', '=', 'users.id')
+                ->select('users.*', 'meetings.amount', 'meetings.discount', 'meetings.disabled')
+                ->groupBy('users.id');
 
-        $totalConsultants = User::whereHas('meeting')->get();
+            $totalConsultants = User::whereHas('meeting')->get();
 
-        $availableConsultants = User::whereHas('meeting', function ($query) {
-            $query->where('disabled', false);
-        })->count();
+            $availableConsultants = User::whereHas('meeting', function ($query) {
+                $query->where('disabled', false);
+            })->count();
 
-        $unavailableConsultants = User::whereHas('meeting', function ($query) {
-            $query->where('disabled', true);
-        })->count();
+            $unavailableConsultants = User::whereHas('meeting', function ($query) {
+                $query->where('disabled', true);
+            })->count();
 
-        $consultantsWithoutAppointment = 0;
-        foreach ($totalConsultants as $consultant) {
-            $checkConsultantsMeetingSale = Sale::whereNull('refund_at')
-                ->where('seller_id', $consultant->id)
-                ->whereNotNull('meeting_id')
-                ->count();
+            $consultantsWithoutAppointment = 0;
+            foreach ($totalConsultants as $consultant) {
+                $checkConsultantsMeetingSale = Sale::whereNull('refund_at')
+                    ->where('seller_id', $consultant->id)
+                    ->whereNotNull('meeting_id')
+                    ->count();
 
-            if ($checkConsultantsMeetingSale < 1) {
-                $consultantsWithoutAppointment += 1;
+                if ($checkConsultantsMeetingSale < 1) {
+                    $consultantsWithoutAppointment += 1;
+                }
             }
+
+            $organizations = User::select('id', 'full_name', 'created_at')
+                ->where('role_name', Role::$organization)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $userGroups = Group::where('status', 'active')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $query = $this->filters($query, $request);
+
+            if ($exportExcel) {
+                return $query->with([
+                    'userGroup'
+                ])->get();
+            }
+
+            $consultants = $query->with([
+                'userGroup',
+            ])->paginate(10);
+
+            $consultants = $this->addUsersExtraInfo($consultants);
+
+            $data = [
+                'pageTitle' => trans('admin/main.consultants_list_title'),
+                'totalConsultants' => count($totalConsultants),
+                'availableConsultants' => $availableConsultants,
+                'unavailableConsultants' => $unavailableConsultants,
+                'consultantsWithoutAppointment' => $consultantsWithoutAppointment,
+                'organizations' => $organizations,
+                'userGroups' => $userGroups,
+                'consultants' => $consultants,
+            ];
+
+            return view('admin.consultants.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $organizations = User::select('id', 'full_name', 'created_at')
-            ->where('role_name', Role::$organization)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $userGroups = Group::where('status', 'active')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $query = $this->filters($query, $request);
-
-        if ($exportExcel) {
-            return $query->with([
-                'userGroup'
-            ])->get();
-        }
-
-        $consultants = $query->with([
-            'userGroup',
-        ])->paginate(10);
-
-        $consultants = $this->addUsersExtraInfo($consultants);
-
-        $data = [
-            'pageTitle' => trans('admin/main.consultants_list_title'),
-            'totalConsultants' => count($totalConsultants),
-            'availableConsultants' => $availableConsultants,
-            'unavailableConsultants' => $unavailableConsultants,
-            'consultantsWithoutAppointment' => $consultantsWithoutAppointment,
-            'organizations' => $organizations,
-            'userGroups' => $userGroups,
-            'consultants' => $consultants,
-        ];
-
-        return view('admin.consultants.lists', $data);
     }
 
     private function addUsersExtraInfo($users)
@@ -104,17 +117,6 @@ class ConsultantsController extends Controller
             $user->meetingsSalesSum = deepClone($reserveMeetingsQuery)->sum('paid_amount');
             $user->pendingAppointments = deepClone($reserveMeetingsQuery)->where('status', 'pending')->count();
 
-
-            /*$reserveMeetings = deepClone($reserveMeetingsQuery)->get();
-
-            $totalIncome = 0;
-            foreach ($reserveMeetings as $reserveMeeting) {
-                $sale = $reserveMeeting->sale;
-
-                $totalIncome += $sale->total_amount - ($sale->tax + $sale->commission);
-            }
-
-            $user->totalIncome = $totalIncome;*/
         }
 
         return $users;
@@ -182,12 +184,22 @@ class ConsultantsController extends Controller
 
     public function exportExcel(Request $request)
     {
-        $this->authorize('admin_consultants_export_excel');
+        try {
+            $this->authorize('admin_consultants_export_excel');
 
-        $consultants = $this->index($request, true);
+            $consultants = $this->index($request, true);
 
-        $exports = new ConsultantsExport($consultants);
+            $exports = new ConsultantsExport($consultants);
 
-        return Excel::download($exports, 'consultants.xlsx');
+            return Excel::download($exports, 'consultants.xlsx');
+        } catch (\Exception $e) {
+            \Log::error('exportExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

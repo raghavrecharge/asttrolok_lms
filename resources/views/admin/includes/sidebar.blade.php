@@ -103,7 +103,7 @@
                 <li class="nav-item dropdown ">
                     <a href="#" class="nav-link has-dropdown" data-toggle="dropdown">
                         <i class="fas fa fa-leaf"></i>
-                        <span>{{ trans('panel.remedies') }}</span> 
+                        <span>{{ trans('panel.remedies') }}</span>
                          <!--<span>mayank</span> -->
                     </a>
                     <ul class="dropdown-menu">
@@ -380,11 +380,6 @@
                 </li>
             @endcan
 
-
-
-
-
-
             @if($authUser->can('admin_consultants_lists') or
                 $authUser->can('admin_appointments_lists')
             )
@@ -398,7 +393,7 @@
                         <span>{{ trans('admin/main.consultants') }}</span>
                     </a>
                 </li>
-                
+
                 <li class="{{ (request()->is(getAdminPanelUrl('/consultation-seo', false))) ? 'active' : '' }}">
                     <a href="{{ getAdminPanelUrl() }}/consultation-seo" class="nav-link">
                         <i class="fas fa-id-card"></i>
@@ -468,7 +463,6 @@
                 </li>
             @endcan
 
-
             @can('admin_users_not_access_content_lists')
                 <li class="{{ (request()->is(getAdminPanelUrl('/users/not-access-to-content', false))) ? 'active' : '' }}">
                     <a class="nav-link" href="{{ getAdminPanelUrl() }}/users/not-access-to-content">
@@ -535,8 +529,6 @@
                     </a>
                 </li>
             @endcan()
-
-
 
             @can('admin_become_instructors_list')
                 <li class="nav-item dropdown {{ (request()->is(getAdminPanelUrl('/users/become-instructors*', false))) ? 'active' : '' }}">
@@ -1034,7 +1026,7 @@
                                 <a class="nav-link" href="{{ getAdminPanelUrl() }}/testimonials/create">{{ trans('admin/main.new') }}</a>
                             </li>
                         @endcan()
-                        
+
                         @can('admin_testimonials_video')
                             <li class="{{ (request()->is(getAdminPanelUrl('/testimonials/video', false))) ? 'active' : '' }}">
                                 <a class="nav-link" href="{{ getAdminPanelUrl() }}/testimonials/video">{{ trans('admin/main.video') }}</a>
@@ -1193,7 +1185,6 @@
                     </ul>
                 </li>
             @endcan
-
 
             @can('admin_rewards')
                 <li class="nav-item dropdown {{ (request()->is(getAdminPanelUrl('/rewards*', false))) ? 'active' : '' }}">
@@ -1563,7 +1554,6 @@
                             </li>
                         @endcan
 
-
                         @can('admin_registration_bonus_settings')
                             <li class="{{ (request()->is(getAdminPanelUrl('/registration_bonus/settings', false))) ? 'active' : '' }}">
                                 <a class="nav-link" href="{{ getAdminPanelUrl('/registration_bonus/settings') }}">{{ trans('admin/main.settings') }}</a>
@@ -1629,7 +1619,6 @@
                     </a>
                 </li>
             @endcan()
-
 
             <li>
                 <a class="nav-link" href="{{ getAdminPanelUrl() }}/logout">

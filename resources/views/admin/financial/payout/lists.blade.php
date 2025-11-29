@@ -15,7 +15,6 @@
             </div>
         </div>
 
-
         <div class="section-body">
 
             <section class="card">
@@ -174,7 +173,6 @@
 
                                                 </td>
 
-
                                                 <td>{{ $payout->user->mobile }}</td>
 
                                                 <td>{{ dateTimeFormat($payout->created_at, 'j M Y H:i') }}</td>
@@ -184,7 +182,6 @@
                                                         <span class="{{ ($payout->status == 'done') ? 'text-success' : 'text-danger' }}">{{ trans('public.'.$payout->status) }}</span>
                                                     </td>
                                                 @endif
-
 
                                                 <td width="150px">
                                                     <div class="">

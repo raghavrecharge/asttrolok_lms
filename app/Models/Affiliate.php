@@ -112,7 +112,6 @@ class Affiliate extends Model
                 $registrationBonusAccounting = new RegistrationBonusAccounting();
                 $registrationBonusAccounting->storeRegistrationBonus($affiliateUser);
 
-
                 $notifyOptions = [
                     '[u.name]' => $user->full_name,
                     '[time.date]' => dateTimeFormat(time(), 'j M Y')
@@ -120,7 +119,6 @@ class Affiliate extends Model
                 sendNotification("new_referral_user", $notifyOptions, $affiliateUser->id);
             }
         }
-
 
     }
 }

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Web;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BundleResource;
 use App\Models\AdvertisingBanner;
@@ -14,99 +17,119 @@ class BundleController extends Controller
 {
     public function index()
     {
-        $bundles = Bundle::where('status', 'active')->get();
-        return apiResponse2(1, 'retrieved', trans('api.public.retrieved'),
-            [
-                'bundles' => BundleResource::collection($bundles)
-            ]
-        );
+        try {
+            $bundles = Bundle::where('status', 'active')->get();
+            return apiResponse2(1, 'retrieved', trans('api.public.retrieved'),
+                [
+                    'bundles' => BundleResource::collection($bundles)
+                ]
+            );
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function show($id)
     {
-        $user = apiAuth();
-        $bundle = Bundle::where('id', $id)
-            ->with([
-                'tickets' => function ($query) {
-                    $query->orderBy('order', 'asc');
-                },
-                'bundleWebinars' => function ($query) {
-                    $query->with([
-                        'webinar' => function ($query) {
-                            $query->where('status', Webinar::$active);
-                        }
-                    ]);
-                },
-                'reviews' => function ($query) {
-                    $query->where('status', 'active');
-                    $query->with([
-                        'comments' => function ($query) {
-                            $query->where('status', 'active');
-                        },
-                        'creator' => function ($qu) {
-                            $qu->select('id', 'full_name', 'avatar');
-                        }
-                    ]);
-                },
-                'comments' => function ($query) {
-                    $query->where('status', 'active');
-                    $query->whereNull('reply_id');
-                    $query->with([
-                        'user' => function ($query) {
-                            $query->select('id', 'full_name', 'role_name', 'role_id', 'avatar', 'avatar_settings');
-                        },
-                        'replies' => function ($query) {
-                            $query->where('status', 'active');
-                            $query->with([
-                                'user' => function ($query) {
-                                    $query->select('id', 'full_name', 'role_name', 'role_id', 'avatar', 'avatar_settings');
-                                }
-                            ]);
-                        }
-                    ]);
-                    $query->orderBy('created_at', 'desc');
-                },
-            ])
-            ->withCount([
-                'sales' => function ($query) {
-                    $query->whereNull('refund_at');
-                }
-            ])
-            ->where('status', 'active')
-            ->first();
-
-        if (!$bundle) {
-            abort(404);
-        }
-
-        $isFavorite = false;
-
-        if (!empty($user)) {
-            $isFavorite = Favorite::where('bundle_id', $bundle->id)
-                ->where('user_id', $user->id)
+        try {
+            $user = apiAuth();
+            $bundle = Bundle::where('id', $id)
+                ->with([
+                    'tickets' => function ($query) {
+                        $query->orderBy('order', 'asc');
+                    },
+                    'bundleWebinars' => function ($query) {
+                        $query->with([
+                            'webinar' => function ($query) {
+                                $query->where('status', Webinar::$active);
+                            }
+                        ]);
+                    },
+                    'reviews' => function ($query) {
+                        $query->where('status', 'active');
+                        $query->with([
+                            'comments' => function ($query) {
+                                $query->where('status', 'active');
+                            },
+                            'creator' => function ($qu) {
+                                $qu->select('id', 'full_name', 'avatar');
+                            }
+                        ]);
+                    },
+                    'comments' => function ($query) {
+                        $query->where('status', 'active');
+                        $query->whereNull('reply_id');
+                        $query->with([
+                            'user' => function ($query) {
+                                $query->select('id', 'full_name', 'role_name', 'role_id', 'avatar', 'avatar_settings');
+                            },
+                            'replies' => function ($query) {
+                                $query->where('status', 'active');
+                                $query->with([
+                                    'user' => function ($query) {
+                                        $query->select('id', 'full_name', 'role_name', 'role_id', 'avatar', 'avatar_settings');
+                                    }
+                                ]);
+                            }
+                        ]);
+                        $query->orderBy('created_at', 'desc');
+                    },
+                ])
+                ->withCount([
+                    'sales' => function ($query) {
+                        $query->whereNull('refund_at');
+                    }
+                ])
+                ->where('status', 'active')
                 ->first();
-        }
 
-        $hasBought = $bundle->checkUserHasBought($user);
-        $resource = new BundleResource($bundle);
-        $resource->show = true;
+            if (!$bundle) {
+                abort(404);
+            }
 
-        return apiResponse2(1, 'retrieved', trans('api.public.retrieved'),
-            [
-                'bundle' => $resource,
+            $isFavorite = false;
 
+            if (!empty($user)) {
+                $isFavorite = Favorite::where('bundle_id', $bundle->id)
+                    ->where('user_id', $user->id)
+                    ->first();
+            }
+
+            $hasBought = $bundle->checkUserHasBought($user);
+            $resource = new BundleResource($bundle);
+            $resource->show = true;
+
+            return apiResponse2(1, 'retrieved', trans('api.public.retrieved'),
+                [
+                    'bundle' => $resource,
+
+                ]);
+            $data = [
+                'pageTitle' => $bundle->title,
+                'pageDescription' => $bundle->seo_description,
+                'bundle' => $bundle,
+                'isFavorite' => $isFavorite,
+                'hasBought' => $hasBought,
+                'user' => $user,
+                'activeSpecialOffer' => $bundle->activeSpecialOffer(),
+            ];
+
+            return view('web.default.bundle.index', $data);
+        } catch (\Exception $e) {
+            \Log::error('show error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
-        $data = [
-            'pageTitle' => $bundle->title,
-            'pageDescription' => $bundle->seo_description,
-            'bundle' => $bundle,
-            'isFavorite' => $isFavorite,
-            'hasBought' => $hasBought,
-            'user' => $user,
-            'activeSpecialOffer' => $bundle->activeSpecialOffer(),
-        ];
-
-        return view('web.default.bundle.index', $data);
+            
+            throw $e;
+        }
     }
 
 }

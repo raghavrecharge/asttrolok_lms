@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin\traits;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Models\UserBank;
 use App\Models\UserBankSpecification;
 use App\Models\Translation\UserBankSpecificationTranslation;
@@ -14,51 +17,71 @@ trait FinancialUserBankSettings
 
     public function financialUserBankForm()
     {
-        $data = [
-            'locale' => mb_strtolower(app()->getLocale())
-        ];
+        try {
+            $data = [
+                'locale' => mb_strtolower(app()->getLocale())
+            ];
 
-        $html = (string)view()->make("admin.settings.financial.user_banks.modal", $data);
+            $html = (string)view()->make("admin.settings.financial.user_banks.modal", $data);
 
-        return response()->json([
-            'code' => 200,
-            'html' => $html
-        ]);
+            return response()->json([
+                'code' => 200,
+                'html' => $html
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('financialUserBankForm error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function financialUserBankStore(Request $request)
     {
-        $data = $request->all();
+        try {
+            $data = $request->all();
 
-        $validator = Validator::make($data, [
-            "title" => "required",
-            "logo" => "required",
-        ]);
+            $validator = Validator::make($data, [
+                "title" => "required",
+                "logo" => "required",
+            ]);
 
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $bank = UserBank::query()->create([
+                "logo" => $data['logo'],
+                "created_at" => time(),
+            ]);
+
+            UserBankTranslation::query()->updateOrCreate([
+                'user_bank_id' => $bank->id,
+                'locale' => mb_strtolower($data['locale'])
+            ], [
+                'title' => $data['title']
+            ]);
+
+            $this->handleUserBankSpecifications($bank, $data);
+
+            return response()->json([
+                'code' => 200
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('financialUserBankStore error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $bank = UserBank::query()->create([
-            "logo" => $data['logo'],
-            "created_at" => time(),
-        ]);
-
-        UserBankTranslation::query()->updateOrCreate([
-            'user_bank_id' => $bank->id,
-            'locale' => mb_strtolower($data['locale'])
-        ], [
-            'title' => $data['title']
-        ]);
-
-        $this->handleUserBankSpecifications($bank, $data);
-
-        return response()->json([
-            'code' => 200
-        ]);
     }
 
     private function handleUserBankSpecifications($bank, $data)
@@ -100,63 +123,93 @@ trait FinancialUserBankSettings
 
     public function financialUserBankEdit(Request $request, $id)
     {
-        $bank = UserBank::query()->findOrFail($id);
+        try {
+            $bank = UserBank::query()->findOrFail($id);
 
-        $data = [
-            'editBank' => $bank,
-            'locale' => mb_strtolower($request->get('locale', app()->getLocale()))
-        ];
+            $data = [
+                'editBank' => $bank,
+                'locale' => mb_strtolower($request->get('locale', app()->getLocale()))
+            ];
 
-        $html = (string)view()->make('admin.settings.financial.user_banks.modal', $data);
+            $html = (string)view()->make('admin.settings.financial.user_banks.modal', $data);
 
-        return response()->json([
-            'code' => 200,
-            'html' => $html
-        ], 200);
+            return response()->json([
+                'code' => 200,
+                'html' => $html
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('financialUserBankEdit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function financialUserBankUpdate(Request $request, $id)
     {
-        $data = $request->all();
+        try {
+            $data = $request->all();
 
-        $validator = Validator::make($data, [
-            "title" => "required",
-            "logo" => "required",
-        ]);
+            $validator = Validator::make($data, [
+                "title" => "required",
+                "logo" => "required",
+            ]);
 
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $bank = UserBank::query()->findOrFail($id);
+
+            $bank->update([
+                "logo" => $data['logo'],
+            ]);
+
+            UserBankTranslation::query()->updateOrCreate([
+                'user_bank_id' => $bank->id,
+                'locale' => mb_strtolower($data['locale'])
+            ], [
+                'title' => $data['title']
+            ]);
+
+            $this->handleUserBankSpecifications($bank, $data);
+
+            return response()->json([
+                'code' => 200
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('financialUserBankUpdate error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $bank = UserBank::query()->findOrFail($id);
-
-        $bank->update([
-            "logo" => $data['logo'],
-        ]);
-
-        UserBankTranslation::query()->updateOrCreate([
-            'user_bank_id' => $bank->id,
-            'locale' => mb_strtolower($data['locale'])
-        ], [
-            'title' => $data['title']
-        ]);
-
-        $this->handleUserBankSpecifications($bank, $data);
-
-        return response()->json([
-            'code' => 200
-        ]);
     }
 
     public function financialUserBankDelete($id)
     {
-        $bank = UserBank::query()->findOrFail($id);
+        try {
+            $bank = UserBank::query()->findOrFail($id);
 
-        $bank->delete();
+            $bank->delete();
 
-        return redirect()->back();
+            return redirect()->back();
+        } catch (\Exception $e) {
+            \Log::error('financialUserBankDelete error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

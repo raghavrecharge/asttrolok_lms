@@ -7,7 +7,6 @@ use App\Models\Follow as Model;
 class Follow extends Model
 {
 
-
     public function user()
     {
         return $this->belongsTo('App\Models\Api\User', 'user_id', 'id');

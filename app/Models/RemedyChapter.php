@@ -35,7 +35,6 @@ class RemedyChapter extends Model implements TranslatableContract
         return getTranslateAttributeValue($this, 'title');
     }
 
-
     public function sessions()
     {
         return $this->hasMany('App\Models\Session', 'chapter_id', 'id');
@@ -50,16 +49,6 @@ class RemedyChapter extends Model implements TranslatableContract
     {
         return $this->hasMany('App\Models\TextLesson', 'chapter_id', 'id');
     }
-
-    // public function assignments()
-    // {
-    //     return $this->hasMany('App\Models\WebinarAssignment', 'chapter_id', 'id');
-    // }
-
-    // public function quizzes()
-    // {
-    //     return $this->hasMany('App\Models\Quiz', 'chapter_id', 'id');
-    // }
 
     public function chapterItems()
     {
@@ -77,26 +66,14 @@ class RemedyChapter extends Model implements TranslatableContract
 
         $time += $this->sessions->sum('duration');
 
-        // $time += $this->textLessons->sum('study_time');
-
         return $time;
     }
-
 
     public function getTopicsCount($withQuiz = false)
     {
         $count = 0;
 
         $count += $this->files->where('status', 'active')->count();
-        // $count += $this->sessions->where('status', 'active')->count();
-        // $count += $this->textLessons->where('status', 'active')->count();
-        // $count += $this->assignments->where('status', 'active')->count();
-
-        // if ($withQuiz) {
-        //     $count += $this->quizzes->where('status', 'active')->count();
-        // }
-
-
 
         return $count;
     }

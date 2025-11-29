@@ -45,7 +45,6 @@
 
                                             <td class="">{{ $webinar->forums_count }}</td>
 
-
                                             <td width="200" class="btn-sm">
                                                 @can('admin_course_question_forum_list')
                                                     <a href="{{ getAdminPanelUrl() }}/webinars/{{ $webinar->id }}/forums" target="_blank" class="btn-transparent btn-sm text-primary mt-1 mr-1" data-toggle="tooltip" data-placement="top" title="{{ trans('public.questions') }}">

@@ -27,7 +27,6 @@
                     </div>
                 </div>
 
-
                 @php
                     $filters = ['amount_asc', 'amount_desc', 'paid_amount_asc', 'paid_amount_desc', 'date_asc', 'date_desc'];
                 @endphp
@@ -43,7 +42,6 @@
                         </select>
                     </div>
                 </div>
-
 
                 <div class="col-md-3">
                     <div class="form-group">
@@ -69,7 +67,6 @@
                         </select>
                     </div>
                 </div>
-
 
                 <div class="col-md-3">
                     <div class="form-group mt-1">

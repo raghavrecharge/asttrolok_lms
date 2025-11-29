@@ -4,7 +4,6 @@
     }
 @endphp
 
-
 <div class="mt-3" id="mobile_app">
 
     <form action="{{ getAdminPanelUrl() }}/settings/maintenance_settings" method="post">
@@ -86,7 +85,6 @@
                 </div>
             </div>
         </div>
-
 
         <button type="submit" class="btn btn-primary">{{ trans('admin/main.save_change') }}</button>
     </form>

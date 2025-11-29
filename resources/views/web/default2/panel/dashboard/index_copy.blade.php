@@ -1128,11 +1128,11 @@
 
                                                 <div class="font-12 text-gray">
                                                     @if(!empty($accounting->webinar_id) and !empty($accounting->webinar))
-                                                        #{{ $accounting->webinar->id }}{{ ($accounting->is_cashback) ? '-'.$accounting->webinar->title : '' }}
+
                                                     @elseif(!empty($accounting->bundle_id) and !empty($accounting->bundle))
-                                                        #{{ $accounting->bundle->id }}{{ ($accounting->is_cashback) ? '-'.$accounting->bundle->title : '' }}
+
                                                     @elseif(!empty($accounting->product_id) and !empty($accounting->product))
-                                                        #{{ $accounting->product->id }}{{ ($accounting->is_cashback) ? '-'.$accounting->product->title : '' }}
+
                                                     @elseif(!empty($accounting->meeting_time_id) and !empty($accounting->meetingTime))
                                                         {{ $accounting->meetingTime->meeting->creator->full_name }}
                                                     @elseif(!empty($accounting->subscribe_id) and !empty($accounting->subscribe))

@@ -11,7 +11,6 @@ use Astrotomic\Translatable\Translatable;
 class Category extends Model implements TranslatableContract
 {
     use Translatable;
-    // use Sluggable;
 
     protected $table = 'categories';
     public $timestamps = false;
@@ -27,11 +26,6 @@ class Category extends Model implements TranslatableContract
         return getTranslateAttributeValue($this, 'title');
     }
 
-    /**
-     * Return the sluggable configuration array for this model.
-     *
-     * @return array
-     */
     public function sluggable(): array
     {
         return [
@@ -45,7 +39,6 @@ class Category extends Model implements TranslatableContract
     {
         return SlugService::createSlug(self::class, 'slug', $title);
     }
-
 
     public function category()
     {
@@ -87,7 +80,7 @@ class Category extends Model implements TranslatableContract
 
     static function getCategories()
     {
-        $categories = 
+        $categories =
              self::whereNull('parent_id')
                 ->with([
                     'subCategories' => function ($query) {
@@ -96,7 +89,6 @@ class Category extends Model implements TranslatableContract
                 ])
                 ->orderBy('order', 'asc')
                 ->get();
-      
 
         return $categories;
     }

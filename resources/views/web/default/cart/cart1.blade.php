@@ -3,16 +3,12 @@
 <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/mobile-cart.css">
 <style>
 .loader {
-  //border: 16px solid #f3f3f3;
-  //border-radius: 50%;
-  //border-top: 16px solid #3498db;
 
   height: 80px;
   -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
-#loader {
     position: fixed;
     left: 50%;
     top: 50%;
@@ -55,7 +51,7 @@
   <div class="col-12 col-lg-6 order2">
       @php
             $userCurrency = currency();
-            //print_r($cart->id);die;
+
             $invalidChannels = [];
         @endphp
         <div class=" bg-gray200 mt-30 rounded-lg border p-15">
@@ -70,7 +66,7 @@
             <div class="row d-none">
                 @if(!empty($paymentChannels))
                 @php
-               //echo'<pre>'; print_r($paymentChannels);die;
+
                 @endphp
                     @foreach($paymentChannels as $paymentChannel)
                         @if(!empty($paymentChannel->currencies) and in_array($userCurrency, $paymentChannel->currencies))
@@ -166,7 +162,7 @@
                                     <div class="image-box" >
                                         @php
                                             $cartItemInfo = $cart->getItemInfo();
-                                           //print_r($cart);
+
                                            $extra_amount += $cart['extra_amount'];
                                         @endphp
                                         <img loading="lazy" src="{{ $cartItemInfo['imgPath'] ?? '' }}" class="img-cover" alt="user avatar" style="
@@ -241,9 +237,7 @@
 
                                          @php
 
-                                //echo'<pre>'; print_r($cart[0]);die;
                                  $cartItemInfo = $cart[0];
-                                         //print_r($cartItemInfo);die;
 
                                         @endphp
                                         <img loading="lazy" src="{{ $cartItemInfo['thumbnail'] ?? '' }}" class="img-cover" alt="user avatar" style="
@@ -414,7 +408,7 @@
                             </div>
                             @php
                             $total-=$extra_amount;
-                            //session('total_amount')-=$extra_amount;
+
                             @endphp
                             @endif
 

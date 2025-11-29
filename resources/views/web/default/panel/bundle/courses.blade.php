@@ -90,7 +90,6 @@
 
                                                 <a href="/panel/webinars/{{ $webinar->id }}/step/4" class="webinar-actions d-block mt-10">{{ trans('public.files') }}</a>
 
-
                                                 @if($webinar->isOwner($authUser->id))
                                                     <a href="/panel/webinars/{{ $webinar->id }}/export-students-list" class="webinar-actions d-block mt-10">{{ trans('public.export_list') }}</a>
                                                 @endif

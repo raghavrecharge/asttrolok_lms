@@ -41,7 +41,6 @@
             <p class="font-12 text-muted mt-1">{{ trans('update.apply_cashback_per_item_hint') }}</p>
         </div>
 
-
         <div class="js-max-amount-field form-group {{ (!empty($rule) and $rule->amount_type == 'percent') ? '' : 'd-none' }}">
             <label class="input-label">{{ trans('admin/main.max_amount') }}</label>
             <input type="number" name="max_amount" value="{{ !empty($rule) ? $rule->max_amount : old('max_amount') }}" class="form-control @error('max_amount')  is-invalid @enderror"/>

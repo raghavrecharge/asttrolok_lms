@@ -7,11 +7,6 @@
 @endpush
 
 @php
-// $cover_img['Astrology']="/store/1/Category/Astrology-min.jpg";
-// $cover_img['Ayurveda']="/store/1/Category/Ayurveda-min.jpg";
-//$cover_img['Palmistry']="/store/1/Category/Palmistry.jpg";
-//$cover_img['Vastu']="/store/1/Category/Vastu-min.jpg";
-//$cover_img['Numerology']="/store/1/Category/Numerology-min.jpg";
 
 $cover_img['Astrology']="/store/1/Category/Astrology-mobile.jpg";
  $cover_img['Ayurveda']="/store/1/Category/Ayurveda-mobile.jpg";

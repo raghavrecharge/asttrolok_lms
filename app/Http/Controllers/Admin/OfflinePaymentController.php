@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Exports\OfflinePaymentsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting;
@@ -18,50 +21,60 @@ class OfflinePaymentController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_offline_payments_list');
+        try {
+            $this->authorize('admin_offline_payments_list');
 
-        $pageType = $request->get('page_type', 'requests'); //requests or history
+            $pageType = $request->get('page_type', 'requests');
 
-        $query = OfflinePayment::query();
-        if ($pageType == 'requests') {
-            $query->where('status', OfflinePayment::$waiting);
-        } else {
-            $query->where('status', '!=', OfflinePayment::$waiting);
+            $query = OfflinePayment::query();
+            if ($pageType == 'requests') {
+                $query->where('status', OfflinePayment::$waiting);
+            } else {
+                $query->where('status', '!=', OfflinePayment::$waiting);
+            }
+
+            $query = $this->filters($query, $request);
+
+            $offlinePayments = $query->paginate(10);
+
+            $offlinePayments->appends([
+                'page_type' => $pageType
+            ]);
+
+            $roles = Role::all();
+
+            $offlineBanks = OfflineBank::query()
+                ->orderBy('created_at', 'desc')
+                ->with([
+                    'specifications'
+                ])
+                ->get();
+
+            $data = [
+                'pageTitle' => trans('admin/main.offline_payments_title') . (($pageType == 'requests') ? 'Requests' : 'History'),
+                'offlinePayments' => $offlinePayments,
+                'pageType' => $pageType,
+                'roles' => $roles,
+                'offlineBanks' => $offlineBanks,
+            ];
+
+            $user_ids = $request->get('user_ids', []);
+
+            if (!empty($user_ids)) {
+                $data['users'] = User::select('id', 'full_name')
+                    ->whereIn('id', $user_ids)->get();
+            }
+
+            return view('admin.financial.offline_payments.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $query = $this->filters($query, $request);
-
-        $offlinePayments = $query->paginate(10);
-
-        $offlinePayments->appends([
-            'page_type' => $pageType
-        ]);
-
-        $roles = Role::all();
-
-        $offlineBanks = OfflineBank::query()
-            ->orderBy('created_at', 'desc')
-            ->with([
-                'specifications'
-            ])
-            ->get();
-
-        $data = [
-            'pageTitle' => trans('admin/main.offline_payments_title') . (($pageType == 'requests') ? 'Requests' : 'History'),
-            'offlinePayments' => $offlinePayments,
-            'pageType' => $pageType,
-            'roles' => $roles,
-            'offlineBanks' => $offlineBanks,
-        ];
-
-        $user_ids = $request->get('user_ids', []);
-
-        if (!empty($user_ids)) {
-            $data['users'] = User::select('id', 'full_name')
-                ->whereIn('id', $user_ids)->get();
-        }
-
-        return view('admin.financial.offline_payments.lists', $data);
     }
 
     private function filters($query, $request)
@@ -127,68 +140,98 @@ class OfflinePaymentController extends Controller
 
     public function reject($id)
     {
-        $this->authorize('admin_offline_payments_reject');
+        try {
+            $this->authorize('admin_offline_payments_reject');
 
-        $offlinePayment = OfflinePayment::findOrFail($id);
-        $offlinePayment->update(['status' => OfflinePayment::$reject]);
+            $offlinePayment = OfflinePayment::findOrFail($id);
+            $offlinePayment->update(['status' => OfflinePayment::$reject]);
 
-        $notifyOptions = [
-            '[amount]' => handlePrice($offlinePayment->amount),
-        ];
-        sendNotification('offline_payment_rejected', $notifyOptions, $offlinePayment->user_id);
+            $notifyOptions = [
+                '[amount]' => handlePrice($offlinePayment->amount),
+            ];
+            sendNotification('offline_payment_rejected', $notifyOptions, $offlinePayment->user_id);
 
-        return back();
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('reject error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function approved($id)
     {
-        $this->authorize('admin_offline_payments_approved');
+        try {
+            $this->authorize('admin_offline_payments_approved');
 
-        $offlinePayment = OfflinePayment::findOrFail($id);
+            $offlinePayment = OfflinePayment::findOrFail($id);
 
-        Accounting::create([
-            'creator_id' => auth()->user()->id,
-            'user_id' => $offlinePayment->user_id,
-            'amount' => $offlinePayment->amount,
-            'type' => Accounting::$addiction,
-            'type_account' => Accounting::$asset,
-            'description' => trans('admin/pages/setting.notification_offline_payment_approved'),
-            'created_at' => time(),
-        ]);
+            Accounting::create([
+                'creator_id' => auth()->user()->id,
+                'user_id' => $offlinePayment->user_id,
+                'amount' => $offlinePayment->amount,
+                'type' => Accounting::$addiction,
+                'type_account' => Accounting::$asset,
+                'description' => trans('admin/pages/setting.notification_offline_payment_approved'),
+                'created_at' => time(),
+            ]);
 
-        $offlinePayment->update(['status' => OfflinePayment::$approved]);
+            $offlinePayment->update(['status' => OfflinePayment::$approved]);
 
-        $notifyOptions = [
-            '[amount]' => handlePrice($offlinePayment->amount),
-        ];
-        sendNotification('offline_payment_approved', $notifyOptions, $offlinePayment->user_id);
+            $notifyOptions = [
+                '[amount]' => handlePrice($offlinePayment->amount),
+            ];
+            sendNotification('offline_payment_approved', $notifyOptions, $offlinePayment->user_id);
 
-        $accountChargeReward = RewardAccounting::calculateScore(Reward::ACCOUNT_CHARGE, $offlinePayment->amount);
-        RewardAccounting::makeRewardAccounting($offlinePayment->user_id, $accountChargeReward, Reward::ACCOUNT_CHARGE);
+            $accountChargeReward = RewardAccounting::calculateScore(Reward::ACCOUNT_CHARGE, $offlinePayment->amount);
+            RewardAccounting::makeRewardAccounting($offlinePayment->user_id, $accountChargeReward, Reward::ACCOUNT_CHARGE);
 
-        $chargeWalletReward = RewardAccounting::calculateScore(Reward::CHARGE_WALLET, $offlinePayment->amount);
-        RewardAccounting::makeRewardAccounting($offlinePayment->user_id, $chargeWalletReward, Reward::CHARGE_WALLET);
+            $chargeWalletReward = RewardAccounting::calculateScore(Reward::CHARGE_WALLET, $offlinePayment->amount);
+            RewardAccounting::makeRewardAccounting($offlinePayment->user_id, $chargeWalletReward, Reward::CHARGE_WALLET);
 
-        return back();
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('approved error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function exportExcel(Request $request)
     {
-        $pageType = $request->get('page_type', 'requests'); //requests or history
+        try {
+            $pageType = $request->get('page_type', 'requests');
 
-        $query = OfflinePayment::query();
-        if ($pageType == 'requests') {
-            $query->where('status', OfflinePayment::$waiting);
-        } else {
-            $query->where('status', '!=', OfflinePayment::$waiting);
+            $query = OfflinePayment::query();
+            if ($pageType == 'requests') {
+                $query->where('status', OfflinePayment::$waiting);
+            } else {
+                $query->where('status', '!=', OfflinePayment::$waiting);
+            }
+
+            $query = $this->filters($query, $request);
+
+            $offlinePayments = $query->get();
+
+            $export = new OfflinePaymentsExport($offlinePayments);
+
+            return Excel::download($export, 'offline_payment_' . $pageType . '.xlsx');
+        } catch (\Exception $e) {
+            \Log::error('exportExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $query = $this->filters($query, $request);
-
-        $offlinePayments = $query->get();
-
-        $export = new OfflinePaymentsExport($offlinePayments);
-
-        return Excel::download($export, 'offline_payment_' . $pageType . '.xlsx');
     }
 }

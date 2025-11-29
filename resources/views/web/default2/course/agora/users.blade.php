@@ -14,7 +14,6 @@
         </div>
     </div>
 
-
     <div class="user-card d-flex align-items-center border border-gray200 p-15 mx-15 mt-25 rounded-sm">
         <div class="avatar">
             <img src="" alt="" class="img-cover rounded-circle">
@@ -26,7 +25,6 @@
     </div>
 
 </div>
-
 
 @push('scripts_bottom')
 

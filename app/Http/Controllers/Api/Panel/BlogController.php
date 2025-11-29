@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BlogResource;
 use App\Http\Resources\CommentResource;
@@ -14,43 +17,61 @@ class BlogController extends Controller
 
     public function index()
     {
-        $user = apiAuth();
-        $query = Blog::where('author_id', $user->id);
+        try {
+            $user = apiAuth();
+            $query = Blog::where('author_id', $user->id);
 
-        $posts = deepClone($query)
-            ->orderBy('created_at', 'desc')
-            ->get();
+            $posts = deepClone($query)
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        $blogIds = deepClone($query)->pluck('id')->toArray();
+            $blogIds = deepClone($query)->pluck('id')->toArray();
 
-        $postsCount = count($blogIds);
-        $commentsCount = Comment::whereIn('blog_id', $blogIds)->count();
-        $pendingPublishCount = deepClone($query)->where('status', 'pending')->count();
+            $postsCount = count($blogIds);
+            $commentsCount = Comment::whereIn('blog_id', $blogIds)->count();
+            $pendingPublishCount = deepClone($query)->where('status', 'pending')->count();
 
-        return apiResponse2(1, 'retrieved', trans('api.public.retrieved'),
-            [
-                'posts_count' => $postsCount,
-                'comment_count' => $commentsCount,
-                'pending_publish_count' => $pendingPublishCount,
-                'blogs' => BlogResource::collection($posts)
+            return apiResponse2(1, 'retrieved', trans('api.public.retrieved'),
+                [
+                    'posts_count' => $postsCount,
+                    'comment_count' => $commentsCount,
+                    'pending_publish_count' => $pendingPublishCount,
+                    'blogs' => BlogResource::collection($posts)
+                ]);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
-
+            
+            throw $e;
+        }
     }
 
     public function show(Blog $blog)
     {
-        if ($blog->author_id != apiAuth()->id) {
-            abort(404);
-        }
-        $resource = new BlogResource($blog);
-        $resource->show = true;
+        try {
+            if ($blog->author_id != apiAuth()->id) {
+                abort(404);
+            }
+            $resource = new BlogResource($blog);
+            $resource->show = true;
 
-        return apiResponse2(1, 'retrieved', trans('api.public.retrieved'),
-            [
-                'blog' => $resource,
+            return apiResponse2(1, 'retrieved', trans('api.public.retrieved'),
+                [
+                    'blog' => $resource,
 
+                ]);
+        } catch (\Exception $e) {
+            \Log::error('show error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
+            
+            throw $e;
+        }
     }
-
 
 }

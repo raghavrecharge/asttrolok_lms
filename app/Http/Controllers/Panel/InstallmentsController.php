@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Mixins\Installment\InstallmentAccounting;
 use App\Models\Cart;
@@ -19,66 +22,73 @@ class InstallmentsController extends Controller
 
     public function index()
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $query = InstallmentOrder::query()
-            ->where('user_id', $user->id)
-            ->where('status', '!=', 'paying');
+            $query = InstallmentOrder::query()
+                ->where('user_id', $user->id)
+                ->where('status', '!=', 'paying');
 
-        $openInstallmentsCount = deepClone($query)->where('status', 'open')->count();
-        $pendingVerificationCount = deepClone($query)->where('status', 'pending_verification')->count();
-        $finishedInstallmentsCount = $this->getFinishedInstallments($user);
+            $openInstallmentsCount = deepClone($query)->where('status', 'open')->count();
+            $pendingVerificationCount = deepClone($query)->where('status', 'pending_verification')->count();
+            $finishedInstallmentsCount = $this->getFinishedInstallments($user);
 
+            $orders = $query->with([
+                'installment' => function ($query) {
+                    $query->with([
+                        'steps' => function ($query) {
+                            $query->orderBy('deadline', 'asc');
+                        }
+                    ]);
+                    $query->withCount([
+                        'steps'
+                    ]);
+                }
+            ])->orderBy('created_at', 'desc')
+                ->paginate(10);
 
-        $orders = $query->with([
-            'installment' => function ($query) {
-                $query->with([
-                    'steps' => function ($query) {
-                        $query->orderBy('deadline', 'asc');
-                    }
-                ]);
-                $query->withCount([
-                    'steps'
-                ]);
+            foreach ($orders as $order) {
+                $getRemainedInstallments = $this->getRemainedInstallments($order);
+
+                $order->remained_installments_count = $getRemainedInstallments['total'];
+                $order->remained_installments_amount = $getRemainedInstallments['amount'];
+
+                $order->upcoming_installment = $this->getUpcomingInstallment($order);
+
+                $hasOverdue = $order->checkOrderHasOverdue();
+                $order->has_overdue = $hasOverdue;
+                $order->overdue_count = 0;
+                $order->overdue_amount = 0;
+
+                if ($hasOverdue) {
+                    $getOrderOverdueCountAndAmount = $order->getOrderOverdueCountAndAmount();
+                    $order->overdue_count = $getOrderOverdueCountAndAmount['count'];
+                    $order->overdue_amount = $getOrderOverdueCountAndAmount['amount'];
+                }
+
             }
-        ])->orderBy('created_at', 'desc')
-            ->paginate(10);
 
-        foreach ($orders as $order) {
-            $getRemainedInstallments = $this->getRemainedInstallments($order);
+            $overdueInstallmentsCount = $this->getOverdueInstallments($user);
 
-            $order->remained_installments_count = $getRemainedInstallments['total'];
-            $order->remained_installments_amount = $getRemainedInstallments['amount'];
+            $data = [
+                'pageTitle' => trans('update.installments'),
+                'openInstallmentsCount' => $openInstallmentsCount,
+                'pendingVerificationCount' => $pendingVerificationCount,
+                'finishedInstallmentsCount' => $finishedInstallmentsCount,
+                'overdueInstallmentsCount' => $overdueInstallmentsCount,
+                'orders' => $orders,
+            ];
 
-            $order->upcoming_installment = $this->getUpcomingInstallment($order);
-
-
-            // is overdue
-            $hasOverdue = $order->checkOrderHasOverdue();
-            $order->has_overdue = $hasOverdue;
-            $order->overdue_count = 0;
-            $order->overdue_amount = 0;
-
-            if ($hasOverdue) {
-                $getOrderOverdueCountAndAmount = $order->getOrderOverdueCountAndAmount();
-                $order->overdue_count = $getOrderOverdueCountAndAmount['count'];
-                $order->overdue_amount = $getOrderOverdueCountAndAmount['amount'];
-            }
-
+            return view('web.default.panel.financial.installments.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $overdueInstallmentsCount = $this->getOverdueInstallments($user);
-
-        $data = [
-            'pageTitle' => trans('update.installments'),
-            'openInstallmentsCount' => $openInstallmentsCount,
-            'pendingVerificationCount' => $pendingVerificationCount,
-            'finishedInstallmentsCount' => $finishedInstallmentsCount,
-            'overdueInstallmentsCount' => $overdueInstallmentsCount,
-            'orders' => $orders,
-        ];
-
-        return view('web.default.panel.financial.installments.lists', $data);
     }
 
     private function getRemainedInstallments($order)
@@ -218,155 +228,185 @@ class InstallmentsController extends Controller
 
     public function show($orderId)
     {
-        $user = auth()->user();
-
-        $order = InstallmentOrder::query()
-            ->where('id', $orderId)
-            ->where('user_id', $user->id)
-            ->with([
-                'installment' => function ($query) {
-                    $query->with([
-                        'steps' => function ($query) {
-                            $query->orderBy('deadline', 'asc');
-                        }
-                    ]);
-                }
-            ])
-            ->first();
-            $webinar= Webinar :: where('id',$order->webinar_id)->first();
-            $webinar_title= $webinar->slug;
-            
-            $WebinarPartPayment = WebinarPartPayment :: select('user_id', 'webinar_id', 'installment_id', DB::raw('sum(amount) as total_amount'))
-        ->where('user_id',$user->id)
-        ->where('webinar_id',$order->webinar_id)
-    ->groupBy('user_id', 'webinar_id')
-    ->first();
-    
-    $orderPayments = InstallmentOrderPayment :: where('installment_order_id', $order->id)
-            ->get();
-
-                    $totalSaleAmount=0;
-                    
-                foreach($orderPayments as $orderPayment){
-                    $saleId = $orderPayment->sale_id;
-                    if($saleId){
-                    $sale = Sale :: where(['id' => $saleId ,
-                    'status' => null,])
-                    ->first();
-                    if($sale)
-                $totalSaleAmount+=$sale->total_amount;
-                    }
-                 // echo '<pre>';
-                // print_r($order->id);
-        
-                    
-                }
-              $paidAmount = $totalSaleAmount  + (isset($WebinarPartPayment)?$WebinarPartPayment->total_amount:0);
-            //   print_r($paidAmount);
-            //   die();
-
-        if (!empty($order) and !in_array($order->status, ['refunded', 'canceled'])) {
-
-            $getRemainedInstallments = $this->getRemainedInstallments($order);
-            $getOverdueOrderInstallments = $this->getOverdueOrderInstallments($order);
-
-            $totalParts = $order->installment->steps->count();
-            $remainedParts = $getRemainedInstallments['total'];
-            $remainedAmount = $getRemainedInstallments['amount'];
-            $overdueAmount = $getOverdueOrderInstallments['amount'];
-
-            $data = [
-                'pageTitle' => trans('update.installments'),
-                'totalParts' => $totalParts,
-                'remainedParts' => $remainedParts,
-                'remainedAmount' => $remainedAmount,
-                'overdueAmount' => $overdueAmount,
-                'order' => $order,
-                'payments' => $order->payments,
-                'installment' => $order->installment,
-                'itemPrice' => $order->getItemPrice(),
-                'paidAmount' => $paidAmount,
-                'webinar_title' => $webinar_title,
-            ];
-
-            return view('web.default2.panel.financial.installments.details', $data);
-        }
-
-        abort(404);
-    }
-
-    public function cancelVerification($orderId)
-    {
-        if (getInstallmentsSettings("allow_cancel_verification")) {
+        try {
             $user = auth()->user();
 
             $order = InstallmentOrder::query()
                 ->where('id', $orderId)
                 ->where('user_id', $user->id)
-                ->where('status', "pending_verification")
+                ->with([
+                    'installment' => function ($query) {
+                        $query->with([
+                            'steps' => function ($query) {
+                                $query->orderBy('deadline', 'asc');
+                            }
+                        ]);
+                    }
+                ])
                 ->first();
+                $webinar= Webinar :: where('id',$order->webinar_id)->first();
+                $webinar_title= $webinar->slug;
 
-            if (!empty($order)) {
-                $installmentRefund = new InstallmentAccounting();
-                $installmentRefund->refundOrder($order);
+                $WebinarPartPayment = WebinarPartPayment :: select('user_id', 'webinar_id', 'installment_id', DB::raw('sum(amount) as total_amount'))
+            ->where('user_id',$user->id)
+            ->where('webinar_id',$order->webinar_id)
+            ->groupBy('user_id', 'webinar_id')
+            ->first();
 
-                return response()->json([
-                    'code' => 200,
-                    'title' => trans('public.request_success'),
-                    'text' => trans('update.order_status_changes_to_canceled'),
-                ]);
+            $orderPayments = InstallmentOrderPayment :: where('installment_order_id', $order->id)
+                ->get();
+
+                        $totalSaleAmount=0;
+
+                    foreach($orderPayments as $orderPayment){
+                        $saleId = $orderPayment->sale_id;
+                        if($saleId){
+                        $sale = Sale :: where(['id' => $saleId ,
+                        'status' => null,])
+                        ->first();
+                        if($sale)
+                    $totalSaleAmount+=$sale->total_amount;
+                        }
+
+                    }
+                  $paidAmount = $totalSaleAmount  + (isset($WebinarPartPayment)?$WebinarPartPayment->total_amount:0);
+
+            if (!empty($order) and !in_array($order->status, ['refunded', 'canceled'])) {
+
+                $getRemainedInstallments = $this->getRemainedInstallments($order);
+                $getOverdueOrderInstallments = $this->getOverdueOrderInstallments($order);
+
+                $totalParts = $order->installment->steps->count();
+                $remainedParts = $getRemainedInstallments['total'];
+                $remainedAmount = $getRemainedInstallments['amount'];
+                $overdueAmount = $getOverdueOrderInstallments['amount'];
+
+                $data = [
+                    'pageTitle' => trans('update.installments'),
+                    'totalParts' => $totalParts,
+                    'remainedParts' => $remainedParts,
+                    'remainedAmount' => $remainedAmount,
+                    'overdueAmount' => $overdueAmount,
+                    'order' => $order,
+                    'payments' => $order->payments,
+                    'installment' => $order->installment,
+                    'itemPrice' => $order->getItemPrice(),
+                    'paidAmount' => $paidAmount,
+                    'webinar_title' => $webinar_title,
+                ];
+
+                return view('web.default2.panel.financial.installments.details', $data);
             }
-        }
 
-        abort(404);
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('show error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    public function cancelVerification($orderId)
+    {
+        try {
+            if (getInstallmentsSettings("allow_cancel_verification")) {
+                $user = auth()->user();
+
+                $order = InstallmentOrder::query()
+                    ->where('id', $orderId)
+                    ->where('user_id', $user->id)
+                    ->where('status', "pending_verification")
+                    ->first();
+
+                if (!empty($order)) {
+                    $installmentRefund = new InstallmentAccounting();
+                    $installmentRefund->refundOrder($order);
+
+                    return response()->json([
+                        'code' => 200,
+                        'title' => trans('public.request_success'),
+                        'text' => trans('update.order_status_changes_to_canceled'),
+                    ]);
+                }
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('cancelVerification error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function payUpcomingPart($orderId)
     {
-        // die();
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $order = InstallmentOrder::query()
-            ->where('id', $orderId)
-            ->where('user_id', $user->id)
-            ->first();
-            
-            // print_r($order);
-            
+            $order = InstallmentOrder::query()
+                ->where('id', $orderId)
+                ->where('user_id', $user->id)
+                ->first();
 
+            if (!empty($order)) {
+                $upcomingStep = $this->getUpcomingInstallment($order);
 
-        if (!empty($order)) {
-            $upcomingStep = $this->getUpcomingInstallment($order);
-
-            if (!empty($upcomingStep)) {
-                return $this->handlePayStep($order, $upcomingStep);
+                if (!empty($upcomingStep)) {
+                    return $this->handlePayStep($order, $upcomingStep);
+                }
             }
-        }
 
-        abort(404);
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('payUpcomingPart error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function payStep($orderId, $stepId)
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $order = InstallmentOrder::query()
-            ->where('id', $orderId)
-            ->where('user_id', $user->id)
-            ->first();
-
-        if (!empty($order)) {
-            $step = InstallmentStep::query()
-                ->where('installment_id', $order->installment_id)
-                ->where('id', $stepId)
+            $order = InstallmentOrder::query()
+                ->where('id', $orderId)
+                ->where('user_id', $user->id)
                 ->first();
 
-            if (!empty($step)) {
-                return $this->handlePayStep($order, $step);
-            }
-        }
+            if (!empty($order)) {
+                $step = InstallmentStep::query()
+                    ->where('installment_id', $order->installment_id)
+                    ->where('id', $stepId)
+                    ->first();
 
-        abort(404);
+                if (!empty($step)) {
+                    return $this->handlePayStep($order, $step);
+                }
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('payStep error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function handlePayStep($order, $step)
@@ -378,13 +418,12 @@ class InstallmentsController extends Controller
     ->first();
     $paidAmount=null;
     if($WebinarPartPayment){
-    // print_r($WebinarPartPayment);
-    // die();
+
     $orderPayments = InstallmentOrderPayment :: where('installment_order_id', $order->id)
             ->get();
 
                     $totalSaleAmount=0;
-                    
+
                 foreach($orderPayments as $orderPayment){
                     $saleId = $orderPayment->sale_id;
                     if($saleId){
@@ -394,28 +433,18 @@ class InstallmentsController extends Controller
                     if($sale)
                 $totalSaleAmount+=$sale->total_amount;
                     }
-                 // echo '<pre>';
-                // print_r($order->id);
-        
-                    
+
                 }
-              
-              
+
              $orderPaymentsTotalPaidAmount = InstallmentOrderPayment :: select('*', DB::raw('sum(amount) as total_amount'))
         ->where('installment_order_id',$order->id)
         ->where('status','paid')
     ->groupBy('installment_order_id')
     ->first();
-    // print_r($orderPaymentsTotalPaidAmount);
-    
+
     $paidAmount = $totalSaleAmount  +  (isset($WebinarPartPayment)?$WebinarPartPayment->total_amount:0) - (isset($orderPaymentsTotalPaidAmount)?$orderPaymentsTotalPaidAmount->total_amount:0);
     }
-        
-            //   print_r($paidAmount);
-            //   die();
-        
-        
-        
+
         $installmentPayment = InstallmentOrderPayment::query()->updateOrCreate([
             'installment_order_id' => $order->id,
             'sale_id' => null,

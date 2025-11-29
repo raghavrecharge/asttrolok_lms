@@ -50,7 +50,6 @@
                     <input type="hidden" name="ajax[{{ !empty($ticket) ? $ticket->id : 'new' }}][locale]" value="{{ $defaultLocale }}">
                 @endif
 
-
                 <div class="row">
                     <div class="col-12 col-lg-6">
                         <div class="form-group">

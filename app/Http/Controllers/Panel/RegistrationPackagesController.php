@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\traits\InstallmentsTrait;
 use App\Mixins\Installment\InstallmentPlans;
@@ -31,40 +34,50 @@ class RegistrationPackagesController extends Controller
 
     public function index()
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $this->checkAccess($user);
+            $this->checkAccess($user);
 
-        $role = 'instructors';
+            $role = 'instructors';
 
-        if ($user->isOrganization()) {
-            $role = 'organizations';
-        }
-
-        $packages = RegistrationPackage::where('role', $role)
-            ->where('status', 'active')
-            ->get();
-
-        foreach ($packages as $package) {
-            if (getInstallmentsSettings('status') and $user->enable_installments and $package->price > 0) {
-                $installmentPlans = new InstallmentPlans($user);
-                $installments = $installmentPlans->getPlans('registration_packages', $package->id);
-
-                $package->has_installment = (!empty($installments) and count($installments));
+            if ($user->isOrganization()) {
+                $role = 'organizations';
             }
+
+            $packages = RegistrationPackage::where('role', $role)
+                ->where('status', 'active')
+                ->get();
+
+            foreach ($packages as $package) {
+                if (getInstallmentsSettings('status') and $user->enable_installments and $package->price > 0) {
+                    $installmentPlans = new InstallmentPlans($user);
+                    $installments = $installmentPlans->getPlans('registration_packages', $package->id);
+
+                    $package->has_installment = (!empty($installments) and count($installments));
+                }
+            }
+
+            $userPackage = new UserPackage($user);
+            $activePackage = $userPackage->getPackage();
+
+            $data = [
+                'pageTitle' => trans('update.registration_packages'),
+                'packages' => $packages,
+                'activePackage' => $activePackage,
+                'accountStatistics' => $this->handleAccountStatistics($user),
+            ];
+
+            return view('web.default.panel.financial.registration_packages', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $userPackage = new UserPackage($user);
-        $activePackage = $userPackage->getPackage();
-
-        $data = [
-            'pageTitle' => trans('update.registration_packages'),
-            'packages' => $packages,
-            'activePackage' => $activePackage,
-            'accountStatistics' => $this->handleAccountStatistics($user),
-        ];
-
-        return view('web.default.panel.financial.registration_packages', $data);
     }
 
     private function handleAccountStatistics($user)
@@ -91,71 +104,81 @@ class RegistrationPackagesController extends Controller
 
     public function pay(Request $request)
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $paymentChannels = PaymentChannel::where('status', 'active')->get();
+            $paymentChannels = PaymentChannel::where('status', 'active')->get();
 
-        $becomeInstructorId = $request->get('become_instructor_id');
-        $package = RegistrationPackage::where('id', $request->input('id'))
-            ->where('status', 'active')
-            ->first();
+            $becomeInstructorId = $request->get('become_instructor_id');
+            $package = RegistrationPackage::where('id', $request->input('id'))
+                ->where('status', 'active')
+                ->first();
 
-        if (empty($package)) {
-            $toastData = [
-                'msg' => trans('update.registration_package_not_valid'),
-                'status' => 'error'
-            ];
-            return back()->with(['toast' => $toastData]);
-        }
-
-        $financialSettings = getFinancialSettings();
-        $tax = $financialSettings['tax'] ?? 0;
-
-        $amount = $package->getPrice();
-        $taxPrice = $tax ? $amount * $tax / 100 : 0;
-
-        $order = Order::create([
-            "user_id" => $user->id,
-            "status" => Order::$pending,
-            'tax' => $taxPrice,
-            'commission' => 0,
-            "amount" => $amount,
-            "total_amount" => $amount + $taxPrice,
-            "created_at" => time(),
-        ]);
-
-        OrderItem::updateOrCreate([
-            'user_id' => $user->id,
-            'order_id' => $order->id,
-            'registration_package_id' => $package->id,
-        ], [
-            'become_instructor_id' => $becomeInstructorId ?? null,
-            'amount' => $order->amount,
-            'total_amount' => $amount + $taxPrice,
-            'tax' => $tax,
-            'tax_price' => $taxPrice,
-            'commission' => 0,
-            'commission_price' => 0,
-            'created_at' => time(),
-        ]);
-
-        $razorpay = false;
-        foreach ($paymentChannels as $paymentChannel) {
-            if ($paymentChannel->class_name == 'Razorpay') {
-                $razorpay = true;
+            if (empty($package)) {
+                $toastData = [
+                    'msg' => trans('update.registration_package_not_valid'),
+                    'status' => 'error'
+                ];
+                return back()->with(['toast' => $toastData]);
             }
+
+            $financialSettings = getFinancialSettings();
+            $tax = $financialSettings['tax'] ?? 0;
+
+            $amount = $package->getPrice();
+            $taxPrice = $tax ? $amount * $tax / 100 : 0;
+
+            $order = Order::create([
+                "user_id" => $user->id,
+                "status" => Order::$pending,
+                'tax' => $taxPrice,
+                'commission' => 0,
+                "amount" => $amount,
+                "total_amount" => $amount + $taxPrice,
+                "created_at" => time(),
+            ]);
+
+            OrderItem::updateOrCreate([
+                'user_id' => $user->id,
+                'order_id' => $order->id,
+                'registration_package_id' => $package->id,
+            ], [
+                'become_instructor_id' => $becomeInstructorId ?? null,
+                'amount' => $order->amount,
+                'total_amount' => $amount + $taxPrice,
+                'tax' => $tax,
+                'tax_price' => $taxPrice,
+                'commission' => 0,
+                'commission_price' => 0,
+                'created_at' => time(),
+            ]);
+
+            $razorpay = false;
+            foreach ($paymentChannels as $paymentChannel) {
+                if ($paymentChannel->class_name == 'Razorpay') {
+                    $razorpay = true;
+                }
+            }
+
+            $data = [
+                'pageTitle' => trans('public.checkout_page_title'),
+                'paymentChannels' => $paymentChannels,
+                'total' => $order->total_amount,
+                'order' => $order,
+                'count' => 1,
+                'userCharge' => $user->getAccountingCharge(),
+                'razorpay' => $razorpay
+            ];
+
+            return view(getTemplate() . '.cart.payment', $data);
+        } catch (\Exception $e) {
+            \Log::error('pay error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $data = [
-            'pageTitle' => trans('public.checkout_page_title'),
-            'paymentChannels' => $paymentChannels,
-            'total' => $order->total_amount,
-            'order' => $order,
-            'count' => 1,
-            'userCharge' => $user->getAccountingCharge(),
-            'razorpay' => $razorpay
-        ];
-
-        return view(getTemplate() . '.cart.payment', $data);
     }
 }

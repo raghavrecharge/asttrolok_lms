@@ -75,7 +75,6 @@
             </div>
         </div>
 
-
         <div class="section-body">
             <div class="row">
                 <div class="col-12 col-md-7">
@@ -94,7 +93,6 @@
                                         <th class="text-center">{{ trans('update.payment_date') }}</th>
                                         <th class="text-center">{{ trans('public.status') }}</th>
                                     </tr>
-
 
                                     @if(!empty($installment->upfront))
                                         @php

@@ -105,7 +105,6 @@
                             </div>
                         </div>
 
-
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label class="input-label">{{ trans('admin/main.filters') }}</label>
@@ -116,7 +115,6 @@
 
                                     <option value="purchased_classes_amount_asc" @if(request()->get('sort') == 'purchased_classes_amount_asc') selected @endif>{{ trans('admin/main.purchased_classes_amount_ascending') }}</option>
                                     <option value="purchased_classes_amount_desc" @if(request()->get('sort') == 'purchased_classes_amount_desc') selected @endif>{{ trans('admin/main.purchased_classes_amount_descending') }}</option>
-
 
                                     <option value="purchased_appointments_asc" @if(request()->get('sort') == 'purchased_appointments_asc') selected @endif>{{ trans('admin/main.purchased_appointments_ascending') }}</option>
                                     <option value="purchased_appointments_desc" @if(request()->get('sort') == 'purchased_appointments_desc') selected @endif>{{ trans('admin/main.purchased_appointments_descending') }}</option>
@@ -129,7 +127,6 @@
                                 </select>
                             </div>
                         </div>
-
 
                         <div class="col-md-3">
                             <div class="form-group">
@@ -155,7 +152,6 @@
                             </div>
                         </div>
 
-
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label class="input-label">{{ trans('admin/main.status') }}</label>
@@ -168,7 +164,6 @@
                                 </select>
                             </div>
                         </div>
-
 
                         <div class="col-md-3">
                             <div class="form-group mt-1">
@@ -294,7 +289,6 @@
         </div>
     </div>
 
-
     <section class="card">
         <div class="card-body">
             <div class="section-title ml-0 mt-0 mb-3"><h5>{{trans('admin/main.hints')}}</h5></div>
@@ -313,14 +307,12 @@
                     </div>
                 </div>
 
-
                 <div class="col-md-4">
                     <div class="media-body">
                         <div class="text-primary mt-0 mb-1 font-weight-bold">{{trans('admin/main.students_hint_title_3')}}</div>
                         <div class="text-small font-600-bold">{{trans('admin/main.students_hint_description_3')}}</div>
                     </div>
                 </div>
-
 
             </div>
         </div>
@@ -337,9 +329,6 @@
             </div>
 
             <div class="mt-25 position-relative">
-                
-
-                
 
                 <div class="modal-video-lists mt-15">
                                    <section class="card">
@@ -353,13 +342,12 @@
 			<label for="file">File:</label>
 			<input id="file" type="file" name="file" class="form-control">
 		</div>
-	 
+
 		<button class="btn btn-success">Import File</button>
 	</form>
             </div>
         </section>
-                                        
-                          
+
                 </div>
             </div>
         </div>

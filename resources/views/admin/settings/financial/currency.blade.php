@@ -4,7 +4,6 @@
     }
 @endphp
 
-
 <div class="tab-pane mt-3 fade  @if(request()->get('tab') == "currency") active show @endif" id="currency" role="tabpanel" aria-labelledby="currency-tab">
     <div class="row">
         <div class="col-12 col-md-6">
@@ -12,7 +11,6 @@
                 {{ csrf_field() }}
                 <input type="hidden" name="page" value="financial">
                 <input type="hidden" name="name" value="{{ \App\Models\Setting::$currencySettingsName }}">
-
 
                 <div class="form-group">
                     <label class="input-label d-block">{{ trans('update.default_currency') }}</label>
@@ -23,7 +21,6 @@
                         @endforeach
                     </select>
                 </div>
-
 
                 <div class="form-group">
                     <label class="input-label d-block">{{ trans('update.currency_position') }}</label>
@@ -46,7 +43,6 @@
                     <label class="input-label d-block">{{ trans('update.currency_decimal') }}</label>
                     <input type="number" name="value[currency_decimal]" class="form-control" min="0" max="3" value="{{ (!empty($itemValue) and !empty($itemValue['currency_decimal'])) ? $itemValue['currency_decimal'] : 0 }}">
                 </div>
-
 
                 <div class="form-group custom-switches-stacked">
                     <label class="custom-switch pl-0 d-flex align-items-center">
@@ -82,7 +78,6 @@
                                         <i class="fa fa-ellipsis-v"></i>
                                     </button>
 
-
                                     <div class="dropdown-menu text-left">
                                         <button type="button" data-path="{{ getAdminPanelUrl("/settings/financial/currency/{$currencyItem->id}/edit") }}" class="js-edit-currency font-14 btn-transparent d-block">{{ trans('public.edit') }}</button>
 
@@ -104,9 +99,7 @@
     </div>
 </div>
 
-
 @include('admin.settings.financial.currency_modal')
-
 
 @push('scripts_bottom')
     <script>

@@ -43,7 +43,6 @@
                                     <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
                                 @endif
 
-
                                 <div class="form-group">
                                     <label>{{ trans('/admin/main.category') }}</label>
                                     <select class="form-control @error('category_id') is-invalid @enderror" name="category_id">
@@ -67,7 +66,6 @@
                                     </div>
                                     @enderror
                                 </div>
-
 
                                 <div class="form-group">
                                     <label>{{ trans('admin/main.title') }}</label>

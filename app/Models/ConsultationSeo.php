@@ -16,9 +16,7 @@ class ConsultationSeo extends Model
         'status',
         'keyword'
     ];
-    
-    
-    
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

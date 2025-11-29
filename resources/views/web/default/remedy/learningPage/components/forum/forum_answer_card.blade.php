@@ -2,7 +2,7 @@
     $cardUser = !empty($answer) ? $answer->user : $courseForum->user;
 @endphp
 
-<div class="course-forum-answer-card py-15 m-15 rounded-lg {{ (!empty($answer) and $answer->resolved) ? 'resolved' : '' }}"> 
+<div class="course-forum-answer-card py-15 m-15 rounded-lg {{ (!empty($answer) and $answer->resolved) ? 'resolved' : '' }}">
     <div class="d-flex flex-wrap">
         <div class="col-12 col-md-3">
             <div class="position-relative bg-info-light d-flex flex-column align-items-center justify-content-center rounded-lg w-100 h-100 p-20">

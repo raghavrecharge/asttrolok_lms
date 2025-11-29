@@ -17,9 +17,6 @@
             </div>
         </div>
     @else
-      
-
-       
 
         @if(!empty($course->chapters) and count($course->chapters))
             @include('web.default.course.learningPage.components.content_for_progress.chapter')

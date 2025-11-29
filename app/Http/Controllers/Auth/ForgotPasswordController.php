@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Notifications\SendResetPasswordSMS;
 use App\User;
@@ -17,57 +20,65 @@ use Illuminate\Support\Facades\URL;
 class ForgotPasswordController extends Controller
 {
      protected $vboutService;
-    /*
-    |--------------------------------------------------------------------------
-    | Password Reset Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller is responsible for handling password reset emails and
-    | includes a trait which assists in sending these notifications from
-    | your application to your users. Feel free to explore this trait.
-    |
-    */
 
     use SendsPasswordResetEmails;
 
     public function showLinkRequestForm()
     {
-        
-        $agent = new Agent();
-                    if ($agent->isMobile()){
-                    return view(getTemplate() . '.auth.forgot_password');
-                }else{
-                    return view('web.default2' . '.auth.forgot_password');
-                }
-        // return view(getTemplate() . '.auth.forgot_password');
+        try {
+            $agent = new Agent();
+                        if ($agent->isMobile()){
+                        return view(getTemplate() . '.auth.forgot_password');
+                    }else{
+                        return view('web.default2' . '.auth.forgot_password');
+                    }
+        } catch (\Exception $e) {
+            \Log::error('showLinkRequestForm error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function forgot(Request $request)
     {
-        $this->validate($request, [
-            'username' => 'required|string|max:60',
-        ]);
-        if ($this->username() == 'email') {
-            $rules = [
-                'username' => 'required|email|exists:users,email',
-            ];
-        } else {
-            $rules = [
-                'username' => 'required|numeric|exists:users,mobile',
-            ];
-        }
+        try {
+            $this->validate($request, [
+                'username' => 'required|string|max:60',
+            ]);
+            if ($this->username() == 'email') {
+                $rules = [
+                    'username' => 'required|email|exists:users,email',
+                ];
+            } else {
+                $rules = [
+                    'username' => 'required|numeric|exists:users,mobile',
+                ];
+            }
 
-        if (!empty(getGeneralSecuritySettings('captcha_for_forgot_pass'))) {
-            $rules['captcha'] = 'required|captcha';
-        }
+            if (!empty(getGeneralSecuritySettings('captcha_for_forgot_pass'))) {
+                $rules['captcha'] = 'required|captcha';
+            }
 
-        $request->validate($rules);
+            $request->validate($rules);
 
-        if ($this->username() == 'email') {
+            if ($this->username() == 'email') {
+
+                return $this->getByEmail($request);
+            } else {
+                return $this->getByMobile($request);
+            }
+        } catch (\Exception $e) {
+            \Log::error('forgot error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
-            return $this->getByEmail($request);
-        } else {
-            return $this->getByMobile($request);
+            throw $e;
         }
     }
 
@@ -79,8 +90,6 @@ class ForgotPasswordController extends Controller
 
         if (!empty($user)) {
             $newPass = random_str(6, true, false);
-
-            // $user->notify(new SendResetPasswordSMS($user, $newPass));
 
             $user->update([
                 'password' => Hash::make($newPass),
@@ -121,29 +130,19 @@ try {
     $vboutService = new VboutService();
 
         $listId = '139650';
-        // $contactData = [
-        //     'email' => $request->input('email'),
-        //     'resetlink' => 'https://lms.asttrolok.in/',
-        //     // Add other contact fields as needed
-        // ];
+
         $baseUrl = URL::to('/');
  $contactData = [
             'email' => $email,
             'fields' => [
                 '931591' => $baseUrl.'/reset-password/'.$token.'?email='.$email,
-               
-                // Add other contact fields as needed
+
             ],
         ];
         $result = $vboutService->addContactToList($listId, $contactData);
-        // Mail::send('web.default.auth.password_verify', $emailData, function ($message) use ($email) {
-        //     $message->from(!empty($generalSettings['site_email']) ? $generalSettings['site_email'] : env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
-        //     $message->to($email);
-        //     $message->subject('Reset Password Notification');
-        // });
+
 } catch (\Exception $e) {
-    // Log the error message if needed
-    // Log::error('Mail sending failed: ' . $e->getMessage());
+
 }
 
         $toastData = [
@@ -157,15 +156,25 @@ try {
 
     public function username()
     {
-        $email_regex = "/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,})$/i";
+        try {
+            $email_regex = "/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,})$/i";
 
-        if (empty($this->username)) {
-            $this->username = 'mobile';
+            if (empty($this->username)) {
+                $this->username = 'mobile';
 
-            if (preg_match($email_regex, request('username', null))) {
-                $this->username = 'email';
+                if (preg_match($email_regex, request('username', null))) {
+                    $this->username = 'email';
+                }
             }
+            return $this->username;
+        } catch (\Exception $e) {
+            \Log::error('username error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        return $this->username;
     }
 }

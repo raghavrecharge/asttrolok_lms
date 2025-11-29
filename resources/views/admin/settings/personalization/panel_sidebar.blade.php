@@ -24,7 +24,6 @@
                     <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
                 @endif
 
-
                 <div class="form-group">
                     <label>{{ trans('admin/main.link') }}</label>
                     <input type="text" name="value[link]" value="{{ (!empty($itemValue) and !empty($itemValue['link'])) ? $itemValue['link'] : old('link') }}" class="form-control "/>

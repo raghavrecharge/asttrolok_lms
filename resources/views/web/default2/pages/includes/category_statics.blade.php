@@ -86,8 +86,6 @@
                     @foreach($homeCustomStatistics as $homeCustomStatistic)
                     <?php
 
-                    // $urls_cat=$cate123[$i]->getUrl();
-                    //  $urls_cat='#';
                     ?>
                        <a href="{{ $cate123[$i] }}">   <div class=" mt-lg-0 mt-lg-0 cats mobile{{ $i }}">
                             <div class="stats-item d-flex flex-column align-items-center text-center py-10 px-0 " style="width:100%;">

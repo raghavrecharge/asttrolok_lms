@@ -15,7 +15,6 @@
             </div>
         </div>
 
-
         <div class="section-body">
 
             <div class="card">
@@ -267,7 +266,6 @@
                                         @enderror
                                     </div>
                                 </div>
-
 
                                 <div class="form-group custom-switches-stacked">
                                     <label class="custom-switch pl-0">

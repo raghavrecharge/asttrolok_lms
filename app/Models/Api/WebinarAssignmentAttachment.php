@@ -6,5 +6,5 @@ use App\Models\WebinarAssignmentAttachment as Model;
 
 class WebinarAssignmentAttachment extends Model
 {
-    //
+
 }

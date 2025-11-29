@@ -52,7 +52,6 @@
                     </div>
                 </div>
 
-
                 <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                     <div class="card card-statistic-1">
                         <div class="card-icon bg-info">
@@ -116,7 +115,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.filters')}}</label>
@@ -140,7 +138,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('update.seller')}}</label>
@@ -155,7 +152,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -178,7 +174,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.status')}}</label>
@@ -190,7 +185,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group mt-1">

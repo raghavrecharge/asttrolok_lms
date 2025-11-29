@@ -65,44 +65,44 @@ class Discount extends Model
 
         return ($count > 0) ? $count : 0;
     }
-    
+
     public function checkValidDiscount1($id=null)
     {
         if ($this->expired_at < time()) {
-            return trans('update.discount_code_has_expired'); // expired
+            return trans('update.discount_code_has_expired');
         }
 
         $user = auth()->user();
-        // $carts = Cart::where('creator_id', $user->id)->get();
+
          $discountWebinarsIds = $this->discountCourses()->pluck('course_id')->toArray();
-  
+
             $hasSpecialWebinars = false;
 
             ;
     if (in_array($id, $discountWebinarsIds)) {
-                  
+
                     return 'ok';
             }else{
-                //  return 'ok';
+
                 return trans('update.discount_code_is_for_courses_error');
             }
-            
+
             }
 
     public function checkValidDiscount()
     {
-        
+
         if ($this->expired_at < time()) {
-            return trans('update.discount_code_has_expired'); // expired
+            return trans('update.discount_code_has_expired');
         }
 
         $user = auth()->user();
-        
+
         if(!empty($user)){
             $carts = Cart::where('creator_id', $user->id)->get();
       }else{
            $user = User::where('id','2550')->first();
-            $carts = Cart::where('id',session('cart_id'))->orwhere('cart_id',session('cart_id'))->get(); 
+            $carts = Cart::where('id',session('cart_id'))->orwhere('cart_id',session('cart_id'))->get();
       }
 
         if ($this->source == self::$discountSourceCourse or $this->source == self::$discountSourceCategory) {
@@ -191,16 +191,15 @@ class Discount extends Model
                 ->first();
 
             if (empty($userDiscount)) {
-                return trans('cart.coupon_invalid'); // not for this user
+                return trans('cart.coupon_invalid');
             }
         }
 
-
-        if (!empty($this->minimum_order)) { // check user orders minimum amounts
+        if (!empty($this->minimum_order)) {
             $totalCartsPrice = Cart::getCartsTotalPrice($carts);
 
             if ($this->minimum_order > $totalCartsPrice) {
-                return trans('update.discount_code_minimum_order_error', ['min_order' => $this->minimum_order]); // the minimum order is less than the discount amount
+                return trans('update.discount_code_minimum_order_error', ['min_order' => $this->minimum_order]);
             }
         }
 
@@ -208,7 +207,7 @@ class Discount extends Model
             $groupsIds = $this->discountGroups()->pluck('group_id')->toArray();
 
             if (empty($user->userGroup) or !in_array($user->userGroup->group_id, $groupsIds)) {
-                return trans('update.discount_code_group_error'); // this user is not in specific group
+                return trans('update.discount_code_group_error');
             }
         }
 
@@ -218,7 +217,7 @@ class Discount extends Model
                 ->count();
 
             if ($checkIsFirstPurchase > 0) {
-                return trans('update.discount_code_for_first_purchase_error'); // This discount code for first purchase.
+                return trans('update.discount_code_for_first_purchase_error');
             }
         }
 
@@ -234,7 +233,7 @@ class Discount extends Model
         }
 
         if ($usedCount >= $this->count) {
-            return trans('update.discount_code_used_count_error'); // The number of uses of this code has expired.
+            return trans('update.discount_code_used_count_error');
         }
 
         return 'ok';

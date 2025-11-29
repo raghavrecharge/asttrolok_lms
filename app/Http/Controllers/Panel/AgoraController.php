@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Agora\RtcTokenBuilder;
 use App\Agora\RtmTokenBuilder;
 use App\Http\Controllers\Controller;
@@ -18,47 +21,43 @@ class AgoraController extends Controller
         $this->appCertificate = env('AGORA_APP_CERTIFICATE');
     }
 
-    /*public function index(Request $request)
-    {
-        $user = auth()->user();
-
-        $channelName = 'channelName';
-        $accountName = $user->full_name;
-        $streamRole = $user->id == 903 ? 'host' : 'audience'; // host | audience
-
-        $rtcToken = $this->getRTCToken($channelName);
-        $rtmToken = $this->getRTMToken($accountName);
-
-        $data = [
-            'isHost' => $user->id == 903,
-            'appId' => $this->appId,
-            'accountName' => $accountName,
-            'channelName' => $channelName,
-            'rtcToken' => $rtcToken,
-            'rtmToken' => $rtmToken,
-            'streamRole' => $streamRole,
-        ];
-
-        return view('web.default.course.agora.index', $data);
-    }*/
-
     public function getRTCToken(string $channelName, bool $isHost): string
     {
-        $role = $isHost ? RtcTokenBuilder::RolePublisher : RtcTokenBuilder::RoleAttendee;
+        try {
+            $role = $isHost ? RtcTokenBuilder::RolePublisher : RtcTokenBuilder::RoleAttendee;
 
-        $expireTimeInSeconds = 3600;
-        $currentTimestamp = now()->getTimestamp();
-        $privilegeExpiredTs = $currentTimestamp + $expireTimeInSeconds;
+            $expireTimeInSeconds = 3600;
+            $currentTimestamp = now()->getTimestamp();
+            $privilegeExpiredTs = $currentTimestamp + $expireTimeInSeconds;
 
-        return RtcTokenBuilder::buildTokenWithUserAccount($this->appId, $this->appCertificate, $channelName, null, $role, $privilegeExpiredTs);
+            return RtcTokenBuilder::buildTokenWithUserAccount($this->appId, $this->appCertificate, $channelName, null, $role, $privilegeExpiredTs);
+        } catch (\Exception $e) {
+            \Log::error('getRTCToken error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function getRTMToken($channelName): string
     {
-        $expireTimeInSeconds = 3600;
-        $currentTimestamp = now()->getTimestamp();
-        $privilegeExpiredTs = $currentTimestamp + $expireTimeInSeconds;
+        try {
+            $expireTimeInSeconds = 3600;
+            $currentTimestamp = now()->getTimestamp();
+            $privilegeExpiredTs = $currentTimestamp + $expireTimeInSeconds;
 
-        return RtmTokenBuilder::buildToken($this->appId, $this->appCertificate, $channelName, null, $privilegeExpiredTs);
+            return RtmTokenBuilder::buildToken($this->appId, $this->appCertificate, $channelName, null, $privilegeExpiredTs);
+        } catch (\Exception $e) {
+            \Log::error('getRTMToken error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

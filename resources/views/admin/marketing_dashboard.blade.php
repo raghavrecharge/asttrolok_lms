@@ -10,7 +10,6 @@
 
     <section class="section">
 
-
         <div class="row">
             <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                 <div class="card card-statistic-1">
@@ -73,7 +72,6 @@
             </div>
 
         </div>
-
 
         <!--<div class="row">-->
             <!--<div class="col-lg-8 col-md-12 col-12 col-sm-12">-->
@@ -172,7 +170,6 @@
         <!--    </div>-->
         <!--</div>-->
 
-
         <div class="row">
             <div class="col-md-6">
                 <div class="card">
@@ -212,7 +209,6 @@
                 </div>
             </div>
 
-
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
@@ -245,7 +241,6 @@
                 </div>
             </div>
         </div>
-
 
         <div class="row">
             <div class="col-md-8">
@@ -283,7 +278,6 @@
                 </div>
             </div>
 
-
             <div class="col-md-4">
                 {{--<div class="card">
                     <div class="card-header">
@@ -316,7 +310,7 @@
                         </div>
                     </div>
                 </div>--}}
-                
+
                 <div class="card">
                     <div class="card-header">
                         <h4>{{trans('admin/main.classes_statistics')}}</h4>
@@ -327,7 +321,6 @@
                 </div>
             </div>
         </div>
-
 
         <div class="row">
 
@@ -365,7 +358,6 @@
                 </div>
             </div>
         </div>
-
 
     </section>
 

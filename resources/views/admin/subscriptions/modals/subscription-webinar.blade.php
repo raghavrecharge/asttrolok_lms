@@ -13,7 +13,7 @@
                     @foreach($userWebinars as $userWebinar)
                         <option value="{{ $userWebinar->id }}">{{ $userWebinar->title }}</option>
                     @endforeach
-                @endif 
+                @endif
             </select>
             <div class="invalid-feedback"></div>
         </div>
@@ -39,7 +39,7 @@
                     @foreach($userProducts as $product)
                     <option value="{{ $product->id }}">{{ $product->title }}</option>
                 @endforeach
-                @endif 
+                @endif
             </select>
             <div class="invalid-feedback"></div>
         </div>
@@ -53,10 +53,9 @@
 <!--Consultation model-->
 <div class="d-none" id="subscriptionConsultationModal">
     <h3 class="section-title after-line font-20 text-dark-blue mb-25">{{ trans('update.add_new_consultation') }}</h3>
-    
+
     <div class="js-form" data-action="{{ getAdminPanelUrl() }}/subscription-consultations/store">
         <input type="hidden" name="subscription_id" value="{{  !empty($subscription) ? $subscription->id :''  }}">
-
 
 <div class="form-group mt-15">
     <label class="input-label d-block">{{ trans('panel.select_consultation_type') }}</label>
@@ -79,7 +78,7 @@
             @endforeach
         @endif
     </select>
-    
+
 </div>
 
 <!-- Price Range -->
@@ -99,7 +98,6 @@
         <option value="both">Both</option>
     </select>
 </div>
-
 
         <div class="mt-30 d-flex align-items-center justify-content-end">
             <button type="button" id="saveSubscriptionConsultation" class="btn btn-primary">{{ trans('public.save') }}</button>

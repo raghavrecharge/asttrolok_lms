@@ -133,7 +133,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.filters')}}</label>
@@ -156,7 +155,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.instructor')}}</label>
@@ -171,7 +169,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -194,7 +191,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.status')}}</label>
@@ -213,7 +209,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group mt-1">
@@ -363,7 +358,6 @@
                                                                     ])
                                                             @endif
                                                         @endcan
-
 
                                                         @can('admin_webinar_notification_to_students')
                                                             <a href="{{ getAdminPanelUrl() }}/webinars/{{ $webinar->id }}/sendNotification" target="_blank" class="d-flex align-items-center text-dark text-decoration-none btn-transparent btn-sm text-primary mt-1 ">

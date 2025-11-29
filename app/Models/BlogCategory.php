@@ -12,14 +12,6 @@ class BlogCategory extends Model
     protected $dateFormat = 'U';
     protected $guarded = ['id'];
 
-
-    // use Sluggable;
-
-    /**
-     * Return the sluggable configuration array for this model.
-     *
-     * @return array
-     */
     public function sluggable(): array
     {
         return [
@@ -33,14 +25,6 @@ class BlogCategory extends Model
     {
         return $this->hasMany('App\Models\Blog', 'category_id', 'id');
     }
-
-    // public function getUrl()
-    // {
-    //      $originalString = $this->slug;
-    //     // $modifiedString = str_replace(' ', '-', $originalString);
-    //     $modifiedString = strtolower($originalString);
-    //     return '/blog/categories/' . $modifiedString;
-    // }
 
      public function getUrl()
     {

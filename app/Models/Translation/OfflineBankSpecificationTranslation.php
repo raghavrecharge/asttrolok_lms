@@ -2,7 +2,6 @@
 
 namespace App\Models\Translation;
 
-
 use Illuminate\Database\Eloquent\Model;
 
 class OfflineBankSpecificationTranslation extends Model

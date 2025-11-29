@@ -19,7 +19,6 @@
                 $switchs = ['status', 'unlock_registration_bonus_instantly', 'unlock_registration_bonus_with_referral'];
             @endphp
 
-
             <div class="form-group custom-switches-stacked ">
                 <label class="custom-switch pl-0 d-flex align-items-center">
                     <input type="hidden" name="value[status]" value="0">
@@ -90,7 +89,6 @@
                 </select>
                 <div class="text-muted text-small mt-1">{{ trans('update.bonus_wallet_hint') }}</div>
             </div>
-
 
             <button type="submit" class="btn btn-primary mt-1">{{ trans('admin/main.submit') }}</button>
         </form>

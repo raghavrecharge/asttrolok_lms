@@ -26,8 +26,4 @@ class RemedyReview extends Model
         return $this->belongsTo('App\User', 'creator_id', 'id');
     }
 
-    // public function comments()
-    // {
-    //     return $this->hasMany('App\Models\Comment', 'review_id', 'id');
-    // }
 }

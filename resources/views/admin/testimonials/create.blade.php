@@ -15,7 +15,6 @@
             </div>
         </div>
 
-
         <div class="section-body">
 
             <div class="d-flex align-items-center justify-content-between">
@@ -76,7 +75,6 @@
                                             </div>
                                         </div>
 
-
                                         <div class="form-group">
                                             <label>{{ trans('admin/main.user_name') }}</label>
                                             <input type="text" name="user_name" class="form-control  @error('user_name') is-invalid @enderror"
@@ -88,7 +86,6 @@
                                             @enderror
                                         </div>
 
-
                                         <div class="form-group">
                                             <label>{{ trans('admin/main.user_bio') }}</label>
                                             <input type="text" name="user_bio" class="form-control  @error('user_bio') is-invalid @enderror"
@@ -99,7 +96,6 @@
                                             </div>
                                             @enderror
                                         </div>
-
 
                                         <div class="form-group">
                                             <label>{{ trans('admin/main.rate') }}</label>

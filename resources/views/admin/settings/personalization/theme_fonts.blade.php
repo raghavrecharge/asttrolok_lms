@@ -10,7 +10,6 @@
                 <input type="hidden" name="name" value="theme_fonts">
                 <input type="hidden" name="page" value="personalization">
 
-
                 @foreach(['main','rtl'] as $fontType)
 
                     <div class="mt-2">

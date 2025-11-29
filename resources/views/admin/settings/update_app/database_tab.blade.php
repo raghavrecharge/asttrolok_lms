@@ -8,7 +8,6 @@
 
                 <div class="js-database-update-message my-25 text-success"></div>
 
-
                 <div class="form-group">
                     <div class="custom-control custom-checkbox">
                         <input type="checkbox" name="database_update_confirm" class="js-ajax-database_update_confirm custom-control-input" tabindex="3" id="databaseUpdateConfirm">
@@ -16,7 +15,6 @@
                         <div class="invalid-feedback custom-inv-fck"></div>
                     </div>
                 </div>
-
 
                 <button type="button" class="js-database-update-btn btn btn-primary">{{ trans('update.run_update') }}</button>
             </form>

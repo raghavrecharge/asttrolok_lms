@@ -11,7 +11,6 @@ class ForumRecommendedTopic extends Model
     protected $dateFormat = 'U';
     protected $guarded = ['id'];
 
-
     public function topics()
     {
         return $this->belongsToMany('App\Models\ForumTopic', 'forum_recommended_topic_items',

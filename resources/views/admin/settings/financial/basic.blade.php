@@ -4,7 +4,6 @@
     }
 @endphp
 
-
 <div class="tab-pane mt-3 fade @if(empty(request()->get('tab'))) active show @endif" id="basic" role="tabpanel" aria-labelledby="basic-tab">
     <div class="row">
         <div class="col-12 col-md-6">
@@ -12,7 +11,6 @@
                 {{ csrf_field() }}
                 <input type="hidden" name="page" value="financial">
                 <input type="hidden" name="name" value="financial">
-
 
                 <div class="form-group">
                     <label>{{ trans('admin/main.default_commission') }}</label>
@@ -27,7 +25,6 @@
                     <div class="text-muted text-small mt-1">{{ trans('admin/main.default_commission_hint') }}</div>
                 </div>
 
-
                 <div class="form-group">
                     <label>{{ trans('admin/main.tax') }}</label>
                     <div class="input-group">
@@ -39,7 +36,6 @@
                         <input type="number" name="value[tax]" value="{{ (!empty($itemValue) and !empty($itemValue['tax'])) ? $itemValue['tax'] : old('tax') }}" class="form-control text-center" maxlength="3" min="0" max="100"/>
                     </div>
                 </div>
-
 
                 <div class="form-group">
                     <label>{{ trans('admin/main.minimum_payout_amount') }}</label>

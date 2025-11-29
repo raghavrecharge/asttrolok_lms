@@ -42,7 +42,7 @@
              <h2 class="section-title">{{ trans('financial.select_a_payment_gateway') }}</h2>
              <br>
              @endif
-            
+
             <div class="row">
                 @if(!empty($paymentChannels))
                     @foreach($paymentChannels as $paymentChannel)
@@ -80,7 +80,7 @@
                     </label>
                 </div>
             </div>
- 
+
             @if(!empty($invalidChannels))
                 <div class="d-flex align-items-center mt-30 rounded-lg border p-15">
                     <div class="size-40 d-flex-center rounded-circle bg-gray200">
@@ -108,7 +108,6 @@
                 </div>
             @endif
 
-
             <div class="d-flex align-items-center justify-content-between mt-45">
                 <span class="font-16 font-weight-500 text-gray">{{ trans('financial.total_amount') }} {{ handlePrice($total) }}</span>
                 <button type="button"  class="btn btn-sm btn-primary paymentSubmit">{{ trans('public.start_payment') }}</button>
@@ -116,14 +115,14 @@
         </form>
 
         @if(!empty($razorpay) and $razorpay)
-        
+
             <form action="/payments/verify/Razorpay" method="get" id="razorpayview">
                 <input type="hidden" name="order_id" value="{{ $order->id }}">
                 <input type="hidden" name="name" value="" id="user_name" placeholder="Name" class="form-control mt-25 " required>
                 <input type="hidden" name="email" value="" id="user_email" placeholder="Email" class="form-control mt-25 " required>
                 <input type="hidden" name="number" value="" id="user_number" placeholder="Contact Number" class="form-control mt-25 mb-25" required>
                 @if(auth()->check())
-               
+
                 <script src="https://checkout.razorpay.com/v1/checkout.js"
                         data-key="{{ env('RAZORPAY_API_KEY') }}"
                         data-amount="{{ (int)($order->total_amount * 100) }}"
@@ -136,9 +135,9 @@
                         data-prefill.contact="{{ auth()->user()->mobile }}"
                         data-theme.color="#43d477">
                 </script>
-                
+
                  @endif
-                 
+
             </form>
         @endif
     </section>
@@ -147,39 +146,26 @@
 
 @push('scripts_bottom')
     <script src="{{ config('app.js_css_url') }}/assets2/default/js/parts/payment.min.js"></script>
-    
+
      <script>
-     
-    //  function IsEmail(email) {
-    //     var regex = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-    //     if(!regex.test(email)) {
-    //         document.getElementById("customer_email").value =email;
-    //         var emailvalidation ='Email field is required';
-    //         $(document).find('#customer_email').after('<span class="text-strong textdanger " style="color:red;">' +emailvalidation+ '</span>');
-    //       return false;
-    //     }else{
-    //       return true;
-    //     }
-    //   }
-  
+
     function addscript(){
-            
+
         var name = '';
         var email = '';
         var mobile = '';
          name = document.getElementById("customer_name").value ;
          email = document.getElementById("customer_email").value;
          mobile = document.getElementById("customer_number").value;
-        
+
         $('.textdanger').remove();
-        // $('#customer_email').html('');
-        // $('#customer_number').html('');
+
         if(name ===''){
             $('#paymentSubmit').prop('disabled', false);
             $("input:radio").attr("checked", false);
             var namevalidation ='Name field is required';
             $(document).find('#customer_name').after('<span class="text-strong textdanger " style="color:red;">' +namevalidation+ '</span>');
-             
+
         }
          if(email ===''){
             $('#paymentSubmit').prop('disabled', false);
@@ -211,7 +197,7 @@
           var    dataprefillname=name;
           var   dataprefillemail=email;
           var   dataprefillcontact=mobile;
-          
+
      var s = document.createElement( 'script' );
         s.setAttribute( 'src', "https://checkout.razorpay.com/v1/checkout.js" );
         s.setAttribute( 'id', "razorpay_script" );
@@ -227,31 +213,31 @@
         s.setAttribute( 'data-prefill.email', dataprefillemail );
         s.setAttribute( 'data-prefill.contact', dataprefillcontact );
         document.querySelector("#razorpayview").appendChild( s );
-        } 
+        }
         }
     $(document).ready(function(){
-        
+
          $('body').on('click', '.paymentSubmit', function (e) {
-            //  addscript();
+
          });
-        
+
        $('body').on('change paste keyup', '#customer_name', function (e) {
         e.preventDefault();
         document.getElementById("user_name").value = $(this).val();
-    }); 
-    
+    });
+
     $('body').on('change paste keyup', '#customer_email', function (e) {
         e.preventDefault();
         document.getElementById("user_email").value = $(this).val();
-        
-    });   
-    
+
+    });
+
     $('body').on('change', '#customer_number', function (e) {
         e.preventDefault();
         document.getElementById("user_number").value = $(this).val();
-       
-    });   
-  
+
+    });
+
 });
 
 $(document).ready(function() {
@@ -259,7 +245,7 @@ $('#customer_number').on('keypress', function(e) {
  var $this = $(this);
  var regex = new RegExp("^[0-9\b]+$");
  var str = String.fromCharCode(!e.charCode ? e.which : e.charCode);
- // for 10 digit number only
+
  if ($this.val().length > 9) {
     e.preventDefault();
     return false;

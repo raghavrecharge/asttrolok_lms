@@ -11,7 +11,6 @@ class InstallmentOrder extends Model
     public $timestamps = false;
     protected $guarded = ['id'];
 
-
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
@@ -56,11 +55,6 @@ class InstallmentOrder extends Model
     {
         return $this->hasMany(InstallmentOrderAttachment::class, 'installment_order_id', 'id');
     }
-
-
-    /********
-     * Helpers
-     * */
 
     public function getItem()
     {

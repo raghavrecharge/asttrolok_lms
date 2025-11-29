@@ -5,7 +5,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.10.2/video-js.min.css" rel="stylesheet">
    <style>
        .learning-page .learning-content {
-  
+
     overflow-y: unset !important;
 }
 .learning-page .learning-content-iframe iframe {
@@ -97,11 +97,10 @@
     <script  >
         var defaultItemType = '{{ request()->get('type') }}'
         var defaultItemId = '{{ request()->get('item') }}'
-        var loadFirstContent = {{ (!empty($dontAllowLoadFirstContent) and $dontAllowLoadFirstContent) ? 'false' : 'true' }}; // allow to load first content when request item is empty
+        var loadFirstContent = {{ (!empty($dontAllowLoadFirstContent) and $dontAllowLoadFirstContent) ? 'false' : 'true' }};
 
         var courseUrl = '{{ $course->getUrl() }}';
 
-        // lang
         var pleaseWaitForTheContentLang = '{{ trans('update.please_wait_for_the_content_to_load') }}';
         var downloadTheFileLang = '{{ trans('update.download_the_file') }}';
         var downloadLang = '{{ trans('home.download') }}';
@@ -149,26 +148,26 @@
 <script  >
 
     if($('#readTogglefile'+defaultItemId).length){
-	 
+
 }else{
-    //  alert($('#chapter_'+defaultItemId).length);
+
     $('.pratul').removeClass('active');
-   
+
 	$('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 0px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 text-dark-blue">Access Denied </h2><p class="font-14 font-weight-500 text-gray">You have an overdue installment. Please pay it to access this course!</p><a href="/panel/financial/installments" class="btn btn-primary mt-15">Pay Now</a></div> </div>');
 }
 function accessdenied(){
      $('.pratul').removeClass('active');
   $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 0px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 text-dark-blue">Access Denied </h2><p class="font-14 font-weight-500 text-gray">You have an overdue installment. Please pay it to access this course!</p><a href="/panel/financial/installments" class="btn btn-primary mt-15">Pay Now</a></div> </div>');
-  
+
 }
 
-$(function() {                       //run when the DOM is ready
+$(function() {
   $(".accessdenied").click(function() {
        $('.pratul').removeClass('active');
        $('.accessdenied').removeClass('active');
   $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 0px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 text-dark-blue">Access Denied </h2><p class="font-14 font-weight-500 text-gray">You have an overdue installment. Please pay it to access this course!</p><a href="/panel/financial/installments" class="btn btn-primary mt-15">Pay Now</a></div> </div>');
-  //use a class, since your ID gets mangled
-    $(this).addClass("active");      //add the class to the clicked element
+
+    $(this).addClass("active");
   });
 });
 </script>

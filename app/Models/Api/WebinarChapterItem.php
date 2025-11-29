@@ -21,10 +21,9 @@ class WebinarChapterItem extends Model
                 'storage' => $this->item->storage,
                 'volume' => $this->item->volume,
                 'downloadable' => $this->item->downloadable,
-                //  'auth_has_read'=>$this->item->auth_has_read
 
             ];
-            //    return new FileResource($this->file);
+
         } elseif ($type == self::$chapterSession) {
             return [
                 'id' => $this->item->id,
@@ -32,7 +31,7 @@ class WebinarChapterItem extends Model
                 'date' => $this->item->date,
                 'auth_has_read' => $this->item->auth_has_read
             ];
-            //  return new SessionResource($this->session);
+
         } elseif ($type == self::$chapterTextLesson) {
             return [
                 'id' => $this->item->id,
@@ -47,9 +46,9 @@ class WebinarChapterItem extends Model
                 'time' => $this->item->time,
                 'question_count' => $this->item->quizQuestions->count(),
                 'auth_status' => $this->auth_status,
-                //   'created_at' => $this->item->created_at,
+
             ];
-            // return $this->quiz();
+
         } elseif ($type == self::$chapterAssignment) {
             return [
                 'id' => $this->item->id,
@@ -76,7 +75,6 @@ class WebinarChapterItem extends Model
         }
         return [];
     }
-
 
     public function session()
     {

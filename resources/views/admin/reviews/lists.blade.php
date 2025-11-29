@@ -214,7 +214,6 @@
                                         <input type="hidden" class="js-purchase_worth" value="{{ $review->purchase_worth }}">
                                         <input type="hidden" class="js-support_quality" value="{{ $review->support_quality }}">
 
-
                                         <button type="button" class="js-show-review-details btn-transparent text-primary mr-1" data-toggle="tooltip" data-placement="top" title="Rate Detail">
                                             <i class="fa fa-star" aria-hidden="true"></i>
                                         </button>

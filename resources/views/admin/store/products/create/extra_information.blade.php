@@ -24,7 +24,7 @@
                 </div>
                 @enderror
             </div>
-            
+
             <div class="form-group">
                 <label class="input-label">{{ trans('update.delivery_fee') }} (International)</label>
                 <input type="number" name="delivery_fee_international" value="{{ !empty($product) ? $product->delivery_fee_international : old('delivery_fee_international') }}" class="form-control @error('delivery_fee_international')  is-invalid @enderror" placeholder="{{ trans('update.0_for_free_delivery') }}"/>

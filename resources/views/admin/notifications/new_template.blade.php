@@ -39,13 +39,11 @@
                             <div class="invalid-feedback">@error('title') {{ $message }} @enderror</div>
                         </div>
 
-
                         <div class="form-group ">
                             <label class="control-label" for="inputDefault">{{ trans('admin/main.message_body') }}</label>
                             <textarea name="template" class="summernote form-control text-left  @error('template') is-invalid @enderror">{{ (!empty($template)) ? $template->template :'' }}</textarea>
                             <div class="invalid-feedback">@error('template') {{ $message }} @enderror</div>
                         </div>
-
 
                         <div class="form-group">
                             <div class="col-md-12">

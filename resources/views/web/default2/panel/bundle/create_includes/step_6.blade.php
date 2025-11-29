@@ -2,7 +2,6 @@
 
 @endpush
 
-
 <section class="mt-20">
     <h2 class="section-title after-line">{{ trans('public.message_to_reviewer') }}</h2>
     <div class="row">

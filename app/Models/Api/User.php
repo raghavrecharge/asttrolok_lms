@@ -37,14 +37,13 @@ class User extends Model implements JWTSubject
             'offline_message' => $this->offline_message,
             'verified' => $this->verified,
             'rate' => $this->rates() == 0 ? $this->rating :$this->rates(),
-            // 'avatar' => url($this->getAvatar()),
+
             'avatar' => $this->getAvatar(),
             'meeting_status' => $this->meeting_status,
             'user_group' => $this->userGroup->brief ?? null,
             'address' => $this->address,
             'meeting' => ($this->meeting && $this->meeting->meetingTimes->count()) ? $this->meeting->details : null,
-            
-            
+
         ];
     }
 
@@ -57,7 +56,6 @@ class User extends Model implements JWTSubject
             'language' => $this->language,
             'newsletter' => ($this->newsletter) ? true : false,
             'public_message' => $this->public_message,
-
 
             'active_subscription' => Subscribe::getActiveSubscribe($this->id)->details ?? null,
             'headline' => $this->headline,
@@ -107,30 +105,10 @@ class User extends Model implements JWTSubject
             'city_id' => $this->city_id,
             'district_id' => $this->district_id,
 
-            /*  'country' => [
-                  'id' => $this->country_id,
-                  'title' => Region::find($this->country_id)->title??null,
-              ],
-              'province' =>  [
-                  'id' => $this->province_id,
-                  'title' => Region::find($this->province_id)->title??null,
-              ],
-
-              'city' =>  [
-                  'id' => $this->city_id,
-                  'title' => Region::find($this->city_id)->title??null,
-              ],
-              'district_id' =>  [
-                  'id' => $this->district_id,
-                  'title' => Region::find($this->district_id)->title??null,
-              ],*/
-
-
         ];
 
         return array_merge($this->brief, $details, $this->financial);;
     }
-
 
     public function meetingsSaleAmount()
     {
@@ -162,9 +140,7 @@ class User extends Model implements JWTSubject
 
             });
 
-
     }
-
 
     public function getFinancialAttribute()
     {
@@ -224,10 +200,6 @@ class User extends Model implements JWTSubject
                 return $sale->buyer->brief;
             });
 
-        //   ->pluck('buyer_id')
-        // ->toArray();
-
-        //   $user->students_count = count(array_unique($studentsIds));
     }
 
     public function getActiveSubscription()
@@ -242,7 +214,6 @@ class User extends Model implements JWTSubject
         return (Subscribe::getActiveSubscribe($this->id)) ? true : false;
 
     }
-
 
     public function getBadgesAttribute()
     {
@@ -289,17 +260,6 @@ class User extends Model implements JWTSubject
     public function getRoleLabelAttribute()
     {
 
-        /*   @if($cardUser->isUser())
-         * {{ trans('quiz.student') }}
-         * @elseif($cardUser->isTeacher())
-         * {{ trans('public.instructor') }}
-         * @elseif($cardUser->isOrganization())
-         * {{ trans('home.organization') }}
-         * @elseif($cardUser->isAdmin())
-         * {{ trans('panel.staff') }}
-         * @endif
-         */
-
         if ($this->isUser()) {
             return trans('quiz.student');
         } elseif ($this->isTeacher()) {
@@ -308,7 +268,6 @@ class User extends Model implements JWTSubject
         }
 
     }
-
 
     public function quizResults()
     {
@@ -330,7 +289,6 @@ class User extends Model implements JWTSubject
     public function userCreatedQuizzes()
     {
         return $this->hasMany('App\Models\Api\Quiz', 'creator_id');
-
 
     }
 

@@ -40,7 +40,6 @@ class ProductDiscount extends Model
             })
             ->count();
 
-
         return ($count > 0) ? $count - $orderItems : 0;
     }
 }

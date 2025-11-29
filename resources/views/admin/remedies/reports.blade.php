@@ -37,7 +37,6 @@
 
                                             <td class="text-danger">Deleted User</td>
 
-
                                             @endif
 
                                             <td class="text-left" width="30%">

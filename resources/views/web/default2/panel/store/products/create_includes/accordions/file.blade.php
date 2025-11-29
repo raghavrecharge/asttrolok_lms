@@ -52,13 +52,11 @@
                             <input type="hidden" name="ajax[{{ !empty($file) ? $file->id : 'new' }}][locale]" value="{{ $defaultLocale }}">
                         @endif
 
-
                         <div class="form-group">
                             <label class="input-label">{{ trans('public.title') }}</label>
                             <input type="text" name="ajax[{{ !empty($file) ? $file->id : 'new' }}][title]" class="js-ajax-title form-control" value="{{ !empty($file) ? $file->title : '' }}" placeholder="{{ trans('forms.maximum_255_characters') }}"/>
                             <div class="invalid-feedback"></div>
                         </div>
-
 
                         <div class="form-group js-file-path-input">
                             <div class="local-input input-group">

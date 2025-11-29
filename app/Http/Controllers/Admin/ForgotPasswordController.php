@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\User;
@@ -15,16 +18,6 @@ use Psy\Util\Str;
 
 class ForgotPasswordController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Password Reset Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller is responsible for handling password reset emails and
-    | includes a trait which assists in sending these notifications from
-    | your application to your users. Feel free to explore this trait.
-    |
-    */
 
     use SendsPasswordResetEmails;
 
@@ -35,11 +28,21 @@ class ForgotPasswordController extends Controller
 
     public function showLinkRequestForm()
     {
-        $data = [
-            'pageTitle' => trans('auth.forget_password'),
-        ];
+        try {
+            $data = [
+                'pageTitle' => trans('auth.forget_password'),
+            ];
 
-        return view('admin.auth.forgot_password', $data);
+            return view('admin.auth.forgot_password', $data);
+        } catch (\Exception $e) {
+            \Log::error('showLinkRequestForm error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function forgot(Request $request)
@@ -83,8 +86,7 @@ try{
             $message->subject('Reset Password Notification');
         });
 } catch (\Exception $e) {
-    // Log the error message if needed
-    // Log::error('Mail sending failed: ' . $e->getMessage());
+
 }
         $toastData = [
             'title' => trans('public.request_success'),

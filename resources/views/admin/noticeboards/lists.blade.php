@@ -15,7 +15,6 @@
             </div>
         </div>
 
-
         <div class="section-body">
 
             <section class="card">
@@ -97,7 +96,6 @@
                                     </div>
                                 </div>
                             @endif
-
 
                             <div class="col-md-4">
                                 <div class="form-group mt-1">

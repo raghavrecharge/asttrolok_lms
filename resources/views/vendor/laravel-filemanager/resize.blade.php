@@ -1,5 +1,5 @@
 <style>
-  #work_space {
+
     padding: 30px;
     height: 100vw;
     display: flex;
@@ -8,7 +8,7 @@
   }
 
   @media screen and (min-width: 768px) {
-    #work_space {
+
       width: unset;
       height: unset;
     }
@@ -108,7 +108,7 @@
       $('#resize_mobile').css('width', (newWidth / newHeight * 100) + '%').css('padding-bottom', '100%');
     } else if (newWidth > newHeight) {
       $('#resize_mobile').css('width', '100%').css('padding-bottom', (newHeight / newWidth * 100) + '%');
-    } else { // newWidth === newHeight
+    } else {
       $('#resize_mobile').css('width', '100%').css('padding-bottom', '100%');
     }
   }

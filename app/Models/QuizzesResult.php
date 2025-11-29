@@ -24,7 +24,6 @@ class QuizzesResult extends Model
         return $this->belongsTo('App\User', 'user_id', 'id');
     }
 
-
     public function getQuestions()
     {
         $quiz = $this->quiz;

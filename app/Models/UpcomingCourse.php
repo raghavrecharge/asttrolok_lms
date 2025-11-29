@@ -13,7 +13,6 @@ use Spatie\CalendarLinks\Link;
 class UpcomingCourse extends Model implements TranslatableContract
 {
     use Translatable;
-    // use Sluggable;
 
     protected $table = "upcoming_courses";
     public $timestamps = false;
@@ -100,12 +99,6 @@ class UpcomingCourse extends Model implements TranslatableContract
         return $this->hasMany('App\Models\WebinarExtraDescription', 'upcoming_course_id', 'id');
     }
 
-
-    /**
-     * Return the sluggable configuration array for this model.
-     *
-     * @return array
-     */
     public function sluggable(): array
     {
         return [
@@ -143,10 +136,6 @@ class UpcomingCourse extends Model implements TranslatableContract
         return $this->thumbnail;
     }
 
-    // public function getUrl()
-    // {
-    //     return url('/upcoming_courses/' . $this->slug);
-    // }
      public function getUrl()
     {
         $baseUrl = config('app.manual_base_url');
@@ -159,7 +148,7 @@ class UpcomingCourse extends Model implements TranslatableContract
 
         $date = \DateTime::createFromFormat('j M Y H:i', dateTimeFormat($this->publish_date, 'j M Y H:i', false));
 
-        $link = Link::create($this->title, $date, $date); //->description('Cookies & cocktails!')
+        $link = Link::create($this->title, $date, $date);
 
         return $link->google();
     }

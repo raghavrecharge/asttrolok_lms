@@ -52,5 +52,4 @@
 
 @push('scripts_bottom')
 
-
 @endpush

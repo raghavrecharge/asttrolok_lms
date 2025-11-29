@@ -33,7 +33,6 @@
 
                 </div>
 
-
                 <button type="submit" class="btn btn-primary">{{ trans('admin/main.save_change') }}</button>
             </form>
         </div>

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Exports\CertificatesExport;
 use App\Http\Controllers\Controller;
 use App\Mixins\Certificate\MakeCertificate;
@@ -19,46 +22,55 @@ class CertificateController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_certificate_list');
+        try {
+            $this->authorize('admin_certificate_list');
 
-        $query = Certificate::whereNull('webinar_id');
+            $query = Certificate::whereNull('webinar_id');
 
-        $query = $this->filters($query, $request);
+            $query = $this->filters($query, $request);
 
-        $certificates = $query->with(
-            [
-                'quiz' => function ($query) {
-                    $query->with('webinar');
-                },
-                'student',
-                'quizzesResult'
-            ]
-        )->orderBy('created_at', 'desc')
-            ->paginate(10);
+            $certificates = $query->with(
+                [
+                    'quiz' => function ($query) {
+                        $query->with('webinar');
+                    },
+                    'student',
+                    'quizzesResult'
+                ]
+            )->orderBy('created_at', 'desc')
+                ->paginate(10);
 
+            $data = [
+                'pageTitle' => trans('admin/main.certificate_list_page_title'),
+                'certificates' => $certificates,
+                'student' => $filters['student'] ?? null,
+                'instructor' => $filters['instructor'] ?? null,
+                'quiz_title' => $filters['quiz_title'] ?? null,
+            ];
 
-        $data = [
-            'pageTitle' => trans('admin/main.certificate_list_page_title'),
-            'certificates' => $certificates,
-            'student' => $filters['student'] ?? null,
-            'instructor' => $filters['instructor'] ?? null,
-            'quiz_title' => $filters['quiz_title'] ?? null,
-        ];
+            $teacher_ids = $request->get('teacher_ids');
+            $student_ids = $request->get('student_ids');
 
-        $teacher_ids = $request->get('teacher_ids');
-        $student_ids = $request->get('student_ids');
+            if (!empty($teacher_ids)) {
+                $data['teachers'] = User::select('id', 'full_name')
+                    ->whereIn('id', $teacher_ids)->get();
+            }
 
-        if (!empty($teacher_ids)) {
-            $data['teachers'] = User::select('id', 'full_name')
-                ->whereIn('id', $teacher_ids)->get();
+            if (!empty($student_ids)) {
+                $data['students'] = User::select('id', 'full_name')
+                    ->whereIn('id', $student_ids)->get();
+            }
+
+            return view('admin.certificates.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        if (!empty($student_ids)) {
-            $data['students'] = User::select('id', 'full_name')
-                ->whereIn('id', $student_ids)->get();
-        }
-
-        return view('admin.certificates.lists', $data);
     }
 
     private function filters($query, $request)
@@ -87,219 +99,297 @@ class CertificateController extends Controller
 
     public function CertificatesTemplatesList(Request $request)
     {
-        $this->authorize('admin_certificate_template_list');
+        try {
+            $this->authorize('admin_certificate_template_list');
 
-        removeContentLocale();
+            removeContentLocale();
 
-        $templates = CertificateTemplate::orderBy('created_at', 'desc')
-            ->paginate(10);
+            $templates = CertificateTemplate::orderBy('created_at', 'desc')
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('admin/main.certificate_templates_list_page_title'),
-            'templates' => $templates,
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.certificate_templates_list_page_title'),
+                'templates' => $templates,
+            ];
 
-        return view('admin.certificates.templates', $data);
+            return view('admin.certificates.templates', $data);
+        } catch (\Exception $e) {
+            \Log::error('CertificatesTemplatesList error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function CertificatesNewTemplate()
     {
-        $this->authorize('admin_certificate_template_create');
+        try {
+            $this->authorize('admin_certificate_template_create');
 
-        removeContentLocale();
+            removeContentLocale();
 
-        $data = [
-            'pageTitle' => trans('admin/main.certificate_new_template_page_title'),
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.certificate_new_template_page_title'),
+            ];
 
-        return view('admin.certificates.new_templates', $data);
+            return view('admin.certificates.new_templates', $data);
+        } catch (\Exception $e) {
+            \Log::error('CertificatesNewTemplate error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function CertificatesTemplateStore(Request $request, $template_id = null)
     {
-        $this->authorize('admin_certificate_template_create');
+        try {
+            $this->authorize('admin_certificate_template_create');
 
-        $rules = [
-            'title' => 'required',
-            'image' => 'required',
-            'body' => 'required',
-            'type' => 'required|in:quiz,course',
-            'position_x' => 'required',
-            'position_y' => 'required',
-            'font_size' => 'required',
-            'text_color' => 'required',
-        ];
-        $this->validate($request, $rules);
+            $rules = [
+                'title' => 'required',
+                'image' => 'required',
+                'body' => 'required',
+                'type' => 'required|in:quiz,course',
+                'position_x' => 'required',
+                'position_y' => 'required',
+                'font_size' => 'required',
+                'text_color' => 'required',
+            ];
+            $this->validate($request, $rules);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        if ($data['status'] and $data['status'] == 'publish') { // set draft for other templates
-            CertificateTemplate::where('status', 'publish')
-                ->where('type', $data['type'])
-                ->update([
-                    'status' => 'draft'
+            if ($data['status'] and $data['status'] == 'publish') {
+                CertificateTemplate::where('status', 'publish')
+                    ->where('type', $data['type'])
+                    ->update([
+                        'status' => 'draft'
+                    ]);
+            }
+
+            if (!empty($template_id)) {
+
+                $template = CertificateTemplate::findOrFail($template_id);
+                $template->update([
+                    'image' => $data['image'],
+                    'status' => $data['status'],
+                    'type' => $data['type'],
+                    'position_x' => $data['position_x'],
+                    'position_y' => $data['position_y'],
+                    'font_size' => $data['font_size'],
+                    'text_color' => $data['text_color'],
+                    'updated_at' => time(),
                 ]);
-        }
+            } else {
+                $template = CertificateTemplate::create([
+                    'image' => $data['image'],
+                    'status' => $data['status'],
+                    'type' => $data['type'],
+                    'position_x' => $data['position_x'],
+                    'position_y' => $data['position_y'],
+                    'font_size' => $data['font_size'],
+                    'text_color' => $data['text_color'],
+                    'created_at' => time(),
+                ]);
+            }
 
-        if (!empty($template_id)) {
-
-            $template = CertificateTemplate::findOrFail($template_id);
-            $template->update([
-                'image' => $data['image'],
-                'status' => $data['status'],
-                'type' => $data['type'],
-                'position_x' => $data['position_x'],
-                'position_y' => $data['position_y'],
-                'font_size' => $data['font_size'],
-                'text_color' => $data['text_color'],
-                'updated_at' => time(),
+            CertificateTemplateTranslation::updateOrCreate([
+                'certificate_template_id' => $template->id,
+                'locale' => mb_strtolower($data['locale']),
+            ], [
+                'title' => $data['title'],
+                'body' => $data['body'],
+                'rtl' => $data['rtl'],
             ]);
-        } else {
-            $template = CertificateTemplate::create([
-                'image' => $data['image'],
-                'status' => $data['status'],
-                'type' => $data['type'],
-                'position_x' => $data['position_x'],
-                'position_y' => $data['position_y'],
-                'font_size' => $data['font_size'],
-                'text_color' => $data['text_color'],
-                'created_at' => time(),
+
+            removeContentLocale();
+
+            return redirect(getAdminPanelUrl().'/certificates/templates');
+        } catch (\Exception $e) {
+            \Log::error('CertificatesTemplateStore error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
+            
+            throw $e;
         }
-
-        CertificateTemplateTranslation::updateOrCreate([
-            'certificate_template_id' => $template->id,
-            'locale' => mb_strtolower($data['locale']),
-        ], [
-            'title' => $data['title'],
-            'body' => $data['body'],
-            'rtl' => $data['rtl'],
-        ]);
-
-        removeContentLocale();
-
-        return redirect(getAdminPanelUrl().'/certificates/templates');
     }
 
     public function CertificatesTemplatePreview(Request $request)
     {
-        $this->authorize('admin_certificate_template_create');
+        try {
+            $this->authorize('admin_certificate_template_create');
 
-        $data = [
-            'pageTitle' => trans('public.certificate'),
-            'image' => $request->get('image'),
-            'body' => $request->get('body'),
-            'position_x' => (int)$request->get('position_x', 120),
-            'position_y' => (int)$request->get('position_y', 100),
-            'font_size' => (int)$request->get('font_size', 26),
-            'text_color' => $request->get('text_color', '#e1e1e1'),
-        ];
+            $data = [
+                'pageTitle' => trans('public.certificate'),
+                'image' => $request->get('image'),
+                'body' => $request->get('body'),
+                'position_x' => (int)$request->get('position_x', 120),
+                'position_y' => (int)$request->get('position_y', 100),
+                'font_size' => (int)$request->get('font_size', 26),
+                'text_color' => $request->get('text_color', '#e1e1e1'),
+            ];
 
-        $isRtl = $request->get('rtl', false);
+            $isRtl = $request->get('rtl', false);
 
-        $body = str_replace('[student]', 'student name', $data['body']);
-        $body = str_replace('[course]', 'course name', $body);
-        $body = str_replace('[grade]', 'xx', $body);
-        $body = str_replace('[certificate_id]', 'xx', $body);
-        $body = str_replace('[user_certificate_additional]', 'xx', $body);
-        $body = str_replace('[date]', 'xx', $body);
-        $body = str_replace('[instructor_name]', 'xx', $body);
-        $body = str_replace('[duration]', 'xx', $body);
+            $body = str_replace('[student]', 'student name', $data['body']);
+            $body = str_replace('[course]', 'course name', $body);
+            $body = str_replace('[grade]', 'xx', $body);
+            $body = str_replace('[certificate_id]', 'xx', $body);
+            $body = str_replace('[user_certificate_additional]', 'xx', $body);
+            $body = str_replace('[date]', 'xx', $body);
+            $body = str_replace('[instructor_name]', 'xx', $body);
+            $body = str_replace('[duration]', 'xx', $body);
 
-        //$data['body'] = $body;//mb_convert_encoding($body, 'HTML-ENTITIES', 'UTF-8');;
+            if ($isRtl) {
+                $Arabic = new \I18N_Arabic('Glyphs');
+                $body = $Arabic->utf8Glyphs($body);
+            }
 
-        if ($isRtl) {
-            $Arabic = new \I18N_Arabic('Glyphs');
-            $body = $Arabic->utf8Glyphs($body);
+            $imgPath = public_path($data['image']);
+            $img = Image::make($imgPath);
+
+            $img->text($body, $data['position_x'], $data['position_y'], function ($font) use ($data, $isRtl) {
+                $font->file($isRtl ? public_path('assets/default/fonts/vazir/Vazir-Medium.ttf') : public_path('assets/default/fonts/Montserrat-Medium.ttf'));
+                $font->size($data['font_size']);
+                $font->color($data['text_color']);
+                $font->align($isRtl ? 'right' : 'left');
+            });
+            return $img->response('png');
+        } catch (\Exception $e) {
+            \Log::error('CertificatesTemplatePreview error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $imgPath = public_path($data['image']);
-        $img = Image::make($imgPath);
-
-        $img->text($body, $data['position_x'], $data['position_y'], function ($font) use ($data, $isRtl) {
-            $font->file($isRtl ? public_path('assets/default/fonts/vazir/Vazir-Medium.ttf') : public_path('assets/default/fonts/Montserrat-Medium.ttf'));
-            $font->size($data['font_size']);
-            $font->color($data['text_color']);
-            $font->align($isRtl ? 'right' : 'left');
-        });
-        return $img->response('png');
     }
 
     public function CertificatesTemplatesEdit(Request $request, $template_id)
     {
-        $this->authorize('admin_certificate_template_edit');
+        try {
+            $this->authorize('admin_certificate_template_edit');
 
-        $template = CertificateTemplate::findOrFail($template_id);
+            $template = CertificateTemplate::findOrFail($template_id);
 
-        $locale = $request->get('locale', app()->getLocale());
-        storeContentLocale($locale, $template->getTable(), $template->id);
+            $locale = $request->get('locale', app()->getLocale());
+            storeContentLocale($locale, $template->getTable(), $template->id);
 
-        $data = [
-            'pageTitle' => trans('admin/main.certificate_template_edit_page_title'),
-            'template' => $template
-        ];
-        return view('admin.certificates.new_templates', $data);
+            $data = [
+                'pageTitle' => trans('admin/main.certificate_template_edit_page_title'),
+                'template' => $template
+            ];
+            return view('admin.certificates.new_templates', $data);
+        } catch (\Exception $e) {
+            \Log::error('CertificatesTemplatesEdit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function CertificatesTemplatesDelete($template_id)
     {
-        $this->authorize('admin_certificate_template_delete');
+        try {
+            $this->authorize('admin_certificate_template_delete');
 
-        $template = CertificateTemplate::findOrFail($template_id);
+            $template = CertificateTemplate::findOrFail($template_id);
 
-        $template->delete();
+            $template->delete();
 
-        return redirect(getAdminPanelUrl().'/certificates/templates');
+            return redirect(getAdminPanelUrl().'/certificates/templates');
+        } catch (\Exception $e) {
+            \Log::error('CertificatesTemplatesDelete error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function CertificatesDownload($id)
     {
-        $certificate = Certificate::findOrFail($id);
+        try {
+            $certificate = Certificate::findOrFail($id);
 
-        $makeCertificate = new MakeCertificate();
+            $makeCertificate = new MakeCertificate();
 
-        if ($certificate->type == 'quiz') {
-           
-            $quizResult = QuizzesResult::where('id', $certificate->quiz_result_id)
-                ->where('status', QuizzesResult::$passed)
-                ->with([
-                    'quiz' => function ($query) {
-                        $query->with(['webinar']);
-                    },
-                    'user'
-                ])
-                ->first();
-                
-            return $makeCertificate->makeQuizCertificate($quizResult);
-        } else if ($certificate->type == 'course') {
+            if ($certificate->type == 'quiz') {
 
-            return $makeCertificate->makeCourseCertificate($certificate);
+                $quizResult = QuizzesResult::where('id', $certificate->quiz_result_id)
+                    ->where('status', QuizzesResult::$passed)
+                    ->with([
+                        'quiz' => function ($query) {
+                            $query->with(['webinar']);
+                        },
+                        'user'
+                    ])
+                    ->first();
+
+                return $makeCertificate->makeQuizCertificate($quizResult);
+            } else if ($certificate->type == 'course') {
+
+                return $makeCertificate->makeCourseCertificate($certificate);
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('CertificatesDownload error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
     }
 
     public function exportExcel(Request $request)
     {
-        $this->authorize('admin_certificate_export_excel');
+        try {
+            $this->authorize('admin_certificate_export_excel');
 
-        $query = Certificate::query();
+            $query = Certificate::query();
 
-        $query = $this->filters($query, $request);
+            $query = $this->filters($query, $request);
 
-        $certificates = $query->with(
-            [
-                'quiz' => function ($query) {
-                    $query->with('webinar');
-                },
-                'student',
-                'quizzesResult'
-            ]
-        )->orderBy('created_at', 'desc')
-            ->get();
+            $certificates = $query->with(
+                [
+                    'quiz' => function ($query) {
+                        $query->with('webinar');
+                    },
+                    'student',
+                    'quizzesResult'
+                ]
+            )->orderBy('created_at', 'desc')
+                ->get();
 
-        $export = new CertificatesExport($certificates);
+            $export = new CertificatesExport($certificates);
 
-        return Excel::download($export, 'certificates.xlsx');
+            return Excel::download($export, 'certificates.xlsx');
+        } catch (\Exception $e) {
+            \Log::error('exportExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

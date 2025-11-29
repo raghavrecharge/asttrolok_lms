@@ -105,7 +105,6 @@
                             </div>
                         </div>
 
-
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label class="input-label">{{ trans('admin/main.filters') }}</label>
@@ -124,7 +123,6 @@
                                 </select>
                             </div>
                         </div>
-
 
                         <div class="col-md-3">
                             <div class="form-group">
@@ -150,7 +148,6 @@
                             </div>
                         </div>
 
-
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label class="input-label">{{ trans('admin/main.status') }}</label>
@@ -163,7 +160,6 @@
                                 </select>
                             </div>
                         </div>
-
 
                         <div class="col-md-3">
                             <div class="form-group mt-1">
@@ -297,7 +293,6 @@
         </div>
     </div>
 
-
     <section class="card">
         <div class="card-body">
             <div class="section-title ml-0 mt-0 mb-3"><h4>{{trans('admin/main.hints')}}</h4></div>
@@ -322,7 +317,6 @@
                         <div class="text-small font-600-bold mb-2">{{ trans('admin/main.instructors_hint_description_3') }}</div>
                     </div>
                 </div>
-
 
             </div>
         </div>

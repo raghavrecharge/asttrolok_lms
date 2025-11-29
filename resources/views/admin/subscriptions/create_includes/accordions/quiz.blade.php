@@ -12,7 +12,7 @@
         </div>
         <div class="d-flex align-items-center">
             <label class="custom-control custom-switch mr-20">
-                <input type="checkbox" class="custom-control-input" 
+                <input type="checkbox" class="custom-control-input"
                     {{ $quiz->status == 'active' ? 'checked' : '' }}
                     onchange="toggleStatus({{ $quiz->id }}, this.checked)">
                 <span id="status-label-{{ $quiz->id }}" class="custom-control-label">
@@ -30,9 +30,9 @@
                     <i data-feather="grid" class="" height="20"></i>
                 </button>
             @endif
-            
+
                 <i data-feather="move" class="move-icon mr-10 cursor-pointer" height="20"></i>
-           
+
            {{-- @if(!empty($subscriptionItem) && !empty($subscriptionItem->quiz))
                 <a href="{{ getAdminPanelUrl() }}/quizzes/{{ $subscriptionItem->quiz->id }}/delete"
                     class="delete-action btn btn-sm btn-transparent text-gray">

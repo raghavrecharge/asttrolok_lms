@@ -433,7 +433,7 @@
                                 </div>
                             @endif
                             @php
-    $iconSize = 20; // Sab icons ke liye uniform size
+    $iconSize = 20;
 @endphp
 
 @if($course->id == 2102 || $course->id == 2107)
@@ -764,20 +764,19 @@
 
 @push('scripts_bottom')
 <script  >
-        // Select all "Read More" links and add event listeners
+
         document.querySelectorAll('.show_hide').forEach(function (link) {
             link.addEventListener('click', function (e) {
-                e.preventDefault(); // Prevent the default link behavior
+                e.preventDefault();
 
-                // Find the corresponding hidden content for this link
                 const moreContent = this.nextElementSibling;
 
                 if (moreContent.style.display === "none" || moreContent.style.display === "") {
                     moreContent.style.display = "block";
-                    this.textContent = "Read Less"; // Change the link text
+                    this.textContent = "Read Less";
                 } else {
                     moreContent.style.display = "none";
-                    this.textContent = "Read More"; // Change back to "Read More"
+                    this.textContent = "Read More";
                 }
             });
         });
@@ -803,9 +802,7 @@
      moreText.text = "Read more";
    }
  }
-//      setTimeout(function() {
-//     $('#textpop').modal();
-// }, 5000);
+
 </script>
 @endif
     <script   src="{{ config('app.js_css_url') }}/assets/default/js/parts/time-counter-down.min.js"></script>
@@ -816,7 +813,7 @@
     <script   src="{{ config('app.js_css_url') }}/assets/default/vendors/video/vimeo.js"></script>
 <script  >
     function buy_course(){
-        // alert('');
+
         $('.buy_now').click();
     }
 
@@ -826,8 +823,7 @@
 
 $("#myModal2").modal('show');
   $('.modal-dialog').addClass('afterpop');
-    // $('.btn-demo').click();
-    // $('.modal-dialog').addClass('afterpop');
+
 </script>
 @endif
 @php
@@ -874,11 +870,7 @@ $("#myModal2").modal('show');
     </script>
 
 <script  >
-// $('#myModal21').modal();
-// $("#myModal21").modal('show');
-//   $('.modal-dialog').addClass('afterpop');
-    // $('.btn-demo').click();
-    // $('.modal-dialog').addClass('afterpop');
+
 </script>
     <script   src="{{ config('app.js_css_url') }}/assets/default/js/parts/comment.min.js"></script>
     <script   src="{{ config('app.js_css_url') }}/assets/default/js/parts/video_player_helpers.min.js"></script>

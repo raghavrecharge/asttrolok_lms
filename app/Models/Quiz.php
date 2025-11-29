@@ -26,7 +26,6 @@ class Quiz extends Model implements TranslatableContract
         return getTranslateAttributeValue($this, 'title');
     }
 
-
     public function quizQuestions()
     {
         return $this->hasMany('App\Models\QuizzesQuestion', 'quiz_id', 'id');
@@ -61,7 +60,6 @@ class Quiz extends Model implements TranslatableContract
     {
         return $this->belongsTo('App\Models\WebinarChapter', 'chapter_id', 'id');
     }
-
 
     public function increaseTotalMark($grade)
     {

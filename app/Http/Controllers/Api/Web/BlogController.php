@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Web;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Api\Objects\UserObj;
 use App\Http\Controllers\Controller;
 use App\Models\Api\Blog;
@@ -10,68 +13,98 @@ use Illuminate\Http\Request;
 class BlogController extends Controller
 {
     public function index(Request $request){
-        $blog = Blog::where('status', 'publish')->handleFilters()
+        try {
+            $blog = Blog::where('status', 'publish')->handleFilters()
 
-        ->orderBy('updated_at', 'desc')
-        ->orderBy('created_at', 'desc')
-        ->get()
-        ->map(function($blog){
-            return $blog->details;
-        }) ;
+            ->orderBy('updated_at', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function($blog){
+                return $blog->details;
+            }) ;
 
-
-
-        return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), $blog);
-
-
+            return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), $blog);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
     public function show($id){
-        $blog=Blog::find($id) ;
-        abort_unless($blog,404) ;
+        try {
+            $blog=Blog::find($id) ;
+            abort_unless($blog,404) ;
 
-
-        return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), [
-            'blog'=>$blog->details
-        ]);
-
-
-
+            return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), [
+                'blog'=>$blog->details
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('show error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
     public function list(Request $request, $id = null)
     {
+        try {
+            $query = Blog::where('status', 'publish')
+                ->orderBy('updated_at', 'desc')
+                ->orderBy('created_at', 'desc');
 
-        $query = Blog::where('status', 'publish')
-            ->orderBy('updated_at', 'desc')
-            ->orderBy('created_at', 'desc');
+            if (isset($id)) {
+                $query = $query->where('id', $id)->get();
+                if (!$query->count()) {
+                    abort(404);
+                }
+                $blogs = self::details($query,true);
 
-        if (isset($id)) {
-            $query = $query->where('id', $id)->get();
-            if (!$query->count()) {
-                abort(404);
+            } else {
+                $query = $this->handleFilters($request, $query);
+                $blogs = self::details($query->get());
             }
-            $blogs = self::details($query,true);
 
-        } else {
-            $query = $this->handleFilters($request, $query);
-            $blogs = self::details($query->get());
+            return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), $blogs);
+        } catch (\Exception $e) {
+            \Log::error('list error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), $blogs);
-
     }
 
     public function handleFilters($request, $query)
     {
-        $offset = $request->get('offset', null);
-        $limit = $request->get('limit', null);
+        try {
+            $offset = $request->get('offset', null);
+            $limit = $request->get('limit', null);
 
-        if (!empty($offset) && !empty($limit)) {
-            $query->skip($offset);
+            if (!empty($offset) && !empty($limit)) {
+                $query->skip($offset);
+            }
+            if (!empty($limit)) {
+                $query->take($limit);
+            }
+            return $query;
+        } catch (\Exception $e) {
+            \Log::error('handleFilters error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        if (!empty($limit)) {
-            $query->take($limit);
-        }
-        return $query;
     }
 
     public static function details($blogs,$single=false)

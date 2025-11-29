@@ -68,8 +68,7 @@
 
               console.log(`Saving progress: ${watchPercentage}% watched`);
               saveCourseProgress(itemId, chapterId, webinarId, userId, duration,watchPercentage,totalVideoDuration);
-            //   previousPercentage = watchPercentage;
-            //   sessionStorage.setItem('previousPercentage', previousPercentage);
+
               progressSaved = true;
               getPaused = true;
               sessionStorage.setItem('progressSaved', 'true');
@@ -89,7 +88,7 @@
     const iframe = document.getElementsByTagName('iframe')[0];
 
     if (iframe) {
-        // Send the 'getCurrentTime' method request
+
         iframe.contentWindow.postMessage({
             context: 'player.js',
             method: 'getPaused'
@@ -99,18 +98,6 @@
     }
 }, 1000);
 
-    // const iframe = document.getElementsByTagName('iframe')[0];
-    // iframe.addEventListener('load', function() {
-    //   intervalId = setInterval(() => {
-    //     iframe.contentWindow.postMessage({
-    //       context: 'player.js',
-    //       method: 'getPaused'
-    //     }, '*');
-
-    //     pauseAndFetchDuration();
-    //   }, 1000);
-    // });
-
     window.addEventListener('beforeunload', () => {
       if (intervalId) {
         clearInterval(intervalId);
@@ -119,10 +106,10 @@
 
     function saveCourseProgress(itemId, chapterId, webinarId, userId, watchedDuration,watchPercentage,totalVideoDuration) {
       $.ajax({
-        url: "{{ route('store.watched.duration') }}", // Laravel route
+        url: "{{ route('store.watched.duration') }}",
         method: 'POST',
         data: {
-          _token: '{{ csrf_token() }}', // CSRF token for security
+          _token: '{{ csrf_token() }}',
           item_id: itemId,
           user_id: userId,
           webinar_id: webinarId,
@@ -146,10 +133,7 @@
       if (savedDuration && sessionDuration) {
         duration = parseInt(sessionDuration);
       }
-    //   const savedPercentage = sessionStorage.getItem('previousPercentage');
-    //   if (savedPercentage) {
-    //     previousPercentage = parseInt(savedPercentage);
-    //   }
+
     };
   </script>
 </body>

@@ -16,9 +16,6 @@ class TrendCategory extends Model
         return $this->belongsTo('App\Models\Category', 'category_id', 'id');
     }
 
-    /**
-     * @return mixed
-     */
     public function getIcon()
     {
         return $this->icon;

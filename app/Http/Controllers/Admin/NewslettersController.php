@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Exports\NewslettersExport;
 use App\Http\Controllers\Controller;
 use App\Mail\SendNotifications;
@@ -15,79 +18,101 @@ class NewslettersController extends Controller
 {
     public function index()
     {
-        $this->authorize('admin_newsletters_lists');
+        try {
+            $this->authorize('admin_newsletters_lists');
 
-        $newsletters = Newsletter::orderBy('created_at', 'desc')
-            ->paginate(10);
+            $newsletters = Newsletter::orderBy('created_at', 'desc')
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('admin/main.newsletters'),
-            'newsletters' => $newsletters
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.newsletters'),
+                'newsletters' => $newsletters
+            ];
 
-        return view('admin.newsletters.lists', $data);
+            return view('admin.newsletters.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function send()
     {
-        $this->authorize('admin_newsletters_send');
+        try {
+            $this->authorize('admin_newsletters_send');
 
-        $data = [
-            'pageTitle' => trans('update.send_newsletter')
-        ];
+            $data = [
+                'pageTitle' => trans('update.send_newsletter')
+            ];
 
-        return view('admin.newsletters.send', $data);
+            return view('admin.newsletters.send', $data);
+        } catch (\Exception $e) {
+            \Log::error('send error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function sendNewsletter(Request $request)
     {
-        $this->authorize('admin_newsletters_send');
+        try {
+            $this->authorize('admin_newsletters_send');
 
-        $this->validate($request, [
-            'title' => 'required|string',
-            'description' => 'required|string',
-            'send_method' => 'required|in:send_to_all,send_to_bcc,send_to_excel',
-            'bcc_email' => 'required_if:send_method,send_to_bcc' . ($request->get('send_method') == 'send_to_bcc' ? '|email' : ''),
-            'excel' => 'required_if:send_method,send_to_excel' . ($request->get('send_method') == 'send_to_excel' ? '|mimes:xlsx' : ''),
-        ]);
+            $this->validate($request, [
+                'title' => 'required|string',
+                'description' => 'required|string',
+                'send_method' => 'required|in:send_to_all,send_to_bcc,send_to_excel',
+                'bcc_email' => 'required_if:send_method,send_to_bcc' . ($request->get('send_method') == 'send_to_bcc' ? '|email' : ''),
+                'excel' => 'required_if:send_method,send_to_excel' . ($request->get('send_method') == 'send_to_excel' ? '|mimes:xlsx' : ''),
+            ]);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $title = $data['title'];
-        $description = $data['description'];
+            $title = $data['title'];
+            $description = $data['description'];
 
-        if ($data['send_method'] == 'send_to_bcc') {
-            $send = $this->handleSendToCC($data);
-        } elseif ($data['send_method'] == 'send_to_excel') {
-            $send = $this->handleSentToExcelList($data);
-        } else {
-            $send = $this->handleSendToAllNewsletters($title, $description);
+            if ($data['send_method'] == 'send_to_bcc') {
+                $send = $this->handleSendToCC($data);
+            } elseif ($data['send_method'] == 'send_to_excel') {
+                $send = $this->handleSentToExcelList($data);
+            } else {
+                $send = $this->handleSendToAllNewsletters($title, $description);
+            }
+
+            if ($send == false) {
+                return back()->withInput($data);
+            }
+
+            NewsletterHistory::create([
+                'title' => $title,
+                'description' => $description,
+                'send_method' => $data['send_method'],
+                'bcc_email' => $data['bcc_email'] ?? null,
+                'email_count' => $send ?? 0,
+                'created_at' => time(),
+            ]);
+
+            return redirect(getAdminPanelUrl().'/newsletters/history');
+        } catch (\Exception $e) {
+            \Log::error('sendNewsletter error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        if ($send == false) {
-            return back()->withInput($data);
-        }
-
-        NewsletterHistory::create([
-            'title' => $title,
-            'description' => $description,
-            'send_method' => $data['send_method'],
-            'bcc_email' => $data['bcc_email'] ?? null,
-            'email_count' => $send ?? 0,
-            'created_at' => time(),
-        ]);
-
-        return redirect(getAdminPanelUrl().'/newsletters/history');
     }
 
-    /**
-     * @param $title
-     * @param $description
-     *
-     * @return boolean|integer
-     *
-     * @throws Exception
-     */
     private function handleSendToAllNewsletters($title, $description)
     {
         $this->authorize('admin_newsletters_send');
@@ -107,13 +132,6 @@ class NewslettersController extends Controller
         }
     }
 
-    /**
-     * @param $data
-     *
-     * @return boolean|integer
-     *
-     * @throws Exception
-     */
     private function handleSendToCC($data)
     {
         $this->authorize('admin_newsletters_send');
@@ -135,13 +153,6 @@ class NewslettersController extends Controller
         }
     }
 
-    /**
-     * @param $data
-     *
-     * @return boolean|integer
-     *
-     * @throws Exception
-     */
     private function handleSentToExcelList($data)
     {
         $this->authorize('admin_newsletters_send');
@@ -173,39 +184,69 @@ class NewslettersController extends Controller
 
     public function history()
     {
-        $this->authorize('admin_newsletters_history');
+        try {
+            $this->authorize('admin_newsletters_history');
 
-        $newsletters = NewsletterHistory::orderBy('created_at','desc')
-            ->paginate(10);
+            $newsletters = NewsletterHistory::orderBy('created_at','desc')
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('update.newsletters_history'),
-            'newsletters' => $newsletters
-        ];
+            $data = [
+                'pageTitle' => trans('update.newsletters_history'),
+                'newsletters' => $newsletters
+            ];
 
-        return view('admin.newsletters.history', $data);
+            return view('admin.newsletters.history', $data);
+        } catch (\Exception $e) {
+            \Log::error('history error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function delete($id)
     {
-        $this->authorize('admin_newsletters_delete');
+        try {
+            $this->authorize('admin_newsletters_delete');
 
-        $item = Newsletter::findOrFail($id);
+            $item = Newsletter::findOrFail($id);
 
-        $item->delete();
+            $item->delete();
 
-        return back();
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('delete error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function exportExcel()
     {
-        $this->authorize('admin_newsletters_export_excel');
+        try {
+            $this->authorize('admin_newsletters_export_excel');
 
-        $newsletters = Newsletter::orderBy('created_at', 'desc')
-            ->get();
+            $newsletters = Newsletter::orderBy('created_at', 'desc')
+                ->get();
 
-        $newslettersExport = new NewslettersExport($newsletters);
+            $newslettersExport = new NewslettersExport($newsletters);
 
-        return Excel::download($newslettersExport, trans('admin/main.newsletters') . '.xlsx');
+            return Excel::download($newslettersExport, trans('admin/main.newsletters') . '.xlsx');
+        } catch (\Exception $e) {
+            \Log::error('exportExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

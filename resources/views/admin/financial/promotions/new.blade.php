@@ -15,7 +15,6 @@
             </div>
         </div>
 
-
         <div class="section-body card">
 
             <div class="d-flex align-items-center justify-content-between">
@@ -48,7 +47,6 @@
                                     <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
                                 @endif
 
-
                                 <div class="form-group">
                                     <label>{{ trans('admin/main.title') }}</label>
                                     <input type="text" name="title"
@@ -72,7 +70,6 @@
                                     </div>
                                     @enderror
                                 </div>
-
 
                                 <div class="form-group">
                                     <label>{{ trans('admin/main.price') }} ({{ $currency }})</label>
@@ -128,7 +125,6 @@
                                     </label>
                                     <div class="text-muted text-small mt-1">{{ trans('admin/main.is_popular_hint') }}</div>
                                 </div>
-
 
                                 <div class=" mt-4">
                                     <button class="btn btn-primary">{{ trans('admin/main.submit') }}</button>

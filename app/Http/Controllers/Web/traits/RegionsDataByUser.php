@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Web\traits;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Models\Region;
 use Illuminate\Support\Facades\DB;
 
@@ -9,40 +12,50 @@ trait RegionsDataByUser
 {
     public function getLocationsData($user)
     {
-        $provinces = null;
-        $cities = null;
-        $districts = null;
+        try {
+            $provinces = null;
+            $cities = null;
+            $districts = null;
 
-        $countries = Region::select(DB::raw('*, ST_AsText(geo_center) as geo_center'))
-            ->where('type', Region::$country)
-            ->get();
-
-        if (!empty($user->country_id)) {
-            $provinces = Region::select(DB::raw('*, ST_AsText(geo_center) as geo_center'))
-                ->where('type', Region::$province)
-                ->where('country_id', $user->country_id)
+            $countries = Region::select(DB::raw('*, ST_AsText(geo_center) as geo_center'))
+                ->where('type', Region::$country)
                 ->get();
-        }
 
-        if (!empty($user->province_id)) {
-            $cities = Region::select(DB::raw('*, ST_AsText(geo_center) as geo_center'))
-                ->where('type', Region::$city)
-                ->where('province_id', $user->province_id)
-                ->get();
-        }
+            if (!empty($user->country_id)) {
+                $provinces = Region::select(DB::raw('*, ST_AsText(geo_center) as geo_center'))
+                    ->where('type', Region::$province)
+                    ->where('country_id', $user->country_id)
+                    ->get();
+            }
 
-        if (!empty($user->city_id)) {
-            $districts = Region::select(DB::raw('*, ST_AsText(geo_center) as geo_center'))
-                ->where('type', Region::$district)
-                ->where('city_id', $user->city_id)
-                ->get();
-        }
+            if (!empty($user->province_id)) {
+                $cities = Region::select(DB::raw('*, ST_AsText(geo_center) as geo_center'))
+                    ->where('type', Region::$city)
+                    ->where('province_id', $user->province_id)
+                    ->get();
+            }
 
-        return [
-            'countries' => $countries,
-            'provinces' => $provinces,
-            'cities' => $cities,
-            'districts' => $districts,
-        ];
+            if (!empty($user->city_id)) {
+                $districts = Region::select(DB::raw('*, ST_AsText(geo_center) as geo_center'))
+                    ->where('type', Region::$district)
+                    ->where('city_id', $user->city_id)
+                    ->get();
+            }
+
+            return [
+                'countries' => $countries,
+                'provinces' => $provinces,
+                'cities' => $cities,
+                'districts' => $districts,
+            ];
+        } catch (\Exception $e) {
+            \Log::error('getLocationsData error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

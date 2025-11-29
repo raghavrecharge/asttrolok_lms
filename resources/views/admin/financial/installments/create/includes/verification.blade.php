@@ -20,7 +20,7 @@
                 <div class="text-muted text-small mt-1">{{ trans('update.installment_verification_description_hint') }}</div>
                 <div class="invalid-feedback">@error('verification_description') {{ $message }} @enderror</div>
             </div>
-            
+
             <div class="form-group mt-15">
                 <label class="input-label">{{ trans('update.verification_banner') }}</label>
                 <div class="input-group">
@@ -35,7 +35,7 @@
                             <i class="fa fa-eye"></i>
                         </button>
                     </div>
-                    
+
                     @error('verification_banner')
                     <div class="invalid-feedback">
                         {{ $message }}
@@ -59,7 +59,7 @@
                             <i class="fa fa-eye"></i>
                         </button>
                     </div>
-                    
+
                     @error('verification_video')
                     <div class="invalid-feedback">
                         {{ $message }}

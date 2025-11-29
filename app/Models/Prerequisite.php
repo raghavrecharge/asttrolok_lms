@@ -14,11 +14,5 @@ class Prerequisite extends Model
     {
         return $this->belongsTo('App\Models\Webinar', 'prerequisite_id', 'id');
     }
-    
-    // public static function find($id)
-    // {
-    //     $prerequisite = self::find($id);
 
-    //     return $prerequisite ;
-    // }
 }

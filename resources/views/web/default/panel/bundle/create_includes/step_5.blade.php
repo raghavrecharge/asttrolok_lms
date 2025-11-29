@@ -2,7 +2,6 @@
     <link href="{{ config('app.js_css_url') }}/assets/default/vendors/sortable/jquery-ui.min.css"/>
 @endpush
 
-
 <section class="mt-50">
     <div class="">
         <h2 class="section-title after-line">{{ trans('public.faq') }} ({{ trans('public.optional') }})</h2>
@@ -35,7 +34,6 @@
 <div id="newFaqForm" class="d-none">
     @include('web.default.panel.bundle.create_includes.accordions.faq',['bundle' => $bundle])
 </div>
-
 
 @push('scripts_bottom')
     <script  src="{{ config('app.js_css_url') }}/assets/default/vendors/sortable/jquery-ui.min.js"></script>

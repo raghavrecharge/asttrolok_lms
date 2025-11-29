@@ -45,7 +45,6 @@ class Refile extends Model implements TranslatableContract
         return getTranslateAttributeValue($this, 'description');
     }
 
-
     public function chapter()
     {
         return $this->belongsTo('App\Models\RemedyChapter', 'chapter_id', 'id');

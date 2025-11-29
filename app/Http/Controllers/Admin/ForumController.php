@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Forum;
@@ -18,293 +21,379 @@ class ForumController extends Controller
 {
     public function index(Request $request)
     {
-        removeContentLocale();
+        try {
+            removeContentLocale();
 
-        $this->authorize('admin_forum_list');
+            $this->authorize('admin_forum_list');
 
-        $subForums = $request->get('subForums');
+            $subForums = $request->get('subForums');
 
-        $forums = Forum::where(function ($query) use ($subForums) {
-            if (!empty($subForums)) {
-                $query->where('parent_id', $subForums);
-            } else {
-                $query->whereNull('parent_id');
+            $forums = Forum::where(function ($query) use ($subForums) {
+                if (!empty($subForums)) {
+                    $query->where('parent_id', $subForums);
+                } else {
+                    $query->whereNull('parent_id');
+                }
+            })
+                ->with([
+                    'subForums' => function ($query) {
+                        $query->where('status', 'active');
+                    },
+                ])
+                ->orderBy('id', 'desc')
+                ->paginate(10);
+
+            foreach ($forums as $forum) {
+                $forumIds = Forum::where('parent_id', $forum->id)->pluck('id')->toArray();
+                $forumIds[] = $forum->id;
+
+                $topicsIds = ForumTopic::whereIn('forum_id', $forumIds)->pluck('id')->toArray();
+
+                $forum->topics_count = count($topicsIds);
+                $forum->posts_count = ForumTopicPost::whereIn('topic_id', $topicsIds)->count();
             }
-        })
-            ->with([
-                'subForums' => function ($query) {
-                    $query->where('status', 'active');
-                },
-            ])
-            ->orderBy('id', 'desc')
-            ->paginate(10);
 
-        foreach ($forums as $forum) {
-            $forumIds = Forum::where('parent_id', $forum->id)->pluck('id')->toArray();
-            $forumIds[] = $forum->id;
+            $totalForums = Forum::query()->whereDoesntHave('subForums')->count();
+            $totalTopics = ForumTopic::query()->count();
+            $postsCount = ForumTopicPost::query()->count();
+            $membersCount = ForumTopicPost::select(DB::raw('count(distinct user_id) as count'))->first()->count;
 
-            $topicsIds = ForumTopic::whereIn('forum_id', $forumIds)->pluck('id')->toArray();
+            $data = [
+                'pageTitle' => trans('update.forums'),
+                'forums' => $forums,
+                'totalForums' => $totalForums,
+                'totalTopics' => $totalTopics,
+                'postsCount' => $postsCount,
+                'membersCount' => $membersCount,
+            ];
 
-            $forum->topics_count = count($topicsIds);
-            $forum->posts_count = ForumTopicPost::whereIn('topic_id', $topicsIds)->count();
+            return view('admin.forums.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $totalForums = Forum::query()->whereDoesntHave('subForums')->count();
-        $totalTopics = ForumTopic::query()->count();
-        $postsCount = ForumTopicPost::query()->count();
-        $membersCount = ForumTopicPost::select(DB::raw('count(distinct user_id) as count'))->first()->count;
-
-        $data = [
-            'pageTitle' => trans('update.forums'),
-            'forums' => $forums,
-            'totalForums' => $totalForums,
-            'totalTopics' => $totalTopics,
-            'postsCount' => $postsCount,
-            'membersCount' => $membersCount,
-        ];
-
-        return view('admin.forums.lists', $data);
     }
 
     public function create()
     {
-        $this->authorize('admin_forum_create');
+        try {
+            $this->authorize('admin_forum_create');
 
-        $userGroups = Group::where('status', 'active')
-            ->orderBy('created_at', 'desc')
-            ->get();
+            $userGroups = Group::where('status', 'active')
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        $roles = Role::all();
+            $roles = Role::all();
 
-        $data = [
-            'pageTitle' => trans('update.new_forum'),
-            'userGroups' => $userGroups,
-            'roles' => $roles
-        ];
+            $data = [
+                'pageTitle' => trans('update.new_forum'),
+                'userGroups' => $userGroups,
+                'roles' => $roles
+            ];
 
-        return view('admin.forums.create', $data);
+            return view('admin.forums.create', $data);
+        } catch (\Exception $e) {
+            \Log::error('create error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function store(Request $request)
     {
-        $this->authorize('admin_forum_create');
+        try {
+            $this->authorize('admin_forum_create');
 
-        $this->validate($request, [
-            'title' => 'required|min:3|max:255',
-            'description' => 'required',
-            'icon' => 'required',
-            'role_id' => 'nullable|exists:roles,id',
-            'group_id' => 'nullable|exists:groups,id',
-            'status' => 'in:active,disabled',
-        ]);
-        $data = $request->all();
+            $this->validate($request, [
+                'title' => 'required|min:3|max:255',
+                'description' => 'required',
+                'icon' => 'required',
+                'role_id' => 'nullable|exists:roles,id',
+                'group_id' => 'nullable|exists:groups,id',
+                'status' => 'in:active,disabled',
+            ]);
+            $data = $request->all();
 
-        $forum = Forum::create([
-            'slug' => Forum::makeSlug($data['title']),
-            'icon' => $data['icon'],
-            'group_id' => $data['group_id'] ?? null,
-            'role_id' => $data['role_id'] ?? null,
-            'status' => $data['status'],
-            'close' => (!empty($data['close']) and $data['close'] == 1),
-        ]);
+            $forum = Forum::create([
+                'slug' => Forum::makeSlug($data['title']),
+                'icon' => $data['icon'],
+                'group_id' => $data['group_id'] ?? null,
+                'role_id' => $data['role_id'] ?? null,
+                'status' => $data['status'],
+                'close' => (!empty($data['close']) and $data['close'] == 1),
+            ]);
 
-        ForumTranslation::updateOrCreate([
-            'forum_id' => $forum->id,
-            'locale' => mb_strtolower($data['locale']),
-        ], [
-            'title' => $data['title'],
-            'description' => $data['description'],
-        ]);
+            ForumTranslation::updateOrCreate([
+                'forum_id' => $forum->id,
+                'locale' => mb_strtolower($data['locale']),
+            ], [
+                'title' => $data['title'],
+                'description' => $data['description'],
+            ]);
 
-        $hasSubForum = (!empty($request->get('has_sub')) and $request->get('has_sub') == 'on');
-        $this->setSubForum($forum, $request->get('sub_forums'), $hasSubForum, $data['locale']);
+            $hasSubForum = (!empty($request->get('has_sub')) and $request->get('has_sub') == 'on');
+            $this->setSubForum($forum, $request->get('sub_forums'), $hasSubForum, $data['locale']);
 
-        removeContentLocale();
+            removeContentLocale();
 
-        return redirect(getAdminPanelUrl().'/forums');
+            return redirect(getAdminPanelUrl().'/forums');
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function edit(Request $request, $id)
     {
-        $this->authorize('admin_forum_edit');
+        try {
+            $this->authorize('admin_forum_edit');
 
-        $forum = Forum::findOrFail($id);
-        $subForums = Forum::where('parent_id', $forum->id)
-            ->orderBy('order', 'asc')
-            ->get();
+            $forum = Forum::findOrFail($id);
+            $subForums = Forum::where('parent_id', $forum->id)
+                ->orderBy('order', 'asc')
+                ->get();
 
-        $userGroups = Group::where('status', 'active')
-            ->orderBy('created_at', 'desc')
-            ->get();
+            $userGroups = Group::where('status', 'active')
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        $roles = Role::all();
+            $roles = Role::all();
 
-        $locale = $request->get('locale', app()->getLocale());
-        storeContentLocale($locale, $forum->getTable(), $forum->id);
+            $locale = $request->get('locale', app()->getLocale());
+            storeContentLocale($locale, $forum->getTable(), $forum->id);
 
-        $data = [
-            'pageTitle' => trans('admin/main.edit'),
-            'forum' => $forum,
-            'subForums' => $subForums,
-            'userGroups' => $userGroups,
-            'roles' => $roles
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.edit'),
+                'forum' => $forum,
+                'subForums' => $subForums,
+                'userGroups' => $userGroups,
+                'roles' => $roles
+            ];
 
-        return view('admin.forums.create', $data);
+            return view('admin.forums.create', $data);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $this->authorize('admin_forum_edit');
+        try {
+            $this->authorize('admin_forum_edit');
 
-        $this->validate($request, [
-            'title' => 'required|min:3|max:255',
-            'description' => 'required',
-            'icon' => 'required',
-            'group_id' => 'nullable|exists:groups,id',
-            'role_id' => 'nullable|exists:roles,id',
-            'status' => 'in:active,disabled',
-        ]);
+            $this->validate($request, [
+                'title' => 'required|min:3|max:255',
+                'description' => 'required',
+                'icon' => 'required',
+                'group_id' => 'nullable|exists:groups,id',
+                'role_id' => 'nullable|exists:roles,id',
+                'status' => 'in:active,disabled',
+            ]);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $forum = Forum::findOrFail($id);
-        $forum->update([
-            'icon' => $data['icon'],
-            'group_id' => $data['group_id'] ?? null,
-            'role_id' => $data['role_id'] ?? null,
-            'status' => $data['status'],
-            'close' => (!empty($data['close']) and $data['close'] == 1),
-        ]);
+            $forum = Forum::findOrFail($id);
+            $forum->update([
+                'icon' => $data['icon'],
+                'group_id' => $data['group_id'] ?? null,
+                'role_id' => $data['role_id'] ?? null,
+                'status' => $data['status'],
+                'close' => (!empty($data['close']) and $data['close'] == 1),
+            ]);
 
-        ForumTranslation::updateOrCreate([
-            'forum_id' => $forum->id,
-            'locale' => mb_strtolower($data['locale']),
-        ], [
-            'title' => $data['title'],
-            'description' => $data['description'],
-        ]);
+            ForumTranslation::updateOrCreate([
+                'forum_id' => $forum->id,
+                'locale' => mb_strtolower($data['locale']),
+            ], [
+                'title' => $data['title'],
+                'description' => $data['description'],
+            ]);
 
-        $hasSubForums = (!empty($request->get('has_sub')) and $request->get('has_sub') == 'on');
-        $this->setSubForum($forum, $request->get('sub_forums'), $hasSubForums, $data['locale']);
+            $hasSubForums = (!empty($request->get('has_sub')) and $request->get('has_sub') == 'on');
+            $this->setSubForum($forum, $request->get('sub_forums'), $hasSubForums, $data['locale']);
 
-        removeContentLocale();
+            removeContentLocale();
 
-        return redirect(getAdminPanelUrl().'/forums');
+            return redirect(getAdminPanelUrl().'/forums');
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function destroy(Request $request, $id)
     {
-        $this->authorize('admin_forum_delete');
+        try {
+            $this->authorize('admin_forum_delete');
 
-        $forum = Forum::where('id', $id)->first();
+            $forum = Forum::where('id', $id)->first();
 
-        if (!empty($forum)) {
-            Forum::where('parent_id', $forum->id)
-                ->delete();
+            if (!empty($forum)) {
+                Forum::where('parent_id', $forum->id)
+                    ->delete();
 
-            $forum->delete();
+                $forum->delete();
+            }
+
+            return redirect(getAdminPanelUrl().'/forums');
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return redirect(getAdminPanelUrl().'/forums');
     }
 
     public function search(Request $request)
     {
-        $term = $request->get('term');
+        try {
+            $term = $request->get('term');
 
-        $option = $request->get('option', null);
+            $option = $request->get('option', null);
 
-        $query = Forum::select('id')
-            ->whereTranslationLike('title', "%$term%");
+            $query = Forum::select('id')
+                ->whereTranslationLike('title', "%$term%");
 
-        /*if (!empty($option)) {
+            $forums = $query->get();
 
-        }*/
-
-        $forums = $query->get();
-
-        return response()->json($forums, 200);
+            return response()->json($forums, 200);
+        } catch (\Exception $e) {
+            \Log::error('search error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function searchTopics(Request $request)
     {
-        $term = $request->get('term');
+        try {
+            $term = $request->get('term');
 
-        $option = $request->get('option', null);
+            $option = $request->get('option', null);
 
-        $query = ForumTopic::select('id', 'title')
-            ->where('title', 'like', "%$term%");
+            $query = ForumTopic::select('id', 'title')
+                ->where('title', 'like', "%$term%");
 
-        $topics = $query->get();
+            $topics = $query->get();
 
-        return response()->json($topics, 200);
+            return response()->json($topics, 200);
+        } catch (\Exception $e) {
+            \Log::error('searchTopics error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function setSubForum(Forum $forum, $subForums, $hasSubForums, $locale)
     {
-        $order = 1;
-        $oldIds = [];
+        try {
+            $order = 1;
+            $oldIds = [];
 
-        if ($hasSubForums and !empty($subForums) and count($subForums)) {
+            if ($hasSubForums and !empty($subForums) and count($subForums)) {
 
-            foreach ($subForums as $key => $subForum) {
-                $check = Forum::where('id', $key)->first();
+                foreach ($subForums as $key => $subForum) {
+                    $check = Forum::where('id', $key)->first();
 
-                if (is_numeric($key)) {
-                    $oldIds[] = $key;
-                }
-
-                if (!empty($subForum['title'])) {
-                    if (!empty($check)) {
-                        $check->update([
-                            'order' => $order,
-                            'icon' => $subForum['icon'],
-                            'group_id' => $subForum['group_id'] ?? null,
-                            'role_id' => $subForum['role_id'] ?? null,
-                            'status' => $subForum['status'],
-                            'close' => $forum->close || ((!empty($subForum['close']) and $subForum['close'] == 1)),
-                        ]);
-
-                        ForumTranslation::updateOrCreate([
-                            'forum_id' => $check->id,
-                            'locale' => mb_strtolower($locale),
-                        ], [
-                            'title' => $subForum['title'],
-                            'description' => $subForum['description'],
-                        ]);
-                    } else {
-                        $new = Forum::create([
-                            'slug' => Forum::makeSlug($subForum['title']),
-                            'parent_id' => $forum->id,
-                            'order' => $order,
-                            'icon' => $subForum['icon'],
-                            'group_id' => $subForum['group_id'] ?? null,
-                            'role_id' => $subForum['role_id'] ?? null,
-                            'status' => $subForum['status'],
-                            'close' => $forum->close || ((!empty($subForum['close']) and $subForum['close'] == 1)),
-                        ]);
-
-                        ForumTranslation::updateOrCreate([
-                            'forum_id' => $new->id,
-                            'locale' => mb_strtolower($locale),
-                        ], [
-                            'title' => $subForum['title'],
-                            'description' => $subForum['description'],
-                        ]);
-
-                        $oldIds[] = $new->id;
+                    if (is_numeric($key)) {
+                        $oldIds[] = $key;
                     }
 
-                    $order += 1;
+                    if (!empty($subForum['title'])) {
+                        if (!empty($check)) {
+                            $check->update([
+                                'order' => $order,
+                                'icon' => $subForum['icon'],
+                                'group_id' => $subForum['group_id'] ?? null,
+                                'role_id' => $subForum['role_id'] ?? null,
+                                'status' => $subForum['status'],
+                                'close' => $forum->close || ((!empty($subForum['close']) and $subForum['close'] == 1)),
+                            ]);
+
+                            ForumTranslation::updateOrCreate([
+                                'forum_id' => $check->id,
+                                'locale' => mb_strtolower($locale),
+                            ], [
+                                'title' => $subForum['title'],
+                                'description' => $subForum['description'],
+                            ]);
+                        } else {
+                            $new = Forum::create([
+                                'slug' => Forum::makeSlug($subForum['title']),
+                                'parent_id' => $forum->id,
+                                'order' => $order,
+                                'icon' => $subForum['icon'],
+                                'group_id' => $subForum['group_id'] ?? null,
+                                'role_id' => $subForum['role_id'] ?? null,
+                                'status' => $subForum['status'],
+                                'close' => $forum->close || ((!empty($subForum['close']) and $subForum['close'] == 1)),
+                            ]);
+
+                            ForumTranslation::updateOrCreate([
+                                'forum_id' => $new->id,
+                                'locale' => mb_strtolower($locale),
+                            ], [
+                                'title' => $subForum['title'],
+                                'description' => $subForum['description'],
+                            ]);
+
+                            $oldIds[] = $new->id;
+                        }
+
+                        $order += 1;
+                    }
                 }
             }
+
+            Forum::where('parent_id', $forum->id)
+                ->whereNotIn('id', $oldIds)
+                ->delete();
+
+            return true;
+        } catch (\Exception $e) {
+            \Log::error('setSubForum error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        Forum::where('parent_id', $forum->id)
-            ->whereNotIn('id', $oldIds)
-            ->delete();
-
-        return true;
     }
 }

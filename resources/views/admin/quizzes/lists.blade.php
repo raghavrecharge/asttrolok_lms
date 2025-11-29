@@ -255,7 +255,7 @@
                                                         <i class="fa fa-edit"></i>
                                                     </a>
                                                 @endcan
-                                                
+
                                                 @can('admin_quizzes_edit')
                                                     <a href="{{ getAdminPanelUrl() }}/quizzes/{{ $quiz->id }}/copy" class="btn-transparent btn-sm text-primary" data-toggle="tooltip" data-placement="top" title="Copy">
                                                         <i class="fa fa-clone"></i>

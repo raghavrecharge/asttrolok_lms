@@ -263,7 +263,7 @@
 @push('scripts_bottom')
 <script >
 $(document).ready(function() {
-    // Password show/hide
+
     $(".toggle-password").click(function() {
         let input = $($(this).data("toggle"));
         if(input.attr("type") === "password") {
@@ -275,7 +275,6 @@ $(document).ready(function() {
         }
     });
 
-    // Real-time password match check
     function checkPasswordMatch() {
         let password = $("#password").val();
         let confirmPassword = $("#confirm_password").val();

@@ -2,21 +2,29 @@
 
 namespace App\Http\Controllers\Api\Config;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Api\Request;
 use App\Http\Controllers\Controller;
 use App\Models\PaymentChannel;
 
 class ConfigController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
 
     public function list(Request $request)
     {
-        return self::get();
+        try {
+            return self::get();
+        } catch (\Exception $e) {
+            \Log::error('list error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public static function get()
@@ -36,7 +44,6 @@ class ConfigController extends Controller
             'name' => currency()
         ];
 
-
         $data = [
             'register_method' => $registerMethod,
             'offline_bank_account' => getOfflineBanksTitle() ?? null,
@@ -50,6 +57,5 @@ class ConfigController extends Controller
         return $data;
 
     }
-
 
 }

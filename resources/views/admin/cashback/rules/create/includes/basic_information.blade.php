@@ -29,7 +29,6 @@
             @enderror
         </div>
 
-
         <div class="form-group ">
             <label class="input-label">{{ trans('admin/main.users') }}</label>
 
@@ -103,7 +102,7 @@
                 <input type="text" name="end_date" class="form-control text-center datetimepicker"
                        aria-describedby="dateRangeLabel" autocomplete="off"
                        value="{{ (!empty($rule) and !empty($rule->end_date)) ? dateTimeFormat($rule->end_date, 'Y-m-d H:i', false) : old('end_date') }}"/>
-                
+
                 @error('end_date')
                 <div class="invalid-feedback">
                     {{ $message }}

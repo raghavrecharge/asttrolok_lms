@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Accounting;
 use App\Models\BecomeInstructor;
@@ -14,61 +17,90 @@ class BecomeInstructorController extends Controller
 {
     public function index($page)
     {
-        $this->authorize('admin_become_instructors_list');
+        try {
+            $this->authorize('admin_become_instructors_list');
 
-        if ($page == 'organizations') {
-            $role = Role::$organization;
-        } else {
-            $role = Role::$teacher;
+            if ($page == 'organizations') {
+                $role = Role::$organization;
+            } else {
+                $role = Role::$teacher;
+            }
+
+            $query = BecomeInstructor::where('role', $role);
+
+            if (getRegistrationPackagesGeneralSettings('force_user_to_select_a_package')) {
+                $query->whereNotNull('package_id');
+            }
+
+            $becomeInstructors = $query->with(['user', 'registrationPackage'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+
+            $data = [
+                'pageTitle' => trans('admin/main.become_instructors_list'),
+                'becomeInstructors' => $becomeInstructors
+            ];
+
+            return view('admin.users.become_instructors.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $query = BecomeInstructor::where('role', $role);
-
-        if (getRegistrationPackagesGeneralSettings('force_user_to_select_a_package')) {
-            $query->whereNotNull('package_id');
-        }
-
-        $becomeInstructors = $query->with(['user', 'registrationPackage'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        $data = [
-            'pageTitle' => trans('admin/main.become_instructors_list'),
-            'becomeInstructors' => $becomeInstructors
-        ];
-
-        return view('admin.users.become_instructors.lists', $data);
     }
 
     public function reject($id)
     {
-        $this->authorize('admin_become_instructors_reject');
+        try {
+            $this->authorize('admin_become_instructors_reject');
 
-        $becomeInstructors = BecomeInstructor::findOrFail($id);
+            $becomeInstructors = BecomeInstructor::findOrFail($id);
 
-        $this->handleRefundPackage($becomeInstructors);
+            $this->handleRefundPackage($becomeInstructors);
 
-        $becomeInstructors->update([
-            'status' => 'reject'
-        ]);
+            $becomeInstructors->update([
+                'status' => 'reject'
+            ]);
 
-        // Send Notification
-        $becomeInstructors->sendNotificationToUser('reject');
+            $becomeInstructors->sendNotificationToUser('reject');
 
-        return redirect()->back();
+            return redirect()->back();
+        } catch (\Exception $e) {
+            \Log::error('reject error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function delete($id)
     {
-        $this->authorize('admin_become_instructors_delete');
+        try {
+            $this->authorize('admin_become_instructors_delete');
 
-        $becomeInstructors = BecomeInstructor::findOrFail($id);
+            $becomeInstructors = BecomeInstructor::findOrFail($id);
 
-        $this->handleRefundPackage($becomeInstructors);
+            $this->handleRefundPackage($becomeInstructors);
 
-        $becomeInstructors->delete();
+            $becomeInstructors->delete();
 
-        return redirect()->back();
+            return redirect()->back();
+        } catch (\Exception $e) {
+            \Log::error('delete error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function handleRefundPackage($becomeInstructors)

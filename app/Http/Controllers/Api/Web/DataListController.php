@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Web;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\FeatureWebinar;
 use App\Models\Ticket;

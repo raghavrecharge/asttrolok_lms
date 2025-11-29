@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -13,98 +16,127 @@ class UpdateController extends Controller
 {
     public function index()
     {
-        $this->authorize("admin_settings_update_app");
+        try {
+            $this->authorize("admin_settings_update_app");
 
-        $data = [
-            'pageTitle' => trans('update.update_app')
-        ];
+            $data = [
+                'pageTitle' => trans('update.update_app')
+            ];
 
-        return view('admin.settings.update_app.index', $data);
+            return view('admin.settings.update_app.index', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function basicUpdate(Request $request)
     {
-        $this->authorize("admin_settings_update_app");
+        try {
+            $this->authorize("admin_settings_update_app");
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $validator = Validator::make($data, [
-            'file' => 'required|mimes:zip',
-            'basic_update_confirm' => 'required'
-        ]);
+            $validator = Validator::make($data, [
+                'file' => 'required|mimes:zip',
+                'basic_update_confirm' => 'required'
+            ]);
 
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $file = $request->file('file');
+            $zip = new \ZipArchive();
+            $zip->open($file);
+            $zip->extractTo(base_path());
+            $zip->close();
+
+            $this->handleClearCache();
+
+            return response()->json([
+                'code' => 200,
+                'msg' => trans('update.app_updated_successful')
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('basicUpdate error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $file = $request->file('file');
-        $zip = new \ZipArchive();
-        $zip->open($file);
-        $zip->extractTo(base_path());
-        $zip->close();
-
-        $this->handleClearCache();
-
-        return response()->json([
-            'code' => 200,
-            'msg' => trans('update.app_updated_successful')
-        ]);
     }
 
     public function customUpdate(Request $request)
     {
-        $this->authorize("admin_settings_update_app");
+        try {
+            $this->authorize("admin_settings_update_app");
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $validator = Validator::make($data, [
-            'file' => 'required|mimes:zip',
-            'custom_update_confirm' => 'required'
-        ]);
+            $validator = Validator::make($data, [
+                'file' => 'required|mimes:zip',
+                'custom_update_confirm' => 'required'
+            ]);
 
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
 
-        $path = base_path("/update_tmp");
+            $path = base_path("/update_tmp");
 
-        $file = $request->file('file');
-        $zip = new \ZipArchive();
-        $zip->open($file);
-        $zip->extractTo($path);
-        $zip->close();
+            $file = $request->file('file');
+            $zip = new \ZipArchive();
+            $zip->open($file);
+            $zip->extractTo($path);
+            $zip->close();
 
-        $json = json_decode(file_get_contents("$path/config.json"), true);
+            $json = json_decode(file_get_contents("$path/config.json"), true);
 
-        if (!empty($json['directory']) and !empty($json['directory'][0]['name'])) {
-            foreach ($json['directory'][0]['name'] as $directory) {
-                if (!is_dir(base_path($directory))) {
-                    mkdir(base_path($directory), 0777, true);
+            if (!empty($json['directory']) and !empty($json['directory'][0]['name'])) {
+                foreach ($json['directory'][0]['name'] as $directory) {
+                    if (!is_dir(base_path($directory))) {
+                        mkdir(base_path($directory), 0777, true);
+                    }
                 }
             }
-        }
 
-        if (!empty($json['files'])) {
-            foreach ($json['files'] as $file) {
-                copy("$path/{$file['root_directory']}", base_path($file['update_directory']));
+            if (!empty($json['files'])) {
+                foreach ($json['files'] as $file) {
+                    copy("$path/{$file['root_directory']}", base_path($file['update_directory']));
+                }
             }
+
+            File::deleteDirectory($path);
+
+            $this->handleClearCache();
+
+            return response()->json([
+                'code' => 200,
+                'msg' => trans('update.app_updated_successful_json')
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('customUpdate error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        // remove tmp dir
-        File::deleteDirectory($path);
-
-        $this->handleClearCache();
-
-        return response()->json([
-            'code' => 200,
-            'msg' => trans('update.app_updated_successful_json')
-        ]);
     }
 
     public function databaseUpdate(Request $request)

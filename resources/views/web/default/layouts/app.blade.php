@@ -48,7 +48,7 @@
     <script>
         setTimeout(function() {
             $("[href='https://elfsight.com/google-reviews-widget/?utm_source=websites&utm_medium=clients&utm_content=google-reviews&utm_term=www.asttrolok.com&utm_campaign=free-widget']").hide();
-            //   $('.WidgetBackground__Content-sc-1ho7q3r-2 > a').find('.inline').last().attr("style", "display:none !important");
+
         }, 2000);
     </script>
 
@@ -198,24 +198,23 @@
     @php
         $str_arr = explode("/", request()->getRequestUri());
 
-        // Check for specific page
         if(in_array("what-is-pitru-paksha-and-why-it-is-observed", $str_arr)) {
 
             if(session()->has('started1234')) {
-                // Calculate remaining time
+
                 $time = (session('duration1234') - (time() - session('started1234')));
 
                 if($time <= 0) {
-                    // Session expired, clear it
+
                     session()->forget(['started1234', 'duration1234']);
                 }
             } else {
-                // Start new session
+
                 session(['started1234' => time()]);
-                session(['duration1234' => (4*60*60)]); // 4 hours
+                session(['duration1234' => (4*60*60)]);
     @endphp
                 <script>
-                    // Show modal after 30 seconds
+
                     setTimeout(function() {
                         $('#myModal21').modal();
                     }, 30000);
@@ -224,21 +223,20 @@
             }
         }
 
-        // General session handling
         if(session()->has('started123')) {
             $time = (session('duration123') - (time() - session('started123')));
 
             if($time <= 0) {
-                // Session expired, clear it
+
                 session()->forget(['started123', 'duration123']);
             }
         } else {
-            // Start new session
+
             session(['started123' => time()]);
-            session(['duration123' => (3*24*60*60)]); // 3 days
+            session(['duration123' => (3*24*60*60)]);
 
             if(!in_array("what-is-pitru-paksha-and-why-it-is-observed", $str_arr)) {
-                // Add any additional logic here if needed
+
             }
         }
     @endphp

@@ -6,13 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    //status
+
     public static $pending = 'pending';
     public static $paying = 'paying';
     public static $paid = 'paid';
     public static $fail = 'fail';
 
-    //types
     public static $webinar = 'webinar';
     public static $meeting = 'meeting';
     public static $charge = 'charge';
@@ -31,7 +30,6 @@ class Order extends Model
     public static $income = 'income';
     public static $asset = 'asset';
 
-    //paymentMethod
     public static $credit = 'credit';
     public static $paymentChannel = 'payment_channel';
 
@@ -48,6 +46,5 @@ class Order extends Model
     {
         return $this->hasMany('App\Models\OrderItem', 'order_id', 'id');
     }
-   
-  
+
 }

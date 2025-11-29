@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin\traits;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 use App\Exports\InstallmentPurchasesExport;
 use App\Models\InstallmentOrder;
@@ -13,29 +15,39 @@ trait InstallmentPurchasesTrait
 {
     public function purchases()
     {
-        $this->authorize('admin_installments_purchases');
+        try {
+            $this->authorize('admin_installments_purchases');
 
-        $orders = InstallmentOrder::query()
-            ->where('status', '!=', 'paying')
-            ->orderBy('created_at', 'desc')
-            ->with([
-                'installment' => function ($query) {
-                    $query->with(['steps']);
-                    $query->withCount([
-                        'steps'
-                    ]);
-                }
-            ])
-            ->paginate(10);
+            $orders = InstallmentOrder::query()
+                ->where('status', '!=', 'paying')
+                ->orderBy('created_at', 'desc')
+                ->with([
+                    'installment' => function ($query) {
+                        $query->with(['steps']);
+                        $query->withCount([
+                            'steps'
+                        ]);
+                    }
+                ])
+                ->paginate(10);
 
-        $orders = $this->handlePurchasedOrders($orders);
+            $orders = $this->handlePurchasedOrders($orders);
 
-        $data = [
-            'pageTitle' => trans('update.purchases'),
-            'orders' => $orders
-        ];
+            $data = [
+                'pageTitle' => trans('update.purchases'),
+                'orders' => $orders
+            ];
 
-        return view('admin.financial.installments.purchases.index', $data);
+            return view('admin.financial.installments.purchases.index', $data);
+        } catch (\Exception $e) {
+            \Log::error('purchases error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function handlePurchasedOrders($orders)
@@ -117,28 +129,37 @@ trait InstallmentPurchasesTrait
         return $result;
     }
 
-
     public function purchasesExportExcel(Request $request)
     {
-        $this->authorize('admin_installments_purchases');
+        try {
+            $this->authorize('admin_installments_purchases');
 
-        $orders = InstallmentOrder::query()
-            ->where('status', '!=', 'paying')
-            ->orderBy('created_at', 'desc')
-            ->with([
-                'installment' => function ($query) {
-                    $query->with(['steps']);
-                    $query->withCount([
-                        'steps'
-                    ]);
-                }
-            ])
-            ->get();
+            $orders = InstallmentOrder::query()
+                ->where('status', '!=', 'paying')
+                ->orderBy('created_at', 'desc')
+                ->with([
+                    'installment' => function ($query) {
+                        $query->with(['steps']);
+                        $query->withCount([
+                            'steps'
+                        ]);
+                    }
+                ])
+                ->get();
 
-        $orders = $this->handlePurchasedOrders($orders);
+            $orders = $this->handlePurchasedOrders($orders);
 
-        $export = new InstallmentPurchasesExport($orders);
-        return Excel::download($export, 'InstallmentPurchases.xlsx');
+            $export = new InstallmentPurchasesExport($orders);
+            return Excel::download($export, 'InstallmentPurchases.xlsx');
+        } catch (\Exception $e) {
+            \Log::error('purchasesExportExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
 }

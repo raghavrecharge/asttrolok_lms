@@ -38,7 +38,6 @@ class TextLesson extends Model implements TranslatableContract
         return getTranslateAttributeValue($this, 'content');
     }
 
-
     public function attachments()
     {
         return $this->hasMany('App\Models\TextLessonAttachment', 'text_lesson_id', 'id');

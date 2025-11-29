@@ -26,7 +26,7 @@ class Support extends Model{
     }
 
     public function getDetailsAttribute(){
-        
+
         return [
             'id'=>$this->id ,
             'department'=>$this->department->title??null ,
@@ -89,7 +89,6 @@ class Support extends Model{
         if (!empty($status) and $status != 'all') {
             $query->where('status', $status);
         }
-
 
         if (!empty($department) and $department != 'all') {
             $query->where('department_id', $department);

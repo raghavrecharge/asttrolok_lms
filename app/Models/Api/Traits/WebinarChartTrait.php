@@ -41,7 +41,6 @@ trait WebinarChartTrait
             ->groupBy('role_name')
             ->get();
 
-
         $data['students'] = 0;
         $data['instructors'] = 0;
         $data['organizations'] = 0;
@@ -57,7 +56,6 @@ trait WebinarChartTrait
         }
         return $data;
 
-
         return [
             'labels' => $labels,
             'data' => $data
@@ -72,9 +70,9 @@ trait WebinarChartTrait
             trans('quiz.failed'),
         ];
 
-        $data[0] = 0; // passed
-        $data[1] = 0; // pending
-        $data[2] = 0; // failed
+        $data[0] = 0;
+        $data[1] = 0;
+        $data[2] = 0;
 
         $quizzes = $this->quizzes;
 
@@ -99,9 +97,9 @@ trait WebinarChartTrait
             trans('quiz.failed'),
         ];
 
-        $data[0] = 0; // passed
-        $data[1] = 0; // pending
-        $data[2] = 0; // failed
+        $data[0] = 0;
+        $data[1] = 0;
+        $data[2] = 0;
 
         $assignments = $this->assignments;
 
@@ -118,7 +116,6 @@ trait WebinarChartTrait
         return array_combine($labels, $data);
 
     }
-
 
     public function getMonthlySalesAttribute()
     {
@@ -153,9 +150,9 @@ trait WebinarChartTrait
             trans('update.not_started'),
         ];
 
-        $data[0] = 0; // completed
-        $data[1] = 0; // in_progress
-        $data[2] = 0; // not_started
+        $data[0] = 0;
+        $data[1] = 0;
+        $data[2] = 0;
 
         foreach ($this->StudentsIds as $userId) {
 
@@ -208,7 +205,6 @@ trait WebinarChartTrait
     {
         $progress = 0;
 
-
         $filesStat = $webinar->getFilesLearningProgressStat($userId);
         $sessionsStat = $webinar->getSessionsLearningProgressStat($userId);
         $textLessonsStat = $webinar->getTextLessonsLearningProgressStat($userId);
@@ -258,9 +254,5 @@ trait WebinarChartTrait
         return UserResource::collection($users);
     }
 
-
 }
-
-
-
 

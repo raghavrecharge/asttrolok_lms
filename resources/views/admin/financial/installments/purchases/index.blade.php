@@ -183,7 +183,6 @@
                                                                     'btnText' => '<i class="fa fa-times"></i><span class="ml-2">'. trans("admin/main.cancel") .'</span>'
                                                                     ])
 
-
                                                             @include('admin.includes.delete_button',[
                                                                     'url' => getAdminPanelUrl("/financial/installments/orders/{$order->id}/refund"),
                                                                     'btnClass' => 'd-flex align-items-center text-dark text-decoration-none btn-transparent btn-sm mt-1',

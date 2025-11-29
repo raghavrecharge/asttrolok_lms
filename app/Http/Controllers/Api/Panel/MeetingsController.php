@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Models\Sale;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -15,109 +18,126 @@ class MeetingsController extends Controller
 {
     public function list(Request $request, $id)
     {
-        $teacher = User::where('id', $id)->first();
+        try {
+            $teacher = User::where('id', $id)->first();
 
-        if (!$teacher) {
-            abort(404);
+            if (!$teacher) {
+                abort(404);
+            }
+            $meeting = Meeting::where('creator_id', $id)
+                ->with([
+                    'meetingTimes'
+                ])
+                ->first();
+
+            if (!$meeting) {
+                return apiResponse2(0, 'no_meeting', 'There is no active meeting for this user');
+            }
+
+            return $meeting;
+        } catch (\Exception $e) {
+            \Log::error('list error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        $meeting = Meeting::where('creator_id', $id)
-            ->with([
-                'meetingTimes'
-            ])
-            ->first();
-
-        if (!$meeting) {
-            return apiResponse2(0, 'no_meeting', 'There is no active meeting for this user');
-        }
-
-        return $meeting;
     }
 
     public function reserve(Request $request)
     {
+        try {
+            validateParam($request->all(), [
+                'day' => 'required',
+                'time' => 'required|exists:meeting_times,id',
+            ]);
+            $user = apiAuth();
 
-        validateParam($request->all(), [
-            'day' => 'required',
-            'time' => 'required|exists:meeting_times,id',
-        ]);
-        $user = apiAuth();
+            $timeIds = $request->input('time');
+            $day = $request->input('day');
+            $day = dateTimeFormat($day, 'Y-m-d');
 
-        $timeIds = $request->input('time');
-        $day = $request->input('day');
-        $day = dateTimeFormat($day, 'Y-m-d');
+            if (!empty($timeIds)) {
+                $meetingTimes = MeetingTime::whereIn('id', $timeIds)
+                    ->with('meeting')
+                    ->get();
+                if ($meetingTimes->isNotEmpty()) {
+                    $meetingId = $meetingTimes->first()->meeting_id;
+                    $meeting = Meeting::find($meetingId);
 
-        if (!empty($timeIds)) {
-            $meetingTimes = MeetingTime::whereIn('id', $timeIds)
-                ->with('meeting')
-                ->get();
-            if ($meetingTimes->isNotEmpty()) {
-                $meetingId = $meetingTimes->first()->meeting_id;
-                $meeting = Meeting::find($meetingId);
+                    if (!empty($meeting) and !$meeting->disabled) {
+                        if (!empty($meeting->amount) and $meeting->amount > 0) {
+                            foreach ($meetingTimes as $meetingTime) {
+                                $reserveMeeting = ReserveMeeting::where('meeting_time_id', $meetingTime->id)
+                                    ->where('day', $day)
+                                    ->first();
+                                if (!empty($reserveMeeting) and $reserveMeeting->user_id == $user->id) {
+                                    return apiResponse2(0, 'reserved', 'This user has already reserved this time.');
 
-                if (!empty($meeting) and !$meeting->disabled) {
-                    if (!empty($meeting->amount) and $meeting->amount > 0) {
-                        foreach ($meetingTimes as $meetingTime) {
-                            $reserveMeeting = ReserveMeeting::where('meeting_time_id', $meetingTime->id)
-                                ->where('day', $day)
-                                ->first();
-                            if (!empty($reserveMeeting) and $reserveMeeting->user_id == $user->id) {
-                                return apiResponse2(0, 'reserved', 'This user has already reserved this time.');
+                                }
 
-                            }
+                                if (!empty($reserveMeeting) and $reserveMeeting->locked_at) {
+                                    return apiResponse2(0, 'locked', 'This time has been locked');
+                                }
 
-                            if (!empty($reserveMeeting) and $reserveMeeting->locked_at) {
-                                return apiResponse2(0, 'locked', 'This time has been locked');
-                            }
+                                if (!empty($reserveMeeting) and $reserveMeeting->reserved_at) {
+                                    return apiResponse2(0, 'reserved', 'This time has been reserved');
 
-                            if (!empty($reserveMeeting) and $reserveMeeting->reserved_at) {
-                                return apiResponse2(0, 'reserved', 'This time has been reserved');
+                                }
 
-                            }
+                                $hourlyAmount = $meetingTime->meeting->amount;
+                                $explodetime = explode('-', $meetingTime->time);
+                                $hours = (strtotime($explodetime[1]) - strtotime($explodetime[0])) / 3600;
 
-                            $hourlyAmount = $meetingTime->meeting->amount;
-                            $explodetime = explode('-', $meetingTime->time);
-                            $hours = (strtotime($explodetime[1]) - strtotime($explodetime[0])) / 3600;
-
-                            $reserveMeeting = ReserveMeeting::updateOrCreate([
-                                'user_id' => $user->id,
-                                'meeting_time_id' => $meetingTime->id,
-                                'meeting_id' => $meetingTime->meeting_id,
-                                'status' => ReserveMeeting::$pending,
-                                'day' => $day,
-                                'date' => strtotime($day),
-                            ], [
-                                'paid_amount' => (!empty($hourlyAmount) and $hourlyAmount > 0) ? $hourlyAmount * $hours : 0,
-                                'discount' => $meetingTime->meeting->discount,
-                                'created_at' => time(),
-                            ]);
-
-                            $cart = Cart::where('creator_id', $user->id)
-                                ->where('reserve_meeting_id', $reserveMeeting->id)
-                                ->first();
-
-                            if (empty($cart)) {
-                                Cart::create([
-                                    'creator_id' => $user->id,
-                                    'reserve_meeting_id' => $reserveMeeting->id,
-                                    'created_at' => time()
+                                $reserveMeeting = ReserveMeeting::updateOrCreate([
+                                    'user_id' => $user->id,
+                                    'meeting_time_id' => $meetingTime->id,
+                                    'meeting_id' => $meetingTime->meeting_id,
+                                    'status' => ReserveMeeting::$pending,
+                                    'day' => $day,
+                                    'date' => strtotime($day),
+                                ], [
+                                    'paid_amount' => (!empty($hourlyAmount) and $hourlyAmount > 0) ? $hourlyAmount * $hours : 0,
+                                    'discount' => $meetingTime->meeting->discount,
+                                    'created_at' => time(),
                                 ]);
+
+                                $cart = Cart::where('creator_id', $user->id)
+                                    ->where('reserve_meeting_id', $reserveMeeting->id)
+                                    ->first();
+
+                                if (empty($cart)) {
+                                    Cart::create([
+                                        'creator_id' => $user->id,
+                                        'reserve_meeting_id' => $reserveMeeting->id,
+                                        'created_at' => time()
+                                    ]);
+                                }
                             }
+
+                            return apiResponse2(1, 'created', 'This time reserved successfully.');
+                        } else {
+                            return $this->handleFreeMeetingReservation($user, $meeting, $meetingTimes, $day);
                         }
-
-                        return apiResponse2(1, 'created', 'This time reserved successfully.');
                     } else {
-                        return $this->handleFreeMeetingReservation($user, $meeting, $meetingTimes, $day);
+
+                        return apiResponse2(0, 'disabled', 'This time has been disabled');
+
                     }
-                } else {
-
-                    return apiResponse2(0, 'disabled', 'This time has been disabled');
-
                 }
+
             }
-
+        } catch (\Exception $e) {
+            \Log::error('reserve error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-
     }
 
     private function handleFreeMeetingReservation($user, $meeting, $meetingTimes, $day)
@@ -163,67 +183,75 @@ class MeetingsController extends Controller
 
         return apiResponse(1, 'created', 'ddd');
 
-
     }
 
     public function reservation(Request $request)
     {
-        $user = auth()->user();
-        $reserveMeetingsQuery = ReserveMeeting::where('user_id', $user->id)
-            ->whereHas('sale');
+        try {
+            $user = auth()->user();
+            $reserveMeetingsQuery = ReserveMeeting::where('user_id', $user->id)
+                ->whereHas('sale');
 
-        $openReserveCount = deepClone($reserveMeetingsQuery)->where('status', \App\models\ReserveMeeting::$open)->count();
-        $totalReserveCount = deepClone($reserveMeetingsQuery)->count();
+            $openReserveCount = deepClone($reserveMeetingsQuery)->where('status', \App\models\ReserveMeeting::$open)->count();
+            $totalReserveCount = deepClone($reserveMeetingsQuery)->count();
 
-        $meetingIds = deepClone($reserveMeetingsQuery)->pluck('meeting_id')->toArray();
-        $teacherIds = Meeting::whereIn('id', array_unique($meetingIds))
-            ->pluck('creator_id')
-            ->toArray();
-        $instructors = User::select('id', 'full_name')
-            ->whereIn('id', array_unique($teacherIds))
-            ->get();
+            $meetingIds = deepClone($reserveMeetingsQuery)->pluck('meeting_id')->toArray();
+            $teacherIds = Meeting::whereIn('id', array_unique($meetingIds))
+                ->pluck('creator_id')
+                ->toArray();
+            $instructors = User::select('id', 'full_name')
+                ->whereIn('id', array_unique($teacherIds))
+                ->get();
 
+            $reserveMeetingsQuery = $this->filters($reserveMeetingsQuery, $request);
+            $reserveMeetingsQuery = $reserveMeetingsQuery->with([
+                'meetingTime',
+                'meeting' => function ($query) {
+                    $query->with([
+                        'creator' => function ($query) {
+                            $query->select('id', 'full_name', 'avatar', 'email');
+                        }
+                    ]);
+                },
+                'user' => function ($query) {
+                    $query->select('id', 'full_name', 'avatar', 'email', 'avatar_settings');
+                },
+                'sale'
+            ]);
 
-        $reserveMeetingsQuery = $this->filters($reserveMeetingsQuery, $request);
-        $reserveMeetingsQuery = $reserveMeetingsQuery->with([
-            'meetingTime',
-            'meeting' => function ($query) {
-                $query->with([
-                    'creator' => function ($query) {
-                        $query->select('id', 'full_name', 'avatar', 'email');
-                    }
-                ]);
-            },
-            'user' => function ($query) {
-                $query->select('id', 'full_name', 'avatar', 'email', 'avatar_settings');
-            },
-            'sale'
-        ]);
+            $reserveMeetings = $reserveMeetingsQuery
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        $reserveMeetings = $reserveMeetingsQuery
-            ->orderBy('created_at', 'desc')
-            ->get();
+            $activeMeetingTimeIds = ReserveMeeting::where('user_id', $user->id)->where('status', ReserveMeeting::$open)->pluck('meeting_time_id');
 
-        $activeMeetingTimeIds = ReserveMeeting::where('user_id', $user->id)->where('status', ReserveMeeting::$open)->pluck('meeting_time_id');
+            $activeMeetingTimes = MeetingTime::whereIn('id', $activeMeetingTimeIds)->get();
 
-        $activeMeetingTimes = MeetingTime::whereIn('id', $activeMeetingTimeIds)->get();
+            $activeHoursCount = 0;
+            foreach ($activeMeetingTimes as $time) {
+                $explodetime = explode('-', $time->time);
+                $activeHoursCount += strtotime($explodetime[1]) - strtotime($explodetime[0]);
+            }
 
-        $activeHoursCount = 0;
-        foreach ($activeMeetingTimes as $time) {
-            $explodetime = explode('-', $time->time);
-            $activeHoursCount += strtotime($explodetime[1]) - strtotime($explodetime[0]);
+            $data = [
+                'pageTitle' => trans('meeting.meeting_list_page_title'),
+                'instructors' => $instructors,
+                'reserveMeetings' => $reserveMeetings,
+                'openReserveCount' => $openReserveCount,
+                'totalReserveCount' => $totalReserveCount,
+                'activeHoursCount' => round($activeHoursCount / 3600, 2),
+            ];
+
+            return apiResponse2(1, 'list', null, $reserveMeetings);
+        } catch (\Exception $e) {
+            \Log::error('reservation error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $data = [
-            'pageTitle' => trans('meeting.meeting_list_page_title'),
-            'instructors' => $instructors,
-            'reserveMeetings' => $reserveMeetings,
-            'openReserveCount' => $openReserveCount,
-            'totalReserveCount' => $totalReserveCount,
-            'activeHoursCount' => round($activeHoursCount / 3600, 2),
-        ];
-
-        return apiResponse2(1, 'list', null, $reserveMeetings);
     }
 
     private function filters($query, $request)
@@ -277,7 +305,6 @@ class MeetingsController extends Controller
             $query->where('user_id', $student_id);
         }
 
-
         if (!empty($status) and $status != 'All') {
             $query->where('status', strtolower($status));
         }
@@ -288,6 +315,5 @@ class MeetingsController extends Controller
 
         return $query;
     }
-
 
 }

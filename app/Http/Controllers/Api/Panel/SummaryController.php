@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Api\Controller;
 use App\Models\Comment;
 use App\Models\Meeting;
@@ -17,110 +20,112 @@ use Illuminate\Support\Carbon;
 class SummaryController extends Controller
 {
 
-
-
     public function list(Request $request)
     {
-        $user = apiAuth();
-        //  $user = User::find(869);
-        $data['offline'] = $user->offline;
-        $data['spent_points'] = $user->spent_points;
-        $data['total_points'] = $user->total_points;
-        $data['available_points'] = $user->available_points;
-        $data['role_name'] = $user->role_name;
-        $data['full_name'] = $user->full_name;
-        $data['financial_approval'] = $user->financial_approval;
-        // $nextBadge = $user->getBadges(true, true);
+        try {
+            $user = apiAuth();
 
-        $data['unread_notifications'] = [
-            'count' => count($user->getUnReadNotifications()),
-            'notifications' => $user->getUnReadNotifications()
-        ];
+            $data['offline'] = $user->offline;
+            $data['spent_points'] = $user->spent_points;
+            $data['total_points'] = $user->total_points;
+            $data['available_points'] = $user->available_points;
+            $data['role_name'] = $user->role_name;
+            $data['full_name'] = $user->full_name;
+            $data['financial_approval'] = $user->financial_approval;
 
-        $data['unread_noticeboards'] = $user->getUnreadNoticeboards();
-        //  $data['unread_notifications_count'] = count($user->getUnReadNotifications());
+            $data['unread_notifications'] = [
+                'count' => count($user->getUnReadNotifications()),
+                'notifications' => $user->getUnReadNotifications()
+            ];
 
-        $data['balance'] = $user->getAccountingBalance();
-        $drawable = $user->getPayout();
-        $can_drawable = ($drawable > ((!empty($getFinancialSettings) and !empty($getFinancialSettings['minimum_payout'])) ? (int)$getFinancialSettings['minimum_payout'] : 0));
-        $data['can_drawable'] = $can_drawable;
+            $data['unread_noticeboards'] = $user->getUnreadNoticeboards();
 
-        $nextBadge = $user->getBadges(true, true);
-        $data['badges'] = [
-            'next_badge' => (!empty($nextBadge) and !empty($nextBadge['badge'])) ? $nextBadge['badge']->title : '',
-            'percent' => !empty($nextBadge) ? $nextBadge['percent'] : 0,
-            'earned' => (!empty($nextBadge) and !empty($nextBadge['earned'])) ? $nextBadge['earned']->title : '',
-        ];
+            $data['balance'] = $user->getAccountingBalance();
+            $drawable = $user->getPayout();
+            $can_drawable = ($drawable > ((!empty($getFinancialSettings) and !empty($getFinancialSettings['minimum_payout'])) ? (int)$getFinancialSettings['minimum_payout'] : 0));
+            $data['can_drawable'] = $can_drawable;
 
-        $carts = Cart::where('creator_id', $user->id)->count();
-        $data['count_cart_items'] = $carts;
+            $nextBadge = $user->getBadges(true, true);
+            $data['badges'] = [
+                'next_badge' => (!empty($nextBadge) and !empty($nextBadge['badge'])) ? $nextBadge['badge']->title : '',
+                'percent' => !empty($nextBadge) ? $nextBadge['percent'] : 0,
+                'earned' => (!empty($nextBadge) and !empty($nextBadge['earned'])) ? $nextBadge['earned']->title : '',
+            ];
 
+            $carts = Cart::where('creator_id', $user->id)->count();
+            $data['count_cart_items'] = $carts;
 
-        $meetingIds = Meeting::where('creator_id', $user->id)->pluck('id')->toArray();
+            $meetingIds = Meeting::where('creator_id', $user->id)->pluck('id')->toArray();
 
-        $pendingAppointments = ReserveMeeting::whereIn('meeting_id', $meetingIds)
-            ->whereHas('sale')
-            ->where('status', ReserveMeeting::$pending)
-            ->count();
+            $pendingAppointments = ReserveMeeting::whereIn('meeting_id', $meetingIds)
+                ->whereHas('sale')
+                ->where('status', ReserveMeeting::$pending)
+                ->count();
 
-        $data['pendingAppointments'] = $pendingAppointments;
+            $data['pendingAppointments'] = $pendingAppointments;
 
+            $time = time();
+            $firstDayMonth = strtotime(date('Y-m-01', $time));
+            $lastDayMonth = strtotime(date('Y-m-t', $time));
 
-        $time = time();
-        $firstDayMonth = strtotime(date('Y-m-01', $time));// First day of the month.
-        $lastDayMonth = strtotime(date('Y-m-t', $time));// Last day of the month.
-
-        $monthlySales = Sale::where('seller_id', $user->id)
-            ->whereNull('refund_at')
-            ->whereBetween('created_at', [$firstDayMonth, $lastDayMonth])
-            ->get();
-
-        $data['monthlySalesCount'] = count($monthlySales) ? $monthlySales->sum('amount') : 0;
-        $data['monthlyChart'] = $this->getMonthlySalesOrPurchase($user);
-
-        $webinarsIds = $user->getPurchasedCoursesIds();
-        $webinars = Webinar::whereIn('id', $webinarsIds)
-            ->where('status', 'active')
-            ->get();
-        $data['webinarsCount'] = count($webinars);
-
-        $reserveMeetings = ReserveMeeting::where('user_id', $user->id)
-            ->whereHas('sale')
-            ->where('status', ReserveMeeting::$open)
-            ->get();
-        $data['reserveMeetingsCount'] = count($reserveMeetings);
-
-        if (!$user->isUser()) {
-
-            $userWebinarsIds = $user->webinars->pluck('id')->toArray();
-            $supports = Support::whereIn('webinar_id', $userWebinarsIds)->where('status', 'open')->get();
-
-            $comments = Comment::whereIn('webinar_id', $userWebinarsIds)
-                ->where('status', 'active')
-                ->whereNull('viewed_at')
+            $monthlySales = Sale::where('seller_id', $user->id)
+                ->whereNull('refund_at')
+                ->whereBetween('created_at', [$firstDayMonth, $lastDayMonth])
                 ->get();
 
-            $data['supportsCount'] = count($supports);
-            $data['commentsCount'] = count($comments);
+            $data['monthlySalesCount'] = count($monthlySales) ? $monthlySales->sum('amount') : 0;
+            $data['monthlyChart'] = $this->getMonthlySalesOrPurchase($user);
 
-        } else {
-
-
-            $supports = Support::where('user_id', $user->id)
-                ->whereNotNull('webinar_id')
-                ->where('status', 'open')
-                ->get();
-            $comments = Comment::where('user_id', $user->id)
-                ->whereNotNull('webinar_id')
+            $webinarsIds = $user->getPurchasedCoursesIds();
+            $webinars = Webinar::whereIn('id', $webinarsIds)
                 ->where('status', 'active')
                 ->get();
+            $data['webinarsCount'] = count($webinars);
 
+            $reserveMeetings = ReserveMeeting::where('user_id', $user->id)
+                ->whereHas('sale')
+                ->where('status', ReserveMeeting::$open)
+                ->get();
+            $data['reserveMeetingsCount'] = count($reserveMeetings);
 
-            $data['supportsCount'] = count($supports);
-            $data['commentsCount'] = count($comments);
+            if (!$user->isUser()) {
+
+                $userWebinarsIds = $user->webinars->pluck('id')->toArray();
+                $supports = Support::whereIn('webinar_id', $userWebinarsIds)->where('status', 'open')->get();
+
+                $comments = Comment::whereIn('webinar_id', $userWebinarsIds)
+                    ->where('status', 'active')
+                    ->whereNull('viewed_at')
+                    ->get();
+
+                $data['supportsCount'] = count($supports);
+                $data['commentsCount'] = count($comments);
+
+            } else {
+
+                $supports = Support::where('user_id', $user->id)
+                    ->whereNotNull('webinar_id')
+                    ->where('status', 'open')
+                    ->get();
+                $comments = Comment::where('user_id', $user->id)
+                    ->whereNotNull('webinar_id')
+                    ->where('status', 'active')
+                    ->get();
+
+                $data['supportsCount'] = count($supports);
+                $data['commentsCount'] = count($comments);
+            }
+
+            return $data;
+        } catch (\Exception $e) {
+            \Log::error('list error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return $data;
     }
 
     private function getMonthlySalesOrPurchase($user)
@@ -128,7 +133,6 @@ class SummaryController extends Controller
         $months = [];
         $data = [];
 
-        // all 12 months
         for ($month = 1; $month <= 12; $month++) {
             $date = Carbon::create(date('Y'), $month);
 
@@ -159,7 +163,6 @@ class SummaryController extends Controller
             'data' => $data
         ];
     }
-
 
 }
 

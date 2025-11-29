@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use Illuminate\Support\Facades\Auth;
@@ -9,21 +12,24 @@ use Laravel\Socialite\Facades\Socialite;
 use Exception;
 use App\User;
 
-
-
-
 class SocialiteController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
+
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        try {
+            return Socialite::driver('google')->redirect();
+        } catch (\Exception $e) {
+            \Log::error('redirectToGoogle error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
-    
+
     public function redirectToGoogle1()
     {
         try {
@@ -60,16 +66,11 @@ class SocialiteController extends Controller
                 'msg' => trans('auth.fail_login_by_google'),
                 'status' => 'error'
             ];
-            // return back()->with(['toast' => $toastData]);
+
             return redirect('/login');
         }
     }
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
-     */
     public function handleGoogleCallback()
     {
         try {
@@ -110,21 +111,21 @@ class SocialiteController extends Controller
         }
     }
 
-    /**
-     * Create a redirect method to facebook api.
-     *
-     * @return void
-     */
     public function redirectToFacebook()
     {
-        return Socialite::driver('facebook')->redirect();
+        try {
+            return Socialite::driver('facebook')->redirect();
+        } catch (\Exception $e) {
+            \Log::error('redirectToFacebook error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
-    /**
-     * Return a callback method from facebook api.
-     *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
-     */
     public function handleFacebookCallback()
     {
         try {

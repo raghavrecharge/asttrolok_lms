@@ -13,7 +13,6 @@ class UserSelectedBankSpecification extends Model
 
     protected $guarded = ['id'];
 
-
     public function bankSpecification()
     {
         return $this->belongsTo('App\Models\UserBankSpecification', 'user_bank_specification_id', 'id');

@@ -22,7 +22,6 @@
                 @if (is_array($element))
                     @foreach ($element as $page => $url)
 
-
                         @if(($page < 2) or ($page + 1 > $paginator->lastPage()) or (($page < $paginator->currentPage() + 2) and ($page > $paginator->currentPage() - 2)))
                             @php
                                 $separate = true;

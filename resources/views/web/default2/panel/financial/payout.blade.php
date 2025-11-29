@@ -103,7 +103,6 @@
                 </div>
             </div>
 
-
             <div class="my-30">
                 {{ $payouts->appends(request()->input())->links('vendor.pagination.panel') }}
             </div>
@@ -116,7 +115,6 @@
         ])
 
     @endif
-
 
     <div id="requestPayoutModal" class="d-none">
         <h3 class="section-title after-line font-20 text-dark-blue mb-25">{{ trans('financial.payout_confirmation') }}</h3>

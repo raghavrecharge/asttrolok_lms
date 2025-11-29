@@ -26,10 +26,6 @@ class InstallmentStep extends Model implements TranslatableContract
         return $this->attributes['amount'] + 0;
     }
 
-
-    /*********
-     * Relations
-     * */
     public function installment()
     {
         return $this->belongsTo(Installment::class, 'installment_id', 'id');
@@ -39,10 +35,6 @@ class InstallmentStep extends Model implements TranslatableContract
     {
         return $this->hasOne(InstallmentOrderPayment::class, 'step_id', 'id');
     }
-
-    /*********
-     * Helpers
-     * */
 
     public function getPrice($itemPrice = 1)
     {
@@ -57,7 +49,6 @@ class InstallmentStep extends Model implements TranslatableContract
     {
         $percentText = ($this->amount_type == 'percent') ? "({$this->amount}%)" : '';
 
-        // $100 after 30 days
         return trans('update.amount_after_n_days', ['amount' => handlePrice($this->getPrice($itemPrice)), 'days' => $this->deadline, 'percent' => $percentText]);
     }
 }

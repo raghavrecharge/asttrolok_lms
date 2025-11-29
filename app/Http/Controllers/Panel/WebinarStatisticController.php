@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use App\Models\CourseForum;
@@ -24,89 +27,99 @@ class WebinarStatisticController extends Controller
 {
     public function index(Request $request, $webinarId)
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $webinar = Webinar::where('id', $webinarId)
-            ->where(function ($query) use ($user) {
-                $query->where(function ($query) use ($user) {
-                    $query->where('creator_id', $user->id)
-                        ->orWhere('teacher_id', $user->id);
-                });
+            $webinar = Webinar::where('id', $webinarId)
+                ->where(function ($query) use ($user) {
+                    $query->where(function ($query) use ($user) {
+                        $query->where('creator_id', $user->id)
+                            ->orWhere('teacher_id', $user->id);
+                    });
 
-                $query->orWhereHas('webinarPartnerTeacher', function ($query) use ($user) {
-                    $query->where('teacher_id', $user->id);
-                });
-            })
-            ->with([
-                'chapters' => function ($query) {
-                    $query->where('status', 'active');
-                },
-                'sessions' => function ($query) {
-                    $query->where('status', 'active');
-                },
-                'assignments' => function ($query) {
-                    $query->where('status', 'active');
-                },
-                'quizzes' => function ($query) {
-                    $query->where('status', 'active');
-                },
-                'files' => function ($query) {
-                    $query->where('status', 'active');
-                },
-                'reviews' => function ($query) {
-                    $query->where('status', 'active');
-                },
-            ])
-            ->first();
-
-        if (!empty($webinar)) {
-            $studentsIds = Sale::where('webinar_id', $webinarId)
-                ->whereNull('refund_at')
-                ->pluck('buyer_id')
-                ->toArray();
-
-            $gifts = Gift::query()->where('webinar_id', $webinar->id)
-                ->where('status', 'active')
-                ->where(function ($query) {
-                    $query->whereNull('date');
-                    $query->orWhere('date', '<', time());
+                    $query->orWhereHas('webinarPartnerTeacher', function ($query) use ($user) {
+                        $query->where('teacher_id', $user->id);
+                    });
                 })
-                ->whereHas('sale')
-                ->get();
+                ->with([
+                    'chapters' => function ($query) {
+                        $query->where('status', 'active');
+                    },
+                    'sessions' => function ($query) {
+                        $query->where('status', 'active');
+                    },
+                    'assignments' => function ($query) {
+                        $query->where('status', 'active');
+                    },
+                    'quizzes' => function ($query) {
+                        $query->where('status', 'active');
+                    },
+                    'files' => function ($query) {
+                        $query->where('status', 'active');
+                    },
+                    'reviews' => function ($query) {
+                        $query->where('status', 'active');
+                    },
+                ])
+                ->first();
 
-            $getStudents = $this->getStudents($request, $webinar, $studentsIds, $gifts);
+            if (!empty($webinar)) {
+                $studentsIds = Sale::where('webinar_id', $webinarId)
+                    ->whereNull('refund_at')
+                    ->pluck('buyer_id')
+                    ->toArray();
 
-            $data = [
-                'pageTitle' => trans('update.course_statistics'),
-                'webinar' => $webinar,
-                'students' => $getStudents['users'],
-                'unregisteredUsers' => $getStudents['unregisteredUsers'],
-                'studentsCount' => count(array_unique($studentsIds)) + count($gifts),
-                'commentsCount' => $this->getCommentsCount($webinarId),
-                'salesCount' => count($studentsIds) + count($gifts),
-                'salesAmount' => $this->getSalesAmounts($webinarId, $gifts->pluck('id')->toArray()),
-                'chaptersCount' => $webinar->chapters->count(),
-                'sessionsCount' => $webinar->sessions->count(),
-                'pendingQuizzesCount' => $this->getPendingQuizzesCount($webinarId),
-                'pendingAssignmentsCount' => $this->getPendingAssignmentsCount($webinarId),
-                'courseRate' => $webinar->getRate(),
-                'courseRateCount' => $webinar->reviews->count(),
-                'quizzesAverageGrade' => $this->getQuizzesAverageGrade($webinarId),
-                'assignmentsAverageGrade' => $this->getAssignmentsAverageGrade($webinarId),
-                'courseForumsMessagesCount' => $this->getCourseForumsMessagesCount($webinarId),
-                'courseForumsStudentsCount' => $this->getCourseForumsStudentsCount($webinarId),
-                'studentsUserRolesChart' => $this->handleStudentsUserRolesChart($studentsIds),
-                'courseProgressChart' => $this->handleCourseProgressChart($webinar, $studentsIds),
-                'quizStatusChart' => $this->handleQuizStatusChart($webinar),
-                'assignmentsStatusChart' => $this->handleAssignmentsStatusChart($webinar),
-                'monthlySalesChart' => $this->getMonthlySalesChart($webinarId),
-                'courseProgressLineChart' => $this->handleCourseProgressLineChart($webinar, $studentsIds),
-            ];
+                $gifts = Gift::query()->where('webinar_id', $webinar->id)
+                    ->where('status', 'active')
+                    ->where(function ($query) {
+                        $query->whereNull('date');
+                        $query->orWhere('date', '<', time());
+                    })
+                    ->whereHas('sale')
+                    ->get();
 
-            return view('web.default.panel.webinar.course_statistics.index', $data);
+                $getStudents = $this->getStudents($request, $webinar, $studentsIds, $gifts);
+
+                $data = [
+                    'pageTitle' => trans('update.course_statistics'),
+                    'webinar' => $webinar,
+                    'students' => $getStudents['users'],
+                    'unregisteredUsers' => $getStudents['unregisteredUsers'],
+                    'studentsCount' => count(array_unique($studentsIds)) + count($gifts),
+                    'commentsCount' => $this->getCommentsCount($webinarId),
+                    'salesCount' => count($studentsIds) + count($gifts),
+                    'salesAmount' => $this->getSalesAmounts($webinarId, $gifts->pluck('id')->toArray()),
+                    'chaptersCount' => $webinar->chapters->count(),
+                    'sessionsCount' => $webinar->sessions->count(),
+                    'pendingQuizzesCount' => $this->getPendingQuizzesCount($webinarId),
+                    'pendingAssignmentsCount' => $this->getPendingAssignmentsCount($webinarId),
+                    'courseRate' => $webinar->getRate(),
+                    'courseRateCount' => $webinar->reviews->count(),
+                    'quizzesAverageGrade' => $this->getQuizzesAverageGrade($webinarId),
+                    'assignmentsAverageGrade' => $this->getAssignmentsAverageGrade($webinarId),
+                    'courseForumsMessagesCount' => $this->getCourseForumsMessagesCount($webinarId),
+                    'courseForumsStudentsCount' => $this->getCourseForumsStudentsCount($webinarId),
+                    'studentsUserRolesChart' => $this->handleStudentsUserRolesChart($studentsIds),
+                    'courseProgressChart' => $this->handleCourseProgressChart($webinar, $studentsIds),
+                    'quizStatusChart' => $this->handleQuizStatusChart($webinar),
+                    'assignmentsStatusChart' => $this->handleAssignmentsStatusChart($webinar),
+                    'monthlySalesChart' => $this->getMonthlySalesChart($webinarId),
+                    'courseProgressLineChart' => $this->handleCourseProgressLineChart($webinar, $studentsIds),
+                ];
+
+                return view('web.default.panel.webinar.course_statistics.index', $data);
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
     }
 
     private function getStudents(Request $request, $webinar, $studentsIds, $gifts)
@@ -295,9 +308,9 @@ class WebinarStatisticController extends Controller
             trans('quiz.failed'),
         ];
 
-        $data[0] = 0; // passed
-        $data[1] = 0; // pending
-        $data[2] = 0; // failed
+        $data[0] = 0;
+        $data[1] = 0;
+        $data[2] = 0;
 
         $quizzes = $webinar->quizzes;
 
@@ -325,9 +338,9 @@ class WebinarStatisticController extends Controller
             trans('quiz.failed'),
         ];
 
-        $data[0] = 0; // passed
-        $data[1] = 0; // pending
-        $data[2] = 0; // failed
+        $data[0] = 0;
+        $data[1] = 0;
+        $data[2] = 0;
 
         $assignments = $webinar->assignments;
 
@@ -368,7 +381,6 @@ class WebinarStatisticController extends Controller
             $data[] = round($amount, 2);
         }
 
-
         return [
             'labels' => $labels,
             'data' => $data
@@ -377,84 +389,114 @@ class WebinarStatisticController extends Controller
 
     public function getCourseProgressForStudent($webinar, $userId)
     {
-        $progress = 0;
+        try {
+            $progress = 0;
 
-        $filesStat = $webinar->getFilesLearningProgressStat($userId);
-        $sessionsStat = $webinar->getSessionsLearningProgressStat($userId);
-        $textLessonsStat = $webinar->getTextLessonsLearningProgressStat($userId);
-        $assignmentsStat = $webinar->getAssignmentsLearningProgressStat($userId);
-        $quizzesStat = $webinar->getQuizzesLearningProgressStat($userId);
+            $filesStat = $webinar->getFilesLearningProgressStat($userId);
+            $sessionsStat = $webinar->getSessionsLearningProgressStat($userId);
+            $textLessonsStat = $webinar->getTextLessonsLearningProgressStat($userId);
+            $assignmentsStat = $webinar->getAssignmentsLearningProgressStat($userId);
+            $quizzesStat = $webinar->getQuizzesLearningProgressStat($userId);
 
-        $passed = $filesStat['passed'] + $sessionsStat['passed'] + $textLessonsStat['passed'] + $assignmentsStat['passed'] + $quizzesStat['passed'];
-        $count = $filesStat['count'] + $sessionsStat['count'] + $textLessonsStat['count'] + $assignmentsStat['count'] + $quizzesStat['count'];
+            $passed = $filesStat['passed'] + $sessionsStat['passed'] + $textLessonsStat['passed'] + $assignmentsStat['passed'] + $quizzesStat['passed'];
+            $count = $filesStat['count'] + $sessionsStat['count'] + $textLessonsStat['count'] + $assignmentsStat['count'] + $quizzesStat['count'];
 
-        if ($passed > 0 and $count > 0) {
-            $progress = ($passed * 100) / $count;
+            if ($passed > 0 and $count > 0) {
+                $progress = ($passed * 100) / $count;
+            }
+
+            return round($progress, 2);
+        } catch (\Exception $e) {
+            \Log::error('getCourseProgressForStudent error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return round($progress, 2);
     }
 
     public function handleCourseProgressChart($webinar, $studentsIds)
     {
-        $labels = [
-            trans('update.completed'),
-            trans('webinars.in_progress'),
-            trans('update.not_started'),
-        ];
+        try {
+            $labels = [
+                trans('update.completed'),
+                trans('webinars.in_progress'),
+                trans('update.not_started'),
+            ];
 
-        $data[0] = 0; // completed
-        $data[1] = 0; // in_progress
-        $data[2] = 0; // not_started
+            $data[0] = 0;
+            $data[1] = 0;
+            $data[2] = 0;
 
-        foreach ($studentsIds as $userId) {
+            foreach ($studentsIds as $userId) {
 
-            $progress = $this->getCourseProgressForStudent($webinar, $userId);
+                $progress = $this->getCourseProgressForStudent($webinar, $userId);
 
-            if ($progress > 0 and $progress < 100) {
-                $data[1] += 1;
-            } elseif ($progress == 100) {
-                $data[0] += 1;
-            } else {
-                $data[2] += 1;
+                if ($progress > 0 and $progress < 100) {
+                    $data[1] += 1;
+                } elseif ($progress == 100) {
+                    $data[0] += 1;
+                } else {
+                    $data[2] += 1;
+                }
             }
-        }
 
-        return [
-            'labels' => $labels,
-            'data' => $data
-        ];
+            return [
+                'labels' => $labels,
+                'data' => $data
+            ];
+        } catch (\Exception $e) {
+            \Log::error('handleCourseProgressChart error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function handleCourseProgressLineChart($webinar, $studentsIds)
     {
-        $labels = [];
-        $data = [];
+        try {
+            $labels = [];
+            $data = [];
 
-        $progress = [];
+            $progress = [];
 
-        foreach ($studentsIds as $userId) {
-            $progress[] = $this->getCourseProgressForStudent($webinar, $userId);
-        }
-
-        for ($percent = 0; $percent < 100; $percent += 10) {
-            $endPercent = $percent + 10;
-            $labels[] = $percent . '-' . $endPercent;
-
-            $count = 0;
-
-            foreach ($progress as $value) {
-                if ($value >= $percent and $value < $endPercent) {
-                    $count += 1;
-                }
+            foreach ($studentsIds as $userId) {
+                $progress[] = $this->getCourseProgressForStudent($webinar, $userId);
             }
 
-            $data[] = $count;
-        }
+            for ($percent = 0; $percent < 100; $percent += 10) {
+                $endPercent = $percent + 10;
+                $labels[] = $percent . '-' . $endPercent;
 
-        return [
-            'labels' => $labels,
-            'data' => $data
-        ];
+                $count = 0;
+
+                foreach ($progress as $value) {
+                    if ($value >= $percent and $value < $endPercent) {
+                        $count += 1;
+                    }
+                }
+
+                $data[] = $count;
+            }
+
+            return [
+                'labels' => $labels,
+                'data' => $data
+            ];
+        } catch (\Exception $e) {
+            \Log::error('handleCourseProgressLineChart error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

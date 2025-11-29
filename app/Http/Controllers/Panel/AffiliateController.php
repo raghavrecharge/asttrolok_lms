@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Accounting;
 use App\Models\Affiliate;
@@ -13,44 +16,53 @@ class AffiliateController extends Controller
 {
     public function affiliates()
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $affiliateCode = $user->affiliateCode;
+            $affiliateCode = $user->affiliateCode;
 
-        if (empty($affiliateCode)) {
-            $affiliateCode = $this->makeUserAffiliateCode($user);
+            if (empty($affiliateCode)) {
+                $affiliateCode = $this->makeUserAffiliateCode($user);
+            }
+
+            $referredUsersCount = Affiliate::where('affiliate_user_id', $user->id)->count();
+
+            $registrationBonus = Accounting::where('is_affiliate_amount', true)
+                ->where('system', false)
+                ->where('user_id', $user->id)
+                ->sum('amount');
+
+            $affiliateBonus = Accounting::where('is_affiliate_commission', true)
+                ->where('system', false)
+                ->where('user_id', $user->id)
+                ->sum('amount');
+
+            $affiliates = Affiliate::where('affiliate_user_id', $user->id)
+                ->with([
+                    'referredUser',
+                ])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+
+            $data = [
+                'pageTitle' => trans('panel.affiliates_page'),
+                'affiliateCode' => $affiliateCode,
+                'registrationBonus' => $registrationBonus,
+                'affiliateBonus' => $affiliateBonus,
+                'referredUsersCount' => $referredUsersCount,
+                'affiliates' => $affiliates,
+            ];
+
+            return view('web.default.panel.marketing.affiliates', $data);
+        } catch (\Exception $e) {
+            \Log::error('affiliates error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $referredUsersCount = Affiliate::where('affiliate_user_id', $user->id)->count();
-
-        $registrationBonus = Accounting::where('is_affiliate_amount', true)
-            ->where('system', false)
-            ->where('user_id', $user->id)
-            ->sum('amount');
-
-        $affiliateBonus = Accounting::where('is_affiliate_commission', true)
-            ->where('system', false)
-            ->where('user_id', $user->id)
-            ->sum('amount');
-
-        $affiliates = Affiliate::where('affiliate_user_id', $user->id)
-            ->with([
-                'referredUser',
-            ])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-
-        $data = [
-            'pageTitle' => trans('panel.affiliates_page'),
-            'affiliateCode' => $affiliateCode,
-            'registrationBonus' => $registrationBonus,
-            'affiliateBonus' => $affiliateBonus,
-            'referredUsersCount' => $referredUsersCount,
-            'affiliates' => $affiliates,
-        ];
-
-        return view('web.default.panel.marketing.affiliates', $data);
     }
 
     private function makeUserAffiliateCode($user)

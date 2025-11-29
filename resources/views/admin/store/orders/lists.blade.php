@@ -89,7 +89,6 @@
                 </div>
             </div>
 
-
             <section class="card">
                 <div class="card-body">
                     <form method="get" class="mb-0">
@@ -100,7 +99,6 @@
                                     <input type="text" class="form-control" name="item_title" value="{{ request()->get('item_title') }}">
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -119,7 +117,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{ trans('admin/main.status') }}</label>
@@ -133,7 +130,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-4">
                                 <div class="form-group">
@@ -150,7 +146,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="input-label">{{ trans('update.customer') }}</label>
@@ -165,7 +160,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group mt-1">

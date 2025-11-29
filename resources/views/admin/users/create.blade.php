@@ -87,7 +87,7 @@
                                             </div>
                                             @enderror
                                         </div>
-                                        
+
                                         <div class="form-group custom-switches-stacked">
                                             <label class="custom-switch pl-0">
                                             <input type="checkbox" name="consultant" id="preloadingSwitch" value="1" class="custom-switch-input">

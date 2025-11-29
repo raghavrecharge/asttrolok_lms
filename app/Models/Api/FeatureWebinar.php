@@ -18,8 +18,7 @@ class FeatureWebinar extends Model
         $category = $request->get('cat', null);
 
         if (!empty($category) and is_numeric($category)) {
-            
-            // $query->with('webinar')  ;//->where('webinar.category_id', $category);
+
             $query->whereHas('webinar', function ($q) use ($category) {
                 $q->where('category_id', $category);
             });

@@ -45,7 +45,6 @@
                                 </div>
                             </div>
 
-
                             @php
                                 $filters = ['purchase_amount_asc', 'purchase_amount_desc', 'cashback_amount_asc', 'cashback_amount_desc', 'date_asc', 'date_desc'];
                             @endphp
@@ -61,7 +60,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group">

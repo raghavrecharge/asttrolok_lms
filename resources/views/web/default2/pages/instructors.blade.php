@@ -242,18 +242,7 @@ to navigate life's journey with confidence and clarity.</p>
 @push('scripts_bottom')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script >
-//   $(document).ready(function(){
-//   $(".loadid").slice(0,10).show();
-//   $("#loadMore").click(function(e){
-//     e.preventDefault();
-//     $(".loadid:hidden").slice(0,10).fadeIn("slow");
 
-//     if($(".loadid:hidden").length == 0){
-//       $("#loadMore").fadeOut("slow");
-
-//       }
-//   });
-// })
 </script>
 
     <script src="{{ config('app.js_css_url') }}/assets2/default/vendors/select2/select2.min.js"></script>

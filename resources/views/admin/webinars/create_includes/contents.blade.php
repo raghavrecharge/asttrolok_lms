@@ -24,7 +24,6 @@
     </div>
 @endif
 
-
 <div id="newTextLessonForm" class="d-none">
     @include('admin.webinars.create_includes.accordions.text-lesson',['webinar' => $webinar])
 </div>

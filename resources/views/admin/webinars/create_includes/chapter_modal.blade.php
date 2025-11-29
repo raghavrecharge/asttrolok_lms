@@ -27,7 +27,6 @@
                 <input type="hidden" name="ajax[chapter][locale]" value="{{ $defaultLocale }}">
             @endif
 
-
             <div class="form-group">
                 <label class="input-label">{{ trans('public.chapter_title') }}</label>
                 <input type="text" name="ajax[chapter][title]" class="form-control js-ajax-title" value=""/>

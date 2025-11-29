@@ -3,7 +3,7 @@
         <div class="accordion-content-wrapper mt-15" id="chapterAccordion" role="tablist" aria-multiselectable="true">
             @if(!empty($webinar->chapters) and count($webinar->chapters))
                 <ul class="draggable-content-lists draggable-lists-chapter" data-drag-class="draggable-lists-chapter" data-order-table="webinar_chapters">
-                  
+
                     @foreach($webinar->chapters as $chapter)
 
                         <li data-id="{{ !empty($chapter) ? $chapter->id :'' }}" data-chapter-order="{{ $chapter->order }}" class="accordion-row bg-white rounded-sm mt-20 py-15 py-lg-30 px-10 px-lg-20">
@@ -47,7 +47,6 @@
                                                     {{ trans('update.new_interactive_file') }}
                                                 </button>
                                             @endif
-
 
                                             <button type="button" class="js-add-course-content-btn d-block mb-10 btn-transparent" data-webinar-id="{{ $webinar->id }}" data-type="text_lesson" data-chapter="{{ !empty($chapter) ? $chapter->id :'' }}">
                                                 {{ trans('public.add_text_lesson') }}

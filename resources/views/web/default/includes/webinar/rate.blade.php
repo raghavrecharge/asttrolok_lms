@@ -12,7 +12,7 @@
         @endwhile
 
         @if(empty($dontShowRate) or !$dontShowRate)
-        
+
             <span class="badge badge-primary ml-10 rating-course"><i data-feather="star" width="15" height="15" class="active"></i> {{ $rate }}</span>
         @endif
     @endif

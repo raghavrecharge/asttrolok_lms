@@ -32,7 +32,6 @@
                 </div>
             </div>
 
-
             <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                 <div class="card card-statistic-1">
                     <div class="card-icon bg-success">
@@ -47,7 +46,6 @@
                     </div>
                 </div>
             </div>
-
 
             <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                 <div class="card card-statistic-1">
@@ -81,7 +79,6 @@
                 </div>
             </div>
 
-
         </div>
 
         <div class="section-body">
@@ -97,7 +94,6 @@
                                     <input type="text" name="webinar_title" value="{{ request()->get('webinar_title') }}" class="form-control text-center">
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -116,7 +112,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.status')}}</label>
@@ -127,7 +122,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -144,7 +138,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.instructor')}}</label>
@@ -160,7 +153,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.student')}}</label>
@@ -175,7 +167,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group mt-1">

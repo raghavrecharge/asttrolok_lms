@@ -98,7 +98,7 @@
         <h2 class="section-title after-line">{{ trans('product.consultations') }}</h2>
 </div>
 @php
-//$firstBundleWebinarId = $bundle->bundleWebinars->first()->id ?? null;
+
 @endphp
  <div class="panel-section-card py-20 px-25 mt-20">
             <div class="row">

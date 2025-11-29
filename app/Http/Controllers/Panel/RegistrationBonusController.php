@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Accounting;
 use App\Models\Affiliate;
@@ -14,28 +17,38 @@ class RegistrationBonusController extends Controller
 {
     public function index()
     {
-        $user = auth()->user();
-        $registrationBonusSettings = getRegistrationBonusSettings();
+        try {
+            $user = auth()->user();
+            $registrationBonusSettings = getRegistrationBonusSettings();
 
-        if (empty($registrationBonusSettings['status']) or !$user->enable_registration_bonus) {
-            abort(404);
+            if (empty($registrationBonusSettings['status']) or !$user->enable_registration_bonus) {
+                abort(404);
+            }
+
+            $accounting = Accounting::query()
+                ->where('user_id', $user->id)
+                ->where('is_registration_bonus', true)
+                ->where('system', false)
+                ->first();
+
+            $data = [
+                'pageTitle' => trans('update.registration_bonus'),
+                'accounting' => $accounting,
+                'bonusStatusReferredUsersChart' => $this->bonusStatusReferredUsersChart($user, $registrationBonusSettings),
+                'bonusStatusUsersPurchasesChart' => $this->bonusStatusUsersPurchasesChart($user, $registrationBonusSettings),
+                'referredUsers' => $this->getReferredUsers($user, $registrationBonusSettings),
+            ];
+
+            return view('web.default.panel.marketing.registration_bonus', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $accounting = Accounting::query()
-            ->where('user_id', $user->id)
-            ->where('is_registration_bonus', true)
-            ->where('system', false)
-            ->first();
-
-        $data = [
-            'pageTitle' => trans('update.registration_bonus'),
-            'accounting' => $accounting,
-            'bonusStatusReferredUsersChart' => $this->bonusStatusReferredUsersChart($user, $registrationBonusSettings),
-            'bonusStatusUsersPurchasesChart' => $this->bonusStatusUsersPurchasesChart($user, $registrationBonusSettings),
-            'referredUsers' => $this->getReferredUsers($user, $registrationBonusSettings),
-        ];
-
-        return view('web.default.panel.marketing.registration_bonus', $data);
     }
 
     private function bonusStatusReferredUsersChart($user, $registrationBonusSettings)
@@ -80,7 +93,6 @@ class RegistrationBonusController extends Controller
                     $userPurchasedCount += 1;
                 }
             }
-
 
             return [
                 'labels' => [trans('update.complete'), trans('update.not_complete')],

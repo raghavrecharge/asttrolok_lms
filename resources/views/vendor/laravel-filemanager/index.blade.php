@@ -197,18 +197,7 @@
   <script>
     var lang = {!! json_encode(trans('laravel-filemanager::lfm')) !!};
     var actions = [
-      // {
-      //   name: 'use',
-      //   icon: 'check',
-      //   label: 'Confirm',
-      //   multiple: true
-      // },
-      // {
-      //   name: 'preview',
-      //   icon: 'image',
-      //   label: lang['menu-view'],
-      //   multiple: true
-      // },
+
       {
         name: 'trash',
         icon: 'trash',
@@ -235,14 +224,14 @@
   {{-- <script src="{{ asset('vendor/laravel-filemanager/js/script.js') }}"></script> --}}
   <script>
     Dropzone.options.uploadForm = {
-      paramName: "upload[]", // The name that will be used to transfer the file
+      paramName: "upload[]",
       uploadMultiple: false,
       parallelUploads: 5,
       timeout:0,
       clickable: '#upload-button',
       dictDefaultMessage: lang['message-drop'],
       init: function() {
-        var _this = this; // For the closure
+        var _this = this;
         this.on('success', function(file, response) {
           if (response == 'OK') {
             loadFolders();

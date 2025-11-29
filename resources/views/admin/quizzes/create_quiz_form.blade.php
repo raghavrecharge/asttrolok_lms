@@ -5,7 +5,6 @@
         <div class="row">
             <div class="col-12 col-md-4">
 
-
                 <div class="d-flex align-items-center justify-content-between">
                     <div class="">
                         <h2 class="section-title">{{ !empty($quiz) ? (trans('public.edit').' ('. $quiz->title .')') : trans('quiz.new_quiz') }}</h2>

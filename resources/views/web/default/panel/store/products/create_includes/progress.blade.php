@@ -29,7 +29,6 @@
     $currentStep = empty($currentStep) ? 1 : $currentStep;
 @endphp
 
-
 <div class="webinar-progress d-block d-lg-flex align-items-center p-15 panel-shadow bg-white rounded-sm">
 
     @foreach($progressSteps as $key => $step)

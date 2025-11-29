@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Sale;
 use App\Models\Webinar;
@@ -12,53 +15,62 @@ class SaleController extends Controller
 {
     public function index(Request $request)
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $query = Sale::where('seller_id', $user->id)
-            ->whereNull('refund_at');
+            $query = Sale::where('seller_id', $user->id)
+                ->whereNull('refund_at');
 
-        $studentIds = deepClone($query)->pluck('buyer_id')->toArray();
-        $students = User::select('id', 'full_name')
-            ->whereIn('id', array_unique($studentIds))
-            ->get();
+            $studentIds = deepClone($query)->pluck('buyer_id')->toArray();
+            $students = User::select('id', 'full_name')
+                ->whereIn('id', array_unique($studentIds))
+                ->get();
 
-        $getStudentCount = count($studentIds);
-        $getWebinarsCount = count(array_filter(deepClone($query)->pluck('webinar_id')->toArray()));
-        $getMeetingCount = count(array_filter(deepClone($query)->pluck('meeting_id')->toArray()));
+            $getStudentCount = count($studentIds);
+            $getWebinarsCount = count(array_filter(deepClone($query)->pluck('webinar_id')->toArray()));
+            $getMeetingCount = count(array_filter(deepClone($query)->pluck('meeting_id')->toArray()));
 
+            $query = $this->filters($query, $request);
 
-        $query = $this->filters($query, $request);
+            $sales = $query->orderBy('created_at', 'desc')
+                ->with([
+                    'webinar',
+                    'productOrder',
+                    'bundle',
+                    'registrationPackage',
+                    'promotion',
+                    'subscribe'
+                ])
+                ->paginate(10);
 
-        $sales = $query->orderBy('created_at', 'desc')
-            ->with([
-                'webinar',
-                'productOrder',
-                'bundle',
-                'registrationPackage',
-                'promotion',
-                'subscribe'
-            ])
-            ->paginate(10);
+            $userWebinars = Webinar::select('id')
+                ->where('status', 'active')
+                ->where(function ($query) use ($user) {
+                    $query->where('creator_id', $user->id)
+                        ->orWhere('teacher_id', $user->id);
+                })->get();
 
-        $userWebinars = Webinar::select('id')
-            ->where('status', 'active')
-            ->where(function ($query) use ($user) {
-                $query->where('creator_id', $user->id)
-                    ->orWhere('teacher_id', $user->id);
-            })->get();
+            $data = [
+                'pageTitle' => trans('admin/pages/financial.sales_page_title'),
+                'sales' => $sales,
+                'studentCount' => $getStudentCount,
+                'webinarCount' => $getWebinarsCount,
+                'meetingCount' => $getMeetingCount,
+                'totalSales' => $user->getSaleAmounts(),
+                'userWebinars' => $userWebinars,
+                'students' => $students,
+            ];
 
-        $data = [
-            'pageTitle' => trans('admin/pages/financial.sales_page_title'),
-            'sales' => $sales,
-            'studentCount' => $getStudentCount,
-            'webinarCount' => $getWebinarsCount,
-            'meetingCount' => $getMeetingCount,
-            'totalSales' => $user->getSaleAmounts(),
-            'userWebinars' => $userWebinars,
-            'students' => $students,
-        ];
-
-        return view(getTemplate() . '.panel.financial.sales', $data);
+            return view(getTemplate() . '.panel.financial.sales', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function filters($query, $request)

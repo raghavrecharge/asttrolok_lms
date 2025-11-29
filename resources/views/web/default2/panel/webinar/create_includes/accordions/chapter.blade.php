@@ -47,7 +47,6 @@
                                                 </button>
                                             @endif
 
-
                                             <button type="button" class="js-add-course-content-btn d-block mb-10 btn-transparent" data-webinar-id="{{ $webinar->id }}" data-type="text_lesson" data-chapter="{{ !empty($chapter) ? $chapter->id :'' }}">
                                                 {{ trans('public.add_text_lesson') }}
                                             </button>

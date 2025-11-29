@@ -130,7 +130,6 @@
                                                                             $time_difference = $end_time - $start_time;
                                                                             $time_difference_minutes = $time_difference / 60;
 
-                                                                            // Calculate half of the time difference
                                                                             $half_time_minutes = $time_difference_minutes / 2;
 
                                                                             @endphp

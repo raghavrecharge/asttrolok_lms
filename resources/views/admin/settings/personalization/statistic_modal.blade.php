@@ -18,7 +18,6 @@
         <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
     @endif
 
-
     <div class="form-group">
         <label>{{ trans('admin/main.title') }}</label>
         <input type="text" name="title" value="{{ (!empty($editStatistic)) ? $editStatistic->title : '' }}" class="js-ajax-title form-control "/>
@@ -60,7 +59,6 @@
         <input type="number" name="count" value="{{ (!empty($editStatistic)) ? $editStatistic->count : '' }}" class="js-ajax-count form-control " min="0"/>
         <div class="invalid-feedback"></div>
     </div>
-
 
     <div class="d-flex align-items-center justify-content-end">
         <button type="button" class="js-save-statistic btn btn-primary">{{ trans('admin/main.save') }}</button>

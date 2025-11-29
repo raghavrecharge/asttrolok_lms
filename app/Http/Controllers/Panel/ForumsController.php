@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Forum;
 use App\Models\ForumTopic;
@@ -13,50 +16,60 @@ class ForumsController extends Controller
 {
     public function topics(Request $request)
     {
-        if (getFeaturesSettings('forums_status')) {
-            $user = auth()->user();
+        try {
+            if (getFeaturesSettings('forums_status')) {
+                $user = auth()->user();
 
-            $forums = Forum::orderBy('order', 'asc')
-                ->whereNull('parent_id')
-                ->where('status', 'active')
-                ->with([
-                    'subForums' => function ($query) {
-                        $query->where('status', 'active');
-                    }
-                ])->get();
+                $forums = Forum::orderBy('order', 'asc')
+                    ->whereNull('parent_id')
+                    ->where('status', 'active')
+                    ->with([
+                        'subForums' => function ($query) {
+                            $query->where('status', 'active');
+                        }
+                    ])->get();
 
-            $query = ForumTopic::where('creator_id', $user->id);
+                $query = ForumTopic::where('creator_id', $user->id);
 
-            $publishedTopics = deepClone($query)->count();
-            $lockedTopics = deepClone($query)->where('close', true)->count();
+                $publishedTopics = deepClone($query)->count();
+                $lockedTopics = deepClone($query)->where('close', true)->count();
 
-            $topicsIds = deepClone($query)->pluck('id')->toArray();
-            $topicMessages = ForumTopicPost::whereIn('topic_id', $topicsIds)->count();
+                $topicsIds = deepClone($query)->pluck('id')->toArray();
+                $topicMessages = ForumTopicPost::whereIn('topic_id', $topicsIds)->count();
 
-            $query = $this->handleFilters($request, $query);
+                $query = $this->handleFilters($request, $query);
 
-            $topics = $query->orderBy('created_at', 'desc')
-                ->with([
-                    'forum'
-                ])
-                ->withCount([
-                    'posts'
-                ])
-                ->paginate(10);
+                $topics = $query->orderBy('created_at', 'desc')
+                    ->with([
+                        'forum'
+                    ])
+                    ->withCount([
+                        'posts'
+                    ])
+                    ->paginate(10);
 
-            $data = [
-                'pageTitle' => trans('update.topics'),
-                'forums' => $forums,
-                'topics' => $topics,
-                'publishedTopics' => $publishedTopics,
-                'lockedTopics' => $lockedTopics,
-                'topicMessages' => $topicMessages,
-            ];
+                $data = [
+                    'pageTitle' => trans('update.topics'),
+                    'forums' => $forums,
+                    'topics' => $topics,
+                    'publishedTopics' => $publishedTopics,
+                    'lockedTopics' => $lockedTopics,
+                    'topicMessages' => $topicMessages,
+                ];
 
-            return view('web.default.panel.forum.topics', $data);
+                return view('web.default.panel.forum.topics', $data);
+            }
+
+            abort(403);
+        } catch (\Exception $e) {
+            \Log::error('topics error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(403);
     }
 
     private function handleFilters(Request $request, $query, $type = null)
@@ -96,109 +109,137 @@ class ForumsController extends Controller
             }
         }
 
-
         return $query;
     }
 
     public function posts(Request $request)
     {
-        if (getFeaturesSettings('forums_status')) {
-            $user = auth()->user();
+        try {
+            if (getFeaturesSettings('forums_status')) {
+                $user = auth()->user();
 
-            $forums = Forum::orderBy('order', 'asc')
-                ->whereNull('parent_id')
-                ->where('status', 'active')
-                ->with([
-                    'subForums' => function ($query) {
-                        $query->where('status', 'active');
-                    }
-                ])->get();
+                $forums = Forum::orderBy('order', 'asc')
+                    ->whereNull('parent_id')
+                    ->where('status', 'active')
+                    ->with([
+                        'subForums' => function ($query) {
+                            $query->where('status', 'active');
+                        }
+                    ])->get();
 
+                $query = ForumTopicPost::where('user_id', $user->id);
 
-            $query = ForumTopicPost::where('user_id', $user->id);
+                $query = $this->handleFilters($request, $query, 'posts');
 
-            $query = $this->handleFilters($request, $query, 'posts');
+                $posts = $query->orderBy('created_at', 'desc')
+                    ->with([
+                        'topic' => function ($query) {
+                            $query->with([
+                                'creator' => function ($query) {
+                                    $query->select('id', 'full_name', 'avatar');
+                                },
+                                'forum' => function ($query) {
+                                    $query->select('id', 'slug');
+                                }
+                            ]);
+                        },
+                        'user' => function ($query) {
+                            $query->select('id', 'full_name', 'avatar', 'avatar_settings');
+                        },
+                    ])
+                    ->paginate(10);
 
-            $posts = $query->orderBy('created_at', 'desc')
-                ->with([
-                    'topic' => function ($query) {
-                        $query->with([
-                            'creator' => function ($query) {
-                                $query->select('id', 'full_name', 'avatar');
-                            },
-                            'forum' => function ($query) {
-                                $query->select('id', 'slug');
-                            }
-                        ]);
-                    },
-                    'user' => function ($query) {
-                        $query->select('id', 'full_name', 'avatar', 'avatar_settings');
-                    },
-                ])
-                ->paginate(10);
+                foreach ($posts as $post) {
+                    $post->replies_count = ForumTopicPost::where('parent_id', $post->id)->count();
+                }
 
-            foreach ($posts as $post) {
-                $post->replies_count = ForumTopicPost::where('parent_id', $post->id)->count();
+                $data = [
+                    'pageTitle' => trans('site.posts'),
+                    'forums' => $forums,
+                    'posts' => $posts,
+                ];
+
+                return view('web.default.panel.forum.posts', $data);
             }
 
-            $data = [
-                'pageTitle' => trans('site.posts'),
-                'forums' => $forums,
-                'posts' => $posts,
-            ];
-
-            return view('web.default.panel.forum.posts', $data);
+            abort(403);
+        } catch (\Exception $e) {
+            \Log::error('posts error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(403);
     }
 
     public function bookmarks()
     {
-        if (getFeaturesSettings('forums_status')) {
-            $user = auth()->user();
+        try {
+            if (getFeaturesSettings('forums_status')) {
+                $user = auth()->user();
 
-            $topicsIds = ForumTopicBookmark::where('user_id', $user->id)->pluck('topic_id')->toArray();
+                $topicsIds = ForumTopicBookmark::where('user_id', $user->id)->pluck('topic_id')->toArray();
 
-            $topics = ForumTopic::whereIn('id', $topicsIds)
-                ->orderBy('created_at', 'desc')
-                ->with([
-                    'forum'
-                ])
-                ->withCount([
-                    'posts'
-                ])
-                ->paginate(10);
+                $topics = ForumTopic::whereIn('id', $topicsIds)
+                    ->orderBy('created_at', 'desc')
+                    ->with([
+                        'forum'
+                    ])
+                    ->withCount([
+                        'posts'
+                    ])
+                    ->paginate(10);
 
-            $data = [
-                'pageTitle' => trans('update.topics'),
-                'topics' => $topics,
-            ];
+                $data = [
+                    'pageTitle' => trans('update.topics'),
+                    'topics' => $topics,
+                ];
 
-            return view('web.default.panel.forum.bookmarks', $data);
+                return view('web.default.panel.forum.bookmarks', $data);
+            }
+
+            abort(403);
+        } catch (\Exception $e) {
+            \Log::error('bookmarks error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(403);
     }
 
     public function removeBookmarks($topicId)
     {
-        if (getFeaturesSettings('forums_status')) {
-            $user = auth()->user();
+        try {
+            if (getFeaturesSettings('forums_status')) {
+                $user = auth()->user();
 
-            $bookmark = ForumTopicBookmark::where('user_id', $user->id)
-                ->where('topic_id', $topicId)
-                ->first();
+                $bookmark = ForumTopicBookmark::where('user_id', $user->id)
+                    ->where('topic_id', $topicId)
+                    ->first();
 
-            if (!empty($bookmark)) {
-                $bookmark->delete();
+                if (!empty($bookmark)) {
+                    $bookmark->delete();
+                }
+
+                return response([
+                    'code' => 200
+                ]);
             }
 
-            return response([
-                'code' => 200
+            abort(403);
+        } catch (\Exception $e) {
+            \Log::error('removeBookmarks error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
+            
+            throw $e;
         }
-
-        abort(403);
     }
 }

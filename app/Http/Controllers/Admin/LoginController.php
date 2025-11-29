@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
@@ -11,31 +14,11 @@ use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Login Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller handles authenticating users for the application and
-    | redirecting them to your home screen. The controller uses a trait
-    | to conveniently provide its functionality to your applications.
-    |
-    */
 
     use AuthenticatesUsers;
 
-    /**
-     * Where to redirect users after login.
-     *
-     * @var string
-     */
     protected $redirectTo = '/admin';
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
@@ -45,27 +28,38 @@ class LoginController extends Controller
 
     public function showLoginForm()
     {
-        $data = [
-            'pageTitle' => trans('auth.login'),
-        ];
+        try {
+            $data = [
+                'pageTitle' => trans('auth.login'),
+            ];
 
-
-        return view('admin.auth.login', $data);
+            return view('admin.auth.login', $data);
+        } catch (\Exception $e) {
+            \Log::error('showLoginForm error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
-    /**
-     * Check either username or email.
-     * @return string
-     */
     public function username()
     {
-        return 'email';
+        try {
+            return 'email';
+        } catch (\Exception $e) {
+            \Log::error('username error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
-    /**
-     * Validate the user login.
-     * @param Request $request
-     */
     protected function validateLogin(Request $request)
     {
         $this->validate($request, [
@@ -75,10 +69,6 @@ class LoginController extends Controller
         );
     }
 
-    /**
-     * @param Request $request
-     * @throws ValidationException
-     */
     protected function sendFailedLoginResponse(Request $request)
     {
         $request->session()->put('login_error', trans('auth.failed'));
@@ -91,30 +81,49 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        $rules = [
-            'email' => 'required|email|exists:users,email,status,active',
-            'password' => 'required|min:4',
-        ];
+        try {
+            $rules = [
+                'email' => 'required|email|exists:users,email,status,active',
+                'password' => 'required|min:4',
+            ];
 
-        if (!empty(getGeneralSecuritySettings('captcha_for_admin_login'))) {
-            $rules['captcha'] = 'required|captcha';
+            if (!empty(getGeneralSecuritySettings('captcha_for_admin_login'))) {
+                $rules['captcha'] = 'required|captcha';
+            }
+
+            $this->validate($request, $rules);
+
+            if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->remember)) {
+                return Redirect::to(getAdminPanelUrl());
+            }
+
+            return redirect()->back()->withInput($request->only('email', 'remember'))->withErrors([
+                'password' => 'Wrong password or this account not approved yet.',
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('login error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        // validate the form data
-        $this->validate($request, $rules);
-
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->remember)) {
-            return Redirect::to(getAdminPanelUrl());
-        }
-
-        return redirect()->back()->withInput($request->only('email', 'remember'))->withErrors([
-            'password' => 'Wrong password or this account not approved yet.',
-        ]);
     }
 
     public function logout(Request $request)
     {
-        Auth::logout();
-        return redirect(getAdminPanelUrl() . '/login');
+        try {
+            Auth::logout();
+            return redirect(getAdminPanelUrl() . '/login');
+        } catch (\Exception $e) {
+            \Log::error('logout error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

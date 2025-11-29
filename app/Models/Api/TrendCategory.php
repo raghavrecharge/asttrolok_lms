@@ -6,7 +6,6 @@ use App\Models\TrendCategory as Model;
 
 class TrendCategory extends Model
 {
-    //
 
     public function getDetailsAttribute(){
 

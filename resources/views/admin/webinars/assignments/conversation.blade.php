@@ -17,7 +17,6 @@
             </div>
         </div>
 
-
         <div class="section-body">
 
             <div class="row">
@@ -58,6 +57,5 @@
 @endsection
 
 @push('scripts_bottom')
-
 
 @endpush

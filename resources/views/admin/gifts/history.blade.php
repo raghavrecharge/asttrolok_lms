@@ -108,7 +108,6 @@
                                 </div>
                             </div>
 
-
                             @php
                                 $filters = ['amount_asc', 'amount_desc', 'submit_date_asc', 'submit_date_desc', 'receive_date_asc', 'receive_date_desc'];
                             @endphp
@@ -285,7 +284,6 @@
                                                                         ])
                                                             @endcan
                                                         @endif
-
 
                                                         @can('admin_gift_cancel')
                                                             @include('admin.includes.delete_button',[

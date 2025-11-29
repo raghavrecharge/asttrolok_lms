@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Web\traits;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Models\Sale;
 use App\Models\WebinarAssignment;
 use App\Models\WebinarAssignmentAttachment;
@@ -12,42 +15,52 @@ trait LearningPageAssignmentTrait
 {
     public function downloadAssignment($assignmentId, $id)
     {
-        $assignment = WebinarAssignment::where('id', $assignmentId)
-            ->first();
+        try {
+            $assignment = WebinarAssignment::where('id', $assignmentId)
+                ->first();
 
-        if (!empty($assignment)) {
-            $checkSequenceContent = !empty($assignment) ? $assignment->checkSequenceContent() : null;
-            $sequenceContentHasError = (!empty($checkSequenceContent) and (!empty($checkSequenceContent['all_passed_items_error']) or !empty($checkSequenceContent['access_after_day_error'])));
+            if (!empty($assignment)) {
+                $checkSequenceContent = !empty($assignment) ? $assignment->checkSequenceContent() : null;
+                $sequenceContentHasError = (!empty($checkSequenceContent) and (!empty($checkSequenceContent['all_passed_items_error']) or !empty($checkSequenceContent['access_after_day_error'])));
 
-            if ($this->checkCourseAccess($assignment->webinar_id) and !$sequenceContentHasError) {
-                $attach = WebinarAssignmentAttachment::where('id', $id)
-                    ->where('assignment_id', $assignmentId)
-                    ->first();
+                if ($this->checkCourseAccess($assignment->webinar_id) and !$sequenceContentHasError) {
+                    $attach = WebinarAssignmentAttachment::where('id', $id)
+                        ->where('assignment_id', $assignmentId)
+                        ->first();
 
-                if (!empty($attach)) {
-                    $filePath = public_path($attach->attach);
+                    if (!empty($attach)) {
+                        $filePath = public_path($attach->attach);
 
-                    if (file_exists($filePath)) {
-                        $fileInfo = pathinfo($filePath);
-                        $type = (!empty($fileInfo) and !empty($fileInfo['extension'])) ? $fileInfo['extension'] : '';
+                        if (file_exists($filePath)) {
+                            $fileInfo = pathinfo($filePath);
+                            $type = (!empty($fileInfo) and !empty($fileInfo['extension'])) ? $fileInfo['extension'] : '';
 
-                        $fileName = str_replace(' ', '-', $attach->title);
-                        $fileName = str_replace('.', '-', $fileName);
-                        $fileName .= '.' . $type;
+                            $fileName = str_replace(' ', '-', $attach->title);
+                            $fileName = str_replace('.', '-', $fileName);
+                            $fileName .= '.' . $type;
 
-                        $headers = array(
-                            'Content-Type: application/' . $type,
-                        );
+                            $headers = array(
+                                'Content-Type: application/' . $type,
+                            );
 
-                        return response()->download($filePath, $fileName, $headers);
+                            return response()->download($filePath, $fileName, $headers);
+                        }
                     }
                 }
+
+                abort(403);
             }
 
-            abort(403);
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('downloadAssignment error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
     }
 
     private function getAssignmentData($course, $requestData)
@@ -70,7 +83,7 @@ trait LearningPageAssignmentTrait
                     $checkHasAttempts = $this->checkHasAttempts($assignment, $assignmentHistory, $user);
                     $submissionTimes = $assignmentHistory->messages
                         ->where('sender_id', !empty($studentId) ? $studentId : $user->id)
-                        //->whereNotNull('file_path')
+
                         ->count();
 
                     $student = null;
@@ -130,7 +143,7 @@ trait LearningPageAssignmentTrait
 
     private function getAssignmentDeadline($assignment, $user)
     {
-        $deadline = true; // default can access
+        $deadline = true;
 
         if (!empty($assignment->deadline)) {
             $conditionDay = $assignment->getDeadlineTimestamp($user);
@@ -152,7 +165,7 @@ trait LearningPageAssignmentTrait
         if (!empty($assignment->attempts) and $user->id != $assignment->creator_id) {
             $submissionTimes = $assignmentHistory->messages
                 ->where('sender_id', $user->id)
-                //->whereNotNull('file_path')
+
                 ->count();
 
             $result = ($submissionTimes < $assignment->attempts);

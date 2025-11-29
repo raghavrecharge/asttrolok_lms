@@ -28,7 +28,7 @@ class TextLesson extends WebTextLesson
             'summary' => $this->summary,
             'content' => $this->content,
             'locale' => $this->locale,
-            // 'read'=>$this->read ,
+
             'attachments' => $this->attachments()->get()->map(function ($attachment) {
                 return $attachment->details;
             }),
@@ -75,7 +75,6 @@ class TextLesson extends WebTextLesson
         }
 
         return ($this->learningStatus()->where('user_id', $user->id)->count()) ? true : false;
-
 
     }
 

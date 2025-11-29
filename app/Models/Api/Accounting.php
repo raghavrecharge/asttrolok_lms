@@ -19,7 +19,6 @@ class Accounting extends Model
             'amount' => number_format($this->amount, 2, ".", "") + 0,
             'created_at' => $this->created_at
 
-
         ] ;
 
     }
@@ -95,6 +94,5 @@ class Accounting extends Model
     {
         return $this->belongsTo('App\Models\Api\MeetingTime', 'meeting_time_id', 'id');
     }
-
 
 }

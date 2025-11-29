@@ -45,7 +45,6 @@ class File extends Model implements TranslatableContract
         return getTranslateAttributeValue($this, 'description');
     }
 
-
     public function chapter()
     {
         return $this->belongsTo('App\Models\WebinarChapter', 'chapter_id', 'id');

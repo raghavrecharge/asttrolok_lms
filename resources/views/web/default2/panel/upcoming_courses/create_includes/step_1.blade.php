@@ -18,7 +18,6 @@
             <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
         @endif
 
-
         <div class="form-group mt-15 ">
             <label class="input-label d-block">{{ trans('panel.course_type') }}</label>
 
@@ -34,7 +33,6 @@
             </div>
             @enderror
         </div>
-
 
         @if($isOrganization)
             <div class="form-group mt-15 ">
@@ -54,7 +52,6 @@
                 @enderror
             </div>
         @endif
-
 
         <div class="form-group mt-15">
             <label class="input-label">{{ trans('public.title') }}</label>
@@ -162,7 +159,6 @@
         </div>
     </div>
 </div>
-
 
 @push('scripts_bottom')
     <script src="{{ config('app.js_css_url') }}/assets/vendors/summernote/summernote-bs4.min.js"></script>

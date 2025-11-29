@@ -22,7 +22,6 @@
             <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
         @endif
 
-
         <div class="form-group">
             <label class="input-label">{{ trans('public.title') }}</label>
             <input type="text" name="title" class="form-control" placeholder=""/>

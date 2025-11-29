@@ -61,7 +61,7 @@
             preview: ".img-preview",
             strict: false,
             crop: function (data) {
-                // Output the result data for cropping image.
+
                 $dataX.val(Math.round(data.x));
                 $dataY.val(Math.round(data.y));
                 $dataHeight.val(Math.round(data.height));

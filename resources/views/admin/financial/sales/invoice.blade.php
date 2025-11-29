@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="/assets/admin/vendor/bootstrap/bootstrap.min.css"/>
     <link rel="stylesheet" href="/assets/vendors/fontawesome/css/all.min.css"/>
 
-
     <link rel="stylesheet" href="/assets/admin/css/style.css">
     <link rel="stylesheet" href="/assets/admin/css/custom.css">
     <link rel="stylesheet" href="/assets/admin/css/components.css">
@@ -55,7 +54,7 @@
                                                             <div style="width:200px;">             <h2><a class="navbar-brand navbar-order d-flex align-items-center justify-content-center mr-0 " href="/">
                                     <img src="https://storage.googleapis.com/astrolok/store/1/Home/asttroloklogo-min_converted.webp" class="img-cover" alt="site logo">
                             </a></h2></div>
-                                               
+
                                                            {{--<div class="invoice-number">Invoice<p>{{ trans('public.item_id') }}: #{{ $webinar->id }}</p></div>--}}
                                                         <div class="invoice-number">Invoice<p style="color: #6c757d;">Invoice Number: #{{ $sale->id }}</p></div>
                                                         </div>
@@ -215,7 +214,7 @@
                                                                   </tr>
                                                                </thead>
                                                                <tbody>
-                            
+
                                                   <tr>
                                                       <td colspan="6" ></td>
                                                      <td class="text-right"><strong>{{ trans('cart.sub_total') }}</strong></td>
@@ -256,10 +255,7 @@
                                                </tbody>
                                             </table>
                                                         </div>
-                                                                
-                                                                
-                                                                
-                                                                
+
                                                                 <!--<div class="invoice-detail-item">-->
                                                                 <!--    <div class="invoice-detail-name">{{ trans('cart.sub_total') }}</div>-->
                                                                 <!--    <div class="invoice-detail-value">{{ handlePrice($sale->amount) }}</div>-->
@@ -307,7 +303,6 @@
                                             </div>
                                         </div>
                                     </div>
-
 
                                 </div>
                             </div>

@@ -1,6 +1,5 @@
 @extends('admin.layouts.app')
 
-
 @section('content')
     <section class="section">
         <div class="section-header">
@@ -99,7 +98,6 @@
                                                                 <span class="input-group-text">{{ trans('admin/main.to') }}</span>
                                                             </span>
                                                                 <input type="number" name="condition[to]" class="form-control @error('condition.from')  is-invalid @enderror">
-
 
                                                                 <div class="input-group-append">
                                                                     <div class="input-group-text">{{ trans('admin/main.condition_'.$type) }}</div>
@@ -253,7 +251,6 @@
                                                         <span class="input-group-text">{{ trans('admin/main.to') }}</span>
                                                     </span>
                                                     <input type="number" name="condition[to]" class="form-control @error('condition.from')  is-invalid @enderror" value="{{ $badge->condition->to }}">
-
 
                                                     <div class="input-group-append">
                                                         <div class="input-group-text">{{ trans('admin/main.condition_'.$badge->type) }}</div>

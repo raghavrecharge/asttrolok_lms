@@ -1,10 +1,10 @@
 <div class="row mt-10">
     <div class="col-12">
         <div class="accordion-content-wrapper mt-15" id="chapterAccordion" role="tablist" aria-multiselectable="true">
-            <?php // print_r($remedy->chapters);?>
+            <?php
             @if(!empty($remedy->chapters) and count($remedy->chapters))
                 <ul class="draggable-content-lists draggable-lists-chapter" data-drag-class="draggable-lists-chapter" data-order-table="webinar_chapters">
-                  
+
                     @foreach($remedy->chapters as $chapter)
 
                         <li data-id="{{ !empty($chapter) ? $chapter->id :'' }}" data-chapter-order="{{ $chapter->order }}" class="accordion-row bg-white rounded-sm mt-20 py-15 py-lg-30 px-10 px-lg-20">
@@ -49,7 +49,6 @@
                                                 </button>
                                             @endif
 
-
                                             <!--<button type="button" class="js-add-course-content-btn d-block mb-10 btn-transparent" data-webinar-id="{{ $remedy->id }}" data-type="text_lesson" data-chapter="{{ !empty($chapter) ? $chapter->id :'' }}">-->
                                             <!--    {{ trans('public.add_text_lesson') }}-->
                                             <!--</button>-->
@@ -82,15 +81,15 @@
 
                             <div id="collapseChapter{{ !empty($chapter) ? $chapter->id :'record' }}" aria-labelledby="chapter_{{ !empty($chapter) ? $chapter->id :'record' }}" class=" collapse show" role="tabpanel">
                                 <div class="panel-collapse text-gray">
-<?php //print_r( $chapterItem); ?>
+<?php
                                     <div class="accordion-content-wrapper mt-15" id="chapterContentAccordion{{ !empty($chapter) ? $chapter->id :'' }}" role="tablist" aria-multiselectable="true">
                                         @if(!empty($chapter->chapterItems) and count($chapter->chapterItems))
                                             <ul class="draggable-content-lists draggable-lists-chapter-{{ $chapter->id }}" data-drag-class="draggable-lists-chapter-{{ $chapter->id }}" data-order-table="remedy_chapter_items">
                                                 @foreach($chapter->chapterItems as $chapterItem)
-                                                 
+
                                                     @if($chapterItem->type == \App\Models\RemedyChapterItem::$chapterFile and !empty($chapterItem->file))
                                                         @include('admin.remedies.create_includes.accordions.file' ,['file' => $chapterItem->file , 'chapter' => $chapter, 'chapterItem' => $chapterItem])
-                                                    
+
                                                     @endif
                                                 @endforeach
                                             </ul>

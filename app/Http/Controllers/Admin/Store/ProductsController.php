@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin\Store;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Exports\StoreProductsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
@@ -25,78 +28,98 @@ class ProductsController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_store_products');
+        try {
+            $this->authorize('admin_store_products');
 
-        removeContentLocale();
+            removeContentLocale();
 
-        $query = Product::query();
+            $query = Product::query();
 
-        $topStatData = $this->getTopPageStats(deepClone($query));
+            $topStatData = $this->getTopPageStats(deepClone($query));
 
-        $query = $this->handleFilters($query, $request)
-            ->with([
-                'category',
-                'creator' => function ($qu) {
-                    $qu->select('id', 'full_name');
-                },
+            $query = $this->handleFilters($query, $request)
+                ->with([
+                    'category',
+                    'creator' => function ($qu) {
+                        $qu->select('id', 'full_name');
+                    },
+                ]);
+
+            $products = $query->paginate(10);
+
+            $categories = ProductCategory::where('parent_id', null)
+                ->with('subCategories')
+                ->get();
+
+            $data = [
+                'pageTitle' => trans('update.products'),
+                'products' => $products,
+                'categories' => $categories,
+            ];
+
+            $data = array_merge($data, $topStatData);
+
+            return view('admin.store.products.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
-
-        $products = $query->paginate(10);
-
-        $categories = ProductCategory::where('parent_id', null)
-            ->with('subCategories')
-            ->get();
-
-        $data = [
-            'pageTitle' => trans('update.products'),
-            'products' => $products,
-            'categories' => $categories,
-        ];
-
-        $data = array_merge($data, $topStatData);
-
-        return view('admin.store.products.lists', $data);
+            
+            throw $e;
+        }
     }
 
     public function inHouseProducts(Request $request)
     {
-        $this->authorize('admin_store_in_house_products');
+        try {
+            $this->authorize('admin_store_in_house_products');
 
-        removeContentLocale();
+            removeContentLocale();
 
-        $adminRoleIds = Role::where('is_admin', true)->pluck('id')->toArray();
+            $adminRoleIds = Role::where('is_admin', true)->pluck('id')->toArray();
 
-        $query = Product::query()
-            ->whereHas('creator', function ($query) use ($adminRoleIds) {
-                $query->whereIn('role_id', $adminRoleIds);
-            });
+            $query = Product::query()
+                ->whereHas('creator', function ($query) use ($adminRoleIds) {
+                    $query->whereIn('role_id', $adminRoleIds);
+                });
 
-        $topStatData = $this->getTopPageStats(deepClone($query));
+            $topStatData = $this->getTopPageStats(deepClone($query));
 
-        $query = $this->handleFilters($query, $request)
-            ->with([
-                'category',
-                'creator' => function ($qu) {
-                    $qu->select('id', 'full_name');
-                },
+            $query = $this->handleFilters($query, $request)
+                ->with([
+                    'category',
+                    'creator' => function ($qu) {
+                        $qu->select('id', 'full_name');
+                    },
+                ]);
+
+            $products = $query->paginate(10);
+
+            $categories = ProductCategory::where('parent_id', null)
+                ->with('subCategories')
+                ->get();
+
+            $data = [
+                'pageTitle' => trans('update.in-house-products'),
+                'products' => $products,
+                'categories' => $categories,
+                'inHouseProducts' => true
+            ];
+
+            $data = array_merge($data, $topStatData);
+
+            return view('admin.store.products.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('inHouseProducts error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
-
-        $products = $query->paginate(10);
-
-        $categories = ProductCategory::where('parent_id', null)
-            ->with('subCategories')
-            ->get();
-
-        $data = [
-            'pageTitle' => trans('update.in-house-products'),
-            'products' => $products,
-            'categories' => $categories,
-            'inHouseProducts' => true
-        ];
-
-        $data = array_merge($data, $topStatData);
-
-        return view('admin.store.products.lists', $data);
+            
+            throw $e;
+        }
     }
 
     private function getTopPageStats($query)
@@ -117,7 +140,7 @@ class ProductsController extends Controller
             ->whereNotIn('product_orders.status', [ProductOrder::$canceled, ProductOrder::$pending])
             ->first();
 
-        $totalSellers = deepClone($query)->groupBy('creator_id')->get()->count();
+        $totalSellers = deepClone($query)->groupBy('creator_id')->count();
 
         $totalBuyers = deepClone($query)
             ->join('product_orders', 'products.id', 'product_orders.product_id')
@@ -304,69 +327,266 @@ class ProductsController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-
         return $query;
     }
 
     public function create(Request $request)
     {
-        $this->authorize('admin_store_new_product');
+        try {
+            $this->authorize('admin_store_new_product');
 
-        $data = [
-            'pageTitle' => trans('update.create_new_product'),
-        ];
+            $data = [
+                'pageTitle' => trans('update.create_new_product'),
+            ];
 
-        return view('admin.store.products.create', $data);
+            return view('admin.store.products.create', $data);
+        } catch (\Exception $e) {
+            \Log::error('create error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function store(Request $request)
     {
-        $this->authorize('admin_store_new_product');
+        try {
+            $this->authorize('admin_store_new_product');
 
-        $rules = [
-            'creator_id' => 'required|exists:users,id',
-            'type' => 'required|in:' . implode(',', Product::$productTypes),
-            'title' => 'required|max:255',
-            'slug' => 'max:255|unique:products,slug',
-            'seo_description' => 'required|max:255',
-            'summary' => 'required',
-            'description' => 'required',
-            'point' => 'nullable|integer',
-            'tax' => 'nullable|integer',
-            'commission' => 'nullable|integer',
-        ];
+            $rules = [
+                'creator_id' => 'required|exists:users,id',
+                'type' => 'required|in:' . implode(',', Product::$productTypes),
+                'title' => 'required|max:255',
+                'slug' => 'max:255|unique:products,slug',
+                'seo_description' => 'required|max:255',
+                'summary' => 'required',
+                'description' => 'required',
+                'point' => 'nullable|integer',
+                'tax' => 'nullable|integer',
+                'commission' => 'nullable|integer',
+            ];
 
-        $this->validate($request, $rules);
+            $this->validate($request, $rules);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        if (empty($data['slug'])) {
-            $data['slug'] = Product::makeSlug($data['title']);
+            if (empty($data['slug'])) {
+                $data['slug'] = Product::makeSlug($data['title']);
+            }
+
+            $product = Product::create([
+                'creator_id' => $data['creator_id'],
+                'type' => $data['type'],
+                'slug' => $data['slug'],
+                'category_id' => null,
+                'price' => null,
+                'unlimited_inventory' => false,
+                'ordering' => (!empty($data['ordering']) and $data['ordering'] == 'on'),
+                'inventory' => null,
+                'inventory_warning' => null,
+                'delivery_fee' => null,
+                'delivery_fee_international' => null,
+                'delivery_estimated_time' => null,
+                'message_for_reviewer' => null,
+                'point' => $data['point'] ?? null,
+                'tax' => $data['tax'] ?? null,
+                'commission' => $data['commission'] ?? null,
+                'status' => Product::$pending,
+                'updated_at' => time(),
+                'created_at' => time(),
+            ]);
+
+            if ($product) {
+                ProductTranslation::updateOrCreate([
+                    'product_id' => $product->id,
+                    'locale' => mb_strtolower($data['locale']),
+                ], [
+                    'title' => $data['title'],
+                    'seo_description' => $data['seo_description'],
+                    'summary' => $data['summary'],
+                    'description' => $data['description'],
+                ]);
+
+                $url = getAdminPanelUrl('/store/products/' . $product->id . '/edit?locale=' . $data['locale']);
+
+                return redirect($url);
+            }
+
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
+    }
 
-        $product = Product::create([
-            'creator_id' => $data['creator_id'],
-            'type' => $data['type'],
-            'slug' => $data['slug'],
-            'category_id' => null,
-            'price' => null,
-            'unlimited_inventory' => false,
-            'ordering' => (!empty($data['ordering']) and $data['ordering'] == 'on'),
-            'inventory' => null,
-            'inventory_warning' => null,
-            'delivery_fee' => null,
-            'delivery_fee_international' => null,
-            'delivery_estimated_time' => null,
-            'message_for_reviewer' => null,
-            'point' => $data['point'] ?? null,
-            'tax' => $data['tax'] ?? null,
-            'commission' => $data['commission'] ?? null,
-            'status' => Product::$pending,
-            'updated_at' => time(),
-            'created_at' => time(),
-        ]);
+    public function edit(Request $request, $id)
+    {
+        try {
+            $this->authorize('admin_store_edit_product');
 
-        if ($product) {
+            $product = Product::where('id', $id)
+                ->with([
+                    'creator',
+                    'files' => function ($query) {
+                        $query->orderBy('order', 'asc');
+                    },
+                    'category' => function ($query) {
+                        $query->with([
+                            'filters' => function ($query) {
+                                $query->with('options');
+                            }
+                        ]);
+                    },
+                    'selectedSpecifications' => function ($query) {
+                        $query->orderBy('order', 'asc');
+                        $query->with('specification');
+                    },
+                    'faqs' => function ($query) {
+                        $query->orderBy('order', 'asc');
+                    },
+                ])
+                ->first();
+
+            if (empty($product)) {
+                abort(404);
+            }
+
+            $locale = $request->get('locale', app()->getLocale());
+            storeContentLocale($locale, $product->getTable(), $product->id);
+
+            $productCategories = ProductCategory::where('parent_id', null)
+                ->with('subCategories')
+                ->get();
+
+            $productCategoryFilters = !empty($product->category) ? $product->category->filters : [];
+
+            if (empty($product->category) and !empty($request->old('category_id'))) {
+                $category = ProductCategory::where('id', $request->old('category_id'))->first();
+
+                if (!empty($category)) {
+                    $productCategoryFilters = $category->filters;
+                }
+            }
+
+            $specificationIds = ProductSpecificationCategory::where('category_id', $product->category_id)
+                ->pluck('specification_id')
+                ->toArray();
+
+            $productSpecifications = ProductSpecification::whereIn('id', $specificationIds)
+                ->get();
+
+            $data = [
+                'pageTitle' => trans('update.edit_product'),
+                'product' => $product,
+                'productCategoryFilters' => $productCategoryFilters,
+                'productCategories' => $productCategories,
+                'locale' => mb_strtolower($locale),
+                'defaultLocale' => getDefaultLocale(),
+                'productSpecifications' => $productSpecifications,
+            ];
+
+            return view('admin.store.products.create', $data);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $this->authorize('admin_store_delete_product');
+
+            $product = Product::findOrFail($id);
+
+            $data = $request->all();
+
+            $data['images'] = array_filter($data['images']);
+
+            if (empty($data['images']) or !count($data['images'])) {
+                $data['images'] = [];
+            }
+
+            $request->merge([
+                'images' => $data['images']
+            ]);
+
+            $rules = [
+                'creator_id' => 'required|exists:users,id',
+                'type' => 'required|in:' . implode(',', Product::$productTypes),
+                'title' => 'required|max:255',
+                'slug' => 'max:255|unique:products,slug,' . $product->id,
+                'seo_description' => 'required|max:255',
+                'summary' => 'required',
+                'description' => 'required',
+                'point' => 'nullable|integer',
+                'tax' => 'nullable|integer',
+                'commission' => 'nullable|integer',
+                'inventory' => 'required_without:unlimited_inventory',
+                'thumbnail' => 'required',
+                'images' => 'required|array|min:1|max:4',
+                'category_id' => 'required',
+            ];
+
+            $this->validate($request, $rules);
+
+            if (empty($data['slug'])) {
+                $data['slug'] = Product::makeSlug($data['title']);
+            }
+
+            $data['unlimited_inventory'] = (!empty($data['unlimited_inventory']) and $data['unlimited_inventory'] == 'on');
+
+            $inventory = $data['inventory'];
+            $productAvailability = $product->getAvailability();
+
+            if ($inventory != $productAvailability) {
+                $data['inventory_updated_at'] = time();
+            }
+
+            if (isset($product->salesCountCache)) {
+                unset($product->salesCountCache);
+            }
+
+            if (isset($product->availabilityCount)) {
+                unset($product->availabilityCount);
+            }
+
+            $product->update([
+                'creator_id' => $data['creator_id'],
+                'type' => $data['type'],
+                'slug' => $data['slug'],
+                'category_id' => $data['category_id'],
+                'price' => $data['price'],
+                'unlimited_inventory' => $data['unlimited_inventory'],
+                'ordering' => (!empty($data['ordering']) and $data['ordering'] == 'on'),
+                'inventory' => $data['inventory'] ?? null,
+                'inventory_warning' => $data['inventory_warning'] ?? null,
+                'inventory_updated_at' => $data['inventory_updated_at'] ?? null,
+                'delivery_fee' => $data['delivery_fee'] ?? null,
+                'delivery_fee_international' => $data['delivery_fee_international'] ?? null,
+                'delivery_estimated_time' => $data['delivery_estimated_time'] ?? null,
+                'message_for_reviewer' => $data['message_for_reviewer'] ?? null,
+                'point' => $data['point'] ?? null,
+                'tax' => $data['tax'] ?? null,
+                'tax_international' => $data['tax_international'] ?? null,
+                'commission' => $data['commission'] ?? null,
+                'status' => $data['status'],
+                'updated_at' => time(),
+            ]);
+
             ProductTranslation::updateOrCreate([
                 'product_id' => $product->id,
                 'locale' => mb_strtolower($data['locale']),
@@ -377,190 +597,32 @@ class ProductsController extends Controller
                 'description' => $data['description'],
             ]);
 
+            $this->handleProductImages($product, $data);
+
+            ProductSelectedFilterOption::where('product_id', $product->id)->delete();
+
+            $filters = $request->get('filters', null);
+            if (!empty($filters) and is_array($filters)) {
+                foreach ($filters as $filter) {
+                    ProductSelectedFilterOption::create([
+                        'product_id' => $product->id,
+                        'filter_option_id' => $filter
+                    ]);
+                }
+            }
+
             $url = getAdminPanelUrl('/store/products/' . $product->id . '/edit?locale=' . $data['locale']);
 
             return redirect($url);
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return back();
-    }
-
-    public function edit(Request $request, $id)
-    {
-        $this->authorize('admin_store_edit_product');
-
-        $product = Product::where('id', $id)
-            ->with([
-                'creator',
-                'files' => function ($query) {
-                    $query->orderBy('order', 'asc');
-                },
-                'category' => function ($query) {
-                    $query->with([
-                        'filters' => function ($query) {
-                            $query->with('options');
-                        }
-                    ]);
-                },
-                'selectedSpecifications' => function ($query) {
-                    $query->orderBy('order', 'asc');
-                    $query->with('specification');
-                },
-                'faqs' => function ($query) {
-                    $query->orderBy('order', 'asc');
-                },
-            ])
-            ->first();
-
-        if (empty($product)) {
-            abort(404);
-        }
-
-        $locale = $request->get('locale', app()->getLocale());
-        storeContentLocale($locale, $product->getTable(), $product->id);
-
-        $productCategories = ProductCategory::where('parent_id', null)
-            ->with('subCategories')
-            ->get();
-
-        $productCategoryFilters = !empty($product->category) ? $product->category->filters : [];
-
-        if (empty($product->category) and !empty($request->old('category_id'))) {
-            $category = ProductCategory::where('id', $request->old('category_id'))->first();
-
-            if (!empty($category)) {
-                $productCategoryFilters = $category->filters;
-            }
-        }
-
-        $specificationIds = ProductSpecificationCategory::where('category_id', $product->category_id)
-            ->pluck('specification_id')
-            ->toArray();
-
-        $productSpecifications = ProductSpecification::whereIn('id', $specificationIds)
-            ->get();
-
-        $data = [
-            'pageTitle' => trans('update.edit_product'),
-            'product' => $product,
-            'productCategoryFilters' => $productCategoryFilters,
-            'productCategories' => $productCategories,
-            'locale' => mb_strtolower($locale),
-            'defaultLocale' => getDefaultLocale(),
-            'productSpecifications' => $productSpecifications,
-        ];
-
-        return view('admin.store.products.create', $data);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $this->authorize('admin_store_delete_product');
-
-        $product = Product::findOrFail($id);
-
-        $data = $request->all();
-
-        $data['images'] = array_filter($data['images']);
-
-        if (empty($data['images']) or !count($data['images'])) {
-            $data['images'] = [];
-        }
-
-        $request->merge([
-            'images' => $data['images']
-        ]);
-
-        $rules = [
-            'creator_id' => 'required|exists:users,id',
-            'type' => 'required|in:' . implode(',', Product::$productTypes),
-            'title' => 'required|max:255',
-            'slug' => 'max:255|unique:products,slug,' . $product->id,
-            'seo_description' => 'required|max:255',
-            'summary' => 'required',
-            'description' => 'required',
-            'point' => 'nullable|integer',
-            'tax' => 'nullable|integer',
-            'commission' => 'nullable|integer',
-            'inventory' => 'required_without:unlimited_inventory',
-            'thumbnail' => 'required',
-            'images' => 'required|array|min:1|max:4',
-            'category_id' => 'required',
-        ];
-
-        $this->validate($request, $rules);
-
-        if (empty($data['slug'])) {
-            $data['slug'] = Product::makeSlug($data['title']);
-        }
-
-        $data['unlimited_inventory'] = (!empty($data['unlimited_inventory']) and $data['unlimited_inventory'] == 'on');
-
-        $inventory = $data['inventory'];
-        $productAvailability = $product->getAvailability();
-
-        if ($inventory != $productAvailability) {
-            $data['inventory_updated_at'] = time();
-        }
-
-        if (isset($product->salesCountCache)) {
-            unset($product->salesCountCache);
-        }
-
-        if (isset($product->availabilityCount)) {
-            unset($product->availabilityCount);
-        }
-
-        $product->update([
-            'creator_id' => $data['creator_id'],
-            'type' => $data['type'],
-            'slug' => $data['slug'],
-            'category_id' => $data['category_id'],
-            'price' => $data['price'],
-            'unlimited_inventory' => $data['unlimited_inventory'],
-            'ordering' => (!empty($data['ordering']) and $data['ordering'] == 'on'),
-            'inventory' => $data['inventory'] ?? null,
-            'inventory_warning' => $data['inventory_warning'] ?? null,
-            'inventory_updated_at' => $data['inventory_updated_at'] ?? null,
-            'delivery_fee' => $data['delivery_fee'] ?? null,
-            'delivery_fee_international' => $data['delivery_fee_international'] ?? null,
-            'delivery_estimated_time' => $data['delivery_estimated_time'] ?? null,
-            'message_for_reviewer' => $data['message_for_reviewer'] ?? null,
-            'point' => $data['point'] ?? null,
-            'tax' => $data['tax'] ?? null,
-            'tax_international' => $data['tax_international'] ?? null,
-            'commission' => $data['commission'] ?? null,
-            'status' => $data['status'],
-            'updated_at' => time(),
-        ]);
-
-        ProductTranslation::updateOrCreate([
-            'product_id' => $product->id,
-            'locale' => mb_strtolower($data['locale']),
-        ], [
-            'title' => $data['title'],
-            'seo_description' => $data['seo_description'],
-            'summary' => $data['summary'],
-            'description' => $data['description'],
-        ]);
-
-        $this->handleProductImages($product, $data);
-
-        ProductSelectedFilterOption::where('product_id', $product->id)->delete();
-
-        $filters = $request->get('filters', null);
-        if (!empty($filters) and is_array($filters)) {
-            foreach ($filters as $filter) {
-                ProductSelectedFilterOption::create([
-                    'product_id' => $product->id,
-                    'filter_option_id' => $filter
-                ]);
-            }
-        }
-
-        $url = getAdminPanelUrl('/store/products/' . $product->id . '/edit?locale=' . $data['locale']);
-
-        return redirect($url);
     }
 
     private function handleProductImages($product, $data)
@@ -607,36 +669,55 @@ class ProductsController extends Controller
         }
     }
 
-
     public function destroy($id)
     {
-        $this->authorize('admin_store_delete_product');
+        try {
+            $this->authorize('admin_store_delete_product');
 
-        $product = Product::where('id', $id)->first();
+            $product = Product::where('id', $id)->first();
 
-        if (!empty($product)) {
-            $product->delete();
+            if (!empty($product)) {
+                $product->delete();
+            }
+
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return back();
     }
 
     public function search(Request $request)
     {
-        $term = $request->get('term');
+        try {
+            $term = $request->get('term');
 
-        $option = $request->get('option', null);
+            $option = $request->get('option', null);
 
-        $query = Product::select('id')
-            ->whereTranslationLike('title', "%$term%");
+            $query = Product::select('id')
+                ->whereTranslationLike('title', "%$term%");
 
-        if (!empty($option)) {
+            if (!empty($option)) {
 
+            }
+
+            $products = $query->get();
+
+            return response()->json($products, 200);
+        } catch (\Exception $e) {
+            \Log::error('search error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $products = $query->get();
-
-        return response()->json($products, 200);
     }
 
     public function getContentItemByLocale(Request $request, $id)
@@ -691,114 +772,143 @@ class ProductsController extends Controller
 
     public function settings()
     {
-        $this->authorize('admin_store_settings');
+        try {
+            $this->authorize('admin_store_settings');
 
-        removeContentLocale();
+            removeContentLocale();
 
-        $setting = Setting::where('page', 'general')
-            ->where('name', Setting::$storeSettingsName)
-            ->first();
+            $setting = Setting::where('page', 'general')
+                ->where('name', Setting::$storeSettingsName)
+                ->first();
 
-        if (!empty($setting)) {
-            $setting->value = json_decode($setting->value, true);
+            if (!empty($setting)) {
+                $setting->value = json_decode($setting->value, true);
+            }
+
+            $data = [
+                'pageTitle' => trans('update.store_settings'),
+                'itemValue' => !empty($setting) ? $setting->value : null,
+            ];
+
+            return view('admin.store.settings', $data);
+        } catch (\Exception $e) {
+            \Log::error('settings error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $data = [
-            'pageTitle' => trans('update.store_settings'),
-            'itemValue' => !empty($setting) ? $setting->value : null,
-        ];
-
-        return view('admin.store.settings', $data);
     }
 
     public function storeSettings(Request $request)
     {
-        $this->authorize('admin_store_settings');
+        try {
+            $this->authorize('admin_store_settings');
 
-        $page = 'general';
-        $name = Setting::$storeSettingsName;
+            $page = 'general';
+            $name = Setting::$storeSettingsName;
 
-        $data = $request->all();
-        $locale = $request->get('locale', Setting::$defaultSettingsLocale);
-        $newValues = $data['value'];
-        $values = [];
+            $data = $request->all();
+            $locale = $request->get('locale', Setting::$defaultSettingsLocale);
+            $newValues = $data['value'];
+            $values = [];
 
+            $validator = Validator::make($data['value'], [
+                'exchangeable_unit' => 'required_if:exchangeable,1',
+            ]);
 
-        $validator = Validator::make($data['value'], [
-            'exchangeable_unit' => 'required_if:exchangeable,1',
-        ]);
+            $validator->validate();
 
-        $validator->validate();
+            $settings = Setting::where('name', $name)->first();
 
-        $settings = Setting::where('name', $name)->first();
+            if (!empty($settings) and !empty($settings->value)) {
+                $values = json_decode($settings->value);
+            }
 
-        if (!empty($settings) and !empty($settings->value)) {
-            $values = json_decode($settings->value);
-        }
-
-        if (!empty($newValues) and !empty($values)) {
-            foreach ($newValues as $newKey => $newValue) {
-                foreach ($values as $key => $value) {
-                    if ($key == $newKey) {
-                        $values->$key = $newValue;
-                        unset($newValues[$key]);
+            if (!empty($newValues) and !empty($values)) {
+                foreach ($newValues as $newKey => $newValue) {
+                    foreach ($values as $key => $value) {
+                        if ($key == $newKey) {
+                            $values->$key = $newValue;
+                            unset($newValues[$key]);
+                        }
                     }
                 }
             }
+
+            if (!empty($newValues)) {
+                $values = array_merge((array)$values, $newValues);
+            }
+
+            $settings = Setting::updateOrCreate(
+                ['name' => $name],
+                [
+                    'page' => $page,
+                    'updated_at' => time(),
+                ]
+            );
+
+            SettingTranslation::updateOrCreate(
+                [
+                    'setting_id' => $settings->id,
+                    'locale' => mb_strtolower($locale)
+                ],
+                [
+                    'value' => json_encode($values),
+                ]
+            );
+
+            cache()->forget('settings.' . $name);
+
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('storeSettings error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        if (!empty($newValues)) {
-            $values = array_merge((array)$values, $newValues);
-        }
-
-        $settings = Setting::updateOrCreate(
-            ['name' => $name],
-            [
-                'page' => $page,
-                'updated_at' => time(),
-            ]
-        );
-
-        SettingTranslation::updateOrCreate(
-            [
-                'setting_id' => $settings->id,
-                'locale' => mb_strtolower($locale)
-            ],
-            [
-                'value' => json_encode($values),
-            ]
-        );
-
-        cache()->forget('settings.' . $name);
-
-        return back();
     }
 
     public function exportExcel(Request $request)
     {
-        $this->authorize('admin_store_export_products');
+        try {
+            $this->authorize('admin_store_export_products');
 
-        $query = Product::query();
+            $query = Product::query();
 
-        if (!empty($request->get('in_house_products'))) {
-            $adminRoleIds = Role::where('is_admin', true)->pluck('id')->toArray();
+            if (!empty($request->get('in_house_products'))) {
+                $adminRoleIds = Role::where('is_admin', true)->pluck('id')->toArray();
 
-            $query->whereHas('creator', function ($query) use ($adminRoleIds) {
-                $query->whereIn('role_id', $adminRoleIds);
-            });
+                $query->whereHas('creator', function ($query) use ($adminRoleIds) {
+                    $query->whereIn('role_id', $adminRoleIds);
+                });
 
+            }
+
+            $products = $this->handleFilters($query, $request)
+                ->with([
+                    'category',
+                    'creator' => function ($qu) {
+                        $qu->select('id', 'full_name');
+                    },
+                ])->get();
+
+            $export = new StoreProductsExport($products);
+
+            return Excel::download($export, 'storeProducts.xlsx');
+        } catch (\Exception $e) {
+            \Log::error('exportExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $products = $this->handleFilters($query, $request)
-            ->with([
-                'category',
-                'creator' => function ($qu) {
-                    $qu->select('id', 'full_name');
-                },
-            ])->get();
-
-        $export = new StoreProductsExport($products);
-
-        return Excel::download($export, 'storeProducts.xlsx');
     }
 }

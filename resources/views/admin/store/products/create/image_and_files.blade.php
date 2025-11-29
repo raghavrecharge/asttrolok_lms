@@ -94,7 +94,6 @@
                     <p class="font-14 text-gray">- {{ trans('update.product_files_hint_1') }}</p>
                 </div>
 
-
                 <div class="mt-2">
                     @if(!empty($product->files) and count($product->files))
                         <div class="table-responsive">

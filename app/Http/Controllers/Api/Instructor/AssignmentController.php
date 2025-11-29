@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Instructor;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Http\Resources\WebinarAssignmentHistoryResource;
 use App\Http\Resources\WebinarAssignmentResource;
@@ -18,49 +21,58 @@ class AssignmentController extends Controller
 {
     public function index(Request $request)
     {
-        if (!getFeaturesSettings('webinar_assignment_status')) {
-            abort(403);
-        }
+        try {
+            if (!getFeaturesSettings('webinar_assignment_status')) {
+                abort(403);
+            }
 
-        $user = apiAuth();
+            $user = apiAuth();
 
-        $query = WebinarAssignment::where('creator_id', $user->id);
+            $query = WebinarAssignment::where('creator_id', $user->id);
 
-        $courseAssignmentsCount = deepClone($query)->count();
+            $courseAssignmentsCount = deepClone($query)->count();
 
-        $pendingReviewCount = deepClone($query)->whereHas('instructorAssignmentHistories', function ($query) use ($user) {
-            $query->where('instructor_id', $user->id);
-            $query->where('status', WebinarAssignmentHistory::$pending);
-        })->count();
-
-        $passedCount = deepClone($query)->whereHas('instructorAssignmentHistories', function ($query) use ($user) {
-            $query->where('instructor_id', $user->id);
-            $query->where('status', WebinarAssignmentHistory::$passed);
-        })->count();
-
-        $failedCount = deepClone($query)->whereHas('instructorAssignmentHistories', function ($query) use ($user) {
-            $query->where('instructor_id', $user->id);
-            $query->where('status', WebinarAssignmentHistory::$notPassed);
-        })->count();
-
-        $assignments = $query->with([
-            'webinar',
-            'instructorAssignmentHistories' => function ($query) use ($user) {
+            $pendingReviewCount = deepClone($query)->whereHas('instructorAssignmentHistories', function ($query) use ($user) {
                 $query->where('instructor_id', $user->id);
-            },
-        ])->orderBy('created_at', 'desc')
-            ->get();
+                $query->where('status', WebinarAssignmentHistory::$pending);
+            })->count();
 
-        return apiResponse2(1, 'retrieved', trans('api.public.retrieved'),
-            [
-                'course_assignments_count' => $courseAssignmentsCount,
-                'pending_reviews_count' => $pendingReviewCount,
-                'passed_count' => $passedCount,
-                'failed_count' => $failedCount,
-                'assignments' => WebinarAssignmentResource::collection($assignments),
+            $passedCount = deepClone($query)->whereHas('instructorAssignmentHistories', function ($query) use ($user) {
+                $query->where('instructor_id', $user->id);
+                $query->where('status', WebinarAssignmentHistory::$passed);
+            })->count();
 
+            $failedCount = deepClone($query)->whereHas('instructorAssignmentHistories', function ($query) use ($user) {
+                $query->where('instructor_id', $user->id);
+                $query->where('status', WebinarAssignmentHistory::$notPassed);
+            })->count();
+
+            $assignments = $query->with([
+                'webinar',
+                'instructorAssignmentHistories' => function ($query) use ($user) {
+                    $query->where('instructor_id', $user->id);
+                },
+            ])->orderBy('created_at', 'desc')
+                ->get();
+
+            return apiResponse2(1, 'retrieved', trans('api.public.retrieved'),
+                [
+                    'course_assignments_count' => $courseAssignmentsCount,
+                    'pending_reviews_count' => $pendingReviewCount,
+                    'passed_count' => $passedCount,
+                    'failed_count' => $failedCount,
+                    'assignments' => WebinarAssignmentResource::collection($assignments),
+
+                ]);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
-
+            
+            throw $e;
+        }
     }
 
     public function students(Request $request)
@@ -72,7 +84,7 @@ class AssignmentController extends Controller
         $user = apiAuth();
 
         $assignment = WebinarAssignment::where('creator_id', $user->id)
-            // ->where('creator_id', $user->id)
+
             ->with([
                 'webinar',
             ])
@@ -96,10 +108,9 @@ class AssignmentController extends Controller
             $passedCount = deepClone($query)->where('status', WebinarAssignmentHistory::$passed)->count();
             $failedCount = deepClone($query)->where('status', WebinarAssignmentHistory::$notPassed)->count();
 
-
             $histories = $query->orderBy('created_at', 'desc')
                 ->get();
-            //  dd($histories);
+
             foreach ($histories as &$history) {
                 $history->usedAttemptsCount = 0;
 
@@ -123,8 +134,6 @@ class AssignmentController extends Controller
                 }
             }
             $resource = WebinarAssignmentHistoryResource::collection($histories);
-            //  dd($resource->groupBy('id')) ;
-            //  $resource=$resource->groupBy('student_id')
 
             $data = [
                 'pageTitle' => trans('update.students_assignments'),
@@ -147,7 +156,6 @@ class AssignmentController extends Controller
 
             ]);
 
-            //  return view('web.default.panel.assignments.students', $data);
         }
 
         abort(404);
@@ -163,7 +171,7 @@ class AssignmentController extends Controller
 
         $assignment = WebinarAssignment::where('creator_id', $user->id)
             ->where('id',$id)
-            // ->where('creator_id', $user->id)
+
             ->with([
                 'webinar',
             ])
@@ -187,10 +195,9 @@ class AssignmentController extends Controller
             $passedCount = deepClone($query)->where('status', WebinarAssignmentHistory::$passed)->count();
             $failedCount = deepClone($query)->where('status', WebinarAssignmentHistory::$notPassed)->count();
 
-
             $histories = $query->orderBy('created_at', 'desc')
                 ->get();
-            //  dd($histories);
+
             foreach ($histories as &$history) {
                 $history->usedAttemptsCount = 0;
 
@@ -214,8 +221,6 @@ class AssignmentController extends Controller
                 }
             }
             $resource = WebinarAssignmentHistoryResource::collection($histories);
-            //  dd($resource->groupBy('id')) ;
-            //  $resource=$resource->groupBy('student_id')
 
             $data = [
                 'pageTitle' => trans('update.students_assignments'),
@@ -231,55 +236,61 @@ class AssignmentController extends Controller
 
             return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), $resource) ;
 
-            //  return view('web.default.panel.assignments.students', $data);
         }
 
         abort(404);
     }
 
-
     public function setGrade(Request $request, $historyId)
     {
-        $user = apiAuth();
-        validateParam($request->all(), [
-            'grade' => 'required|integer',
-        ]);
+        try {
+            $user = apiAuth();
+            validateParam($request->all(), [
+                'grade' => 'required|integer',
+            ]);
 
-        $assignmentHistory = WebinarAssignmentHistory::where('id', $historyId)->first();
-        abort_unless($assignmentHistory, 404);
-        $assignment = $assignmentHistory->assignment;
-        $webinar = $assignment->webinar;
-        $data = $request->all();
-        $grade = $data['grade'];
+            $assignmentHistory = WebinarAssignmentHistory::where('id', $historyId)->first();
+            abort_unless($assignmentHistory, 404);
+            $assignment = $assignmentHistory->assignment;
+            $webinar = $assignment->webinar;
+            $data = $request->all();
+            $grade = $data['grade'];
 
-        $status = WebinarAssignmentHistory::$passed;
+            $status = WebinarAssignmentHistory::$passed;
 
-        if ($grade < $assignment->pass_grade) {
-            $status = WebinarAssignmentHistory::$notPassed;
+            if ($grade < $assignment->pass_grade) {
+                $status = WebinarAssignmentHistory::$notPassed;
+            }
+
+            $assignmentHistory->update([
+                'status' => $status,
+                'grade' => $grade
+            ]);
+
+            if ($status == WebinarAssignmentHistory::$passed) {
+                $buyStoreReward = RewardAccounting::calculateScore(Reward::PASS_ASSIGNMENT);
+                RewardAccounting::makeRewardAccounting($assignmentHistory->student_id, $buyStoreReward, Reward::PASS_ASSIGNMENT, $assignment->id);
+            }
+
+            $notifyOptions = [
+                '[instructor.name]' => $assignmentHistory->instructor->full_name,
+                '[c.title]' => $webinar->title,
+                '[student.name]' => $assignmentHistory->student->full_name,
+                '[assignment_grade]' => $assignmentHistory->grade,
+            ];
+
+            sendNotification('instructor_set_grade', $notifyOptions, $assignmentHistory->student_id);
+
+            return apiResponse2(1, 'stored', trans('api.public.stored'));
+        } catch (\Exception $e) {
+            \Log::error('setGrade error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $assignmentHistory->update([
-            'status' => $status,
-            'grade' => $grade
-        ]);
-
-        if ($status == WebinarAssignmentHistory::$passed) {
-            $buyStoreReward = RewardAccounting::calculateScore(Reward::PASS_ASSIGNMENT);
-            RewardAccounting::makeRewardAccounting($assignmentHistory->student_id, $buyStoreReward, Reward::PASS_ASSIGNMENT, $assignment->id);
-        }
-
-        $notifyOptions = [
-            '[instructor.name]' => $assignmentHistory->instructor->full_name,
-            '[c.title]' => $webinar->title,
-            '[student.name]' => $assignmentHistory->student->full_name,
-            '[assignment_grade]' => $assignmentHistory->grade,
-        ];
-
-        sendNotification('instructor_set_grade', $notifyOptions, $assignmentHistory->student_id);
-
-        return apiResponse2(1, 'stored', trans('api.public.stored'));
-
     }
-
 
 }

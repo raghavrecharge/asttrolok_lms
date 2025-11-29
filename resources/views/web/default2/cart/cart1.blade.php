@@ -2,16 +2,12 @@
 
 <style>
 .loader {
-  //border: 16px solid #f3f3f3;
-  //border-radius: 50%;
-  //border-top: 16px solid #3498db;
 
   height: 80px;
   -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
-#loader {
     position: fixed;
     left: 50%;
     top: 50%;
@@ -53,7 +49,7 @@
   <div class="col-12 col-lg-6 ">
       @php
             $userCurrency = currency();
-            //print_r($cart->id);die;
+
             $invalidChannels = [];
         @endphp
         <div class=" bg-gray200 mt-30 rounded-lg border p-15">
@@ -167,7 +163,7 @@
                                     <div class="image-box" style="height: 85px !important;">
                                         @php
                                             $cartItemInfo = $cart->getItemInfo();
-                                           //print_r($cart);
+
                                            $extra_amount += $cart['extra_amount'];
                                         @endphp
                                         <img src="{{ $cartItemInfo['imgPath'] ?? '' }}" class="img-cover" alt="user avatar">
@@ -235,9 +231,7 @@
 
                                          @php
 
-                                //echo'<pre>'; print_r($cart[0]);die;
                                  $cartItemInfo = $cart[0];
-                                         //print_r($cartItemInfo);die;
 
                                         @endphp
                                         <img src="{{ $cartItemInfo['thumbnail'] ?? '' }}" class="img-cover" alt="user avatar">
@@ -397,7 +391,7 @@
                                 </div>
                                 @php
                                 $total-=$extra_amount;
-                                //session('total_amount')-=$extra_amount;
+
                                 @endphp
                             @endif
                             <div class="cart-checkout-item">

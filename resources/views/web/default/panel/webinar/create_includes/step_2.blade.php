@@ -7,7 +7,6 @@
 <div class="row">
     <div class="col-12 col-md-6 mt-15">
 
-
         <div class="form-group mt-15">
             <label class="input-label">{{ trans('public.capacity') }}</label>
             <input type="number" name="capacity" value="{{ (!empty($webinar) and !empty($webinar->capacity)) ? $webinar->capacity : old('capacity') }}" class="form-control @error('capacity')  is-invalid @enderror" placeholder="{{ trans('forms.capacity_placeholder') }}"/>
@@ -51,7 +50,6 @@
                                 <i data-feather="clock" width="18" height="18" class="text-white"></i>
                             </span>
                         </div>
-
 
                         <input type="text" name="duration" value="{{ (!empty($webinar) and !empty($webinar->duration)) ? $webinar->duration : old('duration') }}" class="form-control @error('duration')  is-invalid @enderror"/>
                         @error('duration')
@@ -138,7 +136,6 @@
             </div>
         </div>
 
-
         <div id="partnerInstructorInput" class="form-group mt-15 {{ ((!empty($webinar) && $webinar->partner_instructor) or old('partner_instructor') == 'on') ? '' : 'd-none' }}">
             <label class="input-label d-block">{{ trans('public.select_a_partner_teacher') }}</label>
 
@@ -161,7 +158,6 @@
             <label class="input-label d-block">{{ trans('public.tags') }}</label>
             <input type="text" name="tags" data-max-tag="5" value="{{ !empty($webinar) ? implode(',',$webinarTags) : '' }}" class="form-control inputtags" placeholder="{{ trans('public.type_tag_name_and_press_enter') }} ({{ trans('forms.max') }} : 5)"/>
         </div>
-
 
         <div class="form-group mt-15">
             <label class="input-label">{{ trans('public.category') }}</label>

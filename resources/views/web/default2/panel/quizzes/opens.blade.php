@@ -103,7 +103,6 @@
                                         </td>
                                         <td class="text-dark-blue font-weight-500 align-middle">{{ $quiz->quizQuestions->sum('grade') }}</td>
 
-
                                         <td class="text-dark-blue font-weight-500 align-middle">{{ dateTimeFormat($quiz->created_at,'j M Y H:i')}}</td>
 
                                         <td class="align-middle text-right font-weight-normal">

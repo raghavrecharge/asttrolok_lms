@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Blog;
 use App\Models\BlogCategory;
@@ -16,60 +19,76 @@ class BlogController extends Controller
 {
     public function index(Request $request)
     {
-        removeContentLocale();
+        try {
+            removeContentLocale();
 
-        $this->authorize('admin_blog_lists');
+            $this->authorize('admin_blog_lists');
 
-        $query = Blog::query();
+            $query = Blog::query();
 
-        $blog = $this->filters($query, $request)
-            ->with(['category', 'author' => function ($query) {
-                $query->select('id', 'full_name');
-            }])
-            ->withCount('comments')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            $blog = $this->filters($query, $request)
+                ->with(['category', 'author' => function ($query) {
+                    $query->select('id', 'full_name');
+                }])
+                ->withCount('comments')
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
 
-        $blogCategories = BlogCategory::all();
-        $adminRoleIds = Role::where('is_admin', true)->pluck('id')->toArray();
-        $authors = User::select('id', 'full_name', 'role_id')->whereIn('role_id', $adminRoleIds)->get();
+            $blogCategories = BlogCategory::all();
+            $adminRoleIds = Role::where('is_admin', true)->pluck('id')->toArray();
+            $authors = User::select('id', 'full_name', 'role_id')->whereIn('role_id', $adminRoleIds)->get();
 
-        $data = [
-            'pageTitle' => trans('admin/pages/blog.blog'),
-            'blog' => $blog,
-            'blogCategories' => $blogCategories,
-            'authors' => $authors,
-        ];
+            $data = [
+                'pageTitle' => trans('admin/pages/blog.blog'),
+                'blog' => $blog,
+                'blogCategories' => $blogCategories,
+                'authors' => $authors,
+            ];
 
-        return view('admin.blog.lists', $data);
+            return view('admin.blog.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
   public function importview()
     {
-       // echo "ok";
-        // $this->authorize('admin_users_create');
-
-        // $roles = Role::orderBy('created_at', 'desc')->get();
-        // $userGroups = Group::orderBy('created_at', 'desc')->where('status', 'active')->get();
-
-        // $data = [
-        //     'pageTitle' => trans('admin/main.user_new_page_title'),
-        //     'roles' => $roles,
-        //     'userGroups' => $userGroups,
-        // ];
-
-
-        return view('admin.blog.import');
+        try {
+            return view('admin.blog.import');
+        } catch (\Exception $e) {
+            \Log::error('importview error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
     public function importExcel(Request $request)
     {
-       
-        $excels=  Excel::import(new ImportBlogs, request()->file('file'));
-$toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => 'Student Added successfully',
-            'status' => 'success'
-        ];
-        return back()->with(['toast' => $toastData]);
+        try {
+            $excels=  Excel::import(new ImportBlogs, request()->file('file'));
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => 'Student Added successfully',
+                'status' => 'success'
+            ];
+            return back()->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('importExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
     private function filters($query, $request)
     {
@@ -81,7 +100,6 @@ $toastData = [
         $status = $request->get('status', null);
 
         $query = fromAndToDateFilter($from, $to, $query, 'created_at');
-
 
         if (!empty($title)) {
             $query->whereTranslationLike('title', '%' . $title . '%');
@@ -104,57 +122,154 @@ $toastData = [
 
     public function create()
     {
-        $this->authorize('admin_blog_create');
+        try {
+            $this->authorize('admin_blog_create');
 
-        $categories = BlogCategory::all();
+            $categories = BlogCategory::all();
 
-        $data = [
-            'pageTitle' => trans('admin/pages/blog.create_blog'),
-            'categories' => $categories
-        ];
+            $data = [
+                'pageTitle' => trans('admin/pages/blog.create_blog'),
+                'categories' => $categories
+            ];
 
-        return view('admin.blog.create', $data);
+            return view('admin.blog.create', $data);
+        } catch (\Exception $e) {
+            \Log::error('create error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function store(Request $request)
     {
-        $this->authorize('admin_blog_create');
+        try {
+            $this->authorize('admin_blog_create');
 
-        $this->validate($request, [
-            'locale' => 'required',
-            'title' => 'required|string|max:255',
-            'category_id' => 'required|numeric',
-            'image' => 'required|string',
-            'description' => 'required|string',
-            'content' => 'required|string',
-        ]);
+            $this->validate($request, [
+                'locale' => 'required',
+                'title' => 'required|string|max:255',
+                'category_id' => 'required|numeric',
+                'image' => 'required|string',
+                'description' => 'required|string',
+                'content' => 'required|string',
+            ]);
 
-        $data = $request->all();
- function slug($string) 
- { 
-$string = trim($string);$string=strtolower($string);
-$string =preg_replace("/[^a-z0-9_ोौेैा्ीिीूुंःअआइईउऊएऐओऔकखगघचछजझञटठडढतथदधनपफबभमयरलवसशषहश्रक्षटठडढङणनऋड़\s-]/u", "", $string);
-$string = preg_replace("/[\s-]+/", " ", $string);
-$string = preg_replace("/[\s]/", '-', $string);
-return $string ;
- }
- $title="How to Create a Blog Post"; 
-$slugnew=slug($data['title']);
-        $blog = Blog::create([
-            // 'slug' => preg_replace('/[^A-Za-z0-9-]+/', '-', $data['title']),
-            'slug' => $slugnew,
-            'category_id' => $data['category_id'],
-            'author_id' => !empty($data['author_id']) ? $data['author_id'] : auth()->id(),
-            'image' => $data['image'],
-            'enable_comment' => (!empty($data['enable_comment']) and $data['enable_comment'] == 'on'),
-            'status' => (!empty($data['status']) and $data['status'] == 'on') ? 'publish' : 'pending',
-            'created_at' => time(),
-            'updated_at' => time(),
-        ]);
+            $data = $request->all();
+            function slug($string)
+            {
+            $string = trim($string);$string=strtolower($string);
+            $string =preg_replace("/[^a-z0-9_ोौेैा्ीिीूुंःअआइईउऊएऐओऔकखगघचछजझञटठडढतथदधनपफबभमयरलवसशषहश्रक्षटठडढङणनऋड़\s-]/u", "", $string);
+            $string = preg_replace("/[\s-]+/", " ", $string);
+            $string = preg_replace("/[\s]/", '-', $string);
+            return $string ;
+            }
+            $title="How to Create a Blog Post";
+            $slugnew=slug($data['title']);
+            $blog = Blog::create([
 
-        if ($blog) {
+                'slug' => $slugnew,
+                'category_id' => $data['category_id'],
+                'author_id' => !empty($data['author_id']) ? $data['author_id'] : auth()->id(),
+                'image' => $data['image'],
+                'enable_comment' => (!empty($data['enable_comment']) and $data['enable_comment'] == 'on'),
+                'status' => (!empty($data['status']) and $data['status'] == 'on') ? 'publish' : 'pending',
+                'created_at' => time(),
+                'updated_at' => time(),
+            ]);
+
+            if ($blog) {
+                BlogTranslation::updateOrCreate([
+                    'blog_id' => $blog->id,
+                    'locale' => mb_strtolower($data['locale']),
+                ], [
+                    'title' => $data['title'],
+                    'description' => $data['description'],
+                    'meta_description' => $data['meta_description'],
+                    'content' => $data['content'],
+                ]);
+
+                if ($blog->status == 'publish' and $blog->author_id != auth()->id()) {
+                    $notifyOptions = [
+                        '[blog_title]' => $blog->title,
+                    ];
+                    sendNotification('publish_instructor_blog_post', $notifyOptions, $blog->author_id);
+                }
+            }
+
+            return redirect(getAdminPanelUrl().'/blog');
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    public function edit(Request $request, $post_id)
+    {
+        try {
+            $this->authorize('admin_blog_edit');
+
+            $post = Blog::findOrFail($post_id);
+
+            $locale = $request->get('locale', app()->getLocale());
+            storeContentLocale($locale, $post->getTable(), $post->id);
+
+            $categories = BlogCategory::all();
+
+            $data = [
+                'pageTitle' => trans('admin/pages/blog.create_blog'),
+                'categories' => $categories,
+                'post' => $post,
+            ];
+
+            return view('admin.blog.create', $data);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    public function update(Request $request, $post_id)
+    {
+        try {
+            $this->authorize('admin_blog_edit');
+
+            $this->validate($request, [
+                'title' => 'required|string|max:255',
+                'category_id' => 'required|numeric',
+                'image' => 'required|string',
+                'description' => 'required|string',
+                'content' => 'required|string',
+            ]);
+
+            $data = $request->all();
+            $post = Blog::findOrFail($post_id);
+
+            $post->update([
+                'slug' => $data['slug'],
+                'category_id' => $data['category_id'],
+                'author_id' => !empty($data['author_id']) ? $data['author_id'] : $post->author_id,
+                'image' => $data['image'],
+                'enable_comment' => (!empty($data['enable_comment']) and $data['enable_comment'] == 'on'),
+                'status' => (!empty($data['status']) and $data['status'] == 'on') ? 'publish' : 'pending',
+                'updated_at' => time(),
+            ]);
+
             BlogTranslation::updateOrCreate([
-                'blog_id' => $blog->id,
+                'blog_id' => $post->id,
                 'locale' => mb_strtolower($data['locale']),
             ], [
                 'title' => $data['title'],
@@ -163,103 +278,65 @@ $slugnew=slug($data['title']);
                 'content' => $data['content'],
             ]);
 
-            if ($blog->status == 'publish' and $blog->author_id != auth()->id()) {
+            removeContentLocale();
+
+            if ($post->status == 'publish' and $post->author_id != auth()->id()) {
                 $notifyOptions = [
-                    '[blog_title]' => $blog->title,
+                    '[blog_title]' => $post->title,
                 ];
-                sendNotification('publish_instructor_blog_post', $notifyOptions, $blog->author_id);
+                sendNotification('publish_instructor_blog_post', $notifyOptions, $post->author_id);
             }
+
+            return redirect(getAdminPanelUrl().'/blog');
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return redirect(getAdminPanelUrl().'/blog');
-    }
-
-    public function edit(Request $request, $post_id)
-    {
-        $this->authorize('admin_blog_edit');
-
-        $post = Blog::findOrFail($post_id);
-
-        $locale = $request->get('locale', app()->getLocale());
-        storeContentLocale($locale, $post->getTable(), $post->id);
-
-        $categories = BlogCategory::all();
-
-        $data = [
-            'pageTitle' => trans('admin/pages/blog.create_blog'),
-            'categories' => $categories,
-            'post' => $post,
-        ];
-
-        return view('admin.blog.create', $data);
-    }
-
-    public function update(Request $request, $post_id)
-    {
-        $this->authorize('admin_blog_edit');
-
-        $this->validate($request, [
-            'title' => 'required|string|max:255',
-            'category_id' => 'required|numeric',
-            'image' => 'required|string',
-            'description' => 'required|string',
-            'content' => 'required|string',
-        ]);
-
-        $data = $request->all();
-        $post = Blog::findOrFail($post_id);
-
-        $post->update([
-            'slug' => $data['slug'],
-            'category_id' => $data['category_id'],
-            'author_id' => !empty($data['author_id']) ? $data['author_id'] : $post->author_id,
-            'image' => $data['image'],
-            'enable_comment' => (!empty($data['enable_comment']) and $data['enable_comment'] == 'on'),
-            'status' => (!empty($data['status']) and $data['status'] == 'on') ? 'publish' : 'pending',
-            'updated_at' => time(),
-        ]);
-
-
-        BlogTranslation::updateOrCreate([
-            'blog_id' => $post->id,
-            'locale' => mb_strtolower($data['locale']),
-        ], [
-            'title' => $data['title'],
-            'description' => $data['description'],
-            'meta_description' => $data['meta_description'],
-            'content' => $data['content'],
-        ]);
-
-        removeContentLocale();
-
-        if ($post->status == 'publish' and $post->author_id != auth()->id()) {
-            $notifyOptions = [
-                '[blog_title]' => $post->title,
-            ];
-            sendNotification('publish_instructor_blog_post', $notifyOptions, $post->author_id);
-        }
-
-        return redirect(getAdminPanelUrl().'/blog');
     }
 
     public function delete($post_id)
     {
-        $this->authorize('admin_blog_delete');
+        try {
+            $this->authorize('admin_blog_delete');
 
-        $post = Blog::findOrFail($post_id);
+            $post = Blog::findOrFail($post_id);
 
-        $post->delete();
+            $post->delete();
 
-        return redirect(getAdminPanelUrl().'/blog');
+            return redirect(getAdminPanelUrl().'/blog');
+        } catch (\Exception $e) {
+            \Log::error('delete error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function search(Request $request)
     {
-        $term = $request->get('term');
-        $blog = Blog::select('id')
-            ->whereTranslationLike('title', "%$term%")
-            ->get();
+        try {
+            $term = $request->get('term');
+            $blog = Blog::select('id')
+                ->whereTranslationLike('title', "%$term%")
+                ->get();
 
-        return response()->json($blog, 200);
+            return response()->json($blog, 200);
+        } catch (\Exception $e) {
+            \Log::error('search error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

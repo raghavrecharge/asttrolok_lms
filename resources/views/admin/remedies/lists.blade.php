@@ -97,7 +97,7 @@
                                 <h4>{{trans('admin/main.total_sales')}}</h4>
                             </div>
                             <div class="card-body">
-                               {{ $totalSales }} 
+                               {{ $totalSales }}
                             </div>
                         </div>
                     </div>
@@ -133,7 +133,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.filters')}}</label>
@@ -156,7 +155,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.instructor')}}</label>
@@ -171,7 +169,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -194,7 +191,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.status')}}</label>
@@ -213,7 +209,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group mt-1">
@@ -257,11 +252,11 @@
                                         <th>{{trans('admin/main.status')}}</th>
                                         <th width="120">{{trans('admin/main.actions')}}</th>
                                     </tr>
-                                    
+
                                     @foreach($remedies as $remedy)
-                                    <?php // print_r("mayank");?>
+                                    <?php
                                         <tr class="text-center">
-                                             <td>{{ $remedy->id }}</td> 
+                                             <td>{{ $remedy->id }}</td>
                                             <td width="18%" class="text-left">
                                                 <a class="text-primary mt-0 mb-1 font-weight-bold" href="{{ $remedy->getUrl() }}">{{ $remedy->title }}</a>
                                                 @if(!empty($remedy->category->title))
@@ -269,9 +264,9 @@
                                                 @else
                                                     <div class="text-small text-warning">{{trans('admin/main.no_category')}}</div>
                                                 @endif
-                                            </td> 
+                                            </td>
 
-                                            <td class="text-left">{{ $remedy->teacher->full_name }}</td> 
+                                            <td class="text-left">{{ $remedy->teacher->full_name }}</td>
 
                                             <td>
                                                 @if(!empty($remedy->price) and $remedy->price > 0)
@@ -279,26 +274,24 @@
                                                         {{ handlePrice($remedy->price, true, true) }}
                                                     </span>
 
-                                                 
                                                 @else
                                                     {{ trans('public.free') }}
                                                 @endif
-                                            </td> 
-                                            
+                                            </td>
 
-                                             <td>{{ handlePrice($remedy->sales->sum('total_amount')) }}</td> 
+                                             <td>{{ handlePrice($remedy->sales->sum('total_amount')) }}</td>
 
                                            <td class="font-12">
                                                 <a href="{{ getAdminPanelUrl() }}/remedies/{{ $remedy->id }}/students" target="_blank" class="">{{ $remedy->sales->count() }}</a>
                                             </td>
 
-                                            <td class="font-12">{{ dateTimeFormat($remedy->created_at, 'Y M j | H:i') }}</td> 
+                                            <td class="font-12">{{ dateTimeFormat($remedy->created_at, 'Y M j | H:i') }}</td>
 
                                              @if($classesType == 'remedy')
                                                 <td class="font-12">{{ dateTimeFormat($remedy->start_date, 'Y M j | H:i') }}</td>
                                             @else
                                                 <td class="font-12">{{ dateTimeFormat($remedy->updated_at, 'Y M j | H:i') }}</td>
-                                            @endif 
+                                            @endif
 
                                             <td>
                                                 @switch($remedy->status)
@@ -324,7 +317,7 @@
                                                         <span class="text-danger">{{ trans('public.rejected') }}</span>
                                                         @break
                                                 @endswitch
-                                            </td> 
+                                            </td>
                                            <td width="200" class="">
                                                 <div class="btn-group dropdown table-actions">
                                                     <button type="button" class="btn-transparent dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -353,7 +346,6 @@
                                                                     ])
                                                             @endif
                                                         @endcan
-
 
                                                         @can('admin_webinar_notification_to_students')
                                                             <a href="{{ getAdminPanelUrl() }}/remedies/{{ $remedy->id }}/sendNotification" target="_blank" class="d-flex align-items-center text-dark text-decoration-none btn-transparent btn-sm text-primary mt-1 ">
@@ -399,9 +391,9 @@
                                                         @endcan
                                                     </div>
                                                 </div>
-                                            </td> 
+                                            </td>
                                         </tr>
-                                        
+
                                     @endforeach
                                 </table>
                             </div>
@@ -410,7 +402,7 @@
                         <div class="card-footer text-center">
                             {{ $remedies->appends(request()->input())->links('pagination::bootstrap-4') }}
                         </div>
-                        
+
                     </div>
                 </div>
             </div>

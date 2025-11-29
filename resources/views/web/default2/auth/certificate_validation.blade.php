@@ -13,10 +13,8 @@
                     <h1 class="font-20 font-weight-bold">{{ trans('site.certificate_validation') }}</h1>
                     <p class="font-14 text-gray mt-15">{{ trans('site.certificate_validation_hint') }}</p>
 
-
                     <form method="post" action="/certificate_validation/validate" class="mt-35">
                         {{ csrf_field() }}
-
 
                         <div class="form-group">
                             <label class="input-label" for="code">{{ trans('public.certificate_id') }}:</label>

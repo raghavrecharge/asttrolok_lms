@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Panel\Store;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use App\Models\Product;
@@ -13,70 +16,88 @@ class CommentController extends Controller
 {
     public function index(Request $request)
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $query = Comment::where('status', 'active')
-            ->whereNotNull('product_id')
-            ->whereHas('product', function ($query) use ($user) {
-                $query->where('creator_id', $user->id);
-            })
-            ->with([
-                'product' => function ($query) {
-                    $query->select('id', 'slug');
-                },
-                'user' => function ($qu) {
-                    $qu->select('id', 'full_name', 'avatar');
-                },
-                'replies'
+            $query = Comment::where('status', 'active')
+                ->whereNotNull('product_id')
+                ->whereHas('product', function ($query) use ($user) {
+                    $query->where('creator_id', $user->id);
+                })
+                ->with([
+                    'product' => function ($query) {
+                        $query->select('id', 'slug');
+                    },
+                    'user' => function ($qu) {
+                        $qu->select('id', 'full_name', 'avatar');
+                    },
+                    'replies'
+                ]);
+
+            $repliedCommentsCount = deepClone($query)->whereNotNull('reply_id')->count();
+
+            $query = $this->filterComments($query, $request);
+
+            $comments = $query->orderBy('created_at', 'desc')
+                ->paginate(10);
+
+            foreach ($comments->whereNull('viewed_at') as $comment) {
+                $comment->update([
+                    'viewed_at' => time()
+                ]);
+            }
+
+            $data = [
+                'pageTitle' => trans('panel.my_class_comments'),
+                'comments' => $comments,
+                'repliedCommentsCount' => $repliedCommentsCount,
+            ];
+
+            return view('web.default.panel.store.comments', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
-
-
-        $repliedCommentsCount = deepClone($query)->whereNotNull('reply_id')->count();
-
-        $query = $this->filterComments($query, $request);
-
-        $comments = $query->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-
-        foreach ($comments->whereNull('viewed_at') as $comment) {
-            $comment->update([
-                'viewed_at' => time()
-            ]);
+            
+            throw $e;
         }
-
-        $data = [
-            'pageTitle' => trans('panel.my_class_comments'),
-            'comments' => $comments,
-            'repliedCommentsCount' => $repliedCommentsCount,
-        ];
-
-        return view('web.default.panel.store.comments', $data);
     }
 
     public function myComments(Request $request)
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $query = Comment::where('user_id', $user->id)
-            ->whereNotNull('product_id')
-            ->with([
-                'product' => function ($query) {
-                    $query->select('id', 'slug');
-                }
+            $query = Comment::where('user_id', $user->id)
+                ->whereNotNull('product_id')
+                ->with([
+                    'product' => function ($query) {
+                        $query->select('id', 'slug');
+                    }
+                ]);
+
+            $query = $this->filterComments($query, $request);
+
+            $comments = $query->orderBy('created_at', 'desc')
+                ->paginate(10);
+
+            $data = [
+                'pageTitle' => trans('panel.my_comments'),
+                'comments' => $comments,
+            ];
+
+            return view('web.default.panel.store.my_comments', $data);
+        } catch (\Exception $e) {
+            \Log::error('myComments error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
-
-        $query = $this->filterComments($query, $request);
-
-        $comments = $query->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        $data = [
-            'pageTitle' => trans('panel.my_comments'),
-            'comments' => $comments,
-        ];
-
-        return view('web.default.panel.store.my_comments', $data);
+            
+            throw $e;
+        }
     }
 
     private function filterComments($query, $request)

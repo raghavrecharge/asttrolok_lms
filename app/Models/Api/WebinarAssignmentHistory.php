@@ -9,7 +9,7 @@ class WebinarAssignmentHistory extends Model
 {
     public function deadline()
     {
-        $deadline = true; // default can access
+        $deadline = true;
         $assignment = $this->assignment;
         if (!empty($assignment->deadline)) {
             $conditionDay = $assignment->getDeadlineTimestamp($this->student);
@@ -43,7 +43,7 @@ class WebinarAssignmentHistory extends Model
         if (!empty($assignment->attempts) and $user->id != $assignment->creator_id) {
             $submissionTimes = $this->messages
                 ->where('sender_id', $user->id)
-                //->whereNotNull('file_path')
+
                 ->count();
 
             $result = ($submissionTimes < $assignment->attempts);

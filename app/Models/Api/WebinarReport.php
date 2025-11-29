@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class WebinarReport extends Model
 {
-    //
+
     public function getDetailsAttribute(){
         return [
             'id'=>$this->id ,
@@ -14,7 +14,7 @@ class WebinarReport extends Model
             'message'=>$this->message ,
             'created_at'=>$this->created_at ,
             'user'=>$this->user->brief??null ,
-            'webinar'=>$this->webinar->brief??null 
+            'webinar'=>$this->webinar->brief??null
 
         ] ;
     }

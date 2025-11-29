@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Accounting;
 use App\Models\Meeting;
@@ -16,57 +19,67 @@ class AppointmentsController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_appointments_lists');
+        try {
+            $this->authorize('admin_appointments_lists');
 
-        $query = ReserveMeeting::whereNotNull('reserved_at');
+            $query = ReserveMeeting::whereNotNull('reserved_at');
 
-        $totalAppointments = deepClone($query)->count();
-        $openAppointments = deepClone($query)->where('status', ReserveMeeting::$open)->count();
-        $finishedAppointments = deepClone($query)->where('status', ReserveMeeting::$finished)->count();
-        $totalConsultants = Meeting::where('disabled', false)
-            ->whereHas('meetingTimes')
-            ->groupBy('creator_id')
-            ->count();
+            $totalAppointments = deepClone($query)->count();
+            $openAppointments = deepClone($query)->where('status', ReserveMeeting::$open)->count();
+            $finishedAppointments = deepClone($query)->where('status', ReserveMeeting::$finished)->count();
+            $totalConsultants = Meeting::where('disabled', false)
+                ->whereHas('meetingTimes')
+                ->groupBy('creator_id')
+                ->count();
 
-        $query = $this->filters($query, $request);
+            $query = $this->filters($query, $request);
 
-        $appointments = $query->with([
-            'meeting' => function ($query) {
-                $query->with([
-                    'creator' => function ($query) {
-                        $query->select('id', 'full_name');
-                    }
-                ]);
-            },
-            'user' => function ($query) {
-                $query->select('id', 'full_name');
-            },
-            'sale'
-        ])->orderBy('created_at', 'desc')
-            ->paginate(10);
+            $appointments = $query->with([
+                'meeting' => function ($query) {
+                    $query->with([
+                        'creator' => function ($query) {
+                            $query->select('id', 'full_name');
+                        }
+                    ]);
+                },
+                'user' => function ($query) {
+                    $query->select('id', 'full_name');
+                },
+                'sale'
+            ])->orderBy('created_at', 'desc')
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('admin/main.meetings_list_title'),
-            'totalAppointments' => $totalAppointments,
-            'openAppointments' => $openAppointments,
-            'finishedAppointments' => $finishedAppointments,
-            'totalConsultants' => $totalConsultants,
-            'appointments' => $appointments,
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.meetings_list_title'),
+                'totalAppointments' => $totalAppointments,
+                'openAppointments' => $openAppointments,
+                'finishedAppointments' => $finishedAppointments,
+                'totalConsultants' => $totalConsultants,
+                'appointments' => $appointments,
+            ];
 
-        $consultant_ids = $request->get('consultant_ids', []);
-        $user_ids = $request->get('user_ids', []);
-        if (!empty($consultant_ids)) {
-            $data['consultants'] = User::select('id', 'full_name')
-                ->whereIn('id', $consultant_ids)->get();
+            $consultant_ids = $request->get('consultant_ids', []);
+            $user_ids = $request->get('user_ids', []);
+            if (!empty($consultant_ids)) {
+                $data['consultants'] = User::select('id', 'full_name')
+                    ->whereIn('id', $consultant_ids)->get();
+            }
+
+            if (!empty($user_ids)) {
+                $data['users'] = User::select('id', 'full_name')
+                    ->whereIn('id', $user_ids)->get();
+            }
+
+            return view('admin.appointments.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        if (!empty($user_ids)) {
-            $data['users'] = User::select('id', 'full_name')
-                ->whereIn('id', $user_ids)->get();
-        }
-
-        return view('admin.appointments.lists', $data);
     }
 
     private function filters($query, $request)
@@ -92,7 +105,6 @@ class AppointmentsController extends Controller
             });
         }
 
-        // $from and $to
         $query = fromAndToDateFilter($from, $to, $query, 'date');
 
         if (!empty($status)) {
@@ -141,105 +153,145 @@ class AppointmentsController extends Controller
 
     public function join($id)
     {
-        $this->authorize('admin_appointments_join');
+        try {
+            $this->authorize('admin_appointments_join');
 
-        $ReserveMeeting = ReserveMeeting::where('id', $id)->first();
+            $ReserveMeeting = ReserveMeeting::where('id', $id)->first();
 
-        if (!empty($ReserveMeeting)) {
-            return Redirect::away($ReserveMeeting->link);
+            if (!empty($ReserveMeeting)) {
+                return Redirect::away($ReserveMeeting->link);
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('join error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
     }
 
     public function getReminderDetails($id)
     {
-        $this->authorize('admin_appointments_send_reminder');
+        try {
+            $this->authorize('admin_appointments_send_reminder');
 
-        $appointment = ReserveMeeting::where('id', $id)->first();
+            $appointment = ReserveMeeting::where('id', $id)->first();
 
-        $templateId = getNotificationTemplates('appointment_reminder');
-        $notificationTemplate = \App\Models\NotificationTemplate::where('id', $templateId)->first();
+            $templateId = getNotificationTemplates('appointment_reminder');
+            $notificationTemplate = \App\Models\NotificationTemplate::where('id', $templateId)->first();
 
-        if (!empty($appointment) and $notificationTemplate) {
+            if (!empty($appointment) and $notificationTemplate) {
 
-            $notifyOptions = [
-                '[time.date]' => dateTimeFormat(strtotime($appointment->day), 'j M Y') . ' (' . $appointment->meetingTime->time . ')',
-            ];
+                $notifyOptions = [
+                    '[time.date]' => dateTimeFormat(strtotime($appointment->day), 'j M Y') . ' (' . $appointment->meetingTime->time . ')',
+                ];
 
-            $data = [
-                'consultant' => $appointment->meeting->creator->full_name,
-                'reservatore' => $appointment->user->full_name,
-                'title' => $notificationTemplate->title,
-                'content' => str_replace(array_keys($notifyOptions), array_values($notifyOptions), $notificationTemplate->template)
-            ];
+                $data = [
+                    'consultant' => $appointment->meeting->creator->full_name,
+                    'reservatore' => $appointment->user->full_name,
+                    'title' => $notificationTemplate->title,
+                    'content' => str_replace(array_keys($notifyOptions), array_values($notifyOptions), $notificationTemplate->template)
+                ];
 
-            return response()->json($data, 200);
+                return response()->json($data, 200);
+            }
+
+            return response()->json([], 422);
+        } catch (\Exception $e) {
+            \Log::error('getReminderDetails error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return response()->json([], 422);
     }
 
     public function sendReminder($id)
     {
-        $this->authorize('admin_appointments_send_reminder');
+        try {
+            $this->authorize('admin_appointments_send_reminder');
 
-        $appointment = ReserveMeeting::where('id', $id)->first();
+            $appointment = ReserveMeeting::where('id', $id)->first();
 
-        if (!empty($appointment)) {
-            $notifyOptions = [
-                '[time.date]' => dateTimeFormat(strtotime($appointment->day), 'j M Y') . ' (' . $appointment->meetingTime->time . ')',
-            ];
+            if (!empty($appointment)) {
+                $notifyOptions = [
+                    '[time.date]' => dateTimeFormat(strtotime($appointment->day), 'j M Y') . ' (' . $appointment->meetingTime->time . ')',
+                ];
 
-            sendNotification('appointment_reminder', $notifyOptions, $appointment->meeting->creator->id); // consultant
-            sendNotification('appointment_reminder', $notifyOptions, $appointment->user_id); // reservatore
-
-            $toastData = [
-                'title' => trans('public.request_success'),
-                'msg' => 'Reminder send successful',
-                'status' => 'success'
-            ];
-
-            return back()->with(['toast' => $toastData]);
-        }
-
-        abort(404);
-    }
-
-    public function cancel($id)
-    {
-        $this->authorize('admin_appointments_cancel');
-
-        $appointment = ReserveMeeting::where('id', $id)->first();
-
-        if (!empty($appointment)) {
-
-            $sale = Sale::where('id', $appointment->sale_id)
-                ->whereNull('refund_at')
-                ->first();
-
-            if (!empty($sale)) {
-
-                Accounting::refundAccounting($sale);
-
-                $sale->update([
-                    'refund_at' => time()
-                ]);
-
-                $appointment->update([
-                    'status' => ReserveMeeting::$canceled
-                ]);
+                sendNotification('appointment_reminder', $notifyOptions, $appointment->meeting->creator->id);
+                sendNotification('appointment_reminder', $notifyOptions, $appointment->user_id);
 
                 $toastData = [
                     'title' => trans('public.request_success'),
-                    'msg' => 'Appointment canceled successful',
+                    'msg' => 'Reminder send successful',
                     'status' => 'success'
                 ];
 
                 return back()->with(['toast' => $toastData]);
             }
-        }
 
-        abort(404);
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('sendReminder error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    public function cancel($id)
+    {
+        try {
+            $this->authorize('admin_appointments_cancel');
+
+            $appointment = ReserveMeeting::where('id', $id)->first();
+
+            if (!empty($appointment)) {
+
+                $sale = Sale::where('id', $appointment->sale_id)
+                    ->whereNull('refund_at')
+                    ->first();
+
+                if (!empty($sale)) {
+
+                    Accounting::refundAccounting($sale);
+
+                    $sale->update([
+                        'refund_at' => time()
+                    ]);
+
+                    $appointment->update([
+                        'status' => ReserveMeeting::$canceled
+                    ]);
+
+                    $toastData = [
+                        'title' => trans('public.request_success'),
+                        'msg' => 'Appointment canceled successful',
+                        'status' => 'success'
+                    ];
+
+                    return back()->with(['toast' => $toastData]);
+                }
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('cancel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

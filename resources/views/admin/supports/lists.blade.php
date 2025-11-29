@@ -17,7 +17,6 @@
 
         <div class="row">
 
-
             <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                 <div class="card card-statistic-1">
                     <div class="card-icon bg-primary">
@@ -33,7 +32,6 @@
                 </div>
             </div>
 
-
             <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                 <div class="card card-statistic-1">
                     <div class="card-icon bg-warning">
@@ -48,7 +46,6 @@
                     </div>
                 </div>
             </div>
-
 
             <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                 <div class="card card-statistic-1">
@@ -81,7 +78,6 @@
             </div>
         </div>
 
-
         <div class="section-body">
             <section class="card">
                 <div class="card-body">
@@ -103,7 +99,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-2">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.department')}}</label>
@@ -115,7 +110,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-2">
                                 <div class="form-group">
@@ -129,7 +123,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-2">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.status')}}</label>
@@ -142,7 +135,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-2">
                                 <div class="form-group mt-1">

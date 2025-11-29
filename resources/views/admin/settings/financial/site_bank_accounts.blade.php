@@ -4,8 +4,6 @@
     }
 @endphp
 
-
-
 <div class="tab-pane mt-3 fade" id="offline_banks_credits" role="tabpanel" aria-labelledby="offline_banks_credits-tab">
     <div class="row">
         <div class="col-12">

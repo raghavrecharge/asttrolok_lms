@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\SupportDepartment;
 use App\Models\Translation\SupportDepartmentTranslation;
@@ -11,113 +14,172 @@ class SupportDepartmentsController extends Controller
 {
     public function index()
     {
-        $this->authorize('admin_support_departments');
+        try {
+            $this->authorize('admin_support_departments');
 
-        removeContentLocale();
+            removeContentLocale();
 
-        $departments = SupportDepartment::withCount('supports')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            $departments = SupportDepartment::withCount('supports')
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('admin/main.support_departments_title'),
-            'departments' => $departments
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.support_departments_title'),
+                'departments' => $departments
+            ];
 
-        return view('admin.supports.departments', $data);
+            return view('admin.supports.departments', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function create()
     {
-        $this->authorize('admin_support_department_create');
+        try {
+            $this->authorize('admin_support_department_create');
 
-        removeContentLocale();
+            removeContentLocale();
 
-        $data = [
-            'pageTitle' => trans('admin/pages/users.new_department'),
-        ];
+            $data = [
+                'pageTitle' => trans('admin/pages/users.new_department'),
+            ];
 
-        return view('admin.supports.department_create', $data);
+            return view('admin.supports.department_create', $data);
+        } catch (\Exception $e) {
+            \Log::error('create error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function store(Request $request)
     {
-        $this->authorize('admin_support_department_create');
+        try {
+            $this->authorize('admin_support_department_create');
 
-        $this->validate($request, [
-            'title' => 'required|string|min:2'
-        ]);
+            $this->validate($request, [
+                'title' => 'required|string|min:2'
+            ]);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $department = SupportDepartment::create([
-            'created_at' => time(),
-        ]);
+            $department = SupportDepartment::create([
+                'created_at' => time(),
+            ]);
 
-        SupportDepartmentTranslation::updateOrCreate([
-            'support_department_id' => $department->id,
-            'locale' => mb_strtolower($data['locale']),
-        ], [
-            'title' => $data['title'],
-        ]);
+            SupportDepartmentTranslation::updateOrCreate([
+                'support_department_id' => $department->id,
+                'locale' => mb_strtolower($data['locale']),
+            ], [
+                'title' => $data['title'],
+            ]);
 
-
-        return redirect(getAdminPanelUrl().'/supports/departments');
+            return redirect(getAdminPanelUrl().'/supports/departments');
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function edit(Request $request, $id)
     {
-        $this->authorize('admin_support_departments_edit');
+        try {
+            $this->authorize('admin_support_departments_edit');
 
-        $department = SupportDepartment::findOrFail($id);
+            $department = SupportDepartment::findOrFail($id);
 
-        $locale = $request->get('locale', app()->getLocale());
-        storeContentLocale($locale, $department->getTable(), $department->id);
+            $locale = $request->get('locale', app()->getLocale());
+            storeContentLocale($locale, $department->getTable(), $department->id);
 
-        $data = [
-            'pageTitle' => trans('admin/pages/users.edit_department'),
-            'department' => $department
-        ];
+            $data = [
+                'pageTitle' => trans('admin/pages/users.edit_department'),
+                'department' => $department
+            ];
 
-        return view('admin.supports.department_create', $data);
+            return view('admin.supports.department_create', $data);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $this->authorize('admin_support_departments_edit');
+        try {
+            $this->authorize('admin_support_departments_edit');
 
-        $this->validate($request, [
-            'title' => 'required|string|min:2'
-        ]);
+            $this->validate($request, [
+                'title' => 'required|string|min:2'
+            ]);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $department = SupportDepartment::findOrFail($id);
+            $department = SupportDepartment::findOrFail($id);
 
-        $department->update([
-            'created_at' => time(),
-        ]);
+            $department->update([
+                'created_at' => time(),
+            ]);
 
-        SupportDepartmentTranslation::updateOrCreate([
-            'support_department_id' => $department->id,
-            'locale' => mb_strtolower($data['locale']),
-        ], [
-            'title' => $data['title'],
-        ]);
+            SupportDepartmentTranslation::updateOrCreate([
+                'support_department_id' => $department->id,
+                'locale' => mb_strtolower($data['locale']),
+            ], [
+                'title' => $data['title'],
+            ]);
 
-        removeContentLocale();
+            removeContentLocale();
 
-        return back();
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function delete($id)
     {
-        $this->authorize('admin_support_departments_delete');
+        try {
+            $this->authorize('admin_support_departments_delete');
 
-        $department = SupportDepartment::findOrFail($id);
+            $department = SupportDepartment::findOrFail($id);
 
-        $department->delete();
+            $department->delete();
 
-        return redirect(getAdminPanelUrl().'/supports/departments');
+            return redirect(getAdminPanelUrl().'/supports/departments');
+        } catch (\Exception $e) {
+            \Log::error('delete error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

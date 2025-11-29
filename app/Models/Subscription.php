@@ -14,7 +14,6 @@ use Jorenvh\Share\ShareFacade;
 class Subscription extends Model implements TranslatableContract
 {
     use Translatable;
-    // use Sluggable;
 
     protected $table = 'subscriptions';
     public $timestamps = false;
@@ -106,11 +105,6 @@ class Subscription extends Model implements TranslatableContract
             ->where('type', 'subscription');
     }
 
-    /**
-     * Return the sluggable configuration array for this model.
-     *
-     * @return array
-     */
     public function sluggable(): array
     {
         return [
@@ -137,11 +131,6 @@ class Subscription extends Model implements TranslatableContract
 
         return false;
     }
-
-    // public function getUrl()
-    // {
-    //     return url('/subscriptions/' . $this->slug);
-    // }
 
     public function getUrl()
     {
@@ -171,11 +160,10 @@ class Subscription extends Model implements TranslatableContract
                 ->where('status', 'active')
                 ->get();
 
-            if (!empty($reviews) and $reviews->count() > 0) {
+            if (!empty($reviews) and $reviews->exists()) {
                 $rate = number_format($reviews->avg('rates'), 2);
             }
         }
-
 
         if ($rate > 5) {
             $rate = 5;
@@ -243,8 +231,6 @@ class Subscription extends Model implements TranslatableContract
 
     public function checkHasExpiredAccessDays($purchaseDate, $giftId = null)
     {
-        // true => has access
-        // false => not access (expired)
 
         if (!empty($giftId)) {
             $gift = Gift::query()->where('id', $giftId)
@@ -343,7 +329,6 @@ class Subscription extends Model implements TranslatableContract
                 $hasBought = $user->isAdmin();
             }
 
-            /* Check Installment */
             if (!$hasBought) {
                 $installmentOrder = $this->getInstallmentOrder();
 
@@ -360,22 +345,6 @@ class Subscription extends Model implements TranslatableContract
                 }
             }
 
-            /* Check Gift */
-            // if (!$hasBought) {
-            //     $gift = Gift::query()->where('email', $user->email)
-            //         ->where('status', 'active')
-            //         ->where('webinar_id', $this->id)
-            //         ->where(function ($query) {
-            //             $query->whereNull('date');
-            //             $query->orWhere('date', '<', time());
-            //         })
-            //         ->whereHas('sale')
-            //         ->first();
-
-            //     if (!empty($gift)) {
-            //         $hasBought = true;
-            //     }
-            // }
         }
 
         return $hasBought;
@@ -416,7 +385,6 @@ class Subscription extends Model implements TranslatableContract
         return $activeSpecialOffer ?? false;
     }
 
-
     public function getPrice()
     {
         $price = $this->price;
@@ -431,7 +399,6 @@ class Subscription extends Model implements TranslatableContract
 
     public function canSale()
     {
-        // TODO:: If there was a sales restriction like the courses, we apply here
 
         return true;
     }
@@ -489,7 +456,7 @@ class Subscription extends Model implements TranslatableContract
     {
         return $this->hasMany('App\Models\SubscriptionWebinarChapterItems', 'subscription_id', 'id');
     }
-    
+
     public function getFilesLearningProgressStat($userId = null)
     {
         $passed = 0;
@@ -501,12 +468,11 @@ class Subscription extends Model implements TranslatableContract
         $files = $this->files()
             ->where('status', 'active')
             ->get();
-    //  dd($files);
-    // print_r($files);
+
         foreach ($files as $file) {
-            
+
             $status = SubscriptionWebinarChapterItems::where('user_id', $userId)
-              
+
                 ->first();
 
             if (!empty($status)) {
@@ -527,17 +493,13 @@ public function getProgress($isLearningPage = false)
             auth()->check() and
             $this->checkUserHasBought() and
             (
-              
+
                 $isLearningPage
             )
         ) {
             $user_id = auth()->id();
 
             $filesStat = $this->getFilesLearningProgressStat($user_id);
-            // $sessionsStat = $this->getSessionsLearningProgressStat($user_id);
-            // $textLessonsStat = $this->getTextLessonsLearningProgressStat($user_id);
-            // $assignmentsStat = $this->getAssignmentsLearningProgressStat($user_id);
-            // $quizzesStat = $this->getQuizzesLearningProgressStat($user_id);
 
             $passed = $filesStat['passed'] ;
             $count = $filesStat['count'] ;
@@ -564,7 +526,6 @@ public function getProgress($isLearningPage = false)
             ->pluck('buyer_id')
             ->toArray();
 
-        // get users by installments
         $installmentOrders = InstallmentOrder::query()
             ->where('subscription_id', $this->id)
             ->where('status', 'open')
@@ -589,7 +550,6 @@ public function getProgress($isLearningPage = false)
             }
         }
 
-        // get users by gifts
         $gifts = Gift::query()
             ->where('status', 'active')
             ->where('subscription_id', $this->id)
@@ -617,10 +577,10 @@ public function getProgress($isLearningPage = false)
     }
     public function canJoinToWaitlist()
     {
-        // Example logic (modify as per your requirement)
+
         return $this->capacity > $this->enrollments_count;
     }
-    
+
     public function getLearningPageUrl()
     {
         return url('/subscriptions/learning/' . $this->slug);

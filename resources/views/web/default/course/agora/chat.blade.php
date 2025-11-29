@@ -8,13 +8,11 @@
 
         </div>
 
-
         <div class="mt-15 py-15 px-15 border-top border-gray200 d-flex align-items-center ">
 
             <div class="flex-grow-1">
                 <textarea name="message" id="messageInput" class="form-control " rows="3" placeholder="{{ trans('update.type_your_message') }}"></textarea>
             </div>
-
 
             <button type="submit" id="sendMessage" class="send-message-btn btn btn-primary p-0 rounded-circle ml-15">
                 <i data-feather="send" width="18" height="18" class="text-white"></i>
@@ -32,7 +30,6 @@
         </div>
     @endif
 </div>
-
 
 @push('scripts_bottom')
     @if($session->agora_settings->chat)

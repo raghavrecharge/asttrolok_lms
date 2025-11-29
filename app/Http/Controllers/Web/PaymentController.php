@@ -51,9 +51,6 @@ class PaymentController extends Controller
         );
     }
 
-    /**
-     * Initiate payment - Universal entry point
-     */
     public function initiatePayment(Request $request)
     {
         Log::info('initiatePayment');
@@ -72,37 +69,31 @@ class PaymentController extends Controller
         session()->forget('meeting_discount_id');
         session()->forget('discountCouponId');
         session()->forget('discount_id');
-        
+
         try {
             DB::beginTransaction();
-            
-            // Get payment details based on type
-            $paymentData = $this->getPaymentData($validated);
-            
-            
 
-            // Create or update order (using your existing orders table)
+            $paymentData = $this->getPaymentData($validated);
+
             $order = $this->createOrder($paymentData);
-            
-            
+
             $input = $request->all();
-            if (!empty($input['Country'])) {  
+            if (!empty($input['Country'])) {
                     OrderAddress::create([
                         'order_id' => $order->id,
                         'RecipientName' => $input['name'] ?? null,
-                        'City' => $input['City'] ?? null,           
-                        'StateProvince' => $input['StateProvince'] ?? null,  
-                        'PostalCode' => $input['pin_code'] ?? null,      
-                        'Country' => $input['Country'] ?? null,   
+                        'City' => $input['City'] ?? null,
+                        'StateProvince' => $input['StateProvince'] ?? null,
+                        'PostalCode' => $input['pin_code'] ?? null,
+                        'Country' => $input['Country'] ?? null,
                         'PhoneNumber' => $input['number'] ?? null,
                         'Address' => $input['address'] ?? null,
                         'message' => $input['message'] ?? null,
                     ]);
                 }
 
-            // Create Razorpay order
             $razorpayOrder = $this->createRazorpayOrder($order, $paymentData);
-            
+
             DB::commit();
 
             return response()->json(array_merge([
@@ -121,9 +112,6 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * Get payment data based on type
-     */
     protected function getPaymentData($validated)
     {
         Log::info('getPaymentData');
@@ -146,7 +134,7 @@ class PaymentController extends Controller
 
             case 'webinar':
                 $webinar = Webinar::findOrFail($itemId);
-            
+
                 $itemPrice = $webinar->getPrice();
                 $price = $webinar->price;
                 if($discountId > 0){
@@ -170,7 +158,7 @@ class PaymentController extends Controller
 
             case 'part':
                 $webinar = Webinar::findOrFail($itemId);
-                
+
                 $itemPrice = $webinar->getPrice();
                 $price = $webinar->price;
                 if($discountId > 0){
@@ -196,11 +184,11 @@ class PaymentController extends Controller
             case 'cart':
                 $order = Order::findOrFail($itemId);
                 $user = auth()->user();
-                
+
                 if(empty($user)){
                     $input=$validated;
                     $user = User::where('email',$input['email'])->orwhere('mobile', $input['number'])->first();
-                    
+
                     if(empty($user)){
                          $user = User::create([
                         'role_name' => 'user',
@@ -208,7 +196,7 @@ class PaymentController extends Controller
                         'mobile' => $input['number'],
                         'email' => $input['email'],
                         'full_name' => $input['name'],
-                        // 'status' => User::$pending,
+
                         'status'=>'active',
                         'access_content' => 1,
                         'password' => Hash::make(123456),
@@ -218,14 +206,13 @@ class PaymentController extends Controller
                         'created_at' => time()
                       ]);
                     }
-                    
+
                 }
                 $userId = $user->id;
                 $order->update(['user_id' => $userId]);
 
                 $order->orderItems()->update(['user_id' => $userId]);
 
-                
                 return [
                     'type' => 'cart',
                     'item' => $order,
@@ -234,10 +221,10 @@ class PaymentController extends Controller
                     'description' => "Cart Order #{$order->id}",
                     'user_data' => $validated,
                 ];
-                
+
             case 'bundle':
                 $bundle = Bundle::findOrFail($itemId);
-                
+
                 return [
                     'type' => 'bundle',
                     'item' => $bundle,
@@ -247,10 +234,10 @@ class PaymentController extends Controller
                     'description' => "Bundle: {$bundle->title}",
                     'user_data' => $validated,
                 ];
-                
+
             case 'product':
                 $product = Product::findOrFail($itemId);
-        
+
                 return [
                     'type' => 'product',
                     'item' => $product,
@@ -260,15 +247,15 @@ class PaymentController extends Controller
                     'description' => "Product: {$product->title}",
                     'user_data' => $validated,
                 ];
-                
+
             case 'meeting':
-                
+
                 $user = auth()->user();
-                
+
                 if(empty($user)){
                     $input=$validated;
                     $user = User::where('email',$input['email'])->orwhere('mobile', $input['number'])->first();
-                    
+
                     if(empty($user)){
                          $user = User::create([
                         'role_name' => 'user',
@@ -276,7 +263,7 @@ class PaymentController extends Controller
                         'mobile' => $input['number'],
                         'email' => $input['email'],
                         'full_name' => $input['name'],
-                        // 'status' => User::$pending,
+
                         'status'=>'active',
                         'access_content' => 1,
                         'password' => Hash::make(123456),
@@ -286,33 +273,33 @@ class PaymentController extends Controller
                         'created_at' => time()
                       ]);
                     }
-                    
+
                 }
                 $userId = $user->id;
                 $day = $validated['selectedDay'] ?? null;
-                
+
                 $fields = explode(',', $itemId);
-                
+
                 if (count($fields) == 2)
                 {
-                    // carry on here...
+
                     $itemId = intval($fields[0]);
                     $slot_id = intval($fields[1]);
-                    // etc...
+
                 }
                 $meetingTime = MeetingTime::where('id', $itemId)
                     ->with('meeting')
                     ->first();
-                    
+
                 $meeting = Meeting::findOrFail($meetingTime->meeting_id);
-                
+
                 $explodetime = explode('-', $meetingTime->time);
-                
+
                 $hours = isset($slot_id)?((strtotime($explodetime[1]) - strtotime($explodetime[0])) / 1800)/2:(strtotime($explodetime[1]) - strtotime($explodetime[0])) / 1800;
                 $hourlyAmount = $meeting->amount;
-                
+
                 $itemPrice = (!empty($hourlyAmount) and $hourlyAmount > 0) ? ($hourlyAmount * $hours) : 0;
-                
+
                 if($discountId > 0){
                 $discountCoupon = Discount::where('id', $discountId)->first();
                  $percent = $discountCoupon->percent ?? 1;
@@ -327,7 +314,7 @@ class PaymentController extends Controller
 
                 $startAt = $this->handleUtcDate($day, $explodetime[0], $instructorTimezone);
                 $endAt = $this->handleUtcDate($day, $explodetime[1], $instructorTimezone);
-                
+
                 $reserveMeeting = ReserveMeeting::updateOrCreate([
                                 'user_id' => $user->id,
                                 'meeting_time_id' => $meetingTime->id,
@@ -346,10 +333,10 @@ class PaymentController extends Controller
                                 'description' => 'ok',
                                 'created_at' => time(),
                             ]);
-                
+
                 return [
                     'type' => 'meeting',
-                    // 'item' => $meeting,
+
                     'meeting_id' => $meeting->id,
                     'meeting_time_id' => $itemId,
                     'reserve_meeting_id' => $reserveMeeting->id,
@@ -359,17 +346,15 @@ class PaymentController extends Controller
                     'description' => "Meeting: {$meeting->title}",
                     'user_data' => $validated,
                 ];
-                
-            
+
             case 'installment':
                 $installmentId = $validated['installment_id'];
                 $item = Webinar::where('id', $itemId)
                     ->where('status', 'active')
                     ->first();
-                    
+
                 $user = auth()->user();
-                
-            
+
                 $itemPrice = $item->getPrice();
                 $price = $item->price;
                 if($discountId > 0){
@@ -381,11 +366,11 @@ class PaymentController extends Controller
                     $totalDiscount = 0;
                     $itemPrice1=$itemPrice-$totalDiscount;
                 }
-                
+
                 if(empty($user)){
                     $input=$validated;
                     $user = User::where('email',$input['email'])->orwhere('mobile', $input['number'])->first();
-                    
+
                     if(empty($user)){
                          $user = User::create([
                         'role_name' => 'user',
@@ -393,7 +378,7 @@ class PaymentController extends Controller
                         'mobile' => $input['number'],
                         'email' => $input['email'],
                         'full_name' => $input['name'],
-                        // 'status' => User::$pending,
+
                         'status'=>'active',
                         'access_content' => 1,
                         'password' => Hash::make(123456),
@@ -403,7 +388,7 @@ class PaymentController extends Controller
                         'created_at' => time()
                       ]);
                     }
-                    
+
                 }
                     $userId = $user->id;
                 $installment = Installment::query()->where('id', $installmentId)
@@ -412,10 +397,10 @@ class PaymentController extends Controller
                         'steps'
                     ])
                     ->first();
-                    
+
                 $installmentPlans = new InstallmentPlans($user);
                 $installments = $installmentPlans->getPlans('courses', $item->id, $item->type, $item->category_id, $item->teacher_id);
-                    
+
                 $installmentOrder = InstallmentOrder::query()->updateOrCreate([
                     'installment_id' => $installment->id,
                     'user_id' => $user->id,
@@ -427,16 +412,9 @@ class PaymentController extends Controller
                 ], [
                     'created_at' => time(),
                 ]);
-                    
-                // $installmentOrder = InstallmentOrder::findOrFail($itemId);
+
                 $step = $validated['installment_step'] ?? 1;
-                
-                // // Get the specific installment payment
-                // $installmentPayment = InstallmentOrderPayment::where('installment_order_id', $installmentOrder->id)
-                //     ->where('step', $step)
-                //     ->where('status', 'paying')
-                //     ->firstOrFail();
-                    
+
                 $installmentPayment = InstallmentOrderPayment :: query()->updateOrCreate([
                         'installment_order_id' => $installmentOrder->id,
                         'sale_id' => null,
@@ -447,7 +425,7 @@ class PaymentController extends Controller
                     ], [
                         'created_at' => time(),
                     ]);
-                
+
                 return [
                     'type' => 'installment',
                     'item' => $installmentOrder,
@@ -460,13 +438,12 @@ class PaymentController extends Controller
                     'user_data' => $validated,
                     'is_installment' => true,
                 ];
-                
 
             default:
                 throw new \Exception('Invalid payment type');
         }
     }
-    
+
     private function handleUtcDate($day, $clock, $instructorTimezone)
     {
         $date = $day . ' ' . $clock;
@@ -476,19 +453,16 @@ class PaymentController extends Controller
         return $utcDate->getTimestamp();
     }
 
-    /**
-     * Create order using your existing orders table structure
-     */
     protected function createOrder($paymentData)
     {
         Log::info('createOrder');
         $userId = auth()->id();
         $type = $paymentData['type'];
-        
+
         if(empty($userId)){
             $input=$paymentData['user_data'];
             $user = User::where('email',$input['email'])->orwhere('mobile', $input['number'])->first();
-            
+
             if(empty($user)){
                  $user = User::create([
                 'role_name' => 'user',
@@ -496,7 +470,7 @@ class PaymentController extends Controller
                 'mobile' => $input['number'],
                 'email' => $input['email'],
                 'full_name' => $input['name'],
-                // 'status' => User::$pending,
+
                 'access_content' => 1,
                 'password' => Hash::make(123456),
                 'pwd_hint' => 123456,
@@ -507,16 +481,14 @@ class PaymentController extends Controller
             }
             $userId = $user->id;
         }
-        
-        // For cart, order already exists
+
         if ($type === 'cart') {
             return $paymentData['item'];
         }
 
-        // Create new order using your schema
         $order = Order::create([
             'user_id' => $userId,
-            'status' => Order::$paying, // 'paying' status from your enum
+            'status' => Order::$paying,
             'payment_method' => 'payment_channel',
             'is_charge_account' => 0,
             'amount' => $paymentData['amount'] + $paymentData['discount'],
@@ -529,17 +501,11 @@ class PaymentController extends Controller
             'created_at' => time(),
         ]);
 
-        // Create order item using your schema
         $this->createOrderItem($order, $paymentData);
-        
-        
 
         return $order;
     }
 
-    /**
-     * Create order item using your existing order_items table structure
-     */
     protected function createOrderItem($order, $paymentData)
     {Log::info('createOrderItem');
         $itemData = [
@@ -560,7 +526,6 @@ class PaymentController extends Controller
             'created_at' => time(),
         ];
 
-        // Set specific ID based on payment type
         switch ($paymentData['type']) {
             case 'subscription':
                 $itemData['subscription_id'] = $paymentData['subscription_id'];
@@ -585,19 +550,15 @@ class PaymentController extends Controller
                 $itemData['installment_payment_id'] = $paymentData['installment_payment_id'];
                 break;
         }
-        
+
         return OrderItem::create($itemData);
     }
 
-    /**
-     * Create Razorpay order with complete metadata
-     */
     protected function createRazorpayOrder($order, $paymentData)
     {Log::info('createRazorpayOrder');
         $userData = $paymentData['user_data'];
         $type = $paymentData['type'];
 
-        // Complete notes for webhook
         $notes = [
             'order_id' => $order->id,
             'payment_type' => $type,
@@ -608,7 +569,6 @@ class PaymentController extends Controller
             'discount_id' => $userData['discount_id'] ?? null,
         ];
 
-        // Add type-specific data
         switch ($type) {
             case 'subscription':
                 $notes['subscription_id'] = $paymentData['subscription_id'];
@@ -641,13 +601,12 @@ class PaymentController extends Controller
 
         $razorpayOrder = $this->razorpayApi->order->create([
             'receipt' => 'order_' . $order->id . '_' . time(),
-            'amount' => (int)(preg_replace('/[^\d.]/', '', handlePrice($order->total_amount * 100))), // Convert to paise
-            // 'amount' => (int)($paymentData['amount'] * 100), // Convert to paise
+            'amount' => (int)(preg_replace('/[^\d.]/', '', handlePrice($order->total_amount * 100))),
+
             'currency' => currency(),
             'notes' => $notes,
         ]);
 
-        // Store Razorpay order ID in orders table
         $order->update([
             'razorpay_order_id' => $razorpayOrder['id']
         ]);
@@ -655,9 +614,6 @@ class PaymentController extends Controller
         return $razorpayOrder;
     }
 
-    /**
-     * Handle callback when user returns (updated to use your table)
-     */
     public function handleCallback(Request $request)
     { Log::info('handleCallback');
         $razorpayPaymentId = $request->razorpay_payment_id;
@@ -665,7 +621,7 @@ class PaymentController extends Controller
         $orderId = $request->order_id;
 
         try {
-            // Check if webhook already processed using YOUR table
+
             $existingTransaction = TransactionsHistoryRazorpay::where('razorpay_payment_id', $razorpayPaymentId)
                 ->where('status', 'completed')
                 ->whereNotNull('processed_at')
@@ -676,16 +632,12 @@ class PaymentController extends Controller
                 return redirect('/payment/success?source=callback&already_processed=true');
             }
 
-            // Fetch payment details from Razorpay
             $payment = $this->razorpayApi->payment->fetch($razorpayPaymentId);
 
-            // Verify signature
             $this->verifyPaymentSignature($payment, $razorpaySignature);
 
-            // Store in YOUR transactions_history_razorpay table
             $this->storeTransaction($payment, 'callback');
 
-            // Dispatch your existing job
             $this->dispatchPaymentJob($payment, $orderId);
 
             return redirect('/payment/success?source=callback&payment_id=' . $razorpayPaymentId);
@@ -694,12 +646,9 @@ class PaymentController extends Controller
             Log::error('Payment callback error: ' . $e->getMessage());
             return redirect('/payment/failed?error=' . urlencode($e->getMessage()));
         }
-        
+
     }
 
-    /**
-     * Verify Razorpay signature
-     */
     protected function verifyPaymentSignature($payment, $signature)
     {
         Log::info('verifyPaymentSignature');
@@ -712,9 +661,6 @@ class PaymentController extends Controller
         $this->razorpayApi->utility->verifyPaymentSignature($attributes);
     }
 
-    /**
-     * Store transaction in YOUR transactions_history_razorpay table
-     */
     protected function storeTransaction($payment, $source = 'webhook')
     {Log::info('storeTransaction');
         $notes = $payment['notes'] ?? [];
@@ -723,7 +669,7 @@ class PaymentController extends Controller
             ['razorpay_payment_id' => $payment['id']],
             [
                 'razorpay_order_id' => $payment['order_id'],
-                'razorpay_signature' => null, // Will be updated on callback
+                'razorpay_signature' => null,
                 'order_id' => $notes['order_id'] ?? null,
                 'payment_type' => $notes['payment_type'] ?? 'webinar',
                 'user_id' => $notes['user_id'] ?? null,
@@ -741,14 +687,10 @@ class PaymentController extends Controller
         );
     }
 
-    /**
-     * Dispatch your existing BuyNowProcessJob
-     */
     protected function dispatchPaymentJob($payment, $orderId = null)
     {Log::info('dispatchPaymentJob');
         $notes = $payment['notes'] ?? [];
 
-        // Format data exactly as your existing job expects
         $jobData = [
             'razorpay_payment_id' => $payment['id'],
             'order_id' => $orderId ?? $notes['order_id'] ?? null,
@@ -769,7 +711,6 @@ class PaymentController extends Controller
 
         BuyNowProcessJob::dispatch($jobData)->delay(now()->addSeconds(5));
     }
-    
 
     public function paymentVerifyBackgroundProccess($data)
     {
@@ -777,7 +718,6 @@ class PaymentController extends Controller
         $paymentType = $data['payment_type'] ?? 'webinar';
         $orderId = $data['order_id'] ?? null;
         $userId = $data['user_id'] ?? null;
-        
 
         try {
             Log::info('Payment verification started', [
@@ -788,7 +728,6 @@ class PaymentController extends Controller
 
             DB::beginTransaction();
 
-            // Process based on payment type
             switch ($paymentType) {
                 case 'subscription':
                     $this->processSubscriptionPayment($data);
@@ -827,7 +766,6 @@ class PaymentController extends Controller
                     throw new \Exception('Unknown payment type: ' . $paymentType);
             }
 
-            // Update order status
             if ($orderId) {
                 $this->updateOrderStatus($orderId);
             }
@@ -843,7 +781,7 @@ class PaymentController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             Log::error('Payment verification failed', [
                 'payment_id' => $paymentId,
                 'payment_type' => $paymentType,
@@ -855,15 +793,12 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * Process Subscription Payment
-     */
     protected function processSubscriptionPayment($data)
     {
         $subscriptionId = $data['subscription_id'];
         $userId = $data['user_id'];
         $amount = $this->getTransactionAmount($data['razorpay_payment_id']);
-        
+
         Log::info('processSubscriptionPayment', [
                 'subscriptionId' => $subscriptionId
             ]);
@@ -871,60 +806,45 @@ class PaymentController extends Controller
         $subscription = Subscription::findOrFail($subscriptionId);
         $user = User::findOrFail($userId);
 
-        // Check if already has access
         $SubscriptionAccess = SubscriptionAccess::where('user_id', $userId)
             ->where('subscription_id', $subscriptionId)
             ->first();
 
-        // if ($existingAccess) {
-        //     Log::warning('User already has subscription access', [
-        //         'user_id' => $userId,
-        //         'subscription_id' => $subscriptionId,
-        //     ]);
-        //     return;
-        // }
-
-        // Calculate dates
         $startDate = time();
         $endDate = $this->calculateSubscriptionEndDate($subscription, $startDate);
-        
+
         SubscriptionPayments::create([
                         'user_id' => $userId,
                         'subscription_id' => $subscriptionId,
                         'amount' => $amount,
                         'created_at' => time()
                         ]);
-                        
+
         $Subscription = Subscription::where('id' , $subscriptionId)
                             ->first();
-                            
+
         $SubscriptionPayments = SubscriptionPayments::where('user_id', $userId)
                                     ->where('subscription_id', $subscriptionId)
                                             ->get();
-                                            
-        // $SubscriptionAccess = SubscriptionAccess::where('subscription_id' , $orderItem->subscription_id)
-        //                         ->where('user_id' , $orderItem->user_id)
-        //                         ->first();
-                                            
-                                            
+
         $access_till_date = time() + ($Subscription->access_days * 24 * 60 * 60);
         $paid_no_of_subscriptions = $SubscriptionPayments->count();
         $access_content_count = $Subscription->video_count * $SubscriptionPayments->count();
-        
+
         if(!empty($SubscriptionAccess->subscription_id)){
-            
+
             $access_till_date1 = $SubscriptionAccess->access_till_date + ($Subscription->access_days * 24 * 60 * 60);
-            
+
             $access_till_date = $access_till_date >= $access_till_date1 ? $access_till_date : $access_till_date1;
-            
+
             $SubscriptionAccess->update([
                 'access_till_date' => $access_till_date,
                 'access_content_count' => $access_content_count,
                 'paid_no_of_subscriptions' => $paid_no_of_subscriptions
                 ]);
-            
+
         }else{
-            
+
             SubscriptionAccess::create([
                 'user_id' => $userId,
                 'subscription_id' => $subscriptionId,
@@ -933,10 +853,9 @@ class PaymentController extends Controller
                 'paid_no_of_subscriptions' => $paid_no_of_subscriptions,
                 'created_at' => time()
                 ]);
-            
+
         }
 
-        // Create sale record
         $this->createSaleRecord([
             'buyer_id' => $userId,
             'seller_id' => $subscription->creator_id ?? 1,
@@ -948,7 +867,6 @@ class PaymentController extends Controller
             'created_at' => time(),
         ]);
 
-        // Create accounting entry
         $this->createAccountingEntry([
             'user_id' => $subscription->creator_id ?? 1,
             'subscription_id' => $subscriptionId,
@@ -957,7 +875,6 @@ class PaymentController extends Controller
             'description' => 'Subscription: ' . $subscription->title,
         ]);
 
-        // Process affiliate if exists
         $this->processAffiliate($userId, $amount, 'subscription', $subscriptionId);
 
         Log::info('Subscription access granted', [
@@ -967,21 +884,14 @@ class PaymentController extends Controller
         ]);
     }
 
-    /**
-     * Process Webinar/Course Payment
-     */
     protected function processPartPayment($data)
     {
-        
+
         $PartPaymentController = new PartPaymentController();
         $installments = $PartPaymentController->processPartPayment($data);
-        
-    }
-    
 
-    /**
-     * Process Webinar/Course Payment
-     */
+    }
+
     protected function processWebinarPayment($data)
     {
         $webinarId = $data['webinar_id'];
@@ -991,7 +901,6 @@ class PaymentController extends Controller
         $webinar = Webinar::findOrFail($webinarId);
         $user = User::findOrFail($userId);
 
-        // Check if already purchased
         $existingSale = Sale::where('buyer_id', $userId)
             ->where('webinar_id', $webinarId)
             ->where('type', 'webinar')
@@ -1005,7 +914,6 @@ class PaymentController extends Controller
             return;
         }
 
-        // Create sale record (this grants access)
         $sale = $this->createSaleRecord([
             'buyer_id' => $userId,
             'seller_id' => $webinar->creator_id,
@@ -1017,8 +925,7 @@ class PaymentController extends Controller
             'created_at' => time(),
         ]);
 
-        // Create accounting entry
-        $this->createAccountingEntry([ 
+        $this->createAccountingEntry([
             'user_id' => $webinar->creator_id,
             'webinar_id' => $webinarId,
             'sale_id' => $sale->id,
@@ -1027,13 +934,8 @@ class PaymentController extends Controller
             'description' => 'Course purchase: ' . $webinar->title,
         ]);
 
-        // Update webinar sales count
-        // $webinar->increment('sales');
-
-        // Process affiliate if exists
         $this->processAffiliate($userId, $amount, 'webinar', $webinarId);
 
-        // Send notification (if you have notification system)
         $this->sendPurchaseNotification($user, $webinar, 'webinar');
 
         Log::info('Webinar access granted', [
@@ -1042,9 +944,6 @@ class PaymentController extends Controller
         ]);
     }
 
-    /**
-     * Process Bundle Payment
-     */
     protected function processBundlePayment($data)
     {
         $bundleId = $data['bundle_id'];
@@ -1055,7 +954,6 @@ class PaymentController extends Controller
         $bundle = Bundle::findOrFail($bundleId);
         $user = User::findOrFail($userId);
 
-        // Check if already purchased
         $existingSale = Sale::where('buyer_id', $userId)
             ->where('bundle_id', $bundleId)
             ->where('type', 'bundle')
@@ -1069,7 +967,6 @@ class PaymentController extends Controller
             return;
         }
 
-        // Create sale record
         $sale = $this->createSaleRecord([
             'buyer_id' => $userId,
             'seller_id' => $bundle->creator_id,
@@ -1081,7 +978,6 @@ class PaymentController extends Controller
             'created_at' => time(),
         ]);
 
-        // Create accounting entry
         $this->createAccountingEntry([
             'user_id' => $bundle->creator_id,
             'bundle_id' => $bundleId,
@@ -1093,13 +989,13 @@ class PaymentController extends Controller
         $order = Order::where('id',$orderId)->first();
         foreach ($order->orderItems as $orderItem) {
             if($orderItem->bundle->bundleWebinars){
-                // Log::info('OrderItem',[$orderItem->bundle->bundleWebinars]);
+
                 Log::info('For only bundleWebinars payment');
                 foreach ($orderItem->bundle->bundleWebinars as $bundleWebinar){
                     if($bundleWebinar->product_id){
                         Log::info('For only product payment');
                         $product = $bundleWebinar->product;
-                        
+
                         $productOrder = ProductOrder::updateOrCreate([
                             'product_id' => $product->id,
                             'seller_id' => $product->creator_id,
@@ -1113,9 +1009,9 @@ class PaymentController extends Controller
                             'discount_id' => null,
                             'created_at' => time()
                         ]);
-                        
+
                         Log::info('productOrder ceated');
-                        
+
                         $order1 = Order::create([
                             'user_id' => $orderItem->user_id,
                             'status' => 'paid',
@@ -1127,7 +1023,7 @@ class PaymentController extends Controller
                             'product_delivery_fee' => null,
                             'created_at' => time(),
                         ]);
-                        
+
                         $OrderItem1 = OrderItem::create([
                             'user_id' => $orderItem->user_id,
                             'order_id' => $order1->id,
@@ -1152,8 +1048,7 @@ class PaymentController extends Controller
                             'discount' => 0,
                             'created_at' => time(),
                         ]);
-    
-    
+
                         $seller_id = OrderItem::getSeller($orderItem);
                         $sale = Sale::create([
                             'buyer_id' => $orderItem->user_id,
@@ -1183,11 +1078,11 @@ class PaymentController extends Controller
                         ]);
                         Log::info('sale created');
                         $status = ProductOrder::$waitingDelivery;
-    
+
                         if ($product and $product->isVirtual()) {
                             $status = ProductOrder::$success;
                         }
-                
+
                         ProductOrder::where('id', $productOrder->id)
                             ->where(function ($query) use ($orderItem) {
                                 $query->where(function ($query) use ($orderItem) {
@@ -1199,23 +1094,18 @@ class PaymentController extends Controller
                                 'sale_id' => $sale->id,
                                 'status' => $status,
                             ]);
-    
-                
+
                         OrderAddress::where('order_id', $order->id)
                             ->update([
                                 'order_id' => $order1->id,
                             ]);
-                            
+
                         Log::info('Done');
                     }
                 }
             }
         }
 
-        // Update bundle sales count
-        // $bundle->increment('sales');
-
-        // Process affiliate if exists
         $this->processAffiliate($userId, $amount, 'bundle', $bundleId);
 
         Log::info('Bundle access granted', [
@@ -1224,9 +1114,6 @@ class PaymentController extends Controller
         ]);
     }
 
-    /**
-     * Process Product Payment
-     */
     protected function processProductPayment($data)
     {
         $productId = $data['product_id'];
@@ -1235,7 +1122,7 @@ class PaymentController extends Controller
 
         $product = Product::findOrFail($productId);
         $user = User::findOrFail($userId);
-        
+
         $productOrder = ProductOrder::updateOrCreate([
                             'product_id' => $product->id,
                             'seller_id' => $product->creator_id,
@@ -1249,7 +1136,6 @@ class PaymentController extends Controller
                             'created_at' => time()
                         ]);
 
-        // Create sale record
         $sale = $this->createSaleRecord([
             'buyer_id' => $userId,
             'seller_id' => $product->creator_id,
@@ -1262,7 +1148,6 @@ class PaymentController extends Controller
             'created_at' => time(),
         ]);
 
-        // Create accounting entry
         $this->createAccountingEntry([
             'user_id' => $product->creator_id,
             'product_id' => $productId,
@@ -1272,9 +1157,6 @@ class PaymentController extends Controller
             'description' => 'Product purchase: ' . $product->title,
         ]);
 
-        // Update product sales and inventory
-        // $product->increment('sales');
-        
         if ($product->unlimited_inventory == 0) {
             $product->decrement('inventory');
         }
@@ -1290,7 +1172,6 @@ class PaymentController extends Controller
                 'status' => $status,
             ]);
 
-        // Process affiliate if exists
         $this->processAffiliate($userId, $amount, 'product', $productId);
 
         Log::info('Product purchase completed', [
@@ -1299,9 +1180,6 @@ class PaymentController extends Controller
         ]);
     }
 
-    /**
-     * Process Cart Payment (Multiple Items)
-     */
     protected function processCartPayment($data)
     {
         $orderId = $data['order_id'];
@@ -1310,7 +1188,7 @@ class PaymentController extends Controller
         $order = Order::with('orderItems')->findOrFail($orderId);
 
         foreach ($order->orderItems as $item) {
-            // Process each item based on its type
+
             if ($item->webinar_id) {
                 $this->processWebinarPayment([
                     'webinar_id' => $item->webinar_id,
@@ -1339,7 +1217,6 @@ class PaymentController extends Controller
             }
         }
 
-        // Clear user's cart
         Cart::where('creator_id', $userId)->delete();
 
         Log::info('Cart payment processed', [
@@ -1349,35 +1226,19 @@ class PaymentController extends Controller
         ]);
     }
 
-    /**
-     * Process Meeting/Consultation Payment
-     */
     protected function processMeetingPayment($data)
     {
         $reserve_meeting_id = $data['reserve_meeting_id'];
-        // $meetingTimeId = $data['meeting_time_id'] ?? null;
+
         $userId = $data['user_id'];
         $amount = $this->getTransactionAmount($data['razorpay_payment_id']);
 
-        
         $user = User::findOrFail($userId);
 
-        // Create reserve meeting record
         $reserveMeeting = ReserveMeeting::where('id' , $reserve_meeting_id)->first();
         $meetingId = $reserveMeeting->meeting_id;
         $meeting = Meeting::findOrFail($meetingId);
-        
-        // Create reserve meeting record
-        // $reserveMeeting = ReserveMeeting::create([
-        //     'meeting_id' => $meetingId,
-        //     'meeting_time_id' => $meetingTimeId,
-        //     'user_id' => $userId,
-        //     'paid_amount' => $amount,
-        //     'status' => 'open',
-        //     'created_at' => time(),
-        // ]);
 
-        // Create sale record
         $sale = $this->createSaleRecord([
             'buyer_id' => $userId,
             'seller_id' => $meeting->creator_id,
@@ -1389,7 +1250,6 @@ class PaymentController extends Controller
             'created_at' => time(),
         ]);
 
-        // Create accounting entry
         $this->createAccountingEntry([
             'user_id' => $meeting->creator_id,
             'meeting_id' => $meetingId,
@@ -1399,17 +1259,10 @@ class PaymentController extends Controller
             'description' => 'Meeting booking: ' . $meeting->title,
         ]);
 
-        // Update meeting time status if provided
-        // if ($reserveMeeting) {
-        //     DB::table('meeting_times')
-        //         ->where('id', $meetingTimeId)
-        //         ->update(['status' => 'reserved']);
-        // }
         $reserveMeeting ->update([
             'sale_id' => $sale->id,
             'reserved_at' => time()]);
 
-        // Process affiliate if exists
         $this->processAffiliate($userId, $amount, 'meeting', $meetingId);
 
         Log::info('Meeting booking completed', [
@@ -1419,13 +1272,10 @@ class PaymentController extends Controller
         ]);
     }
 
-    /**
-     * Process Installment Payment
-     */
     protected function processInstallmentPayment($data)
-    {   
+    {
         $orderId = $data['order_id'];
-        
+
         Log::info('processInstallmentPayment', [
             'data' => $data
         ]);
@@ -1437,17 +1287,15 @@ class PaymentController extends Controller
         $installmentPayment = InstallmentOrderPayment::with('installmentOrder')
             ->findOrFail($installmentPaymentId);
 
-        // Update installment payment status
         $installmentPayment->update([
             'status' => 'paid',
             'payment_date' => time(),
         ]);
-        
+
         $installmentOrder = $installmentPayment->installmentOrder;
         $webinarId = $installmentOrder->webinar_id;
         $webinar = Webinar::findOrFail($webinarId);
 
-        // Create sale record
         $sale = $this->createSaleRecord([
             'buyer_id' => $userId,
             'seller_id' => $webinar->seller_id ?? 1,
@@ -1461,35 +1309,10 @@ class PaymentController extends Controller
             'created_at' => time(),
         ]);
 
-        // Check if all installments are paid
-        
         $installmentOrder->update([
             'status' => 'open'
         ]);
-        // $allPaid = $installmentOrder->installmentOrderPayments()
-        //     ->where('status', '!=', 'paid')
-        //     ->count() === 0;
 
-        // if ($allPaid) {
-        //     // All installments paid, grant full access
-        //     $installmentOrder->update(['status' => 'completed']);
-            
-        //     // Grant access to the item (webinar, bundle, etc.)
-        //     $this->grantInstallmentItemAccess($installmentOrder, $userId);
-        // } else {
-        //     // Activate next installment
-        //     $nextInstallment = $installmentOrder->installmentOrderPayments()
-        //         ->where('step', '>', $installmentStep)
-        //         ->where('status', 'pending')
-        //         ->orderBy('step')
-        //         ->first();
-
-        //     if ($nextInstallment) {
-        //         $nextInstallment->update(['status' => 'paying']);
-        //     }
-        // }
-
-        // Create accounting entry
         $this->createAccountingEntry([
             'user_id' => $installmentPayment->installmentOrder->seller_id ?? 1,
             'installment_payment_id' => $installmentPaymentId,
@@ -1503,16 +1326,13 @@ class PaymentController extends Controller
             'user_id' => $userId,
             'installment_payment_id' => $installmentPaymentId,
             'step' => $installmentStep,
-            // 'all_paid' => $allPaid,
+
         ]);
     }
 
-    /**
-     * Grant access when all installments are paid
-     */
     protected function grantInstallmentItemAccess($installmentOrder, $userId)
     {
-        $itemType = $installmentOrder->item_type; // 'webinar', 'bundle', etc.
+        $itemType = $installmentOrder->item_type;
         $itemId = $installmentOrder->item_id;
 
         switch ($itemType) {
@@ -1532,7 +1352,6 @@ class PaymentController extends Controller
                 ]);
                 break;
 
-            // Add other types as needed
         }
 
         Log::info('Installment item access granted', [
@@ -1542,17 +1361,11 @@ class PaymentController extends Controller
         ]);
     }
 
-    /**
-     * Helper: Create sale record
-     */
     protected function createSaleRecord($data)
     {
         return Sale::create($data);
     }
 
-    /**
-     * Helper: Create accounting entry
-     */
     protected function createAccountingEntry($data)
     {
         $defaults = [
@@ -1568,12 +1381,9 @@ class PaymentController extends Controller
         return Accounting::create(array_merge($defaults, $data));
     }
 
-    /**
-     * Helper: Process affiliate commission
-     */
     protected function processAffiliate($userId, $amount, $type, $itemId)
     {
-        // Check if user has an affiliate who referred them
+
         $user = User::find($userId);
         if (!$user || !$user->affiliate_user_id) {
             return;
@@ -1587,11 +1397,9 @@ class PaymentController extends Controller
             return;
         }
 
-        // Calculate commission (example: 10%)
-        $commissionRate = 0.10; // 10%
+        $commissionRate = 0.10;
         $commission = $amount * $commissionRate;
 
-        // Create accounting entry for affiliate
         Accounting::create([
             'user_id' => $affiliate->user_id,
             'amount' => $commission,
@@ -1608,24 +1416,18 @@ class PaymentController extends Controller
         ]);
     }
 
-    /**
-     * Helper: Calculate subscription end date
-     */
     protected function calculateSubscriptionEndDate($subscription, $startDate)
     {
         $days = $subscription->days ?? 30;
-        
+
         if ($subscription->usable_count) {
-            // Unlimited until usable_count is exhausted
-            $days = 365; // 1 year default
+
+            $days = 365;
         }
 
         return strtotime("+{$days} days", $startDate);
     }
 
-    /**
-     * Helper: Get transaction amount
-     */
     protected function getTransactionAmount($razorpayPaymentId)
     {
         $transaction = TransactionsHistoryRazorpay::where('razorpay_payment_id', $razorpayPaymentId)
@@ -1634,16 +1436,13 @@ class PaymentController extends Controller
         return $transaction ? $transaction->amount : 0;
     }
 
-    /**
-     * Helper: Update order status
-     */
     protected function updateOrderStatus($orderId)
     {
         $order = Order::find($orderId);
-        
+
         if ($order) {
             $order->update([
-                'status' => 'paid', // 'success' status
+                'status' => 'paid',
                 'payment_data' => json_encode([
                     'gateway' => 'Razorpay',
                     'paid_at' => time(),
@@ -1652,15 +1451,10 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * Helper: Send purchase notification (if notification system exists)
-     */
     protected function sendPurchaseNotification($user, $item, $type)
     {
         try {
-            // Implement your notification logic here
-            // Example: $user->notify(new PurchaseSuccessNotification($item, $type));
-            
+
             Log::info('Purchase notification sent', [
                 'user_id' => $user->id,
                 'type' => $type,
@@ -1671,7 +1465,5 @@ class PaymentController extends Controller
             ]);
         }
     }
-
-    
 
 }

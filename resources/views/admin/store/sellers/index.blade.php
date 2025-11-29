@@ -43,7 +43,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{ trans('admin/main.users_group') }}</label>
@@ -55,7 +54,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -124,9 +122,7 @@
                                                 <span class="d-block font-12">{{ !empty($user->total_sales) ? handlePrice($user->total_sales) : 0 }}</span>
                                             </td>
 
-
                                             <td>{{ $user->pending_orders_count }}</td>
-
 
                                             <td class="text-center mb-2" width="120">
                                                 @can('admin_users_impersonate')

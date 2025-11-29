@@ -26,7 +26,6 @@ class ForumTopicAttachment extends Model
             $name = $path[array_key_last($path)];
         }
 
-
         return $name;
     }
 }

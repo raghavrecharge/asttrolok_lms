@@ -21,7 +21,6 @@ class Filter extends Model implements TranslatableContract
         return getTranslateAttributeValue($this, 'title');
     }
 
-
     public function category()
     {
         return $this->belongsTo('App\Models\Category', 'category_id', 'id');

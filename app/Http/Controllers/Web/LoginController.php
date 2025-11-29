@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Web;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\CartManagerController;
 use App\Models\Reward;
@@ -17,31 +20,11 @@ use App\Models\Webinar;
 use App\Models\Sale;
 class LoginController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Login Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller handles authenticating users for the application and
-    | redirecting them to your home screen. The controller uses a trait
-    | to conveniently provide its functionality to your applications.
-    |
-    */
 
     use AuthenticatesUsers;
 
-    /**
-     * Where to redirect users after login.
-     *
-     * @var string
-     */
     protected $redirectTo = '/panel';
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
@@ -49,103 +32,150 @@ class LoginController extends Controller
 
     public function showLoginForm()
     {
-        $seoSettings = getSeoMetas('login');
-        $pageTitle = !empty($seoSettings['title']) ? $seoSettings['title'] : trans('site.login_page_title');
-        $pageDescription = !empty($seoSettings['description']) ? $seoSettings['description'] : trans('site.login_page_title');
-        $pageRobot = getPageRobot('login');
+        try {
+            $seoSettings = getSeoMetas('login');
+            $pageTitle = !empty($seoSettings['title']) ? $seoSettings['title'] : trans('site.login_page_title');
+            $pageDescription = !empty($seoSettings['description']) ? $seoSettings['description'] : trans('site.login_page_title');
+            $pageRobot = getPageRobot('login');
 
-        $data = [
-            'pageTitle' => $pageTitle,
-            'pageDescription' => $pageDescription,
-            'pageRobot' => $pageRobot,
-        ];
+            $data = [
+                'pageTitle' => $pageTitle,
+                'pageDescription' => $pageDescription,
+                'pageRobot' => $pageRobot,
+            ];
 
-     $agent = new Agent();
-                    if ($agent->isMobile()){
-                        return view(getTemplate() . '.course.landingPage.login', $data);
-                }else{
-                    return view('web.default2' . '.course.landingPage.login', $data);
-                }
-        // return view(getTemplate() . '.auth.login', $data);
+            $agent = new Agent();
+                        if ($agent->isMobile()){
+                            return view(getTemplate() . '.course.landingPage.login', $data);
+                    }else{
+                        return view('web.default2' . '.course.landingPage.login', $data);
+                    }
+        } catch (\Exception $e) {
+            \Log::error('showLoginForm error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
     public function showLoginFormEnglish()
     {
-        $seoSettings = getSeoMetas('login');
-        $pageTitle = !empty($seoSettings['title']) ? $seoSettings['title'] : trans('site.login_page_title');
-        $pageDescription = !empty($seoSettings['description']) ? $seoSettings['description'] : trans('site.login_page_title');
-        $pageRobot = getPageRobot('login');
+        try {
+            $seoSettings = getSeoMetas('login');
+            $pageTitle = !empty($seoSettings['title']) ? $seoSettings['title'] : trans('site.login_page_title');
+            $pageDescription = !empty($seoSettings['description']) ? $seoSettings['description'] : trans('site.login_page_title');
+            $pageRobot = getPageRobot('login');
 
-        $data = [
-            'pageTitle' => $pageTitle,
-            'pageDescription' => $pageDescription,
-            'pageRobot' => $pageRobot,
-        ];
+            $data = [
+                'pageTitle' => $pageTitle,
+                'pageDescription' => $pageDescription,
+                'pageRobot' => $pageRobot,
+            ];
 
-     $agent = new Agent();
-                    if ($agent->isMobile()){
-                        return view(getTemplate() . '.course.landingPage.login-english', $data);
-                }else{
-                    return view('web.default2' . '.course.landingPage.login-english', $data);
-                }
-        // return view(getTemplate() . '.auth.login', $data);
+            $agent = new Agent();
+                        if ($agent->isMobile()){
+                            return view(getTemplate() . '.course.landingPage.login-english', $data);
+                    }else{
+                        return view('web.default2' . '.course.landingPage.login-english', $data);
+                    }
+        } catch (\Exception $e) {
+            \Log::error('showLoginFormEnglish error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function login(Request $request)
     {
-        // print_r($request);die();
-        $rules = [
-            'username' => 'required|numeric|max:60',
-            'password' => 'required|min:6|max:40',
-        ];
+        try {
+            $rules = [
+                'username' => 'required|numeric|max:60',
+                'password' => 'required|min:6|max:40',
+            ];
 
-        if ($this->username() == 'email') {
-            $rules['username'] = 'required|email';
-        }
+            if ($this->username() == 'email') {
+                $rules['username'] = 'required|email';
+            }
 
-        if (!empty(getGeneralSecuritySettings('captcha_for_login'))) {
-            $rules['captcha'] = 'required|captcha';
-        }
+            if (!empty(getGeneralSecuritySettings('captcha_for_login'))) {
+                $rules['captcha'] = 'required|captcha';
+            }
 
-        $this->validate($request, $rules);
+            $this->validate($request, $rules);
 
-        if ($this->attemptLogin($request)) {
+            if ($this->attemptLogin($request)) {
+
+                return $this->afterLogged($request);
+            }
+
+            return $this->sendFailedLoginResponse($request);
+        } catch (\Exception $e) {
+            \Log::error('login error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
-            return $this->afterLogged($request);
+            throw $e;
         }
-
-        return $this->sendFailedLoginResponse($request);
     }
 
     public function logout(Request $request)
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $this->guard()->logout();
+            $this->guard()->logout();
 
-        $request->session()->invalidate();
+            $request->session()->invalidate();
 
-        $request->session()->regenerateToken();
+            $request->session()->regenerateToken();
 
-        if (!empty($user) and $user->logged_count > 0) {
-            $user->update([
-                'logged_count' => $user->logged_count - 1
+            if (!empty($user) and $user->logged_count > 0) {
+                $user->update([
+                    'logged_count' => $user->logged_count - 1
+                ]);
+            }
+
+            return redirect('/');
+        } catch (\Exception $e) {
+            \Log::error('logout error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
+            
+            throw $e;
         }
-
-        return redirect('/');
     }
 
     public function username()
     {
-        $email_regex = "/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,})$/i";
+        try {
+            $email_regex = "/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,})$/i";
 
-        if (empty($this->username)) {
-            $this->username = 'mobile';
-            if (preg_match($email_regex, request('username', null))) {
-                $this->username = 'email';
+            if (empty($this->username)) {
+                $this->username = 'mobile';
+                if (preg_match($email_regex, request('username', null))) {
+                    $this->username = 'email';
+                }
             }
+            return $this->username;
+        } catch (\Exception $e) {
+            \Log::error('username error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        return $this->username;
     }
 
     protected function attemptLogin(Request $request)
@@ -156,18 +186,24 @@ class LoginController extends Controller
         ];
         $remember = true;
 
-        /*if (!empty($request->get('remember')) and $request->get('remember') == true) {
-            $remember = true;
-        }*/
-
         return $this->guard()->attempt($credentials, $remember);
     }
 
     public function sendFailedLoginResponse(Request $request)
     {
-        throw ValidationException::withMessages([
-            'username' => [trans('validation.password_or_username')],
-        ]);
+        try {
+            throw ValidationException::withMessages([
+                'username' => [trans('validation.password_or_username')],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('sendFailedLoginResponse error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     protected function sendBanResponse($user)
@@ -200,188 +236,183 @@ class LoginController extends Controller
     }
 
     public function afterLogged(Request $request, $verify = false)
-    {   $slug = $request->get('slug');
-        $user = auth()->user();
+    {
+        try {
+            $slug = $request->get('slug');
+            $user = auth()->user();
 
-        if ($user->ban) {
-            $time = time();
-            $endBan = $user->ban_end_at;
-            if (!empty($endBan) and $endBan > $time) {
+            if ($user->ban) {
+                $time = time();
+                $endBan = $user->ban_end_at;
+                if (!empty($endBan) and $endBan > $time) {
+                    $this->guard()->logout();
+                    $request->session()->flush();
+                    $request->session()->regenerate();
+
+                    return $this->sendBanResponse($user);
+                } elseif (!empty($endBan) and $endBan < $time) {
+                    $user->update([
+                        'ban' => false,
+                        'ban_start_at' => null,
+                        'ban_end_at' => null,
+                    ]);
+                }
+            }
+
+            if ($user->status != User::$active and !$verify) {
                 $this->guard()->logout();
                 $request->session()->flush();
                 $request->session()->regenerate();
 
-                return $this->sendBanResponse($user);
-            } elseif (!empty($endBan) and $endBan < $time) {
+                $verificationController = new VerificationController();
+                $checkConfirmed = $verificationController->checkConfirmed($user, $this->username(), $request->get('username'));
+
+                if ($checkConfirmed['status'] == 'send') {
+                    return redirect('/verification');
+                }
+            } elseif ($verify) {
+                session()->forget('verificationId');
+
                 $user->update([
-                    'ban' => false,
-                    'ban_start_at' => null,
-                    'ban_end_at' => null,
+                    'status' => User::$active,
                 ]);
+
+                $registerReward = RewardAccounting::calculateScore(Reward::REGISTER);
+                RewardAccounting::makeRewardAccounting($user->id, $registerReward, Reward::REGISTER, $user->id, true);
             }
-        }
 
-        if ($user->status != User::$active and !$verify) {
-            $this->guard()->logout();
-            $request->session()->flush();
-            $request->session()->regenerate();
+            if ($user->status != User::$active) {
+                $this->guard()->logout();
+                $request->session()->flush();
+                $request->session()->regenerate();
 
-            $verificationController = new VerificationController();
-            $checkConfirmed = $verificationController->checkConfirmed($user, $this->username(), $request->get('username'));
-
-            if ($checkConfirmed['status'] == 'send') {
-                return redirect('/verification');
+                return $this->sendNotActiveResponse($user);
             }
-        } elseif ($verify) {
-            session()->forget('verificationId');
+
+            $checkLoginDeviceLimit = $this->checkLoginDeviceLimit($user);
+            if ($checkLoginDeviceLimit != "ok") {
+                $this->guard()->logout();
+                $request->session()->flush();
+                $request->session()->regenerate();
+
+                return $this->sendMaximumActiveSessionResponse();
+            }
 
             $user->update([
-                'status' => User::$active,
+                'logged_count' => (int)$user->logged_count + 1
             ]);
 
-            $registerReward = RewardAccounting::calculateScore(Reward::REGISTER);
-            RewardAccounting::makeRewardAccounting($user->id, $registerReward, Reward::REGISTER, $user->id, true);
-        }
+            $cartManagerController = new CartManagerController();
+            $cartManagerController->storeCookieCartsToDB();
 
-        if ($user->status != User::$active) {
-            $this->guard()->logout();
-            $request->session()->flush();
-            $request->session()->regenerate();
+            if ($user->isAdmin()) {
+                return redirect(getAdminPanelUrl() . '');
+            } else {
+                if(isset($slug)){
+                $rdn='';
+                $course = Webinar::where('slug', $slug)
+                    ->where('status', 'active')
+                    ->first();
+                    if(!($course->checkUserHasBought($user, true, true)))
+            {
 
-            return $this->sendNotActiveResponse($user);
-        }
+                if (!empty($course)) {
+                    $checkCourseForSale = checkCourseForSale($course, $user);
 
-        $checkLoginDeviceLimit = $this->checkLoginDeviceLimit($user);
-        if ($checkLoginDeviceLimit != "ok") {
-            $this->guard()->logout();
-            $request->session()->flush();
-            $request->session()->regenerate();
+                    if ($checkCourseForSale != 'ok') {
+                        return $checkCourseForSale;
+                    }
 
-            return $this->sendMaximumActiveSessionResponse();
-        }
+                    if (!empty($course->price) and $course->price > 0) {
+                        $toastData = [
+                            'title' => trans('cart.fail_purchase'),
+                            'msg' => trans('cart.course_not_free'),
+                            'status' => 'error'
+                        ];
+                        return back()->with(['toast' => $toastData]);
+                    }
 
-        $user->update([
-            'logged_count' => (int)$user->logged_count + 1
-        ]);
+                    Sale::create([
+                        'buyer_id' => $user->id,
+                        'seller_id' => $course->creator_id,
+                        'webinar_id' => $course->id,
+                        'type' => Sale::$webinar,
+                        'payment_method' => Sale::$credit,
+                        'amount' => 0,
+                        'total_amount' => 0,
+                        'created_at' => time(),
+                    ]);
 
-        $cartManagerController = new CartManagerController();
-        $cartManagerController->storeCookieCartsToDB();
+                    date_default_timezone_set('Asia/Kolkata');
 
-        if ($user->isAdmin()) {
-            return redirect(getAdminPanelUrl() . '');
-        } else {
-            if(isset($slug)){
-            $rdn='';
-            $course = Webinar::where('slug', $slug)
-                ->where('status', 'active')
-                ->first();
-                if(!($course->checkUserHasBought($user, true, true)))
-        {
-            
-            
-            
-            if (!empty($course)) {
-                $checkCourseForSale = checkCourseForSale($course, $user);
+                $webhookurl='https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjUwNTY0MDYzNjA0Mzc1MjZhNTUzMDUxMzYi_pc';
 
-                if ($checkCourseForSale != 'ok') {
-                    return $checkCourseForSale;
+            $webhookdata = [
+            'user_id' => $user->id,
+            'user_name' => $user->full_name,
+            'country_code' => $user->country_code ?? null,
+            'user_mobile' => $user->mobile,
+            'user_email' => $user->email,
+            'user_role' => $user->role_name,
+            'user_password' => $request->password,
+            'slug' => $slug,
+            'create_at' => date("Y/m/d H:i"),
+            'by' =>'login'
+            ];
+
+            $webhookcurl = curl_init($webhookurl);
+
+            curl_setopt($webhookcurl, CURLOPT_RETURNTRANSFER, true);
+
+            curl_setopt($webhookcurl, CURLOPT_POST, true);
+
+            curl_setopt($webhookcurl, CURLOPT_POSTFIELDS,  json_encode($webhookdata));
+
+            $webhookresponse = curl_exec($webhookcurl);
+
+            curl_close($webhookcurl);
+
+            $gohighlevel= 'https://services.leadconnectorhq.com/hooks/eAE21tVIbkFC6dUHwja9/webhook-trigger/caece889-e99d-4975-a107-341ef58c5f7f';
+            if($slug=='learn-free-astrology-course-english'){
+                $gohighlevel= 'https://services.leadconnectorhq.com/hooks/eAE21tVIbkFC6dUHwja9/webhook-trigger/ff19d522-10e4-40e8-99b9-4c61796ac9a4';
+            }
+
+            $gohighlevelcurl = curl_init($gohighlevel);
+
+            curl_setopt($gohighlevelcurl, CURLOPT_RETURNTRANSFER, true);
+
+            curl_setopt($gohighlevelcurl, CURLOPT_POST, true);
+
+            curl_setopt($gohighlevelcurl, CURLOPT_POSTFIELDS, json_encode($webhookdata));
+
+            curl_setopt($gohighlevelcurl, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Accept: application/json'
+            ]);
+
+            $gohighlevelresponse = curl_exec($gohighlevelcurl);
+                }
+            }
+            $rdn='/course/learning/'.$slug;
+
+                if($rdn!=''){
+
+                     return redirect($rdn);
+                }else{
+                return redirect('/panel');
                 }
 
-                if (!empty($course->price) and $course->price > 0) {
-                    $toastData = [
-                        'title' => trans('cart.fail_purchase'),
-                        'msg' => trans('cart.course_not_free'),
-                        'status' => 'error'
-                    ];
-                    return back()->with(['toast' => $toastData]);
-                }
-
-                Sale::create([
-                    'buyer_id' => $user->id,
-                    'seller_id' => $course->creator_id,
-                    'webinar_id' => $course->id,
-                    'type' => Sale::$webinar,
-                    'payment_method' => Sale::$credit,
-                    'amount' => 0,
-                    'total_amount' => 0,
-                    'created_at' => time(),
-                ]);
-                
-                date_default_timezone_set('Asia/Kolkata');  
-            
-            // $webhookurl='https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjUwNTZmMDYzMTA0Mzc1MjZlNTUzYzUxMzEi_pc1';
-            $webhookurl='https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjUwNTY0MDYzNjA0Mzc1MjZhNTUzMDUxMzYi_pc';
-            
-            
-// Collection object
-$webhookdata = [
-  'user_id' => $user->id,
-  'user_name' => $user->full_name,
-  'country_code' => $user->country_code ?? null,
-  'user_mobile' => $user->mobile,
-  'user_email' => $user->email,
-  'user_role' => $user->role_name,
-  'user_password' => $request->password,
-  'slug' => $slug,
-  'create_at' => date("Y/m/d H:i"),
-  'by' =>'login'
-];
-// Initializes a new cURL session
-$webhookcurl = curl_init($webhookurl);
-// Set the CURLOPT_RETURNTRANSFER option to true
-curl_setopt($webhookcurl, CURLOPT_RETURNTRANSFER, true);
-// Set the CURLOPT_POST option to true for POST request
-curl_setopt($webhookcurl, CURLOPT_POST, true);
-// Set the request data as JSON using json_encode function
-curl_setopt($webhookcurl, CURLOPT_POSTFIELDS,  json_encode($webhookdata));
-// Set custom headers for RapidAPI Auth and Content-Type header
-
-// Execute cURL request with all previous settings
-$webhookresponse = curl_exec($webhookcurl);
-// Close cURL session
-curl_close($webhookcurl);
-
-
-	   $gohighlevel= 'https://services.leadconnectorhq.com/hooks/eAE21tVIbkFC6dUHwja9/webhook-trigger/caece889-e99d-4975-a107-341ef58c5f7f';
-        if($slug=='learn-free-astrology-course-english'){
-            $gohighlevel= 'https://services.leadconnectorhq.com/hooks/eAE21tVIbkFC6dUHwja9/webhook-trigger/ff19d522-10e4-40e8-99b9-4c61796ac9a4';
-        }
-// Collection object
-
-
-                    
-             
-$gohighlevelcurl = curl_init($gohighlevel);
-// Set the CURLOPT_RETURNTRANSFER option to true
-curl_setopt($gohighlevelcurl, CURLOPT_RETURNTRANSFER, true);
-// Set the CURLOPT_POST option to true for POST request
-curl_setopt($gohighlevelcurl, CURLOPT_POST, true);
-// Set the request data as JSON using json_encode function
-// curl_setopt($gohighlevelcurl, CURLOPT_POSTFIELDS,  json_encode($webhookdata));
-curl_setopt($gohighlevelcurl, CURLOPT_POSTFIELDS, json_encode($webhookdata));
-// Set custom headers for RapidAPI Auth and Content-Type header
-curl_setopt($gohighlevelcurl, CURLOPT_HTTPHEADER, [
-    'Content-Type: application/json', // Ensure JSON data is being sent
-    'Accept: application/json' // Accept JSON response if needed
-]);
-// Execute cURL request with all previous settings
-$gohighlevelresponse = curl_exec($gohighlevelcurl);  
             }
-        }
-        $rdn='/course/learning/'.$slug;
-//             if ($request->has('rd')) {
-//     $rdn=$request->get('rd');
-// }
-             
-            if($rdn!=''){
-                // $rdn=$request->get('rd');
-                 return redirect($rdn);
-            }else{
-            return redirect('/panel');
+
             }
-            // return redirect('/panel');
-        }
+        } catch (\Exception $e) {
+            \Log::error('afterLogged error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
+            throw $e;
         }
     }
 

@@ -37,7 +37,6 @@
             </div>
         @endif
 
-
         <div class="form-group mt-15">
             <label class="input-label">{{ trans('public.title') }}</label>
             <input type="text" name="title" value="{{ (!empty($bundle) and !empty($bundle->translate($locale))) ? $bundle->translate($locale)->title : old('title') }}" class="form-control @error('title')  is-invalid @enderror" placeholder=""/>

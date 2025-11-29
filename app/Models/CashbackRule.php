@@ -15,7 +15,6 @@ class CashbackRule extends Model implements TranslatableContract
     public $timestamps = false;
     protected $guarded = ['id'];
 
-    // Enums
     static $targetTypes = ['all', 'recharge_wallet', 'courses', 'store_products', 'bundles', 'meetings', 'registration_packages', 'subscription_packages'];
     static $courseTargets = ['all_courses', 'live_classes', 'video_courses', 'text_courses', 'specific_categories', 'specific_instructors', 'specific_courses'];
     static $productTargets = ['all_products', 'virtual_products', 'physical_products', 'specific_categories', 'specific_sellers', 'specific_products'];
@@ -24,18 +23,12 @@ class CashbackRule extends Model implements TranslatableContract
     static $subscriptionTargets = ['all_packages', 'specific_packages'];
     static $registrationPackagesTargets = ['all_packages', 'specific_packages'];
 
-
     public $translatedAttributes = ['title'];
 
     public function getTitleAttribute()
     {
         return getTranslateAttributeValue($this, 'title');
     }
-
-
-    // #############
-    // Relations
-    // ############
 
     public function usersAndGroups()
     {
@@ -52,7 +45,7 @@ class CashbackRule extends Model implements TranslatableContract
         return $this->belongsToMany(User::class, 'cashback_rule_users_groups', 'cashback_rule_id', 'user_id');
     }
 
-    public function specificationItems() // used just in query
+    public function specificationItems()
     {
         return $this->hasMany(CashbackRuleSpecificationItem::class, 'cashback_rule_id', 'id');
     }
@@ -96,11 +89,6 @@ class CashbackRule extends Model implements TranslatableContract
     {
         return $this->belongsToMany(RegistrationPackage::class, 'cashback_rule_specification_items', 'cashback_rule_id', 'registration_package_id');
     }
-
-
-    // #############
-    // Helpers
-    // ############
 
     public function getAmount($itemPrice = 1)
     {

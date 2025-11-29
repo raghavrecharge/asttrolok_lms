@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Api\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Api\Traits\ReviewTrait;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
-//use App\Http\Controllers\Api\Traits\ReviewTrait;
 
 class BundleReviewController extends Controller
 {
@@ -14,6 +15,16 @@ class BundleReviewController extends Controller
 
     public function store()
     {
-        return $this->store() ;
+        try {
+            return $this->store() ;
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

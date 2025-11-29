@@ -1,6 +1,5 @@
 @extends(getTemplate().'.layouts.app')
 
-
 @section('content')
     <div class="container">
 

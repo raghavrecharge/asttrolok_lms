@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Blog;
 use App\Models\Comment;
@@ -18,38 +21,48 @@ class BlogCommentsController extends Controller
 
     public function index(Request $request)
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $this->handleAuthorize($user);
+            $this->handleAuthorize($user);
 
-        $posts = Blog::select('id', 'author_id')->where('author_id', $user->id)
-            ->get();
+            $posts = Blog::select('id', 'author_id')->where('author_id', $user->id)
+                ->get();
 
-        $blogIds = $posts->pluck('id')->toArray();
+            $blogIds = $posts->pluck('id')->toArray();
 
-        $query = Comment::whereIn('blog_id', $blogIds);
+            $query = Comment::whereIn('blog_id', $blogIds);
 
-        $comments = $this->handleFilters($request, $query)->orderBy('created_at', 'desc')
-            ->with([
-                'blog'
-            ])
-            ->paginate(10);
+            $comments = $this->handleFilters($request, $query)->orderBy('created_at', 'desc')
+                ->with([
+                    'blog'
+                ])
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('panel.comments'),
-            'posts' => $posts,
-            'comments' => $comments,
-        ];
+            $data = [
+                'pageTitle' => trans('panel.comments'),
+                'posts' => $posts,
+                'comments' => $comments,
+            ];
 
-        $blogId = $request->get('blog_id', null);
+            $blogId = $request->get('blog_id', null);
 
-        if (!empty($blogId) and is_numeric($blogId)) {
-            $data['selectedPost'] = Blog::where('id', $blogId)
-                ->where('author_id', $user->id)
-                ->first();
+            if (!empty($blogId) and is_numeric($blogId)) {
+                $data['selectedPost'] = Blog::where('id', $blogId)
+                    ->where('author_id', $user->id)
+                    ->first();
+            }
+
+            return view('web.default.panel.blog.comments.index', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return view('web.default.panel.blog.comments.index', $data);
     }
 
     private function handleFilters(Request $request, $query)

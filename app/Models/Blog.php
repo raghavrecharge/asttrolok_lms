@@ -12,7 +12,6 @@ use Jorenvh\Share\ShareFacade;
 class Blog extends Model implements TranslatableContract
 {
     use Translatable;
-    // use Sluggable;
 
     protected $table = 'blog';
     public $timestamps = false;
@@ -21,11 +20,6 @@ class Blog extends Model implements TranslatableContract
 
     public $translatedAttributes = ['title', 'description', 'meta_description', 'content'];
 
-    /**
-     * Return the sluggable configuration array for this model.
-     *
-     * @return array
-     */
     public function sluggable(): array
     {
         return [
@@ -55,19 +49,10 @@ class Blog extends Model implements TranslatableContract
         return $this->hasMany('App\Models\Comment', 'blog_id', 'id');
     }
 
-    // public function getUrl()
-    // {
-    //      $originalString = $this->slug;
-    //     // $modifiedString = str_replace(' ', '-', $originalString);
-    //     $modifiedString = strtolower($originalString);
-    //     return '/blog/' . $modifiedString;
-    // }
-
     public function getUrl()
     {
         $slug = strtolower($this->slug);
 
-        // Base URL from env
         $baseUrl = config('app.manual_base_url');
 
         return $baseUrl . '/blog/' . $slug;

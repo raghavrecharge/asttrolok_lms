@@ -1,20 +1,19 @@
 @extends('web.default2.layouts.app')
 
-
 @section('content')
     <section class="cart-banner1 position-relative text-center  slider-container1">
         <h1 class="font-30 text-white font-weight-bold">{{ trans('cart.shopping_cart') }}</h1>
     </section>
-  
+
  <form action="/razorpay" method="get">
-                         
+
                             <input type="hidden" name="consult_id" value="{{ $consult_id }}">
                             <input type="hidden" name="_token" value="{{ $_token }}">
                             <input type="hidden" name="email" value="{{ $email }}">
                             <input type="hidden" name="total" value="{{ $total }}">
                             <input type="hidden" name="contact" value="{{ $contact }}">
                             <input type="hidden" name="name" value="{{ $full_name }}">
-            
+
                             <script src="https://checkout.razorpay.com/v1/checkout.js"
                                     data-key="{{ env('RAZORPAY_API_KEY') }}"
                                     data-amount="{{ (int)($total * 100) }}"

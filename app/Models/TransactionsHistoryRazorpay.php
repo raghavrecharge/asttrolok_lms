@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class TransactionsHistoryRazorpay extends Model
 {
     protected $table = 'transactions_history_razorpay';
-    
+
     protected $fillable = [
         'razorpay_payment_id',
         'razorpay_order_id',

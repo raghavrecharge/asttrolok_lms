@@ -18,7 +18,7 @@
         }
     </style>
 @endpush
-<?php // echo "mayank";?>
+<?php
 @section('content')
     <section class="section">
         <div class="section-header">
@@ -39,8 +39,7 @@
                 <div class="col-12 ">
                     <div class="card">
                         <div class="card-body">
-                            
-                            
+
                             <form method="post" action="{{ getAdminPanelUrl() }}/remedies/{{ !empty($remedy) ? $remedy->id.'/update' : 'store' }}" id="remedyForm" class="webinar-form">
                                 {{ csrf_field() }}
                                 <section>
@@ -48,7 +47,6 @@
 
                                     <div class="row">
                                         <div class="col-12 col-md-5">
-                                            
 
                                             <input type="hidden" name="locale" value="EN">
 
@@ -95,7 +93,6 @@
                                                 </div>
                                             @endif
 
-
                                             <div class="form-group mt-15 ">
                                                 <label class="input-label d-block">{{ trans('admin/main.select_a_instructor') }}</label>
 
@@ -115,9 +112,6 @@
                                                 </div>
                                                 @enderror
                                             </div>
-
-
-                                            
 
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.thumbnail_image') }}</label>
@@ -141,7 +135,6 @@
                                                 </div>
                                             </div>
 
-
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.cover_image') }}</label>
                                                 <div class="input-group">
@@ -164,23 +157,20 @@
                                                 </div>
                                             </div>
 
-                                         
-
-                                        
                                         </div>
                                     </div>
 
 <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.seo_title') }}</label>
                                                 <input type="text" name="seo_title" value="{{ !empty($remedy) ? $remedy->seo_title : old('seo_title') }}" class="form-control @error('seo_title')  is-invalid @enderror"/>
-                                            
+
                                                 @error('seo_title')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
                                                 </div>
                                                 @enderror
                                             </div>
-                                            
+
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.seo_description') }}</label>
                                                 <input type="text" name="seo_description" value="{{ !empty($remedy) ? $remedy->seo_description : old('seo_description') }}" class="form-control @error('seo_description')  is-invalid @enderror"/>
@@ -211,15 +201,6 @@
                                     <div class="row">
                                         <div class="col-12 col-md-6">
 
-
-                                       
-
-                                            
-
-                                          
-
-                                          
-
                                             <div class="form-group mt-30 d-flex align-items-center justify-content-between">
                                                 <label class="cursor-pointer" for="downloadableSwitch">{{ trans('home.downloadable') }}</label>
                                                 <div class="custom-control custom-switch">
@@ -228,9 +209,6 @@
                                                 </div>
                                             </div>
 
-                                       
-
-                                            
                                             <div class="form-group mt-30 d-flex align-items-center justify-content-between">
                                                 <label class="" for="privateSwitch">{{ trans('webinars.private') }}</label>
                                                 <div class="custom-control custom-switch">
@@ -238,8 +216,6 @@
                                                     <label class="custom-control-label" for="privateSwitch"></label>
                                                 </div>
                                             </div>
-
-                                      
 
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.price') }} ({{ $currency }})</label>
@@ -250,12 +226,6 @@
                                                 </div>
                                                 @enderror
                                             </div>
-
-                                        
-
-                                        
-
-                                     
 
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.category') }}</label>
@@ -315,13 +285,8 @@
                                 </section>
 
                                 @if(!empty($remedy))
-                                    
-
 
                                     @include('admin.remedies.create_includes.contents')
-
-
-                                   
 
                                     <section class="mt-30">
                                         <div class="d-flex justify-content-between align-items-center">
@@ -372,9 +337,6 @@
                                         </div>
                                     </section>
 
-                                    
-
-                                   
                                 @endif
 
                                 <section class="mt-3">
@@ -408,16 +370,15 @@
                                 </div>
                             </form>
 
-
                             @include('admin.remedies.modals.prerequisites')
                             @include('admin.remedies.modals.quizzes')
                             @include('admin.remedies.modals.chapter')
-                          
+
                             @include('admin.remedies.modals.file')
                             @include('admin.remedies.modals.interactive_file')
                             @include('admin.remedies.modals.faq')
                             @include('admin.remedies.modals.testLesson')
-                        
+
                             @include('admin.remedies.modals.extra_description')
 
                         </div>

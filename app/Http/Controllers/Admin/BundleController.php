@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Panel\WebinarStatisticController;
 use App\Mail\SendNotifications;
@@ -28,78 +31,87 @@ class BundleController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_bundles_list');
+        try {
+            $this->authorize('admin_bundles_list');
 
-        removeContentLocale();
+            removeContentLocale();
 
-        $query = Bundle::query();
+            $query = Bundle::query();
 
-        $totalBundles = $query->count();
-        $totalPendingBundles = deepClone($query)->where('bundles.status', Bundle::$pending)->count();
-        $totalSales = deepClone($query)->join('sales', 'bundles.id', '=', 'sales.bundle_id')
-            ->select(DB::raw('count(sales.bundle_id) as sales_count, sum(total_amount) as total_amount'))
-            ->whereNotNull('sales.bundle_id')
-            ->whereNull('sales.refund_at')
-            ->first();
+            $totalBundles = $query->count();
+            $totalPendingBundles = deepClone($query)->where('bundles.status', Bundle::$pending)->count();
+            $totalSales = deepClone($query)->join('sales', 'bundles.id', '=', 'sales.bundle_id')
+                ->select(DB::raw('count(sales.bundle_id) as sales_count, sum(total_amount) as total_amount'))
+                ->whereNotNull('sales.bundle_id')
+                ->whereNull('sales.refund_at')
+                ->first();
 
-        $categories = Category::where('parent_id', null)
-            ->with('subCategories')
-            ->get();
-
-        $query = $this->handleFilters($query, $request)
-            ->with([
-                'category',
-                'teacher' => function ($qu) {
-                    $qu->select('id', 'full_name');
-                },
-                'sales' => function ($query) {
-                    $query->whereNull('refund_at');
-                }
-            ])
-            ->withCount([
-                'bundleWebinars'
-            ]);
-
-        $bundles = $query->paginate(10);
-
-        foreach ($bundles as $bundle) {
-            $giftsIds = Gift::query()->where('bundle_id', $bundle->id)
-                ->where('status', 'active')
-                ->where(function ($query) {
-                    $query->whereNull('date');
-                    $query->orWhere('date', '<', time());
-                })
-                ->whereHas('sale')
-                ->pluck('id')
-                ->toArray();
-
-            $sales = Sale::query()
-                ->where(function ($query) use ($bundle, $giftsIds) {
-                    $query->where('bundle_id', $bundle->id);
-                    $query->orWhereIn('gift_id', $giftsIds);
-                })
-                ->whereNull('refund_at')
+            $categories = Category::where('parent_id', null)
+                ->with('subCategories')
                 ->get();
 
-            $bundle->sales = $sales;
+            $query = $this->handleFilters($query, $request)
+                ->with([
+                    'category',
+                    'teacher' => function ($qu) {
+                        $qu->select('id', 'full_name');
+                    },
+                    'sales' => function ($query) {
+                        $query->whereNull('refund_at');
+                    }
+                ])
+                ->withCount([
+                    'bundleWebinars'
+                ]);
+
+            $bundles = $query->paginate(10);
+
+            foreach ($bundles as $bundle) {
+                $giftsIds = Gift::query()->where('bundle_id', $bundle->id)
+                    ->where('status', 'active')
+                    ->where(function ($query) {
+                        $query->whereNull('date');
+                        $query->orWhere('date', '<', time());
+                    })
+                    ->whereHas('sale')
+                    ->pluck('id')
+                    ->toArray();
+
+                $sales = Sale::query()
+                    ->where(function ($query) use ($bundle, $giftsIds) {
+                        $query->where('bundle_id', $bundle->id);
+                        $query->orWhereIn('gift_id', $giftsIds);
+                    })
+                    ->whereNull('refund_at')
+                    ->get();
+
+                $bundle->sales = $sales;
+            }
+
+            $data = [
+                'pageTitle' => trans('update.bundles'),
+                'bundles' => $bundles,
+                'totalBundles' => $totalBundles,
+                'totalPendingBundles' => $totalPendingBundles,
+                'totalSales' => $totalSales,
+                'categories' => $categories,
+            ];
+
+            $teacher_ids = $request->get('teacher_ids', null);
+            if (!empty($teacher_ids)) {
+                $data['teachers'] = User::select('id', 'full_name')->whereIn('id', $teacher_ids)->get();
+            }
+
+            return view('admin.bundles.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-
-        $data = [
-            'pageTitle' => trans('update.bundles'),
-            'bundles' => $bundles,
-            'totalBundles' => $totalBundles,
-            'totalPendingBundles' => $totalPendingBundles,
-            'totalSales' => $totalSales,
-            'categories' => $categories,
-        ];
-
-        $teacher_ids = $request->get('teacher_ids', null);
-        if (!empty($teacher_ids)) {
-            $data['teachers'] = User::select('id', 'full_name')->whereIn('id', $teacher_ids)->get();
-        }
-
-        return view('admin.bundles.lists', $data);
     }
 
     private function handleFilters($query, $request)
@@ -220,486 +232,508 @@ class BundleController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-
         return $query;
     }
 
     public function create()
     {
-        $this->authorize('admin_bundles_create');
+        try {
+            $this->authorize('admin_bundles_create');
 
-        removeContentLocale();
+            removeContentLocale();
 
-        $categories = Category::where('parent_id', null)->get();
+            $categories = Category::where('parent_id', null)->get();
 
-        $data = [
-            'pageTitle' => trans('update.new_bundle'),
-            'categories' => $categories
-        ];
+            $data = [
+                'pageTitle' => trans('update.new_bundle'),
+                'categories' => $categories
+            ];
 
-        return view('admin.bundles.create', $data);
+            return view('admin.bundles.create', $data);
+        } catch (\Exception $e) {
+            \Log::error('create error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function store(Request $request)
     {
-        $this->authorize('admin_bundles_create');
+        try {
+            $this->authorize('admin_bundles_create');
 
-        $this->validate($request, [
-            'title' => 'required|max:255',
-            'slug' => 'max:255|unique:bundles,slug',
-            'thumbnail' => 'required',
-            'image_cover' => 'required',
-            'description' => 'required',
-            'teacher_id' => 'required|exists:users,id',
-            'category_id' => 'required',
-        ]);
-
-        $data = $request->all();
-
-        if (empty($data['slug'])) {
-            $data['slug'] = Bundle::makeSlug($data['title']);
-        }
-
-        if (empty($data['video_demo'])) {
-            $data['video_demo_source'] = null;
-        }
-
-        if (!empty($data['video_demo_source']) and !in_array($data['video_demo_source'], ['upload', 'youtube', 'vimeo', 'external_link'])) {
-            $data['video_demo_source'] = 'upload';
-        }
-
-        $bundle = Bundle::create([
-            'slug' => $data['slug'],
-            'teacher_id' => $data['teacher_id'],
-            'creator_id' => $data['teacher_id'],
-            'thumbnail' => $data['thumbnail'],
-            'image_cover' => $data['image_cover'],
-            'video_demo' => $data['video_demo'],
-            'video_demo_source' => $data['video_demo'] ? $data['video_demo_source'] : null,
-            'subscribe' => !empty($data['subscribe']) ? true : false,
-            'points' => $data['points'] ?? null,
-            'price' => $data['price'],
-            'access_days' => $data['access_days'] ?? null,
-            'category_id' => $data['category_id'],
-            'message_for_reviewer' => $data['message_for_reviewer'] ?? null,
-            'status' => Bundle::$pending,
-            'created_at' => time(),
-            'updated_at' => time(),
-        ]);
-
-        if ($bundle) {
-            BundleTranslation::updateOrCreate([
-                'bundle_id' => $bundle->id,
-                'locale' => mb_strtolower($data['locale']),
-            ], [
-                'title' => $data['title'],
-                'description' => $data['description'],
-                'seo_description' => $data['seo_description'],
+            $this->validate($request, [
+                'title' => 'required|max:255',
+                'slug' => 'max:255|unique:bundles,slug',
+                'thumbnail' => 'required',
+                'image_cover' => 'required',
+                'description' => 'required',
+                'teacher_id' => 'required|exists:users,id',
+                'category_id' => 'required',
             ]);
-        }
 
-        $filters = $request->get('filters', null);
-        if (!empty($filters) and is_array($filters)) {
-            BundleFilterOption::where('bundle_id', $bundle->id)->delete();
+            $data = $request->all();
 
-            foreach ($filters as $filter) {
-                BundleFilterOption::create([
+            if (empty($data['slug'])) {
+                $data['slug'] = Bundle::makeSlug($data['title']);
+            }
+
+            if (empty($data['video_demo'])) {
+                $data['video_demo_source'] = null;
+            }
+
+            if (!empty($data['video_demo_source']) and !in_array($data['video_demo_source'], ['upload', 'youtube', 'vimeo', 'external_link'])) {
+                $data['video_demo_source'] = 'upload';
+            }
+
+            $bundle = Bundle::create([
+                'slug' => $data['slug'],
+                'teacher_id' => $data['teacher_id'],
+                'creator_id' => $data['teacher_id'],
+                'thumbnail' => $data['thumbnail'],
+                'image_cover' => $data['image_cover'],
+                'video_demo' => $data['video_demo'],
+                'video_demo_source' => $data['video_demo'] ? $data['video_demo_source'] : null,
+                'subscribe' => !empty($data['subscribe']) ? true : false,
+                'points' => $data['points'] ?? null,
+                'price' => $data['price'],
+                'access_days' => $data['access_days'] ?? null,
+                'category_id' => $data['category_id'],
+                'message_for_reviewer' => $data['message_for_reviewer'] ?? null,
+                'status' => Bundle::$pending,
+                'created_at' => time(),
+                'updated_at' => time(),
+            ]);
+
+            if ($bundle) {
+                BundleTranslation::updateOrCreate([
                     'bundle_id' => $bundle->id,
-                    'filter_option_id' => $filter
+                    'locale' => mb_strtolower($data['locale']),
+                ], [
+                    'title' => $data['title'],
+                    'description' => $data['description'],
+                    'seo_description' => $data['seo_description'],
                 ]);
             }
-        }
 
-        if (!empty($request->get('tags'))) {
-            $tags = explode(',', $request->get('tags'));
-            Tag::where('bundle_id', $bundle->id)->delete();
+            $filters = $request->get('filters', null);
+            if (!empty($filters) and is_array($filters)) {
+                BundleFilterOption::where('bundle_id', $bundle->id)->delete();
 
-            foreach ($tags as $tag) {
-                Tag::create([
-                    'bundle_id' => $bundle->id,
-                    'title' => $tag,
-                ]);
+                foreach ($filters as $filter) {
+                    BundleFilterOption::create([
+                        'bundle_id' => $bundle->id,
+                        'filter_option_id' => $filter
+                    ]);
+                }
             }
-        }
 
-        return redirect(getAdminPanelUrl() . '/bundles/' . $bundle->id . '/edit?locale=' . $data['locale']);
+            if (!empty($request->get('tags'))) {
+                $tags = explode(',', $request->get('tags'));
+                Tag::where('bundle_id', $bundle->id)->delete();
+
+                foreach ($tags as $tag) {
+                    Tag::create([
+                        'bundle_id' => $bundle->id,
+                        'title' => $tag,
+                    ]);
+                }
+            }
+
+            return redirect(getAdminPanelUrl() . '/bundles/' . $bundle->id . '/edit?locale=' . $data['locale']);
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function edit(Request $request, $id)
     {
-        $this->authorize('admin_bundles_edit');
+        try {
+            $this->authorize('admin_bundles_edit');
 
-        $bundle = Bundle::where('id', $id)
-            ->with([
-                'tickets',
-                'faqs',
-                'category' => function ($query) {
-                    $query->with(['filters' => function ($query) {
-                        $query->with('options');
-                    }]);
-                },
-                'tags',
-                'bundleWebinars'
-            ])
-            ->first();
+            $bundle = Bundle::where('id', $id)
+                ->with([
+                    'tickets',
+                    'faqs',
+                    'category' => function ($query) {
+                        $query->with(['filters' => function ($query) {
+                            $query->with('options');
+                        }]);
+                    },
+                    'tags',
+                    'bundleWebinars'
+                ])
+                ->first();
 
-        if (empty($bundle)) {
-            abort(404);
+            if (empty($bundle)) {
+                abort(404);
+            }
+
+            $locale = $request->get('locale', app()->getLocale());
+            storeContentLocale($locale, $bundle->getTable(), $bundle->id);
+
+            $categories = Category::where('parent_id', null)
+                ->with('subCategories')
+                ->get();
+
+            $tags = $bundle->tags->pluck('title')->toArray();
+
+            $userIds = [$bundle->creator_id, $bundle->teacher_id];
+
+            $userWebinars = Webinar::where('status', Webinar::$active)
+                ->where('private', false)
+                ->get();
+
+            $userProducts = Product::where('status', Webinar::$active)
+                ->get();
+
+            $userConsultants = User::where('status', Webinar::$active)
+            ->where('role_id', 4)
+            ->where('consultant', 1)
+            ->whereHas('meeting', function ($q) {
+            $q->where('disabled', 0)
+            ->whereHas('meetingTimes');
+            })
+            ->get();
+
+            $data = [
+                'pageTitle' => trans('admin/main.edit') . ' | ' . $bundle->title,
+                'userWebinars' => $userWebinars,
+                'userProducts' => $userProducts,
+                'userConsultants' => $userConsultants,
+                'categories' => $categories,
+                'bundle' => $bundle,
+                'bundleCategoryFilters' => !empty($bundle->category) ? $bundle->category->filters : null,
+                'bundleFilterOptions' => $bundle->filterOptions->pluck('filter_option_id')->toArray(),
+                'tickets' => $bundle->tickets,
+                'faqs' => $bundle->faqs,
+                'bundleTags' => $tags,
+                'bundleWebinars' => $bundle->bundleWebinars,
+            ];
+
+            return view('admin.bundles.create', $data);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        // echo "<pre>";
-        // print_r($bundle->bundleWebinars);
-        // die();
-
-        $locale = $request->get('locale', app()->getLocale());
-        storeContentLocale($locale, $bundle->getTable(), $bundle->id);
-
-        $categories = Category::where('parent_id', null)
-            ->with('subCategories')
-            ->get();
-
-        $tags = $bundle->tags->pluck('title')->toArray();
-
-        $userIds = [$bundle->creator_id, $bundle->teacher_id];
-        // $userWebinars = Webinar::select('id', 'creator_id', 'teacher_id')
-        //     ->where('status', Webinar::$active)
-        //     ->where('private', false)
-        //     ->where(function ($query) use ($userIds) {
-        //         $query->whereIn('creator_id', $userIds)
-        //             ->orWhereIn('teacher_id', $userIds);
-        //     })
-        //     ->get();
-        $userWebinars = Webinar::where('status', Webinar::$active)
-            ->where('private', false)
-            ->get();
-            //mayank
-        $userProducts = Product::where('status', Webinar::$active)
-            ->get();
-            
-        // $userConsultants = User::where('status', Webinar::$active)
-        //     ->where('role_id', 4)
-        //     ->where('consultant', 1)
-        //     ->with([
-        //         'meeting' => function ($query) {
-        //             $query->with('meetingTimes');
-        //             $query->withCount('meetingTimes');
-        //         }
-        //     ])
-        //     ->get();
-            
-        $userConsultants = User::where('status', Webinar::$active)
-    ->where('role_id', 4)
-    ->where('consultant', 1)
-    ->whereHas('meeting', function ($q) {
-        $q->where('disabled', 0)
-        ->whereHas('meetingTimes');
-    })
-    ->get();
-
-            
-            // echo "<pre>";
-            // print_r($userConsultants);die();
-
-        $data = [
-            'pageTitle' => trans('admin/main.edit') . ' | ' . $bundle->title,
-            'userWebinars' => $userWebinars,
-            'userProducts' => $userProducts,
-            'userConsultants' => $userConsultants,
-            'categories' => $categories,
-            'bundle' => $bundle,
-            'bundleCategoryFilters' => !empty($bundle->category) ? $bundle->category->filters : null,
-            'bundleFilterOptions' => $bundle->filterOptions->pluck('filter_option_id')->toArray(),
-            'tickets' => $bundle->tickets,
-            'faqs' => $bundle->faqs,
-            'bundleTags' => $tags,
-            'bundleWebinars' => $bundle->bundleWebinars,
-        ];
-
-        return view('admin.bundles.create', $data);
     }
 
     public function update(Request $request, $id)
     {
-        $this->authorize('admin_bundles_edit');
-        $data = $request->all();
+        try {
+            $this->authorize('admin_bundles_edit');
+            $data = $request->all();
 
-        $bundle = Bundle::find($id);
-        $isDraft = (!empty($data['draft']) and $data['draft'] == 1);
-        $reject = (!empty($data['draft']) and $data['draft'] == 'reject');
-        $publish = (!empty($data['draft']) and $data['draft'] == 'publish');
+            $bundle = Bundle::find($id);
+            $isDraft = (!empty($data['draft']) and $data['draft'] == 1);
+            $reject = (!empty($data['draft']) and $data['draft'] == 'reject');
+            $publish = (!empty($data['draft']) and $data['draft'] == 'publish');
 
-        $rules = [
-            'title' => 'required|max:255',
-            'slug' => 'max:255|unique:bundles,slug,' . $bundle->id,
-            'thumbnail' => 'required',
-            'image_cover' => 'required',
-            'description' => 'required',
-            'teacher_id' => 'required|exists:users,id',
-            'category_id' => 'required',
-        ];
+            $rules = [
+                'title' => 'required|max:255',
+                'slug' => 'max:255|unique:bundles,slug,' . $bundle->id,
+                'thumbnail' => 'required',
+                'image_cover' => 'required',
+                'description' => 'required',
+                'teacher_id' => 'required|exists:users,id',
+                'category_id' => 'required',
+            ];
 
-        $this->validate($request, $rules);
+            $this->validate($request, $rules);
 
-        if (!empty($data['teacher_id'])) {
-            $teacher = User::findOrFail($data['teacher_id']);
-            $creator = $bundle->creator;
+            if (!empty($data['teacher_id'])) {
+                $teacher = User::findOrFail($data['teacher_id']);
+                $creator = $bundle->creator;
 
-            if (empty($teacher) or ($creator->isOrganization() and ($teacher->organ_id != $creator->id and $teacher->id != $creator->id))) {
-                $toastData = [
-                    'title' => trans('public.request_failed'),
-                    'msg' => trans('admin/main.is_not_the_teacher_of_this_organization'),
-                    'status' => 'error'
-                ];
-                return back()->with(['toast' => $toastData]);
+                if (empty($teacher) or ($creator->isOrganization() and ($teacher->organ_id != $creator->id and $teacher->id != $creator->id))) {
+                    $toastData = [
+                        'title' => trans('public.request_failed'),
+                        'msg' => trans('admin/main.is_not_the_teacher_of_this_organization'),
+                        'status' => 'error'
+                    ];
+                    return back()->with(['toast' => $toastData]);
+                }
             }
-        }
 
-
-        if (empty($data['slug'])) {
-            $data['slug'] = Bundle::makeSlug($data['title']);
-        }
-
-        $data['status'] = $publish ? Bundle::$active : ($reject ? Bundle::$inactive : ($isDraft ? Bundle::$isDraft : Bundle::$pending));
-        $data['updated_at'] = time();
-        $data['subscribe'] = !empty($data['subscribe']) ? true : false;
-
-        if ($data['category_id'] != $bundle->category_id) {
-            BundleFilterOption::where('bundle_id', $bundle->id)->delete();
-        }
-
-        $filters = $request->get('filters', null);
-        if (!empty($filters) and is_array($filters)) {
-            BundleFilterOption::where('bundle_id', $bundle->id)->delete();
-
-            foreach ($filters as $filter) {
-                BundleFilterOption::create([
-                    'bundle_id' => $bundle->id,
-                    'filter_option_id' => $filter
-                ]);
+            if (empty($data['slug'])) {
+                $data['slug'] = Bundle::makeSlug($data['title']);
             }
-        }
 
-        if (!empty($request->get('tags'))) {
-            $tags = explode(',', $request->get('tags'));
-            Tag::where('bundle_id', $bundle->id)->delete();
+            $data['status'] = $publish ? Bundle::$active : ($reject ? Bundle::$inactive : ($isDraft ? Bundle::$isDraft : Bundle::$pending));
+            $data['updated_at'] = time();
+            $data['subscribe'] = !empty($data['subscribe']) ? true : false;
 
-            foreach ($tags as $tag) {
-                Tag::create([
-                    'bundle_id' => $bundle->id,
-                    'title' => $tag,
-                ]);
+            if ($data['category_id'] != $bundle->category_id) {
+                BundleFilterOption::where('bundle_id', $bundle->id)->delete();
             }
-        }
 
-        unset($data['_token'],
-            $data['current_step'],
-            $data['draft'],
-            $data['get_next'],
-            $data['partners'],
-            $data['tags'],
-            $data['filters'],
-            $data['ajax']
-        );
+            $filters = $request->get('filters', null);
+            if (!empty($filters) and is_array($filters)) {
+                BundleFilterOption::where('bundle_id', $bundle->id)->delete();
 
-        if (empty($data['video_demo'])) {
-            $data['video_demo_source'] = null;
-        }
+                foreach ($filters as $filter) {
+                    BundleFilterOption::create([
+                        'bundle_id' => $bundle->id,
+                        'filter_option_id' => $filter
+                    ]);
+                }
+            }
 
-        if (!empty($data['video_demo_source']) and !in_array($data['video_demo_source'], ['upload', 'youtube', 'vimeo', 'external_link'])) {
-            $data['video_demo_source'] = 'upload';
-        }
+            if (!empty($request->get('tags'))) {
+                $tags = explode(',', $request->get('tags'));
+                Tag::where('bundle_id', $bundle->id)->delete();
 
-        $bundle->update([
-            'slug' => $data['slug'],
-            'teacher_id' => $data['teacher_id'],
-            'thumbnail' => $data['thumbnail'],
-            'image_cover' => $data['image_cover'],
-            'video_demo' => $data['video_demo'],
-            'video_demo_source' => $data['video_demo'] ? $data['video_demo_source'] : null,
-            'subscribe' => $data['subscribe'],
-            'points' => $data['points'] ?? null,
-            'price' => $data['price'],
-            'access_days' => $data['access_days'] ?? null,
-            'category_id' => $data['category_id'],
-            'message_for_reviewer' => $data['message_for_reviewer'] ?? null,
-            'status' => $data['status'],
-            'updated_at' => time(),
-        ]);
+                foreach ($tags as $tag) {
+                    Tag::create([
+                        'bundle_id' => $bundle->id,
+                        'title' => $tag,
+                    ]);
+                }
+            }
 
-        if ($bundle) {
-            BundleTranslation::updateOrCreate([
-                'bundle_id' => $bundle->id,
-                'locale' => mb_strtolower($data['locale']),
-            ], [
-                'title' => $data['title'],
-                'description' => $data['description'],
-                'seo_description' => $data['seo_description'],
+            unset($data['_token'],
+                $data['current_step'],
+                $data['draft'],
+                $data['get_next'],
+                $data['partners'],
+                $data['tags'],
+                $data['filters'],
+                $data['ajax']
+            );
+
+            if (empty($data['video_demo'])) {
+                $data['video_demo_source'] = null;
+            }
+
+            if (!empty($data['video_demo_source']) and !in_array($data['video_demo_source'], ['upload', 'youtube', 'vimeo', 'external_link'])) {
+                $data['video_demo_source'] = 'upload';
+            }
+
+            $bundle->update([
+                'slug' => $data['slug'],
+                'teacher_id' => $data['teacher_id'],
+                'thumbnail' => $data['thumbnail'],
+                'image_cover' => $data['image_cover'],
+                'video_demo' => $data['video_demo'],
+                'video_demo_source' => $data['video_demo'] ? $data['video_demo_source'] : null,
+                'subscribe' => $data['subscribe'],
+                'points' => $data['points'] ?? null,
+                'price' => $data['price'],
+                'access_days' => $data['access_days'] ?? null,
+                'category_id' => $data['category_id'],
+                'message_for_reviewer' => $data['message_for_reviewer'] ?? null,
+                'status' => $data['status'],
+                'updated_at' => time(),
             ]);
+
+            if ($bundle) {
+                BundleTranslation::updateOrCreate([
+                    'bundle_id' => $bundle->id,
+                    'locale' => mb_strtolower($data['locale']),
+                ], [
+                    'title' => $data['title'],
+                    'description' => $data['description'],
+                    'seo_description' => $data['seo_description'],
+                ]);
+            }
+
+            $notifyOptions = [
+                '[item_title]' => $bundle->title,
+            ];
+
+            if ($publish) {
+                sendNotification('bundle_approved', $notifyOptions, $bundle->teacher_id);
+
+            } elseif ($reject) {
+                sendNotification('bundle_rejected', $notifyOptions, $bundle->teacher_id);
+            }
+
+            removeContentLocale();
+
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $notifyOptions = [
-            '[item_title]' => $bundle->title,
-        ];
-
-        if ($publish) {
-            sendNotification('bundle_approved', $notifyOptions, $bundle->teacher_id);
-
-            /*$createClassesReward = RewardAccounting::calculateScore(Reward::CREATE_CLASSES);
-            RewardAccounting::makeRewardAccounting(
-                $bundle->creator_id,
-                $createClassesReward,
-                Reward::CREATE_CLASSES,
-                $bundle->id,
-                true
-            );*/
-
-        } elseif ($reject) {
-            sendNotification('bundle_rejected', $notifyOptions, $bundle->teacher_id);
-        }
-
-        removeContentLocale();
-
-        return back();
     }
 
     public function destroy(Request $request, $id)
     {
-        $this->authorize('admin_bundles_delete');
+        try {
+            $this->authorize('admin_bundles_delete');
 
-        $bundle = Bundle::find($id);
+            $bundle = Bundle::find($id);
 
-        if (!empty($bundle)) {
-            $bundle->delete();
+            if (!empty($bundle)) {
+                $bundle->delete();
+            }
+
+            return redirect(getAdminPanelUrl() . '/bundles');
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return redirect(getAdminPanelUrl() . '/bundles');
     }
 
     public function studentsLists(Request $request, $id)
     {
-        $this->authorize('admin_webinar_students_lists');
+        try {
+            $this->authorize('admin_webinar_students_lists');
 
-        $bundle = Bundle::where('id', $id)
-            ->with([
-                'teacher' => function ($qu) {
-                    $qu->select('id', 'full_name');
-                }
-            ])
-            ->first();
+            $bundle = Bundle::where('id', $id)
+                ->with([
+                    'teacher' => function ($qu) {
+                        $qu->select('id', 'full_name');
+                    }
+                ])
+                ->first();
 
+            if (!empty($bundle)) {
+                $giftsIds = Gift::query()->where('bundle_id', $bundle->id)
+                    ->where('status', 'active')
+                    ->where(function ($query) {
+                        $query->whereNull('date');
+                        $query->orWhere('date', '<', time());
+                    })
+                    ->whereHas('sale')
+                    ->pluck('id')
+                    ->toArray();
 
-        if (!empty($bundle)) {
-            $giftsIds = Gift::query()->where('bundle_id', $bundle->id)
-                ->where('status', 'active')
-                ->where(function ($query) {
-                    $query->whereNull('date');
-                    $query->orWhere('date', '<', time());
-                })
-                ->whereHas('sale')
-                ->pluck('id')
-                ->toArray();
-
-
-            $query = User::join('sales', 'sales.buyer_id', 'users.id')
-                ->leftJoin('webinar_reviews', function ($query) use ($bundle) {
-                    $query->on('webinar_reviews.creator_id', 'users.id')
-                        ->where('webinar_reviews.bundle_id', $bundle->id);
-                })
-                ->select('users.*', 'webinar_reviews.rates', 'sales.gift_id', DB::raw('sales.created_at as purchase_date'))
-                ->where(function ($query) use ($bundle, $giftsIds) {
-                    $query->where('sales.bundle_id', $bundle->id);
-                    $query->orWhereIn('sales.gift_id', $giftsIds);
-                })
-                ->whereNull('sales.refund_at');
-
-            $students = $this->studentsListsFilters($bundle, $query, $request)
-                ->orderBy('sales.created_at', 'desc')
-                ->paginate(10);
-
-            $userGroups = Group::where('status', 'active')
-                ->orderBy('created_at', 'desc')
-                ->get();
-
-            $totalExpireStudents = 0;
-            if (!empty($bundle->access_days)) {
-                $accessTimestamp = $bundle->access_days * 24 * 60 * 60;
-
-                $totalExpireStudents = User::join('sales', 'sales.buyer_id', 'users.id')
-                    ->select('users.*', DB::raw('sales.created_at as purchase_date'))
+                $query = User::join('sales', 'sales.buyer_id', 'users.id')
+                    ->leftJoin('webinar_reviews', function ($query) use ($bundle) {
+                        $query->on('webinar_reviews.creator_id', 'users.id')
+                            ->where('webinar_reviews.bundle_id', $bundle->id);
+                    })
+                    ->select('users.*', 'webinar_reviews.rates', 'sales.gift_id', DB::raw('sales.created_at as purchase_date'))
                     ->where(function ($query) use ($bundle, $giftsIds) {
                         $query->where('sales.bundle_id', $bundle->id);
                         $query->orWhereIn('sales.gift_id', $giftsIds);
                     })
-                    ->whereRaw('sales.created_at + ? < ?', [$accessTimestamp, time()])
-                    ->whereNull('sales.refund_at')
-                    ->count();
-            }
+                    ->whereNull('sales.refund_at');
 
-            $bundleWebinars = $bundle->bundleWebinars;
+                $students = $this->studentsListsFilters($bundle, $query, $request)
+                    ->orderBy('sales.created_at', 'desc')
+                    ->paginate(10);
 
-            $webinarStatisticController = new WebinarStatisticController();
+                $userGroups = Group::where('status', 'active')
+                    ->orderBy('created_at', 'desc')
+                    ->get();
 
-            foreach ($students as $key => $student) {
-                $learnings = 0;
-                $webinarCount = 0;
+                $totalExpireStudents = 0;
+                if (!empty($bundle->access_days)) {
+                    $accessTimestamp = $bundle->access_days * 24 * 60 * 60;
 
-                foreach ($bundleWebinars as $bundleWebinar) {
-                    if (!empty($bundleWebinar->webinar)) {
-                        $webinarCount += 1;
-                        $learnings += $webinarStatisticController->getCourseProgressForStudent($bundleWebinar->webinar, $student->id);
-                    }
+                    $totalExpireStudents = User::join('sales', 'sales.buyer_id', 'users.id')
+                        ->select('users.*', DB::raw('sales.created_at as purchase_date'))
+                        ->where(function ($query) use ($bundle, $giftsIds) {
+                            $query->where('sales.bundle_id', $bundle->id);
+                            $query->orWhereIn('sales.gift_id', $giftsIds);
+                        })
+                        ->whereRaw('sales.created_at + ? < ?', [$accessTimestamp, time()])
+                        ->whereNull('sales.refund_at')
+                        ->count();
                 }
 
-                $learnings = ($learnings > 0 and $webinarCount > 0) ? round($learnings / $webinarCount, 2) : 0;
+                $bundleWebinars = $bundle->bundleWebinars;
 
-                if (!empty($student->gift_id)) {
-                    $gift = Gift::query()->where('id', $student->gift_id)->first();
+                $webinarStatisticController = new WebinarStatisticController();
 
-                    if (!empty($gift)) {
-                        $receipt = $gift->receipt;
+                foreach ($students as $key => $student) {
+                    $learnings = 0;
+                    $webinarCount = 0;
 
-                        if (!empty($receipt)) {
-                            $receipt->rates = $student->rates;
-                            $receipt->access_to_purchased_item = $student->access_to_purchased_item;
-                            $receipt->sale_id = $student->sale_id;
-                            $receipt->purchase_date = $student->purchase_date;
-                            $receipt->learning = $learnings;
-
-                            $students[$key] = $receipt;
-                        } else { /* Gift recipient who has not registered yet */
-                            $newUser = new User();
-                            $newUser->full_name = $gift->name;
-                            $newUser->email = $gift->email;
-                            $newUser->rates = 0;
-                            $newUser->access_to_purchased_item = $student->access_to_purchased_item;
-                            $newUser->sale_id = $student->sale_id;
-                            $newUser->purchase_date = $student->purchase_date;
-                            $newUser->learning = 0;
-
-                            $students[$key] = $newUser;
+                    foreach ($bundleWebinars as $bundleWebinar) {
+                        if (!empty($bundleWebinar->webinar)) {
+                            $webinarCount += 1;
+                            $learnings += $webinarStatisticController->getCourseProgressForStudent($bundleWebinar->webinar, $student->id);
                         }
                     }
-                } else {
-                    $student->learning = $learnings;
+
+                    $learnings = ($learnings > 0 and $webinarCount > 0) ? round($learnings / $webinarCount, 2) : 0;
+
+                    if (!empty($student->gift_id)) {
+                        $gift = Gift::query()->where('id', $student->gift_id)->first();
+
+                        if (!empty($gift)) {
+                            $receipt = $gift->receipt;
+
+                            if (!empty($receipt)) {
+                                $receipt->rates = $student->rates;
+                                $receipt->access_to_purchased_item = $student->access_to_purchased_item;
+                                $receipt->sale_id = $student->sale_id;
+                                $receipt->purchase_date = $student->purchase_date;
+                                $receipt->learning = $learnings;
+
+                                $students[$key] = $receipt;
+                            } else {
+                                $newUser = new User();
+                                $newUser->full_name = $gift->name;
+                                $newUser->email = $gift->email;
+                                $newUser->rates = 0;
+                                $newUser->access_to_purchased_item = $student->access_to_purchased_item;
+                                $newUser->sale_id = $student->sale_id;
+                                $newUser->purchase_date = $student->purchase_date;
+                                $newUser->learning = 0;
+
+                                $students[$key] = $newUser;
+                            }
+                        }
+                    } else {
+                        $student->learning = $learnings;
+                    }
                 }
+
+                $roles = Role::all();
+
+                $data = [
+                    'pageTitle' => trans('admin/main.students'),
+                    'bundle' => $bundle,
+                    'students' => $students,
+                    'userGroups' => $userGroups,
+                    'roles' => $roles,
+                    'totalStudents' => $students->total(),
+                    'totalActiveStudents' => $students->total() - $totalExpireStudents,
+                    'totalExpireStudents' => $totalExpireStudents,
+                ];
+
+                return view('admin.bundles.students', $data);
             }
 
-            $roles = Role::all();
-
-            $data = [
-                'pageTitle' => trans('admin/main.students'),
-                'bundle' => $bundle,
-                'students' => $students,
-                'userGroups' => $userGroups,
-                'roles' => $roles,
-                'totalStudents' => $students->total(),
-                'totalActiveStudents' => $students->total() - $totalExpireStudents,
-                'totalExpireStudents' => $totalExpireStudents,
-            ];
-
-            return view('admin.bundles.students', $data);
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('studentsLists error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
     }
 
     private function studentsListsFilters($bundle, $query, $request)
@@ -751,86 +785,115 @@ class BundleController extends Controller
 
     public function notificationToStudents($id)
     {
-        $this->authorize('admin_webinar_notification_to_students');
+        try {
+            $this->authorize('admin_webinar_notification_to_students');
 
-        $bundle = Bundle::findOrFail($id);
+            $bundle = Bundle::findOrFail($id);
 
-        $data = [
-            'pageTitle' => trans('notification.send_notification'),
-            'bundle' => $bundle
-        ];
+            $data = [
+                'pageTitle' => trans('notification.send_notification'),
+                'bundle' => $bundle
+            ];
 
-        return view('admin.bundles.send-notification-to-course-students', $data);
+            return view('admin.bundles.send-notification-to-course-students', $data);
+        } catch (\Exception $e) {
+            \Log::error('notificationToStudents error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
-
 
     public function sendNotificationToStudents(Request $request, $id)
     {
-        $this->authorize('admin_webinar_notification_to_students');
+        try {
+            $this->authorize('admin_webinar_notification_to_students');
 
-        $this->validate($request, [
-            'title' => 'required|string',
-            'message' => 'required|string',
-        ]);
+            $this->validate($request, [
+                'title' => 'required|string',
+                'message' => 'required|string',
+            ]);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $bundle = Bundle::where('id', $id)
-            ->with([
-                'sales' => function ($query) {
-                    $query->whereNull('refund_at');
-                    $query->with([
-                        'buyer'
-                    ]);
-                }
-            ])
-            ->first();
+            $bundle = Bundle::where('id', $id)
+                ->with([
+                    'sales' => function ($query) {
+                        $query->whereNull('refund_at');
+                        $query->with([
+                            'buyer'
+                        ]);
+                    }
+                ])
+                ->first();
 
-        if (!empty($bundle)) {
-            foreach ($bundle->sales as $sale) {
-                if (!empty($sale->buyer)) {
-                    $user = $sale->buyer;
+            if (!empty($bundle)) {
+                foreach ($bundle->sales as $sale) {
+                    if (!empty($sale->buyer)) {
+                        $user = $sale->buyer;
 
-                    Notification::create([
-                        'user_id' => $user->id,
-                        'group_id' => null,
-                        'sender_id' => auth()->id(),
-                        'title' => $data['title'],
-                        'message' => $data['message'],
-                        'sender' => Notification::$AdminSender,
-                        'type' => 'single',
-                        'created_at' => time()
-                    ]);
+                        Notification::create([
+                            'user_id' => $user->id,
+                            'group_id' => null,
+                            'sender_id' => auth()->id(),
+                            'title' => $data['title'],
+                            'message' => $data['message'],
+                            'sender' => Notification::$AdminSender,
+                            'type' => 'single',
+                            'created_at' => time()
+                        ]);
 
-                    if (!empty($user->email) and env('APP_ENV') == 'production') {
-                        \Mail::to($user->email)->send(new SendNotifications(['title' => $data['title'], 'message' => $data['message']]));
+                        if (!empty($user->email) and env('APP_ENV') == 'production') {
+                            \Mail::to($user->email)->send(new SendNotifications(['title' => $data['title'], 'message' => $data['message']]));
+                        }
                     }
                 }
+
+                $toastData = [
+                    'title' => trans('public.request_success'),
+                    'msg' => trans('update.the_notification_was_successfully_sent_to_n_students', ['count' => count($bundle->sales)]),
+                    'status' => 'success'
+                ];
+
+                return redirect(getAdminPanelUrl("/bundles/{$bundle->id}/students"))->with(['toast' => $toastData]);
             }
 
-            $toastData = [
-                'title' => trans('public.request_success'),
-                'msg' => trans('update.the_notification_was_successfully_sent_to_n_students', ['count' => count($bundle->sales)]),
-                'status' => 'success'
-            ];
-
-            return redirect(getAdminPanelUrl("/bundles/{$bundle->id}/students"))->with(['toast' => $toastData]);
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('sendNotificationToStudents error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
     }
 
     public function search(Request $request)
     {
-        $term = $request->get('term');
+        try {
+            $term = $request->get('term');
 
-        $option = $request->get('option', null);
+            $option = $request->get('option', null);
 
-        $query = Bundle::select('id')
-            ->whereTranslationLike('title', "%$term%");
+            $query = Bundle::select('id')
+                ->whereTranslationLike('title', "%$term%");
 
-        $bundles = $query->get();
+            $bundles = $query->get();
 
-        return response()->json($bundles, 200);
+            return response()->json($bundles, 200);
+        } catch (\Exception $e) {
+            \Log::error('search error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

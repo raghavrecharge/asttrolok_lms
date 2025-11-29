@@ -33,7 +33,6 @@
         </div>
     </div>
 
-
     <div class="col-12 mt-40">
         <div class="">
             <h2 class="section-title after-line">{{ trans('public.faq') }}</h2>

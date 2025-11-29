@@ -27,7 +27,7 @@ class Bundle extends Model
 
     public function webinars()
     {
-        //  return $this->hasManyThrough('App\Models\Webinar', 'App\Models\BundleWebinar', 'bundle_id', 'id');
+
     }
     public function teacher()
     {

@@ -69,7 +69,7 @@
                                              <select name="lang" class="form-control @error('type') is-invalid  @enderror">
                                                             <option value="EN" @if(!empty($webinar) and $webinar->lang =='EN') selected @endif>English</option>
                                                             <option value="HI"  @if(!empty($webinar) and $webinar->lang =='HI') selected @endif >Hindi</option>
-                                                         
+
                                                     </select>
 
                                             <div class="form-group mt-15 ">
@@ -137,7 +137,6 @@
                                                 </div>
                                             @endif
 
-
                                             <div class="form-group mt-15 ">
                                                 <label class="input-label d-block">{{ trans('admin/main.select_a_instructor') }}</label>
 
@@ -158,18 +157,17 @@
                                                 @enderror
                                             </div>
 
-
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.seo_title') }}</label>
                                                 <input type="text" name="seo_title" value="{{ !empty($webinar) ? $webinar->seo_title : old('seo_title') }}" class="form-control @error('seo_title')  is-invalid @enderror"/>
-                                            
+
                                                 @error('seo_title')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
                                                 </div>
                                                 @enderror
                                             </div>
-                                            
+
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.seo_description') }}</label>
                                                 <input type="text" name="seo_description" value="{{ !empty($webinar) ? $webinar->seo_description : old('seo_description') }}" class="form-control @error('seo_description')  is-invalid @enderror"/>
@@ -203,7 +201,6 @@
                                                 </div>
                                             </div>
 
-
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.cover_image') }}</label>
                                                 <div class="input-group">
@@ -228,7 +225,6 @@
 
                                             <div class="form-group mt-25">
                                                 <label class="input-label">{{ trans('public.demo_video') }} ({{ trans('public.optional') }})</label>
-
 
                                                 <div class="">
                                                     <label class="input-label font-12">{{ trans('public.source') }}</label>
@@ -284,7 +280,6 @@
                                     <h2 class="section-title after-line">{{ trans('public.additional_information') }}</h2>
                                     <div class="row">
                                         <div class="col-12 col-md-6">
-
 
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.capacity') }}</label>
@@ -347,7 +342,6 @@
                                                                     <i class="fa fa-clock"></i>
                                                                 </span>
                                                             </div>
-
 
                                                             <input type="number" name="duration" value="{{ !empty($webinar) ? $webinar->duration : old('duration') }}" class="form-control @error('duration')  is-invalid @enderror"/>
                                                             @error('duration')
@@ -517,7 +511,6 @@
                                                 <input type="text" name="tags" data-max-tag="5" value="{{ !empty($webinar) ? implode(',',$webinarTags) : '' }}" class="form-control inputtags" placeholder="{{ trans('public.type_tag_name_and_press_enter') }} ({{ trans('admin/main.max') }} : 5)"/>
                                             </div>
 
-
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.category') }}</label>
 
@@ -542,7 +535,7 @@
                                                 </div>
                                                 @enderror
                                             </div>
-                                            
+
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{trans('admin/main.order')}}</label>
                                                 <input type="number" name="order" value="{{ !empty($webinar) ? $webinar->order : old('order') }}" class="form-control @error('order')  is-invalid @enderror"/>
@@ -636,9 +629,7 @@
                                         </div>
                                     </section>
 
-
                                     @include('admin.webinars.create_includes.contents')
-
 
                                     <section class="mt-30">
                                         <div class="d-flex justify-content-between align-items-center">
@@ -752,10 +743,9 @@
                                            @else
                                            <h2 class="section-title after-line">{{ trans('update.'.$webinarExtraDescriptionType) }}</h2>
                                                 <button id="add_new_{{ $webinarExtraDescriptionType }}" type="button" class="btn btn-primary btn-sm mt-3">{{ trans('update.add_'.$webinarExtraDescriptionType) }}</button>
-                                         
-                                           
+
                                            @endif
-                                           
+
                                             </div>
 
                                             @php
@@ -892,7 +882,6 @@
                                     </div>
                                 </div>
                             </form>
-
 
                             @include('admin.webinars.modals.prerequisites')
                             @include('admin.webinars.modals.quizzes')

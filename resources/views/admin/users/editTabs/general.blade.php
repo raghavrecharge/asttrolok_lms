@@ -31,7 +31,7 @@
                     </div>
                     @enderror
                 </div>
-                
+
                 <div class="form-group custom-switches-stacked">
                                             <label class="custom-switch pl-0">
                                             <input type="checkbox" name="consultant" id="preloadingSwitch" value="1" {{ (!empty($user) and $user->consultant) ? 'checked="checked"' : '' }} class="custom-switch-input">
@@ -39,7 +39,6 @@
                                             <label class="custom-switch-description mb-0 cursor-pointer" for="preloadingSwitch">Become Consultant</label>
                                             </label>
                                         </div>
-
 
                 <div class="form-group">
                     <label class="input-label">{{ trans('update.timezone') }}</label>
@@ -108,7 +107,7 @@
                     </div>
                     @enderror
                 </div>
-                
+
                 <div class="form-group">
                     <label for="username">Rating:</label>
                     <input name="rating" type="text" value="{{ $user->rating }}" class="form-control @error('rating') is-invalid @enderror">

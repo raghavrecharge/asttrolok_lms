@@ -17,7 +17,7 @@
                 <div class="col-12 col-md-8 col-lg-8">
                     <div class="card">
                         <div class="card-body">
-                            
+
                             @if(session('success'))
                                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                                     {{ session('success') }}
@@ -197,7 +197,7 @@
                             <div class="alert alert-info">
                                 <h6><i class="fab fa-android"></i> Android</h6>
                                 <p class="mb-1"><strong>Version:</strong> {{ $updateSettings->latest_version_android ?? '1.0.0' }}</p>
-                                <p class="mb-0"><strong>Force Update:</strong> 
+                                <p class="mb-0"><strong>Force Update:</strong>
                                     <span class="badge badge-{{ ($updateSettings->force_update_android ?? false) ? 'success' : 'danger' }}">
                                         {{ ($updateSettings->force_update_android ?? false) ? 'Enabled' : 'Disabled' }}
                                     </span>
@@ -207,7 +207,7 @@
                             <div class="alert alert-info">
                                 <h6><i class="fab fa-apple"></i> iOS</h6>
                                 <p class="mb-1"><strong>Version:</strong> {{ $updateSettings->latest_version_ios ?? '1.0.0' }}</p>
-                                <p class="mb-0"><strong>Force Update:</strong> 
+                                <p class="mb-0"><strong>Force Update:</strong>
                                     <span class="badge badge-{{ ($updateSettings->force_update_ios ?? false) ? 'success' : 'danger' }}">
                                         {{ ($updateSettings->force_update_ios ?? false) ? 'Enabled' : 'Disabled' }}
                                     </span>

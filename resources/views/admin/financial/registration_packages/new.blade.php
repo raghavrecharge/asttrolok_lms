@@ -11,7 +11,6 @@
             </div>
         </div>
 
-
         <div class="section-body card">
 
             <div class="d-flex align-items-center justify-content-between">
@@ -43,7 +42,6 @@
                             @else
                                 <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
                             @endif
-
 
                             <div class="form-group">
                                 <label>{{ trans('admin/main.title') }}</label>

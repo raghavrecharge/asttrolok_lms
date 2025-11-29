@@ -534,20 +534,19 @@ span.badge.badge-danger.hide {
     @endforeach
 @endif
 <script  >
-        // Select all "Read More" links and add event listeners
+
         document.querySelectorAll('.show_hide').forEach(function (link) {
             link.addEventListener('click', function (e) {
-                e.preventDefault(); // Prevent the default link behavior
+                e.preventDefault();
 
-                // Find the corresponding hidden content for this link
                 const moreContent = this.nextElementSibling;
 
                 if (moreContent.style.display === "none" || moreContent.style.display === "") {
                     moreContent.style.display = "block";
-                    this.textContent = "Read Less"; // Change the link text
+                    this.textContent = "Read Less";
                 } else {
                     moreContent.style.display = "none";
-                    this.textContent = "Read More"; // Change back to "Read More"
+                    this.textContent = "Read More";
                 }
             });
         });

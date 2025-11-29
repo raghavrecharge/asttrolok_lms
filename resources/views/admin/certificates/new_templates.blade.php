@@ -168,6 +168,5 @@
 
 @push('scripts_bottom')
 
-
     <script src="/assets/default/js/admin/certificates.min.js"></script>
 @endpush

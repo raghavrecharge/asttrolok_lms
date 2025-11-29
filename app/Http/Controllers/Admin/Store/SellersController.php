@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin\Store;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Group;
 use App\Models\GroupUser;
@@ -15,46 +18,55 @@ class SellersController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_store_products_sellers');
+        try {
+            $this->authorize('admin_store_products_sellers');
 
-        $query = User::query()
-            ->whereHas('products');
+            $query = User::query()
+                ->whereHas('products');
 
-        $users = $this->handleFilters($request, $query)
-            ->with([
-                'products'
-            ])
-            ->withCount([
-                'products as virtual_products_count' => function ($query) {
-                    $query->where('type', Product::$virtual);
-                },
-                'products as physical_products_count' => function ($query) {
-                    $query->where('type', Product::$physical);
-                },
-                'productOrdersAsSeller as pending_orders_count' => function ($query) {
-                    $query->whereNotNull('sale_id');
-                    $query->where('status', ProductOrder::$waitingDelivery);
-                }
-            ])->paginate(10);
+            $users = $this->handleFilters($request, $query)
+                ->with([
+                    'products'
+                ])
+                ->withCount([
+                    'products as virtual_products_count' => function ($query) {
+                        $query->where('type', Product::$virtual);
+                    },
+                    'products as physical_products_count' => function ($query) {
+                        $query->where('type', Product::$physical);
+                    },
+                    'productOrdersAsSeller as pending_orders_count' => function ($query) {
+                        $query->whereNotNull('sale_id');
+                        $query->where('status', ProductOrder::$waitingDelivery);
+                    }
+                ])->paginate(10);
 
-        $userGroups = Group::where('status', 'active')
-            ->orderBy('created_at', 'desc')
-            ->get();
+            $userGroups = Group::where('status', 'active')
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        foreach ($users as $user) {
-            $user->total_sales = $this->getTotalSales($user);
-            $user->virtual_products_sales = $this->getTotalSales($user, Product::$virtual);
-            $user->physical_products_sales = $this->getTotalSales($user, Product::$physical);
+            foreach ($users as $user) {
+                $user->total_sales = $this->getTotalSales($user);
+                $user->virtual_products_sales = $this->getTotalSales($user, Product::$virtual);
+                $user->physical_products_sales = $this->getTotalSales($user, Product::$physical);
+            }
+
+            $data = [
+                'pageTitle' => trans('update.products_sellers'),
+                'users' => $users,
+                'userGroups' => $userGroups,
+            ];
+
+            return view('admin.store.sellers.index', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-
-        $data = [
-            'pageTitle' => trans('update.products_sellers'),
-            'users' => $users,
-            'userGroups' => $userGroups,
-        ];
-
-        return view('admin.store.sellers.index', $data);
     }
 
     private function getTotalSales($user, $productType = null)

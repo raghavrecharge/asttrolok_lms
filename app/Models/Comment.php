@@ -14,7 +14,6 @@ class Comment extends Model
     static $pending = 'pending';
     static $active = 'active';
 
-
     public function replies()
     {
         return $this->hasMany('App\Models\Comment', 'reply_id', 'id');

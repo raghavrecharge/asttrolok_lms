@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Panel\Store;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductFaq;
@@ -13,149 +16,189 @@ class ProductFaqController extends Controller
 {
     public function store(Request $request)
     {
-        $user = auth()->user();
-        $data = $request->get('ajax')['new'];
+        try {
+            $user = auth()->user();
+            $data = $request->get('ajax')['new'];
 
-        $rules = [
-            'product_id' => 'required',
-            'title' => 'required|max:255',
-            'answer' => 'required',
-        ];
+            $rules = [
+                'product_id' => 'required',
+                'title' => 'required|max:255',
+                'answer' => 'required',
+            ];
 
-        $validator = Validator::make($data, $rules);
+            $validator = Validator::make($data, $rules);
 
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $product = Product::where('id', $data['product_id'])
-            ->where('creator_id', $user->id)
-            ->first();
-
-        if (!empty($product)) {
-            $faq = ProductFaq::create([
-                'creator_id' => $user->id,
-                'product_id' => $product->id,
-                'order' => null,
-                'created_at' => time(),
-            ]);
-
-            if (!empty($faq)) {
-                ProductFaqTranslation::updateOrCreate([
-                    'product_faq_id' => $faq->id,
-                    'locale' => mb_strtolower($data['locale']),
-                ], [
-                    'title' => $data['title'],
-                    'answer' => $data['answer'],
-                ]);
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
             }
 
-            return response()->json([
-                'code' => 200,
-            ], 200);
-        }
-
-        abort(403);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $user = auth()->user();
-        $data = $request->get('ajax')[$id];
-
-        $rules = [
-            'product_id' => 'required',
-            'title' => 'required|max:255',
-            'answer' => 'required',
-        ];
-
-        $validator = Validator::make($data, $rules);
-
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $product = Product::where('id', $data['product_id'])
-            ->where('creator_id', $user->id)
-            ->first();
-
-        if (!empty($product)) {
-            $faq = ProductFaq::where('id', $id)
+            $product = Product::where('id', $data['product_id'])
                 ->where('creator_id', $user->id)
-                ->where('product_id', $product->id)
                 ->first();
 
-            if (!empty($faq)) {
-                ProductFaqTranslation::updateOrCreate([
-                    'product_faq_id' => $faq->id,
-                    'locale' => mb_strtolower($data['locale']),
-                ], [
-                    'title' => $data['title'],
-                    'answer' => $data['answer'],
+            if (!empty($product)) {
+                $faq = ProductFaq::create([
+                    'creator_id' => $user->id,
+                    'product_id' => $product->id,
+                    'order' => null,
+                    'created_at' => time(),
                 ]);
+
+                if (!empty($faq)) {
+                    ProductFaqTranslation::updateOrCreate([
+                        'product_faq_id' => $faq->id,
+                        'locale' => mb_strtolower($data['locale']),
+                    ], [
+                        'title' => $data['title'],
+                        'answer' => $data['answer'],
+                    ]);
+                }
 
                 return response()->json([
                     'code' => 200,
                 ], 200);
             }
-        }
 
-        abort(403);
+            abort(403);
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $user = auth()->user();
+            $data = $request->get('ajax')[$id];
+
+            $rules = [
+                'product_id' => 'required',
+                'title' => 'required|max:255',
+                'answer' => 'required',
+            ];
+
+            $validator = Validator::make($data, $rules);
+
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $product = Product::where('id', $data['product_id'])
+                ->where('creator_id', $user->id)
+                ->first();
+
+            if (!empty($product)) {
+                $faq = ProductFaq::where('id', $id)
+                    ->where('creator_id', $user->id)
+                    ->where('product_id', $product->id)
+                    ->first();
+
+                if (!empty($faq)) {
+                    ProductFaqTranslation::updateOrCreate([
+                        'product_faq_id' => $faq->id,
+                        'locale' => mb_strtolower($data['locale']),
+                    ], [
+                        'title' => $data['title'],
+                        'answer' => $data['answer'],
+                    ]);
+
+                    return response()->json([
+                        'code' => 200,
+                    ], 200);
+                }
+            }
+
+            abort(403);
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function destroy(Request $request, $id)
     {
-        $faq = ProductFaq::where('id', $id)
-            ->where('creator_id', auth()->id())
-            ->first();
+        try {
+            $faq = ProductFaq::where('id', $id)
+                ->where('creator_id', auth()->id())
+                ->first();
 
-        if (!empty($faq)) {
-            $faq->delete();
+            if (!empty($faq)) {
+                $faq->delete();
+            }
+
+            return response()->json([
+                'code' => 200
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return response()->json([
-            'code' => 200
-        ], 200);
     }
 
     public function orderItems(Request $request)
     {
-        $user = auth()->user();
-        $data = $request->all();
+        try {
+            $user = auth()->user();
+            $data = $request->all();
 
-        $validator = Validator::make($data, [
-            'items' => 'required',
-        ]);
+            $validator = Validator::make($data, [
+                'items' => 'required',
+            ]);
 
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $itemIds = explode(',', $data['items']);
-
-        if (!is_array($itemIds) and !empty($itemIds)) {
-            $itemIds = [$itemIds];
-        }
-
-        if (!empty($itemIds) and is_array($itemIds) and count($itemIds)) {
-            foreach ($itemIds as $order => $id) {
-                ProductFaq::where('id', $id)
-                    ->where('creator_id', $user->id)
-                    ->update(['order' => ($order + 1)]);
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
             }
-        }
 
-        return response()->json([
-            'code' => 200,
-        ], 200);
+            $itemIds = explode(',', $data['items']);
+
+            if (!is_array($itemIds) and !empty($itemIds)) {
+                $itemIds = [$itemIds];
+            }
+
+            if (!empty($itemIds) and is_array($itemIds) and count($itemIds)) {
+                foreach ($itemIds as $order => $id) {
+                    ProductFaq::where('id', $id)
+                        ->where('creator_id', $user->id)
+                        ->update(['order' => ($order + 1)]);
+                }
+            }
+
+            return response()->json([
+                'code' => 200,
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('orderItems error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

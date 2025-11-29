@@ -16,7 +16,6 @@
             <input type="hidden" name="get_next" value="no" id="getNext"/>
             <input type="hidden" name="get_step" value="0" id="getStep"/>
 
-
             @if($currentStep == 1)
                 @include('web.default.panel.bundle.create_includes.step_1')
             @elseif(!empty($bundle))
@@ -24,7 +23,6 @@
             @endif
 
         </form>
-
 
         <div class="create-bundle-footer d-flex flex-column flex-md-row align-items-center justify-content-between mt-20 pt-15 border-top">
             <div class="d-flex align-items-center">

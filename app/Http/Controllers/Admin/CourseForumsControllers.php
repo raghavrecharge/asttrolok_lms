@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\CourseForum;
 use App\Models\CourseForumAnswer;
@@ -14,77 +17,95 @@ class CourseForumsControllers extends Controller
 {
     public function index()
     {
-        $this->authorize('admin_course_question_forum_list');
+        try {
+            $this->authorize('admin_course_question_forum_list');
 
-        $webinars = Webinar::select('id', 'category_id', 'teacher_id', 'slug')
-            ->where('forum', true)
-            ->withCount('forums')
-            ->with([
-                'teacher' => function ($query) {
-                    $query->select('id', 'full_name');
-                }
-            ])
-            ->paginate(10);
+            $webinars = Webinar::select('id', 'category_id', 'teacher_id', 'slug')
+                ->where('forum', true)
+                ->withCount('forums')
+                ->with([
+                    'teacher' => function ($query) {
+                        $query->select('id', 'full_name');
+                    }
+                ])
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('update.course_forum'),
-            'webinars' => $webinars
-        ];
+            $data = [
+                'pageTitle' => trans('update.course_forum'),
+                'webinars' => $webinars
+            ];
 
-        return view('admin.webinars.forum.course_lists', $data);
+            return view('admin.webinars.forum.course_lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function forums(Request $request, $webinar_id)
     {
-        $this->authorize('admin_course_question_forum_list');
+        try {
+            $this->authorize('admin_course_question_forum_list');
 
-        $webinar = Webinar::findOrFail($webinar_id);
+            $webinar = Webinar::findOrFail($webinar_id);
 
+            $query = CourseForum::where('webinar_id', $webinar_id);
 
-        $query = CourseForum::where('webinar_id', $webinar_id);
+            $totalQuestions = deepClone($query)->count();
+            $resolvedCount = deepClone($query)
+                ->whereHas('answers', function ($query) {
+                    $query->where('resolved', true);
+                })->count();
+            $notResolvedCount = deepClone($query)
+                ->whereDoesntHave('answers', function ($query) {
+                    $query->where('resolved', true);
+                })->count();
 
-        $totalQuestions = deepClone($query)->count();
-        $resolvedCount = deepClone($query)
-            ->whereHas('answers', function ($query) {
-                $query->where('resolved', true);
-            })->count();
-        $notResolvedCount = deepClone($query)
-            ->whereDoesntHave('answers', function ($query) {
-                $query->where('resolved', true);
-            })->count();
+            $forums = $this->handleForumFilters($request, $query)
+                ->with([
+                    'answers' => function ($query) {
+                        $query->orderBy('created_at', 'desc');
+                    },
+                    'user' => function ($query) {
+                        $query->select('id', 'full_name');
+                    }
+                ])
+                ->withCount('answers')
+                ->orderBy('pin', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
 
-
-        $forums = $this->handleForumFilters($request, $query)
-            ->with([
-                'answers' => function ($query) {
-                    $query->orderBy('created_at', 'desc');
-                },
-                'user' => function ($query) {
-                    $query->select('id', 'full_name');
+            foreach ($forums as $forum) {
+                if (!empty($forum->answers) and count($forum->answers)) {
+                    $forum->last_answer = $forum->answers->first();
+                    $forum->resolved = $forum->answers->where('resolved', true)->first();
                 }
-            ])
-            ->withCount('answers')
-            ->orderBy('pin', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        foreach ($forums as $forum) {
-            if (!empty($forum->answers) and count($forum->answers)) {
-                $forum->last_answer = $forum->answers->first();
-                $forum->resolved = $forum->answers->where('resolved', true)->first();
             }
+
+            $data = [
+                'pageTitle' => trans('update.course_forum'),
+                'forums' => $forums,
+                'webinar' => $webinar,
+                'totalQuestions' => $totalQuestions,
+                'resolvedCount' => $resolvedCount,
+                'notResolvedCount' => $notResolvedCount,
+            ];
+
+            return view('admin.webinars.forum.question_lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('forums error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $data = [
-            'pageTitle' => trans('update.course_forum'),
-            'forums' => $forums,
-            'webinar' => $webinar,
-            'totalQuestions' => $totalQuestions,
-            'resolvedCount' => $resolvedCount,
-            'notResolvedCount' => $notResolvedCount,
-        ];
-
-        return view('admin.webinars.forum.question_lists', $data);
     }
 
     private function handleForumFilters($request, $query)
@@ -93,7 +114,6 @@ class CourseForumsControllers extends Controller
         $date = $request->get('date');
         $status = $request->get('status');
         $userId = $request->get('user_id');
-
 
         if (!empty($title)) {
             $query->where('title', 'like', "%$title%");
@@ -130,132 +150,95 @@ class CourseForumsControllers extends Controller
 
     public function answers($webinar_id, $forum_id)
     {
-        $this->authorize('admin_course_question_forum_answers');
+        try {
+            $this->authorize('admin_course_question_forum_answers');
 
-        $course = Webinar::findOrFail($webinar_id);
+            $course = Webinar::findOrFail($webinar_id);
 
-        $question = CourseForum::findOrFail($forum_id);
+            $question = CourseForum::findOrFail($forum_id);
 
-        $answers = CourseForumAnswer::where('forum_id', $forum_id)
-            ->with([
-                'user' => function ($query) {
-                    $query->select('id', 'full_name');
-                }
-            ])->orderBy('pin', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->get();
+            $answers = CourseForumAnswer::where('forum_id', $forum_id)
+                ->with([
+                    'user' => function ($query) {
+                        $query->select('id', 'full_name');
+                    }
+                ])->orderBy('pin', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        $data = [
-            'pageTitle' => trans('public.answers'),
-            'question' => $question,
-            'answers' => $answers,
-            'course' => $course,
-        ];
+            $data = [
+                'pageTitle' => trans('public.answers'),
+                'question' => $question,
+                'answers' => $answers,
+                'course' => $course,
+            ];
 
-        return view('admin.webinars.forum.answers_lists', $data);
+            return view('admin.webinars.forum.answers_lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('answers error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function forumEdit($webinar_id, $forum_id)
     {
-        $this->authorize('admin_course_question_forum_list');
+        try {
+            $this->authorize('admin_course_question_forum_list');
 
-        $question = CourseForum::findOrFail($forum_id);
+            $question = CourseForum::findOrFail($forum_id);
 
-        return response()->json([
-            'code' => 200,
-            'post' => $question
-        ]);
+            return response()->json([
+                'code' => 200,
+                'post' => $question
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('forumEdit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function forumDelete($webinar_id, $forum_id)
     {
-        $this->authorize('admin_course_question_forum_list');
+        try {
+            $this->authorize('admin_course_question_forum_list');
 
-        $question = CourseForum::findOrFail($forum_id);
+            $question = CourseForum::findOrFail($forum_id);
 
-        $question->delete();
+            $question->delete();
 
-        return redirect(getAdminPanelUrl("/webinars/$webinar_id/forums"));
+            return redirect(getAdminPanelUrl("/webinars/$webinar_id/forums"));
+        } catch (\Exception $e) {
+            \Log::error('forumDelete error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function forumUpdate(Request $request, $webinar_id, $forum_id)
     {
-        $this->authorize('admin_course_question_forum_list');
+        try {
+            $this->authorize('admin_course_question_forum_list');
 
-        $question = CourseForum::findOrFail($forum_id);
+            $question = CourseForum::findOrFail($forum_id);
 
-        $data = $request->all();
-
-        $validator = Validator::make($data, [
-            'title' => 'required|max:255',
-            'description' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $question->update([
-            'title' => $data['title'],
-            'description' => $data['description'],
-            'attach' => $data['attach'] ?? null,
-        ]);
-
-        return response()->json([
-            'code' => 200,
-        ]);
-    }
-
-    public function answerEdit($webinar_id, $forum_id, $id)
-    {
-        $this->authorize('admin_course_question_forum_list');
-
-        $answer = CourseForumAnswer::where('forum_id', $forum_id)
-            ->where('id', $id)
-            ->first();
-
-        if (!empty($answer)) {
-            return response()->json([
-                'code' => 200,
-                'post' => $answer
-            ]);
-        }
-
-        abort(404);
-    }
-
-    public function answerDelete($webinar_id, $forum_id, $id)
-    {
-        $this->authorize('admin_course_question_forum_list');
-
-        $answer = CourseForumAnswer::where('forum_id', $forum_id)
-            ->where('id', $id)
-            ->first();
-
-        if (!empty($answer)) {
-            $answer->delete();
-
-            return redirect()->back();
-        }
-
-        abort(404);
-    }
-
-    public function answerUpdate(Request $request, $webinar_id, $forum_id, $id)
-    {
-        $this->authorize('admin_course_question_forum_list');
-
-        $answer = CourseForumAnswer::where('forum_id', $forum_id)
-            ->where('id', $id)
-            ->first();
-
-        if (!empty($answer)) {
             $data = $request->all();
 
             $validator = Validator::make($data, [
+                'title' => 'required|max:255',
                 'description' => 'required',
             ]);
 
@@ -266,15 +249,122 @@ class CourseForumsControllers extends Controller
                 ], 422);
             }
 
-            $answer->update([
+            $question->update([
+                'title' => $data['title'],
                 'description' => $data['description'],
+                'attach' => $data['attach'] ?? null,
             ]);
 
             return response()->json([
                 'code' => 200,
             ]);
+        } catch (\Exception $e) {
+            \Log::error('forumUpdate error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
+    }
 
-        abort(404);
+    public function answerEdit($webinar_id, $forum_id, $id)
+    {
+        try {
+            $this->authorize('admin_course_question_forum_list');
+
+            $answer = CourseForumAnswer::where('forum_id', $forum_id)
+                ->where('id', $id)
+                ->first();
+
+            if (!empty($answer)) {
+                return response()->json([
+                    'code' => 200,
+                    'post' => $answer
+                ]);
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('answerEdit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    public function answerDelete($webinar_id, $forum_id, $id)
+    {
+        try {
+            $this->authorize('admin_course_question_forum_list');
+
+            $answer = CourseForumAnswer::where('forum_id', $forum_id)
+                ->where('id', $id)
+                ->first();
+
+            if (!empty($answer)) {
+                $answer->delete();
+
+                return redirect()->back();
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('answerDelete error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    public function answerUpdate(Request $request, $webinar_id, $forum_id, $id)
+    {
+        try {
+            $this->authorize('admin_course_question_forum_list');
+
+            $answer = CourseForumAnswer::where('forum_id', $forum_id)
+                ->where('id', $id)
+                ->first();
+
+            if (!empty($answer)) {
+                $data = $request->all();
+
+                $validator = Validator::make($data, [
+                    'description' => 'required',
+                ]);
+
+                if ($validator->fails()) {
+                    return response([
+                        'code' => 422,
+                        'errors' => $validator->errors(),
+                    ], 422);
+                }
+
+                $answer->update([
+                    'description' => $data['description'],
+                ]);
+
+                return response()->json([
+                    'code' => 200,
+                ]);
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('answerUpdate error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

@@ -24,7 +24,6 @@
             </div>
         @endif
 
-
         <div class="section-body">
             <div class="row">
                 <div class="col-12">
@@ -72,7 +71,6 @@
                                         <a class="nav-link @if(!empty($becomeInstructor)) active @endif" id="become_instructor-tab" data-toggle="tab" href="#become_instructor" role="tab" aria-controls="become_instructor" aria-selected="true">{{ trans('admin/main.become_instructor_info') }}</a>
                                     </li>
                                 @endif
-
 
                                 <li class="nav-item">
                                     <a class="nav-link" id="purchased_courses-tab" data-toggle="tab" href="#purchased_courses" role="tab" aria-controls="purchased_courses" aria-selected="true">{{ trans('update.purchased_courses') }}</a>

@@ -111,7 +111,6 @@
                                 <div class="invalid-feedback"></div>
                             </div>
 
-
                             <div class="form-group js-file-path-input {{ (!empty($file) and $file->storage == 's3') ? 'd-none' : '' }}">
                                 <div class="local-input input-group">
                                     <div class="input-group-prepend">

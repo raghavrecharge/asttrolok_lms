@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Exports\UpcomingCoursesExport;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
@@ -19,43 +22,52 @@ class UpcomingCoursesController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_upcoming_courses_list');
+        try {
+            $this->authorize('admin_upcoming_courses_list');
 
+            $query = UpcomingCourse::query();
 
-        $query = UpcomingCourse::query();
+            $totalCourses = deepClone($query)->count();
+            $releasedCourses = deepClone($query)->whereNotNull('webinar_id')->count();
+            $notReleased = deepClone($query)->whereNull('webinar_id')->count();
+            $ids = deepClone($query)->pluck('id')->toArray();
+            $followers = UpcomingCourseFollower::query()->whereIn('upcoming_course_id', $ids)->count();
 
-        $totalCourses = deepClone($query)->count();
-        $releasedCourses = deepClone($query)->whereNotNull('webinar_id')->count();
-        $notReleased = deepClone($query)->whereNull('webinar_id')->count();
-        $ids = deepClone($query)->pluck('id')->toArray();
-        $followers = UpcomingCourseFollower::query()->whereIn('upcoming_course_id', $ids)->count();
+            $upcomingCourses = $this->handleFilters($request, $query)
+                ->withCount([
+                    'followers'
+                ])
+                ->with([
+                    'teacher' => function ($qu) {
+                        $qu->select('id', 'full_name');
+                    }
+                ])
+                ->paginate(10);
 
-        $upcomingCourses = $this->handleFilters($request, $query)
-            ->withCount([
-                'followers'
-            ])
-            ->with([
-                'teacher' => function ($qu) {
-                    $qu->select('id', 'full_name');
-                }
-            ])
-            ->paginate(10);
+            $categories = Category::where('parent_id', null)
+                ->with('subCategories')
+                ->get();
 
-        $categories = Category::where('parent_id', null)
-            ->with('subCategories')
-            ->get();
+            $data = [
+                'pageTitle' => trans('update.upcoming_courses'),
+                'totalCourses' => $totalCourses,
+                'releasedCourses' => $releasedCourses,
+                'notReleased' => $notReleased,
+                'followers' => $followers,
+                'upcomingCourses' => $upcomingCourses,
+                'categories' => $categories
+            ];
 
-        $data = [
-            'pageTitle' => trans('update.upcoming_courses'),
-            'totalCourses' => $totalCourses,
-            'releasedCourses' => $releasedCourses,
-            'notReleased' => $notReleased,
-            'followers' => $followers,
-            'upcomingCourses' => $upcomingCourses,
-            'categories' => $categories
-        ];
-
-        return view('admin.upcoming_courses.lists', $data);
+            return view('admin.upcoming_courses.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function handleFilters(Request $request, $query)
@@ -116,134 +128,40 @@ class UpcomingCoursesController extends Controller
 
     public function create()
     {
-        $this->authorize('admin_upcoming_courses_create');
+        try {
+            $this->authorize('admin_upcoming_courses_create');
 
-        removeContentLocale();
+            removeContentLocale();
 
-        $teachers = User::where('role_name', Role::$teacher)->get();
-        $categories = Category::where('parent_id', null)->get();
+            $teachers = User::where('role_name', Role::$teacher)->get();
+            $categories = Category::where('parent_id', null)->get();
 
-        $data = [
-            'pageTitle' => trans('update.new_upcoming_course'),
-            'teachers' => $teachers,
-            'categories' => $categories
-        ];
+            $data = [
+                'pageTitle' => trans('update.new_upcoming_course'),
+                'teachers' => $teachers,
+                'categories' => $categories
+            ];
 
-        return view('admin.upcoming_courses.create.index', $data);
+            return view('admin.upcoming_courses.create.index', $data);
+        } catch (\Exception $e) {
+            \Log::error('create error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function store(Request $request)
     {
-        $this->authorize('admin_upcoming_courses_create');
+        try {
+            $this->authorize('admin_upcoming_courses_create');
 
-        $rules = [
-            'type' => 'required|in:webinar,course,text_lesson',
-            'title' => 'required|max:255',
-            'thumbnail' => 'required',
-            'image_cover' => 'required',
-            'description' => 'required',
-            'teacher_id' => 'required|exists:users,id',
-            'category_id' => 'required|exists:categories,id',
-            'publish_date' => 'required',
-            'timezone' => 'required',
-            'capacity' => 'nullable|numeric',
-            'price' => 'nullable|numeric',
-            'duration' => 'nullable|numeric',
-            'sections' => 'nullable|numeric',
-            'parts' => 'nullable|numeric',
-            'course_progress' => 'nullable|numeric',
-        ];
-
-        $this->validate($request, $rules);
-
-        $data = $request->all();
-        $storeData = $this->makeStoreData($data);
-        $storeData['status'] = UpcomingCourse::$pending;
-        $storeData['created_at'] = time();
-
-        $upcomingCourse = UpcomingCourse::query()->create($storeData);
-
-        if (!empty($upcomingCourse)) {
-            $this->storePublicItems($request, $upcomingCourse);
-
-            return redirect(getAdminPanelUrl("/upcoming_courses/{$upcomingCourse->id}/edit"));
-        }
-
-        abort(500);
-    }
-
-    public function edit(Request $request, $id)
-    {
-        $this->authorize('admin_upcoming_courses_edit');
-
-        $upcomingCourse = UpcomingCourse::query()->where('id', $id)
-            ->with([
-                'category' => function ($query) {
-                    $query->with(['filters' => function ($query) {
-                        $query->with('options');
-                    }]);
-                },
-                'filterOptions',
-                'tags',
-                'faqs' => function ($query) {
-                    $query->orderBy('order', 'asc');
-                },
-                'extraDescriptions' => function ($query) {
-                    $query->orderBy('order', 'asc');
-                }
-            ])->first();
-
-        if (!empty($upcomingCourse)) {
-            $teachers = User::where('role_name', Role::$teacher)->get();
-            $categories = Category::where('parent_id', null)->get();
-
-            $locale = $request->get('locale', app()->getLocale());
-            storeContentLocale($locale, $upcomingCourse->getTable(), $upcomingCourse->id);
-
-            $upcomingCourseTags = $upcomingCourse->tags->pluck('title')->toArray();
-
-            $upcomingCourseCategoryFilters = !empty($upcomingCourse->category) ? $upcomingCourse->category->filters : [];
-
-            if (empty($upcomingCourse->category) and !empty($request->old('category_id'))) {
-                $category = Category::where('id', $request->old('category_id'))->first();
-
-                if (!empty($category)) {
-                    $upcomingCourseCategoryFilters = $category->filters;
-                }
-            }
-
-            $definedLanguage = [];
-            if ($upcomingCourse->translations) {
-                $definedLanguage = $upcomingCourse->translations->pluck('locale')->toArray();
-            }
-
-            $data = [
-                'pageTitle' => trans('public.edit') . ' | ' . $upcomingCourse->title,
-                'teachers' => $teachers,
-                'categories' => $categories,
-                'upcomingCourse' => $upcomingCourse,
-                'upcomingCourseTags' => $upcomingCourseTags,
-                'upcomingCourseCategoryFilters' => $upcomingCourseCategoryFilters,
-                'definedLanguage' => $definedLanguage,
-            ];
-
-            return view('admin.upcoming_courses.create.index', $data);
-        }
-
-        abort(404);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $this->authorize('admin_upcoming_courses_edit');
-
-        $upcomingCourse = UpcomingCourse::query()->where('id', $id)->first();
-
-        if (!empty($upcomingCourse)) {
             $rules = [
                 'type' => 'required|in:webinar,course,text_lesson',
                 'title' => 'required|max:255',
-                'slug' => 'max:255|unique:upcoming_courses,slug,' . $upcomingCourse->id,
                 'thumbnail' => 'required',
                 'image_cover' => 'required',
                 'description' => 'required',
@@ -262,23 +180,155 @@ class UpcomingCoursesController extends Controller
             $this->validate($request, $rules);
 
             $data = $request->all();
-            $isDraft = (!empty($data['draft']) and $data['draft'] == 1);
-            $reject = (!empty($data['draft']) and $data['draft'] == 'reject');
-            $publish = (!empty($data['draft']) and $data['draft'] == 'publish');
-
-
             $storeData = $this->makeStoreData($data);
-            $storeData['status'] = $publish ? UpcomingCourse::$active : ($reject ? UpcomingCourse::$inactive : ($isDraft ? UpcomingCourse::$isDraft : UpcomingCourse::$pending));
+            $storeData['status'] = UpcomingCourse::$pending;
+            $storeData['created_at'] = time();
 
-            $upcomingCourse->update($storeData);
+            $upcomingCourse = UpcomingCourse::query()->create($storeData);
 
-            $this->storePublicItems($request, $upcomingCourse);
+            if (!empty($upcomingCourse)) {
+                $this->storePublicItems($request, $upcomingCourse);
 
+                return redirect(getAdminPanelUrl("/upcoming_courses/{$upcomingCourse->id}/edit"));
+            }
 
-            return redirect(getAdminPanelUrl("/upcoming_courses/{$upcomingCourse->id}/edit"));
+            abort(500);
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
+    }
 
-        abort(404);
+    public function edit(Request $request, $id)
+    {
+        try {
+            $this->authorize('admin_upcoming_courses_edit');
+
+            $upcomingCourse = UpcomingCourse::query()->where('id', $id)
+                ->with([
+                    'category' => function ($query) {
+                        $query->with(['filters' => function ($query) {
+                            $query->with('options');
+                        }]);
+                    },
+                    'filterOptions',
+                    'tags',
+                    'faqs' => function ($query) {
+                        $query->orderBy('order', 'asc');
+                    },
+                    'extraDescriptions' => function ($query) {
+                        $query->orderBy('order', 'asc');
+                    }
+                ])->first();
+
+            if (!empty($upcomingCourse)) {
+                $teachers = User::where('role_name', Role::$teacher)->get();
+                $categories = Category::where('parent_id', null)->get();
+
+                $locale = $request->get('locale', app()->getLocale());
+                storeContentLocale($locale, $upcomingCourse->getTable(), $upcomingCourse->id);
+
+                $upcomingCourseTags = $upcomingCourse->tags->pluck('title')->toArray();
+
+                $upcomingCourseCategoryFilters = !empty($upcomingCourse->category) ? $upcomingCourse->category->filters : [];
+
+                if (empty($upcomingCourse->category) and !empty($request->old('category_id'))) {
+                    $category = Category::where('id', $request->old('category_id'))->first();
+
+                    if (!empty($category)) {
+                        $upcomingCourseCategoryFilters = $category->filters;
+                    }
+                }
+
+                $definedLanguage = [];
+                if ($upcomingCourse->translations) {
+                    $definedLanguage = $upcomingCourse->translations->pluck('locale')->toArray();
+                }
+
+                $data = [
+                    'pageTitle' => trans('public.edit') . ' | ' . $upcomingCourse->title,
+                    'teachers' => $teachers,
+                    'categories' => $categories,
+                    'upcomingCourse' => $upcomingCourse,
+                    'upcomingCourseTags' => $upcomingCourseTags,
+                    'upcomingCourseCategoryFilters' => $upcomingCourseCategoryFilters,
+                    'definedLanguage' => $definedLanguage,
+                ];
+
+                return view('admin.upcoming_courses.create.index', $data);
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $this->authorize('admin_upcoming_courses_edit');
+
+            $upcomingCourse = UpcomingCourse::query()->where('id', $id)->first();
+
+            if (!empty($upcomingCourse)) {
+                $rules = [
+                    'type' => 'required|in:webinar,course,text_lesson',
+                    'title' => 'required|max:255',
+                    'slug' => 'max:255|unique:upcoming_courses,slug,' . $upcomingCourse->id,
+                    'thumbnail' => 'required',
+                    'image_cover' => 'required',
+                    'description' => 'required',
+                    'teacher_id' => 'required|exists:users,id',
+                    'category_id' => 'required|exists:categories,id',
+                    'publish_date' => 'required',
+                    'timezone' => 'required',
+                    'capacity' => 'nullable|numeric',
+                    'price' => 'nullable|numeric',
+                    'duration' => 'nullable|numeric',
+                    'sections' => 'nullable|numeric',
+                    'parts' => 'nullable|numeric',
+                    'course_progress' => 'nullable|numeric',
+                ];
+
+                $this->validate($request, $rules);
+
+                $data = $request->all();
+                $isDraft = (!empty($data['draft']) and $data['draft'] == 1);
+                $reject = (!empty($data['draft']) and $data['draft'] == 'reject');
+                $publish = (!empty($data['draft']) and $data['draft'] == 'publish');
+
+                $storeData = $this->makeStoreData($data);
+                $storeData['status'] = $publish ? UpcomingCourse::$active : ($reject ? UpcomingCourse::$inactive : ($isDraft ? UpcomingCourse::$isDraft : UpcomingCourse::$pending));
+
+                $upcomingCourse->update($storeData);
+
+                $this->storePublicItems($request, $upcomingCourse);
+
+                return redirect(getAdminPanelUrl("/upcoming_courses/{$upcomingCourse->id}/edit"));
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function makeStoreData($data): array
@@ -329,7 +379,6 @@ class UpcomingCoursesController extends Controller
         UpcomingCourseFilterOption::where('upcoming_course_id', $upcomingCourse->id)->delete();
         Tag::where('upcoming_course_id', $upcomingCourse->id)->delete();
 
-
         $filters = $request->get('filters', null);
         if (!empty($filters) and is_array($filters)) {
             foreach ($filters as $filter) {
@@ -354,132 +403,191 @@ class UpcomingCoursesController extends Controller
 
     public function destroy($id)
     {
-        $this->authorize('admin_upcoming_courses_delete');
+        try {
+            $this->authorize('admin_upcoming_courses_delete');
 
-        $upcomingCourse = UpcomingCourse::query()->findOrFail($id);
+            $upcomingCourse = UpcomingCourse::query()->findOrFail($id);
 
-        $upcomingCourse->delete();
+            $upcomingCourse->delete();
 
-        return redirect(getAdminPanelUrl('/upcoming_courses'));
+            return redirect(getAdminPanelUrl('/upcoming_courses'));
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function approve(Request $request, $id)
     {
-        $this->authorize('admin_upcoming_courses_delete');
+        try {
+            $this->authorize('admin_upcoming_courses_delete');
 
-        $upcomingCourse = UpcomingCourse::query()->findOrFail($id);
+            $upcomingCourse = UpcomingCourse::query()->findOrFail($id);
 
-        $upcomingCourse->update([
-            'status' => UpcomingCourse::$active
-        ]);
+            $upcomingCourse->update([
+                'status' => UpcomingCourse::$active
+            ]);
 
-        $notifyOptions = [
-            '[item_title]' => $upcomingCourse->title,
-        ];
-        sendNotification("upcoming_course_approved", $notifyOptions, $upcomingCourse->teacher_id);
+            $notifyOptions = [
+                '[item_title]' => $upcomingCourse->title,
+            ];
+            sendNotification("upcoming_course_approved", $notifyOptions, $upcomingCourse->teacher_id);
 
-        $toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => trans('update.course_status_changes_to_approved'),
-            'status' => 'success'
-        ];
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.course_status_changes_to_approved'),
+                'status' => 'success'
+            ];
 
-        return redirect(getAdminPanelUrl('/upcoming_courses'))->with(['toast' => $toastData]);
+            return redirect(getAdminPanelUrl('/upcoming_courses'))->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('approve error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function reject(Request $request, $id)
     {
-        $this->authorize('admin_upcoming_courses_delete');
+        try {
+            $this->authorize('admin_upcoming_courses_delete');
 
-        $upcomingCourse = UpcomingCourse::query()->findOrFail($id);
+            $upcomingCourse = UpcomingCourse::query()->findOrFail($id);
 
-        $upcomingCourse->update([
-            'status' => UpcomingCourse::$inactive
-        ]);
+            $upcomingCourse->update([
+                'status' => UpcomingCourse::$inactive
+            ]);
 
-        $notifyOptions = [
-            '[item_title]' => $upcomingCourse->title,
-        ];
-        sendNotification("upcoming_course_rejected", $notifyOptions, $upcomingCourse->teacher_id);
+            $notifyOptions = [
+                '[item_title]' => $upcomingCourse->title,
+            ];
+            sendNotification("upcoming_course_rejected", $notifyOptions, $upcomingCourse->teacher_id);
 
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.course_status_changes_to_rejected'),
+                'status' => 'success'
+            ];
 
-        $toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => trans('update.course_status_changes_to_rejected'),
-            'status' => 'success'
-        ];
-
-        return redirect(getAdminPanelUrl('/upcoming_courses'))->with(['toast' => $toastData]);
+            return redirect(getAdminPanelUrl('/upcoming_courses'))->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('reject error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function unpublish(Request $request, $id)
     {
-        $this->authorize('admin_upcoming_courses_delete');
+        try {
+            $this->authorize('admin_upcoming_courses_delete');
 
-        $upcomingCourse = UpcomingCourse::query()->findOrFail($id);
+            $upcomingCourse = UpcomingCourse::query()->findOrFail($id);
 
-        $upcomingCourse->update([
-            'status' => UpcomingCourse::$pending
-        ]);
+            $upcomingCourse->update([
+                'status' => UpcomingCourse::$pending
+            ]);
 
-        $toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => trans('update.course_status_changes_to_unpublished'),
-            'status' => 'success'
-        ];
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.course_status_changes_to_unpublished'),
+                'status' => 'success'
+            ];
 
-        return redirect(getAdminPanelUrl('/upcoming_courses'))->with(['toast' => $toastData]);
+            return redirect(getAdminPanelUrl('/upcoming_courses'))->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('unpublish error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function exportExcel(Request $request)
     {
-        $this->authorize('admin_upcoming_courses_export_excel');
+        try {
+            $this->authorize('admin_upcoming_courses_export_excel');
 
-        $query = UpcomingCourse::query();
+            $query = UpcomingCourse::query();
 
-        $query = $this->handleFilters($request, $query)
-            ->with(['teacher' => function ($qu) {
-                $qu->select('id', 'full_name');
-            }])
-            ->withCount([
-                'followers'
+            $query = $this->handleFilters($request, $query)
+                ->with(['teacher' => function ($qu) {
+                    $qu->select('id', 'full_name');
+                }])
+                ->withCount([
+                    'followers'
+                ]);
+
+            $items = $query->get();
+
+            $export = new UpcomingCoursesExport($items);
+
+            return Excel::download($export, 'upcoming_courses.xlsx');
+        } catch (\Exception $e) {
+            \Log::error('exportExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
-
-        $items = $query->get();
-
-        $export = new UpcomingCoursesExport($items);
-
-        return Excel::download($export, 'upcoming_courses.xlsx');
+            
+            throw $e;
+        }
     }
 
     public function followers(Request $request, $id)
     {
-        $this->authorize('admin_upcoming_courses_followers');
+        try {
+            $this->authorize('admin_upcoming_courses_followers');
 
-        $upcomingCourse = UpcomingCourse::query()->findOrFail($id);
+            $upcomingCourse = UpcomingCourse::query()->findOrFail($id);
 
-        $query = UpcomingCourseFollower::query()
-            ->where('upcoming_course_id', $upcomingCourse->id);
+            $query = UpcomingCourseFollower::query()
+                ->where('upcoming_course_id', $upcomingCourse->id);
 
-        $totalFollowers = deepClone($query)->count();
+            $totalFollowers = deepClone($query)->count();
 
-        $followers = $this->handleFollowersFilters($request, $query)
-            ->with([
-                'user'
-            ])
-            ->paginate(10);
+            $followers = $this->handleFollowersFilters($request, $query)
+                ->with([
+                    'user'
+                ])
+                ->paginate(10);
 
-        $roles = Role::all();
+            $roles = Role::all();
 
-        $data = [
-            'pageTitle' => $upcomingCourse->title . ' - ' . trans('update.followers'),
-            'upcomingCourse' => $upcomingCourse,
-            'followers' => $followers,
-            'totalFollowers' => $totalFollowers,
-            'roles' => $roles,
-        ];
+            $data = [
+                'pageTitle' => $upcomingCourse->title . ' - ' . trans('update.followers'),
+                'upcomingCourse' => $upcomingCourse,
+                'followers' => $followers,
+                'totalFollowers' => $totalFollowers,
+                'roles' => $roles,
+            ];
 
-        return view('admin.upcoming_courses.followers', $data);
+            return view('admin.upcoming_courses.followers', $data);
+        } catch (\Exception $e) {
+            \Log::error('followers error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function handleFollowersFilters(Request $request, $query)
@@ -508,26 +616,36 @@ class UpcomingCoursesController extends Controller
 
     public function deleteFollow($upcomingId, $followId)
     {
-        $this->authorize('admin_upcoming_courses_followers');
+        try {
+            $this->authorize('admin_upcoming_courses_followers');
 
-        $follow = UpcomingCourseFollower::query()
-            ->where('upcoming_course_id', $upcomingId)
-            ->where('id', $followId)
-            ->first();
+            $follow = UpcomingCourseFollower::query()
+                ->where('upcoming_course_id', $upcomingId)
+                ->where('id', $followId)
+                ->first();
 
-        if (!empty($follow)) {
-            $follow->delete();
+            if (!empty($follow)) {
+                $follow->delete();
 
-            $toastData = [
-                'title' => trans('public.request_success'),
-                'msg' => trans('update.items_deleted_successful'),
-                'status' => 'success'
-            ];
+                $toastData = [
+                    'title' => trans('public.request_success'),
+                    'msg' => trans('update.items_deleted_successful'),
+                    'status' => 'success'
+                ];
 
-            return back()->with(['toast' => $toastData]);
+                return back()->with(['toast' => $toastData]);
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('deleteFollow error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
     }
 
 }

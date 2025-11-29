@@ -137,8 +137,7 @@
                                 <span class="font-weight-500 text-secondary">{{ $review->creator->full_name }}</span>
                                 <span class="font-12 text-gray mr-10">{{ dateTimeFormat($review->created_at, 'j M Y | H:i') }}</span>
 <?php
-//       print_r($review);
-//     die();
+
   ?>
                                 @include(getTemplate() . '.includes.webinar.rate',[
                                         'rate' => $review->rates,

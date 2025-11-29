@@ -9,7 +9,7 @@ class Follow extends Model
     public static $requested = "requested";
     public static $accepted = "accepted";
     public static $rejected = "rejected";
-    
+
     public $timestamps = false;
 
     protected $guarded = ['id'];

@@ -16,7 +16,7 @@ class Installment extends Model implements TranslatableContract
     protected $guarded = ['id'];
 
     static $optionsExplodeKey = "8888";
-    // Enums
+
     static $targetTypes = ['all', 'courses', 'store_products', 'bundles', 'meetings', 'registration_packages', 'subscription_packages'];
     static $courseTargets = ['all_courses', 'live_classes', 'video_courses', 'text_courses', 'specific_categories', 'specific_instructors', 'specific_courses'];
     static $productTargets = ['all_products', 'virtual_products', 'physical_products', 'specific_categories', 'specific_sellers', 'specific_products'];
@@ -24,7 +24,6 @@ class Installment extends Model implements TranslatableContract
     static $meetingTargets = ['all_meetings', 'specific_instructors'];
     static $subscriptionTargets = ['all_packages', 'specific_packages'];
     static $registrationPackagesTargets = ['all_packages', 'specific_packages'];
-
 
     public $translatedAttributes = ['title', 'main_title', 'description', 'banner', 'options', 'verification_description', 'verification_banner', 'verification_video'];
 
@@ -73,16 +72,12 @@ class Installment extends Model implements TranslatableContract
         return $this->attributes['upfront'] + 0;
     }
 
-    // #############
-    // Relations
-    // ############
-
     public function userGroups()
     {
         return $this->hasMany(InstallmentUserGroup::class, 'installment_id', 'id');
     }
 
-    public function specificationItems() // used just in query
+    public function specificationItems()
     {
         return $this->hasMany(InstallmentSpecificationItem::class, 'installment_id', 'id');
     }
@@ -137,11 +132,6 @@ class Installment extends Model implements TranslatableContract
         return $this->hasMany(InstallmentOrder::class, 'installment_id', 'id');
     }
 
-
-    // #############
-    // Helpers
-    // ############
-
     public function reachedCapacityPercent()
     {
         $orders = InstallmentOrder::query()
@@ -175,7 +165,6 @@ class Installment extends Model implements TranslatableContract
 
         return $result;
     }
-
 
     public function getUpfront($itemPrice = 1)
     {

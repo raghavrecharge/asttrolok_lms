@@ -81,7 +81,6 @@
                 </div>
             </div>
 
-
             <div class="row">
                 <div class="col-12 col-md-12">
                     <div class="card">
@@ -153,7 +152,6 @@
                         <div class=" text-small font-600-bold">{{trans('admin/main.total_affiliate_desc')}}</div>
                     </div>
                 </div>
-
 
                 <div class="col-md-3">
                     <div class="media-body">

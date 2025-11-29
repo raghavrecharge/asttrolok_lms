@@ -82,7 +82,6 @@
                 </div>
             </div>
 
-
             <section class="card">
                 <div class="card-body">
                     <form method="get" class="mb-0">
@@ -93,7 +92,6 @@
                                     <input type="text" class="form-control" name="item_title" value="{{ request()->get('item_title') }}">
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -112,7 +110,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{ trans('admin/main.status') }}</label>
@@ -124,7 +121,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -141,7 +137,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{ trans('admin/main.instructor') }}</label>
@@ -157,7 +152,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{ trans('admin/main.student') }}</label>
@@ -172,7 +166,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group mt-1">
@@ -226,7 +219,7 @@
                                                 {{ $sale['item_seller'] }}
                                                 <div class="text-primary text-small font-600-bold">ID : {{  $sale['seller_id'] }}</div>
                                                  @else
-                                                
+
                                                 <div class="text-primary text-small font-600-bold"></div>
                                                      @endif
                                             </td>
@@ -258,12 +251,12 @@
                                                        <div>{{ $sale->item_title }}</div>
                                                     <div class="text-primary text-small font-600-bold">ID : {{ $sale->item_id }}</div>
                                                     @else
-                                                      
+
                                                       <div>{{ $sale->webinar->title }}</div>
                                                     <div class="text-primary text-small font-600-bold">ID : {{ $sale->webinar_id }}</div>
-                                                       
+
                                                     @endif
-                                                    
+
                                                 </div>
                                             </td>
 
@@ -326,7 +319,7 @@
                                                 @endcan
                                                  @else
                                                       <a href="#"  title="{{ trans('admin/main.invoice') }}"><i class="fa fa-print" aria-hidden="true"></i></a>
-                                                
+
                                                     @endif
                                             </td>
                                         </tr>

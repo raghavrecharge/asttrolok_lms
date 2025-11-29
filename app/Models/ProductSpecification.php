@@ -24,7 +24,6 @@ class ProductSpecification extends Model implements TranslatableContract
         return getTranslateAttributeValue($this, 'title');
     }
 
-
     public function categories()
     {
         return $this->hasMany('App\Models\ProductSpecificationCategory', 'specification_id', 'id');

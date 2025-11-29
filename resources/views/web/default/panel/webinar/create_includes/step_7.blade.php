@@ -2,7 +2,6 @@
 
 @endpush
 
-
 <section class="mt-50">
     <div class="">
         <h2 class="section-title after-line">{{ trans('public.quiz_certificate') }} ({{ trans('public.optional') }})</h2>
@@ -33,7 +32,6 @@
 <div id="newQuizForm" class="d-none">
     @include('web.default.panel.webinar.create_includes.accordions.quiz',['webinar' => $webinar,'quizInfo' => null])
 </div>
-
 
 @push('scripts_bottom')
     <script>

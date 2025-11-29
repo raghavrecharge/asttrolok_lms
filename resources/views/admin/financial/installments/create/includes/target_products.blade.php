@@ -77,7 +77,6 @@
             @enderror
         </div>
 
-
         <div class="form-group js-specific-instructors-field {{ (!empty($installment) and $installment->target == "specific_instructors") ? '' : 'd-none' }}">
             <label class="input-label">{{trans('update.specific_instructors')}}</label>
 
@@ -117,7 +116,6 @@
             </div>
             @enderror
         </div>
-
 
         <div class="form-group js-specific-courses-field {{ (!empty($installment) and $installment->target == "specific_courses") ? '' : 'd-none' }}">
             <label class="input-label">{{ trans('update.specific_courses') }}</label>
@@ -196,7 +194,6 @@
             </div>
             @enderror
         </div>
-
 
         @php
             $selectedRegistrationPackagesIds = !empty($installment) ? $installment->registrationPackages->pluck('id')->toArray() : [];

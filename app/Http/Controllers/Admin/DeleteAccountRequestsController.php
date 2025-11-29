@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\DeleteAccountRequest;
 use App\User;
@@ -12,24 +15,34 @@ class DeleteAccountRequestsController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_delete_account_requests');
+        try {
+            $this->authorize('admin_delete_account_requests');
 
-        $query = DeleteAccountRequest::query();
+            $query = DeleteAccountRequest::query();
 
-        $query = $this->filters($query, $request);
+            $query = $this->filters($query, $request);
 
-        $requests = $query->orderBy('created_at', 'desc')
-            ->with([
-                'user'
-            ])
-            ->paginate(10);
+            $requests = $query->orderBy('created_at', 'desc')
+                ->with([
+                    'user'
+                ])
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('update.delete-account-requests'),
-            'requests' => $requests
-        ];
+            $data = [
+                'pageTitle' => trans('update.delete-account-requests'),
+                'requests' => $requests
+            ];
 
-        return view('admin.users.delete_account_requests', $data);
+            return view('admin.users.delete_account_requests', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function filters($query, $request)
@@ -51,25 +64,35 @@ class DeleteAccountRequestsController extends Controller
 
     public function confirm($id)
     {
-        $this->authorize('admin_delete_account_requests_confirm');
+        try {
+            $this->authorize('admin_delete_account_requests_confirm');
 
-        $request = DeleteAccountRequest::findOrFail($id);
+            $request = DeleteAccountRequest::findOrFail($id);
 
-        $user = User::where('id', $request->user_id)->first();
+            $user = User::where('id', $request->user_id)->first();
 
-        if (!empty($user)) {
-            $user->delete();
+            if (!empty($user)) {
+                $user->delete();
 
-            Storage::disk('public')->deleteDirectory($user->id);
+                Storage::disk('public')->deleteDirectory($user->id);
 
-            $request->delete();
+                $request->delete();
+            }
+
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.user_account_successful_deleted'),
+                'status' => 'success'
+            ];
+            return back()->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('confirm error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => trans('update.user_account_successful_deleted'),
-            'status' => 'success'
-        ];
-        return back()->with(['toast' => $toastData]);
     }
 }

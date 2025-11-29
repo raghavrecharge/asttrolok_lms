@@ -92,7 +92,6 @@
 
                                                 <a href="/panel/bundles/{{ $bundle->id }}/courses" class="webinar-actions d-block mt-10">{{ trans('product.courses') }}</a>
 
-
                                                 @if($authUser->id == $bundle->teacher_id or $authUser->id == $bundle->creator_id)
                                                     <a href="/panel/bundles/{{ $bundle->id }}/export-students-list" class="webinar-actions d-block mt-10">{{ trans('public.export_list') }}</a>
                                                 @endif
@@ -130,7 +129,6 @@
                                         <span class="stat-title">{{ trans('public.category') }}:</span>
                                         <span class="stat-value">{{ !empty($bundle->category_id) ? $bundle->category->title : '' }}</span>
                                     </div>
-
 
                                     <div class="d-flex align-items-start flex-column mt-20 mr-15">
                                         <span class="stat-title">{{ trans('public.duration') }}:</span>

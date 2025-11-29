@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Exports\RegistrationBonusExport;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting;
@@ -19,101 +22,108 @@ class RegistrationBonusController extends Controller
 {
     public function index(Request $request, $justReturnData = false)
     {
-        $this->authorize('admin_registration_bonus_history');
+        try {
+            $this->authorize('admin_registration_bonus_history');
 
-        $registrationBonusSettings = getRegistrationBonusSettings();
+            $registrationBonusSettings = getRegistrationBonusSettings();
 
-        $query = User::query()
-            ->where('status', User::$active)
-            ->where('enable_registration_bonus', true)
-            ->with([
-                'role'
-            ])
-            ->withCount([
-                'affiliates'
-            ]);
+            $query = User::query()
+                ->where('status', User::$active)
+                ->where('enable_registration_bonus', true)
+                ->with([
+                    'role'
+                ])
+                ->withCount([
+                    'affiliates'
+                ]);
 
-
-        $unlockedBonusUserQuery = Accounting::query()
-            ->where('is_registration_bonus', true)
-            ->where('system', false);
-
-        $achievedUsers = deepClone($query)->count();
-        $unlockedBonusUsers = deepClone($unlockedBonusUserQuery)->count();
-        $totalBonus = deepClone($query)->sum('registration_bonus_amount');
-        $unlockedBonus = deepClone($unlockedBonusUserQuery)->sum('amount');
-
-
-        $query = $this->handleFilters($request, $query);
-        $users = $query->paginate(10);
-
-        foreach ($users as $user) {
-
-            $bonusAccounting = Accounting::query()
-                ->where('user_id', $user->id)
+            $unlockedBonusUserQuery = Accounting::query()
                 ->where('is_registration_bonus', true)
-                ->where('system', false)
-                ->first();
+                ->where('system', false);
 
-            //$user->bonus_wallet = $registrationBonusSettings['bonus_wallet'] ?? null;
-            $user->bonus_status = !empty($bonusAccounting) ? trans('update.unlock') : trans('update.lock');
+            $achievedUsers = deepClone($query)->count();
+            $unlockedBonusUsers = deepClone($unlockedBonusUserQuery)->count();
+            $totalBonus = deepClone($query)->sum('registration_bonus_amount');
+            $unlockedBonus = deepClone($unlockedBonusUserQuery)->sum('amount');
 
-            if (!empty($registrationBonusSettings['unlock_registration_bonus_with_referral']) and !empty($registrationBonusSettings['number_of_referred_users'])) {
+            $query = $this->handleFilters($request, $query);
+            $users = $query->paginate(10);
 
-                $referredUsersId = Affiliate::query()->where('affiliate_user_id', $user->id)
-                    ->pluck('referred_user_id')
-                    ->toArray();
+            foreach ($users as $user) {
 
-                $user->referred_users = count($referredUsersId);
+                $bonusAccounting = Accounting::query()
+                    ->where('user_id', $user->id)
+                    ->where('is_registration_bonus', true)
+                    ->where('system', false)
+                    ->first();
 
-                if (!empty($registrationBonusSettings['enable_referred_users_purchase'])) {
-                    $sales = Sale::query()->select('buyer_id', DB::raw('sum(total_amount) as totalAmount'))
-                        ->whereIn('buyer_id', $referredUsersId)
-                        ->whereNull('refund_at')
-                        ->groupBy('buyer_id')
-                        ->orderBy('totalAmount', 'desc')
-                        ->get();
+                $user->bonus_status = !empty($bonusAccounting) ? trans('update.unlock') : trans('update.lock');
 
-                    $condition = !empty($registrationBonusSettings['purchase_amount_for_unlocking_bonus']) ? $registrationBonusSettings['purchase_amount_for_unlocking_bonus'] : 0;
+                if (!empty($registrationBonusSettings['unlock_registration_bonus_with_referral']) and !empty($registrationBonusSettings['number_of_referred_users'])) {
 
-                    $userPurchasedCount = 0;
+                    $referredUsersId = Affiliate::query()->where('affiliate_user_id', $user->id)
+                        ->pluck('referred_user_id')
+                        ->toArray();
 
-                    foreach ($sales as $sale) {
-                        if (empty($condition) and $sale->totalAmount > 0) {
-                            $userPurchasedCount += 1;
-                        } else if (!empty($condition) and $sale->totalAmount >= $condition) {
-                            $userPurchasedCount += 1;
+                    $user->referred_users = count($referredUsersId);
+
+                    if (!empty($registrationBonusSettings['enable_referred_users_purchase'])) {
+                        $sales = Sale::query()->select('buyer_id', DB::raw('sum(total_amount) as totalAmount'))
+                            ->whereIn('buyer_id', $referredUsersId)
+                            ->whereNull('refund_at')
+                            ->groupBy('buyer_id')
+                            ->orderBy('totalAmount', 'desc')
+                            ->get();
+
+                        $condition = !empty($registrationBonusSettings['purchase_amount_for_unlocking_bonus']) ? $registrationBonusSettings['purchase_amount_for_unlocking_bonus'] : 0;
+
+                        $userPurchasedCount = 0;
+
+                        foreach ($sales as $sale) {
+                            if (empty($condition) and $sale->totalAmount > 0) {
+                                $userPurchasedCount += 1;
+                            } else if (!empty($condition) and $sale->totalAmount >= $condition) {
+                                $userPurchasedCount += 1;
+                            }
                         }
-                    }
 
-                    $user->referred_purchases = $userPurchasedCount;
+                        $user->referred_purchases = $userPurchasedCount;
+                    }
                 }
             }
+
+            if ($justReturnData) {
+                return $users;
+            }
+
+            $roles = Role::query()->get();
+
+            $data = [
+                'pageTitle' => trans('update.bonus_history'),
+                'achievedUsers' => $achievedUsers,
+                'unlockedBonusUsers' => $unlockedBonusUsers,
+                'totalBonus' => $totalBonus,
+                'unlockedBonus' => $unlockedBonus,
+                'users' => $users,
+                'registrationBonusSettings' => $registrationBonusSettings,
+                'roles' => $roles
+            ];
+
+            $user_ids = $request->get('user_ids', null);
+            if (!empty($user_ids)) {
+                $data['selectedUsers'] = User::query()->whereIn('id', $user_ids)->select('id', 'full_name')->get();
+            }
+
+            return view('admin.registration_bonus.history', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        if ($justReturnData) {
-            return $users;
-        }
-
-        $roles = Role::query()->get();
-
-        $data = [
-            'pageTitle' => trans('update.bonus_history'),
-            'achievedUsers' => $achievedUsers,
-            'unlockedBonusUsers' => $unlockedBonusUsers,
-            'totalBonus' => $totalBonus,
-            'unlockedBonus' => $unlockedBonus,
-            'users' => $users,
-            'registrationBonusSettings' => $registrationBonusSettings,
-            'roles' => $roles
-        ];
-
-        $user_ids = $request->get('user_ids', null);
-        if (!empty($user_ids)) {
-            $data['selectedUsers'] = User::query()->whereIn('id', $user_ids)->select('id', 'full_name')->get();
-        }
-
-        return view('admin.registration_bonus.history', $data);
     }
 
     private function handleFilters(Request $request, $query)
@@ -195,85 +205,115 @@ class RegistrationBonusController extends Controller
 
     public function exportExcel(Request $request)
     {
-        $this->authorize('admin_registration_bonus_export_excel');
+        try {
+            $this->authorize('admin_registration_bonus_export_excel');
 
-        $users = $this->index($request, true);
+            $users = $this->index($request, true);
 
-        $export = new RegistrationBonusExport($users);
-        return Excel::download($export, 'registration_bonus.xlsx');
+            $export = new RegistrationBonusExport($users);
+            return Excel::download($export, 'registration_bonus.xlsx');
+        } catch (\Exception $e) {
+            \Log::error('exportExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function settings(Request $request)
     {
-        $this->authorize('admin_registration_bonus_settings');
+        try {
+            $this->authorize('admin_registration_bonus_settings');
 
-        removeContentLocale();
+            removeContentLocale();
 
-        $settings = Setting::where('page', 'general')
-            ->whereIn('name', [Setting::$registrationBonusSettingsName, Setting::$registrationBonusTermsSettingsName])
-            ->get();
+            $settings = Setting::where('page', 'general')
+                ->whereIn('name', [Setting::$registrationBonusSettingsName, Setting::$registrationBonusTermsSettingsName])
+                ->get();
 
-        $data = [
-            'pageTitle' => trans('update.registration_bonus_settings'),
-            'settings' => $settings,
-            'selectedLocale' => mb_strtolower($request->get('locale', Setting::$defaultSettingsLocale)),
-        ];
+            $data = [
+                'pageTitle' => trans('update.registration_bonus_settings'),
+                'settings' => $settings,
+                'selectedLocale' => mb_strtolower($request->get('locale', Setting::$defaultSettingsLocale)),
+            ];
 
-        return view('admin.registration_bonus.settings.index', $data);
+            return view('admin.registration_bonus.settings.index', $data);
+        } catch (\Exception $e) {
+            \Log::error('settings error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function storeSettings(Request $request)
     {
-        $this->authorize('admin_registration_bonus_settings');
+        try {
+            $this->authorize('admin_registration_bonus_settings');
 
-        $page = 'general';
-        $data = $request->all();
-        $name = $data['name'];
-        $locale = $data['locale'];
-        $newValues = $data['value'];
-        $values = [];
+            $page = 'general';
+            $data = $request->all();
+            $name = $data['name'];
+            $locale = $data['locale'];
+            $newValues = $data['value'];
+            $values = [];
 
-        $settings = Setting::where('name', $name)->first();
+            $settings = Setting::where('name', $name)->first();
 
-        if (!empty($settings) and !empty($settings->value)) {
-            $values = json_decode($settings->value);
-        }
+            if (!empty($settings) and !empty($settings->value)) {
+                $values = json_decode($settings->value);
+            }
 
-        if (!empty($newValues) and !empty($values)) {
-            foreach ($newValues as $newKey => $newValue) {
-                foreach ($values as $key => $value) {
-                    if ($key == $newKey) {
-                        $values->$key = $newValue;
-                        unset($newValues[$key]);
+            if (!empty($newValues) and !empty($values)) {
+                foreach ($newValues as $newKey => $newValue) {
+                    foreach ($values as $key => $value) {
+                        if ($key == $newKey) {
+                            $values->$key = $newValue;
+                            unset($newValues[$key]);
+                        }
                     }
                 }
             }
+
+            if (!empty($newValues)) {
+                $values = array_merge((array)$values, $newValues);
+            }
+
+            $settings = Setting::updateOrCreate(
+                ['name' => $name],
+                [
+                    'page' => $page,
+                    'updated_at' => time(),
+                ]
+            );
+
+            SettingTranslation::updateOrCreate(
+                [
+                    'setting_id' => $settings->id,
+                    'locale' => mb_strtolower($locale)
+                ],
+                [
+                    'value' => json_encode($values),
+                ]
+            );
+
+            cache()->forget('settings.' . $name);
+
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('storeSettings error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        if (!empty($newValues)) {
-            $values = array_merge((array)$values, $newValues);
-        }
-
-        $settings = Setting::updateOrCreate(
-            ['name' => $name],
-            [
-                'page' => $page,
-                'updated_at' => time(),
-            ]
-        );
-
-        SettingTranslation::updateOrCreate(
-            [
-                'setting_id' => $settings->id,
-                'locale' => mb_strtolower($locale)
-            ],
-            [
-                'value' => json_encode($values),
-            ]
-        );
-
-        cache()->forget('settings.' . $name);
-
-        return back();
     }
 }

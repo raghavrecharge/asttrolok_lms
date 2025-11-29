@@ -13,7 +13,6 @@
 
         <div class="section-body">
 
-
             <div class="row">
                 <div class="col-12 col-md-12">
                     <div class="card">
@@ -23,7 +22,7 @@
                                 <div class="col-12 col-md-6">
                                     <form action="{{ getAdminPanelUrl() }}/enrollments/store" method="Post">
                                         {{ csrf_field() }}
-                                        
+
                                         <!-- add new import section -->
                                         <div class="form-group">
                                      <div class="card-header">
@@ -34,7 +33,7 @@
                                                             Import Excel
                                                         </button>
                                     <div class="h-10"></div>
-                                        
+
                                          </div>
                                          </div>
                                         <input type="number" value="1" hidden name="option">
@@ -85,9 +84,6 @@
             </div>
 
             <div class="mt-25 position-relative">
-                
-
-                
 
                 <div class="modal-video-lists mt-15">
                                    <section class="card">
@@ -101,13 +97,12 @@
 			<label for="file">File:</label>
 			<input id="file" type="file" name="file" class="form-control">
 		</div>
-	 
+
 		<button class="btn btn-success">Import File</button>
 	</form>
             </div>
         </section>
-                                        
-                          
+
                 </div>
             </div>
         </div>

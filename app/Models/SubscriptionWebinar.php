@@ -26,5 +26,4 @@ class SubscriptionWebinar extends Model
         return $this->belongsTo('App\Models\Subscription', 'subscription_id', 'id');
     }
 
-
 }

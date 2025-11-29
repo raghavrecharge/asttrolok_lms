@@ -46,7 +46,7 @@ class Role extends Model
 
     public static function getUserRoleId()
     {
-        $id = 1; // user role id
+        $id = 1;
 
         $role = self::where('name', self::$user)->first();
 
@@ -55,7 +55,7 @@ class Role extends Model
 
     public static function getTeacherRoleId()
     {
-        $id = 4; // teacher role id
+        $id = 4;
 
         $role = self::where('name', self::$teacher)->first();
 
@@ -64,7 +64,7 @@ class Role extends Model
 
     public static function getOrganizationRoleId()
     {
-        $id = 3; // teacher role id
+        $id = 3;
 
         $role = self::where('name', self::$organization)->first();
 

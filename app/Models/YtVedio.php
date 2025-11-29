@@ -11,5 +11,4 @@ class YtVedio extends Model
 
     protected $guarded = ['id'];
 
-
 }

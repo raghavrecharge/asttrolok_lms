@@ -1,6 +1,5 @@
 @extends('admin.layouts.app')
 
-
 @section('content')
   {{--fff84f82-ce94-48fb-9513-7ca2837d6b96--}}
     <section class="section">
@@ -108,7 +107,7 @@
                         </div>
                     </div>
                 @endcan
-                
+
                 @can('admin_settings_sidebanner')
                     <div class="col-lg-6">
                         <div class="card card-large-icons">

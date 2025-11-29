@@ -6,11 +6,7 @@ use Maatwebsite\Excel\Concerns\ToModel;
 
 class ImportUsers implements ToModel
 {
-    /**
-    * @param array $row
-    *
-    * @return \Illuminate\Database\Eloquent\Model|null
-    */
+
     public function model(array $row)
     {
          $organizations = User::select('id', 'full_name', 'created_at')

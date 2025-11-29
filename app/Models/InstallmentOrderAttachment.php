@@ -12,5 +12,4 @@ class InstallmentOrderAttachment extends Model
     public $timestamps = false;
     protected $guarded = ['id'];
 
-
 }

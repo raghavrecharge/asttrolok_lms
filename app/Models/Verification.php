@@ -16,7 +16,7 @@ class Verification extends Model
     protected $dateFormat = 'U';
     protected $guarded = ['id'];
 
-    const EXPIRE_TIME = 3600; // second => 1 hour
+    const EXPIRE_TIME = 3600;
 
     public function user()
     {
@@ -25,10 +25,9 @@ class Verification extends Model
 
     public function sendEmailCode()
     {
-       
-        
+
         $this->notify(new SendVerificationEmailCode($this));
-        
+
     }
 
     public function sendSMSCode()

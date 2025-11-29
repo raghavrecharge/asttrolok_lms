@@ -2,7 +2,6 @@
 
 namespace App\Models\Api;
 
-//use Illuminate\Database\Eloquent\Model;
 use App\Models\Product as Model;
 use App\Models\ProductOrder;
 use App\Models\ProductSelectedFilterOption;
@@ -48,7 +47,6 @@ class Product extends Model
     public function checkProductForSale($user)
     {
         if ($this->getAvailability() < 1) {
-
 
             return apiResponse2(0, 'not_availability', trans('update.product_not_availability'));
         }
@@ -193,7 +191,6 @@ class Product extends Model
                 ];
             })->toArray();
 
-
     }
 
     public function dde()
@@ -205,7 +202,7 @@ class Product extends Model
                     'values' => $selectable->selectedMultiValues->map(function ($multi) {
                         return $multi->multiValue->title;
                     }),
-                    //   'name' => $selectable->specification->createName(),
+
                 ];
             })->toArray();
     }
@@ -214,6 +211,5 @@ class Product extends Model
     {
         return $this->hasMany('App\Models\Api\Comment', 'product_id', 'id');
     }
-
 
 }

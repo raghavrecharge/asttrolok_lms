@@ -30,7 +30,6 @@
                             @include('web.default.includes.captcha_input')
                         @endif
 
-
                         <button type="submit" class="btn btn-primary btn-block mt-20">{{ trans('auth.reset_password') }}</button>
                     </form>
 

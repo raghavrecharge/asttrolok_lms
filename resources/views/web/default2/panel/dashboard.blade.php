@@ -182,7 +182,6 @@
         </div>
     </section>
 
-
     <div class="d-none" id="iNotAvailableModal">
         <div class="offline-modal">
             <h3 class="section-title after-line">{{ trans('panel.offline_title') }}</h3>

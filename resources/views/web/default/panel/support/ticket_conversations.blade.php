@@ -278,9 +278,7 @@
         @endif
     </section>
 
-
 @endsection
-
 
 @push('scripts_bottom')
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/daterangepicker/daterangepicker.min.js"></script>

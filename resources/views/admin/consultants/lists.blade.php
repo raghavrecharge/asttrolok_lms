@@ -104,7 +104,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.filters')}}</label>
@@ -122,7 +121,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.organization')}}</label>
@@ -134,7 +132,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -148,7 +145,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.status')}}</label>
@@ -159,7 +155,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group mt-1">
@@ -288,7 +283,6 @@
                                 <div class=" text-small font-600-bold">{{trans('admin/main.consultants_hint_description_2')}}</div>
                             </div>
                         </div>
-
 
                         <div class="col-md-4">
                             <div class="media-body">

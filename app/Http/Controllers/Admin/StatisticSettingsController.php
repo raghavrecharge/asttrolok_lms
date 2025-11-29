@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\HomePageStatistic;
 use App\Models\HomeSection;
@@ -16,253 +19,332 @@ class StatisticSettingsController extends Controller
 
     public function index()
     {
-        $this->authorize('admin_settings_personalization');
+        try {
+            $this->authorize('admin_settings_personalization');
 
-        removeContentLocale();
+            removeContentLocale();
 
-        $name = 'statistics';
-        $statistics = HomePageStatistic::orderBy('order', 'asc')->get();
-        $settings = Setting::where('name', $name)->first();
+            $name = 'statistics';
+            $statistics = HomePageStatistic::orderBy('order', 'asc')->get();
+            $settings = Setting::where('name', $name)->first();
 
-        $values = null;
+            $values = null;
 
-        if (!empty($settings)) {
-            if (!empty($settings->value)) {
-                $values = json_decode($settings->value, true);
+            if (!empty($settings)) {
+                if (!empty($settings->value)) {
+                    $values = json_decode($settings->value, true);
+                }
             }
+
+            $data = [
+                'pageTitle' => trans('admin/main.statistics'),
+                'statistics' => $statistics,
+                'values' => $values,
+                'name' => 'statistics'
+            ];
+
+            return view('admin.settings.personalization', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $data = [
-            'pageTitle' => trans('admin/main.statistics'),
-            'statistics' => $statistics,
-            'values' => $values,
-            'name' => 'statistics'
-        ];
-
-        return view('admin.settings.personalization', $data);
     }
 
     public function store(Request $request)
     {
-        $this->authorize('admin_settings_personalization');
-        $name = 'statistics';
-        $page = 'personalization';
+        try {
+            $this->authorize('admin_settings_personalization');
+            $name = 'statistics';
+            $page = 'personalization';
 
-        $values = $request->get('value', null);
+            $values = $request->get('value', null);
 
-        if (!empty($values)) {
-            $locale = Setting::$defaultSettingsLocale; // default is "en"
+            if (!empty($values)) {
+                $locale = Setting::$defaultSettingsLocale;
 
-            $values = array_filter($values, function ($val) {
-                if (is_array($val)) {
-                    return array_filter($val);
-                } else {
-                    return !empty($val);
-                }
-            });
+                $values = array_filter($values, function ($val) {
+                    if (is_array($val)) {
+                        return array_filter($val);
+                    } else {
+                        return !empty($val);
+                    }
+                });
 
-            $values = json_encode($values);
-            $values = str_replace('record', rand(1, 600), $values);
+                $values = json_encode($values);
+                $values = str_replace('record', rand(1, 600), $values);
 
-            $settings = Setting::updateOrCreate(
-                ['name' => $name],
-                [
-                    'page' => $page,
-                    'updated_at' => time(),
-                ]
-            );
+                $settings = Setting::updateOrCreate(
+                    ['name' => $name],
+                    [
+                        'page' => $page,
+                        'updated_at' => time(),
+                    ]
+                );
 
-            SettingTranslation::updateOrCreate(
-                [
-                    'setting_id' => $settings->id,
-                    'locale' => mb_strtolower($locale)
-                ],
-                [
-                    'value' => $values,
-                ]
-            );
+                SettingTranslation::updateOrCreate(
+                    [
+                        'setting_id' => $settings->id,
+                        'locale' => mb_strtolower($locale)
+                    ],
+                    [
+                        'value' => $values,
+                    ]
+                );
 
-            cache()->forget('settings.' . $name);
+                cache()->forget('settings.' . $name);
+            }
+
+            return redirect()->back();
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-
-        return redirect()->back();
     }
 
     public function getForm()
     {
-        $this->authorize('admin_settings_personalization');
+        try {
+            $this->authorize('admin_settings_personalization');
 
-        $data = [
-            'locale' => mb_strtolower(app()->getLocale())
-        ];
+            $data = [
+                'locale' => mb_strtolower(app()->getLocale())
+            ];
 
-        $html = (string)view()->make('admin.settings.personalization.statistic_modal', $data);
+            $html = (string)view()->make('admin.settings.personalization.statistic_modal', $data);
 
-        return response()->json([
-            'code' => 200,
-            'html' => $html,
-        ]);
+            return response()->json([
+                'code' => 200,
+                'html' => $html,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('getForm error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function storeItem(Request $request)
     {
-        $this->authorize('admin_settings_personalization');
+        try {
+            $this->authorize('admin_settings_personalization');
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $validator = Validator::make($data, [
-            "title" => "required",
-            "description" => "required",
-            "color" => "required",
-            "icon" => "required",
-            "count" => "required",
-        ]);
+            $validator = Validator::make($data, [
+                "title" => "required",
+                "description" => "required",
+                "color" => "required",
+                "icon" => "required",
+                "count" => "required",
+            ]);
 
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $order = HomePageStatistic::query()->count() + 1;
+
+            $item = HomePageStatistic::query()->create([
+                "icon" => $data['icon'],
+                "color" => $data['color'],
+                "count" => $data['count'],
+                "order" => $order,
+                "created_at" => time(),
+            ]);
+
+            HomePageStatisticTranslation::query()->updateOrCreate([
+                'home_page_statistic_id' => $item->id,
+                'locale' => mb_strtolower($data['locale'])
+            ], [
+                'title' => $data['title'],
+                'description' => $data['description'],
+            ]);
+
+            return response()->json([
+                'code' => 200
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('storeItem error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $order = HomePageStatistic::query()->count() + 1;
-
-        $item = HomePageStatistic::query()->create([
-            "icon" => $data['icon'],
-            "color" => $data['color'],
-            "count" => $data['count'],
-            "order" => $order,
-            "created_at" => time(),
-        ]);
-
-        HomePageStatisticTranslation::query()->updateOrCreate([
-            'home_page_statistic_id' => $item->id,
-            'locale' => mb_strtolower($data['locale'])
-        ], [
-            'title' => $data['title'],
-            'description' => $data['description'],
-        ]);
-
-        return response()->json([
-            'code' => 200
-        ]);
     }
 
     public function editItem(Request $request, $id)
     {
-        $this->authorize('admin_settings_personalization');
+        try {
+            $this->authorize('admin_settings_personalization');
 
-        $statistic = HomePageStatistic::findOrFail($id);
+            $statistic = HomePageStatistic::findOrFail($id);
 
-        $locale = $request->get('locale', app()->getLocale());
-        storeContentLocale($locale, $statistic->getTable(), $statistic->id);
+            $locale = $request->get('locale', app()->getLocale());
+            storeContentLocale($locale, $statistic->getTable(), $statistic->id);
 
-        $data = [
-            'locale' => mb_strtolower($locale),
-            'editStatistic' => $statistic
-        ];
+            $data = [
+                'locale' => mb_strtolower($locale),
+                'editStatistic' => $statistic
+            ];
 
-        $html = (string)view()->make('admin.settings.personalization.statistic_modal', $data);
+            $html = (string)view()->make('admin.settings.personalization.statistic_modal', $data);
 
-        return response()->json([
-            'code' => 200,
-            'html' => $html,
-        ]);
+            return response()->json([
+                'code' => 200,
+                'html' => $html,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('editItem error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function updateItem(Request $request, $id)
     {
-        $this->authorize('admin_settings_personalization');
+        try {
+            $this->authorize('admin_settings_personalization');
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $validator = Validator::make($data, [
-            "title" => "required",
-            "description" => "required",
-            "color" => "required",
-            "icon" => "required",
-            "count" => "required",
-        ]);
+            $validator = Validator::make($data, [
+                "title" => "required",
+                "description" => "required",
+                "color" => "required",
+                "icon" => "required",
+                "count" => "required",
+            ]);
 
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $statistic = HomePageStatistic::findOrFail($id);
+
+            $statistic->update([
+                "icon" => $data['icon'],
+                "color" => $data['color'],
+                "count" => $data['count'],
+                "order" => $statistic->order,
+            ]);
+
+            HomePageStatisticTranslation::query()->updateOrCreate([
+                'home_page_statistic_id' => $statistic->id,
+                'locale' => mb_strtolower($data['locale'])
+            ], [
+                'title' => $data['title'],
+                'description' => $data['description'],
+            ]);
+
+            return response()->json([
+                'code' => 200
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('updateItem error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $statistic = HomePageStatistic::findOrFail($id);
-
-        $statistic->update([
-            "icon" => $data['icon'],
-            "color" => $data['color'],
-            "count" => $data['count'],
-            "order" => $statistic->order,
-        ]);
-
-        HomePageStatisticTranslation::query()->updateOrCreate([
-            'home_page_statistic_id' => $statistic->id,
-            'locale' => mb_strtolower($data['locale'])
-        ], [
-            'title' => $data['title'],
-            'description' => $data['description'],
-        ]);
-
-        return response()->json([
-            'code' => 200
-        ]);
     }
 
     public function deleteItem($id)
     {
-        $this->authorize('admin_settings_personalization');
+        try {
+            $this->authorize('admin_settings_personalization');
 
-        $statistic = HomePageStatistic::findOrFail($id);
+            $statistic = HomePageStatistic::findOrFail($id);
 
-        $statistic->delete();
+            $statistic->delete();
 
-        $allSections = HomePageStatistic::orderBy('order', 'asc')->get();
+            $allSections = HomePageStatistic::orderBy('order', 'asc')->get();
 
-        $order = 1;
-        foreach ($allSections as $allSection) {
-            $allSection->update([
-                'order' => $order
+            $order = 1;
+            foreach ($allSections as $allSection) {
+                $allSection->update([
+                    'order' => $order
+                ]);
+
+                $order += 1;
+            }
+
+            return redirect()->back();
+        } catch (\Exception $e) {
+            \Log::error('deleteItem error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
-
-            $order += 1;
+            
+            throw $e;
         }
-
-        return redirect()->back();
     }
 
     public function sort(Request $request)
     {
-        $this->authorize('admin_settings_personalization');
+        try {
+            $this->authorize('admin_settings_personalization');
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $validator = Validator::make($data, [
-            'items' => 'required',
-        ]);
+            $validator = Validator::make($data, [
+                'items' => 'required',
+            ]);
 
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $itemIds = explode(',', $data['items']);
+
+            foreach ($itemIds as $order => $id) {
+                HomePageStatistic::where('id', $id)
+                    ->update(['order' => ($order + 1)]);
+            }
+
+            return response()->json([
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.items_sorted_successful')
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('sort error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $itemIds = explode(',', $data['items']);
-
-        foreach ($itemIds as $order => $id) {
-            HomePageStatistic::where('id', $id)
-                ->update(['order' => ($order + 1)]);
-        }
-
-        return response()->json([
-            'title' => trans('public.request_success'),
-            'msg' => trans('update.items_sorted_successful')
-        ]);
     }
 }

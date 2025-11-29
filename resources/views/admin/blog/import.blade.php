@@ -11,7 +11,7 @@
 <div class="container">
 
  <section class="section">
-   
+
 <div class="container">
 	<h3>Laravel 9 Import Export CSV And EXCEL File - Techsolutionstuff</h3>
 	<form action="{{ getAdminPanelUrl() }}/blog/importExcel" method="POST" name="importform"
@@ -21,7 +21,7 @@
 			<label for="file">File:</label>
 			<input id="file" type="file" name="file" class="form-control">
 		</div>
-	 
+
 		<button class="btn btn-success">Import File</button>
 	</form>
 </div>

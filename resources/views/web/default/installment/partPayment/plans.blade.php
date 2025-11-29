@@ -6,16 +6,12 @@
 @push('styles_top')
     <style>
 .loader {
-  //border: 16px solid #f3f3f3;
-  //border-radius: 50%;
-  //border-top: 16px solid #3498db;
 
   height: 80px;
   -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
-#loader {
     position: fixed;
     left: 50%;
     top: 50%;

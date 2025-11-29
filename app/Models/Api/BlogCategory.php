@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class BlogCategory extends Model
 {
-    //
+
     public function getDetailsAttribute(){
         return [
             'id'=>$this->id ,
-            'title'=>$this->title 
+            'title'=>$this->title
         ] ;
     }
 }

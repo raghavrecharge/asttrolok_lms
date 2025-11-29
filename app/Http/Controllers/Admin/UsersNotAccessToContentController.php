@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\User;
 use Illuminate\Http\Request;
@@ -11,21 +14,31 @@ class UsersNotAccessToContentController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_users_not_access_content_lists');
+        try {
+            $this->authorize('admin_users_not_access_content_lists');
 
-        $query = User::where('access_content', false);
+            $query = User::where('access_content', false);
 
-        $query = $this->filters($query, $request);
+            $query = $this->filters($query, $request);
 
-        $users = $query->orderBy('created_at', 'desc')
-            ->paginate(10);
+            $users = $query->orderBy('created_at', 'desc')
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('update.users_do_not_have_access_to_the_content'),
-            'users' => $users,
-        ];
+            $data = [
+                'pageTitle' => trans('update.users_do_not_have_access_to_the_content'),
+                'users' => $users,
+            ];
 
-        return view('admin.users.not_access_to_content', $data);
+            return view('admin.users.not_access_to_content', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function filters($query, $request)
@@ -45,52 +58,72 @@ class UsersNotAccessToContentController extends Controller
 
     public function store(Request $request)
     {
-        $this->authorize('admin_users_not_access_content_toggle');
+        try {
+            $this->authorize('admin_users_not_access_content_toggle');
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $validator = Validator::make($data, [
-            'user_id' => 'required|exists:users,id',
-        ]);
+            $validator = Validator::make($data, [
+                'user_id' => 'required|exists:users,id',
+            ]);
 
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $user = User::find($data['user_id']);
+
+            $user->update([
+                'access_content' => false
+            ]);
+
+            return response()->json([
+                'code' => 200
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $user = User::find($data['user_id']);
-
-        $user->update([
-            'access_content' => false
-        ]);
-
-        return response()->json([
-            'code' => 200
-        ]);
     }
 
     public function active($id)
     {
-        $this->authorize('admin_users_not_access_content_toggle');
+        try {
+            $this->authorize('admin_users_not_access_content_toggle');
 
-        $user = User::findOrFail($id);
+            $user = User::findOrFail($id);
 
-        $user->update([
-            'access_content' => true
-        ]);
+            $user->update([
+                'access_content' => true
+            ]);
 
-        $notifyOptions = [
+            $notifyOptions = [
 
-        ];
-        sendNotification('user_access_to_content', $notifyOptions, $user->id);
+            ];
+            sendNotification('user_access_to_content', $notifyOptions, $user->id);
 
-        $toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => trans('update.content_access_was_enabled_for_the_user', ['user' => $user->full_name]),
-            'status' => 'success'
-        ];
-        return back()->with(['toast' => $toastData]);
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.content_access_was_enabled_for_the_user', ['user' => $user->full_name]),
+                'status' => 'success'
+            ];
+            return back()->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('active error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

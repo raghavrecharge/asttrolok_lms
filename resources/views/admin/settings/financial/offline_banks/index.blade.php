@@ -4,7 +4,6 @@
     }
 @endphp
 
-
 <div class="tab-pane mt-3 fade  @if(request()->get('tab') == "offline_banks") active show @endif" id="offline_banks" role="tabpanel" aria-labelledby="offline_banks-tab">
     <div class="row">
         <div class="col-12 col-md-6">
@@ -12,7 +11,6 @@
                 {{ csrf_field() }}
                 <input type="hidden" name="page" value="financial">
                 <input type="hidden" name="name" value="{{ \App\Models\Setting::$offlineBanksName }}">
-
 
                 <div class="form-group custom-switches-stacked">
                     <label class="custom-switch pl-0 d-flex align-items-center">
@@ -77,7 +75,6 @@
     </section>
 
 </div>
-
 
 @push('scripts_bottom')
     <script>

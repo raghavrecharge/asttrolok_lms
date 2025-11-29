@@ -12,5 +12,4 @@ class InstallmentUserGroup extends Model
     public $timestamps = false;
     protected $guarded = ['id'];
 
-
 }

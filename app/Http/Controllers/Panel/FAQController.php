@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Bundle;
 use App\Models\Faq;
@@ -15,59 +18,69 @@ class FAQController extends Controller
 {
     public function store(Request $request)
     {
-        $user = auth()->user();
-        $data = $request->get('ajax')['new'];
+        try {
+            $user = auth()->user();
+            $data = $request->get('ajax')['new'];
 
-        $validator = Validator::make($data, [
-            'title' => 'required|max:255',
-            'answer' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $canStore = $this->checkItem($user, $data);
-
-        if ($canStore) {
-            $columnName = !empty($data['webinar_id']) ? 'webinar_id' : (!empty($data['bundle_id']) ? 'bundle_id' : 'upcoming_course_id');
-            $columnValue = !empty($data['webinar_id']) ? $data['webinar_id'] : (!empty($data['bundle_id']) ? $data['bundle_id'] : $data['upcoming_course_id']);
-
-            $order = Faq::query()
-                    ->where(function ($query) use ($user, $columnName, $columnValue) {
-                        $query->where('creator_id', $user->id);
-                        $query->orWhere($columnName, $columnValue);
-                    })
-                    ->count() + 1;
-
-            $faq = Faq::create([
-                'creator_id' => $user->id,
-                'webinar_id' => !empty($data['webinar_id']) ? $data['webinar_id'] : null,
-                'bundle_id' => !empty($data['bundle_id']) ? $data['bundle_id'] : null,
-                'upcoming_course_id' => !empty($data['upcoming_course_id']) ? $data['upcoming_course_id'] : null,
-                'order' => $order,
-                'created_at' => time()
+            $validator = Validator::make($data, [
+                'title' => 'required|max:255',
+                'answer' => 'required',
             ]);
 
-            if (!empty($faq)) {
-                FaqTranslation::updateOrCreate([
-                    'faq_id' => $faq->id,
-                    'locale' => mb_strtolower($data['locale']),
-                ], [
-                    'title' => $data['title'],
-                    'answer' => $data['answer'],
-                ]);
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
             }
 
-            return response()->json([
-                'code' => 200,
-            ], 200);
-        }
+            $canStore = $this->checkItem($user, $data);
 
-        abort(403);
+            if ($canStore) {
+                $columnName = !empty($data['webinar_id']) ? 'webinar_id' : (!empty($data['bundle_id']) ? 'bundle_id' : 'upcoming_course_id');
+                $columnValue = !empty($data['webinar_id']) ? $data['webinar_id'] : (!empty($data['bundle_id']) ? $data['bundle_id'] : $data['upcoming_course_id']);
+
+                $order = Faq::query()
+                        ->where(function ($query) use ($user, $columnName, $columnValue) {
+                            $query->where('creator_id', $user->id);
+                            $query->orWhere($columnName, $columnValue);
+                        })
+                        ->count() + 1;
+
+                $faq = Faq::create([
+                    'creator_id' => $user->id,
+                    'webinar_id' => !empty($data['webinar_id']) ? $data['webinar_id'] : null,
+                    'bundle_id' => !empty($data['bundle_id']) ? $data['bundle_id'] : null,
+                    'upcoming_course_id' => !empty($data['upcoming_course_id']) ? $data['upcoming_course_id'] : null,
+                    'order' => $order,
+                    'created_at' => time()
+                ]);
+
+                if (!empty($faq)) {
+                    FaqTranslation::updateOrCreate([
+                        'faq_id' => $faq->id,
+                        'locale' => mb_strtolower($data['locale']),
+                    ], [
+                        'title' => $data['title'],
+                        'answer' => $data['answer'],
+                    ]);
+                }
+
+                return response()->json([
+                    'code' => 200,
+                ], 200);
+            }
+
+            abort(403);
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function checkItem($user, $data)
@@ -99,79 +112,99 @@ class FAQController extends Controller
 
     public function update(Request $request, $id)
     {
-        $user = auth()->user();
-        $data = $request->get('ajax')[$id];
+        try {
+            $user = auth()->user();
+            $data = $request->get('ajax')[$id];
 
-        $validator = Validator::make($data, [
-            'title' => 'required|max:255',
-            'answer' => 'required',
-        ]);
+            $validator = Validator::make($data, [
+                'title' => 'required|max:255',
+                'answer' => 'required',
+            ]);
 
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $canStore = $this->checkItem($user, $data);
-
-        if ($canStore) {
-            $columnName = !empty($data['webinar_id']) ? 'webinar_id' : (!empty($data['bundle_id']) ? 'bundle_id' : 'upcoming_course_id');
-            $columnValue = !empty($data['webinar_id']) ? $data['webinar_id'] : (!empty($data['bundle_id']) ? $data['bundle_id'] : $data['upcoming_course_id']);
-
-            $faq = Faq::where('id', $id)
-                ->where(function ($query) use ($user, $columnName, $columnValue) {
-                    $query->where('creator_id', $user->id);
-                    $query->orWhere($columnName, $columnValue);
-                })
-                ->first();
-
-            if (!empty($faq)) {
-                $faq->update([
-                    'updated_at' => time()
-                ]);
-
-                FaqTranslation::updateOrCreate([
-                    'faq_id' => $faq->id,
-                    'locale' => mb_strtolower($data['locale']),
-                ], [
-                    'title' => $data['title'],
-                    'answer' => $data['answer'],
-                ]);
-
-                return response()->json([
-                    'code' => 200,
-                ], 200);
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
             }
-        }
 
-        abort(403);
+            $canStore = $this->checkItem($user, $data);
+
+            if ($canStore) {
+                $columnName = !empty($data['webinar_id']) ? 'webinar_id' : (!empty($data['bundle_id']) ? 'bundle_id' : 'upcoming_course_id');
+                $columnValue = !empty($data['webinar_id']) ? $data['webinar_id'] : (!empty($data['bundle_id']) ? $data['bundle_id'] : $data['upcoming_course_id']);
+
+                $faq = Faq::where('id', $id)
+                    ->where(function ($query) use ($user, $columnName, $columnValue) {
+                        $query->where('creator_id', $user->id);
+                        $query->orWhere($columnName, $columnValue);
+                    })
+                    ->first();
+
+                if (!empty($faq)) {
+                    $faq->update([
+                        'updated_at' => time()
+                    ]);
+
+                    FaqTranslation::updateOrCreate([
+                        'faq_id' => $faq->id,
+                        'locale' => mb_strtolower($data['locale']),
+                    ], [
+                        'title' => $data['title'],
+                        'answer' => $data['answer'],
+                    ]);
+
+                    return response()->json([
+                        'code' => 200,
+                    ], 200);
+                }
+            }
+
+            abort(403);
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function destroy(Request $request, $id)
     {
-        $user = auth()->user();
-        $faq = Faq::where('id', $id)
-            ->first();
+        try {
+            $user = auth()->user();
+            $faq = Faq::where('id', $id)
+                ->first();
 
-        if (!empty($faq)) {
-            $item = null;
-            if (!empty($faq->webinar_id)) {
-                $item = Webinar::query()->find($faq->webinar_id);
-            } else if (!empty($faq->bundle_id)) {
-                $item = Bundle::query()->find($faq->bundle_id);
-            } else if (!empty($faq->upcoming_course_id)) {
-                $item = UpcomingCourse::find($faq->upcoming_course_id);
+            if (!empty($faq)) {
+                $item = null;
+                if (!empty($faq->webinar_id)) {
+                    $item = Webinar::query()->find($faq->webinar_id);
+                } else if (!empty($faq->bundle_id)) {
+                    $item = Bundle::query()->find($faq->bundle_id);
+                } else if (!empty($faq->upcoming_course_id)) {
+                    $item = UpcomingCourse::find($faq->upcoming_course_id);
+                }
+
+                if ($faq->creator_id == $user->id or (!empty($item) and $item->canAccess($user))) {
+                    $faq->delete();
+                }
             }
 
-            if ($faq->creator_id == $user->id or (!empty($item) and $item->canAccess($user))) {
-                $faq->delete();
-            }
+            return response()->json([
+                'code' => 200
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return response()->json([
-            'code' => 200
-        ], 200);
     }
 }

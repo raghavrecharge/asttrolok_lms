@@ -2,7 +2,6 @@
 
 @push('libraries_top')
 
-
 @endpush
 
 @section('content')

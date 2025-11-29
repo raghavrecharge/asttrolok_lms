@@ -44,7 +44,6 @@
                 @enderror
             </div>
 
-
             <div class="form-group ">
                 <label class="input-label d-block">{{ trans('public.type') }}</label>
 
@@ -147,7 +146,6 @@
         </div>
     </div>
 
-
     <div class="row">
         <div class="col-12">
             <div class="form-group">
@@ -161,7 +159,6 @@
             </div>
         </div>
     </div>
-
 
     <div class="row">
         <div class="col-6">

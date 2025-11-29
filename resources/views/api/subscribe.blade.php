@@ -3,10 +3,8 @@
                             <input type="hidden" name="id" value="{{$id}}">
                             <input type="hidden" name="amount" value="{{$amount}}">
 
-
  </form>
 
- 
 <script>
 
  function submitForm() {

@@ -132,17 +132,7 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script >
-    //   $(document).ready(function(){
-    //   $(".loadid").slice(0,9).show();
-    //   $("#loadMore").click(function(e){
-    //     e.preventDefault();
-    //     $(".loadid:hidden").slice(0,9).fadeIn("slow");
-    //     console.log($(".loadid:hidden").length);
-    //     if($(".loadid:hidden").length == 0){
-    //       $("#loadMore").fadeOut("slow");
-    //       }
-    //   });
-    // })
+
     </script>
 
 @endsection

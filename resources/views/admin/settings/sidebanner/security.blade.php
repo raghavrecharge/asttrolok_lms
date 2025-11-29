@@ -51,7 +51,6 @@
                     </div>
                 @endforeach
 
-
                 <h5 class="mt-5">{{ trans('update.admin_panel_url') }}</h5>
 
                 <div class="form-group mt-2">
@@ -59,7 +58,6 @@
                     <input type="text" name="value[admin_panel_url]" id="admin_panel_url" value="{{ (!empty($itemValue) and !empty($itemValue['admin_panel_url'])) ? $itemValue['admin_panel_url'] : 'admin' }}" class="form-control" required/>
                     <p class="font-12 text-gray mt-1 mb-0">{{ trans('update.admin_panel_url_hint') }}</p>
                 </div>
-
 
             </div>
         </div>

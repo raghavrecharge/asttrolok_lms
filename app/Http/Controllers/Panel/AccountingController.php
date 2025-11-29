@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\PaymentController;
 use App\Models\Accounting;
@@ -20,98 +23,16 @@ use App\Models\WebinarPartPayment;
 
 class AccountingController extends Controller
 {
-    // public function index()
-    // {
-    //     $userAuth = auth()->user();
-
-    //     $accountings = Accounting::where('user_id', $userAuth->id)
-    //         ->where('system', false)
-    //         ->where('tax', false)
-    //         ->with([
-    //             'webinar',
-    //             // 'promotion',
-    //             'subscribe',
-    //             'meetingTime' => function ($query) {
-    //                 $query->with(['meeting' => function ($query) {
-    //                     $query->with(['creator' => function ($query) {
-    //                         $query->select('id', 'full_name');
-    //                     }]);
-    //                 }]);
-    //             }
-    //         ])
-    //         ->orderBy('created_at', 'desc')
-    //         ->orderBy('id', 'desc')
-    //         ->paginate(10);
-            
-    //         $sales1 = Sale::where(['buyer_id'=> $userAuth->id, 'status'=> null])->get();
-    //         // echo "<pre>";
-    //         // print_r($sales1);
-    //         $amount_paid=[];
-    //         foreach($sales1 as $sales2){
-    //             if($sales2->webinar_id){
-    //                 $webinars1 = Webinar:: where('id', $sales2->webinar_id)
-    //         ->first();
-    //                 $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $webinars1->title ,$sales2->id,$sales2->webinar_id,'course',$sales2->type];
-    //             }
-    //             if($sales2->meeting_id){
-    //         //         $webinars1 = Webinar:: where('id', $sales2->webinar_id)
-    //         // ->frist();
-    //                 $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Meeting',$sales2->id,$sales2->meeting_id,'meeting',$sales2->type ];
-    //             }
-                
-    //             if($sales2->bundle){
-    //         //         $webinars1 = Webinar:: where('id', $sales2->webinar_id)
-    //         // ->frist();
-    //         // print_r($sales2);die();
-    //                 $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Bundle Course',$sales2->id,$sales2->bundle_id,'bundle',$sales2->type ];
-    //             }
-                
-    //             if($sales2->subscription_id){
-    //                 $Subscription = Subscription::where('id', $sales2->subscription_id)->first();
-    //         // print_r($sales2);die();
-    //                 $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $Subscription->title,$sales2->id,$sales2->subscription_id,'subscription',$sales2->type ];
-    //             }
-                
-    //             if($sales2->product_order_id){
-    //                 // $Subscription = Subscription::where('id', $sales2->subscription_id)->first();
-    //         // print_r($sales2);die();
-    //                 $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Product' ,$sales2->id,$sales2->product_order_id,'product',$sales2->type ];
-    //             }
-    //         }
-            
-    //         $WebinarPartPayment =  WebinarPartPayment :: where('user_id',$userAuth->id)->get();
-                    
-    //         foreach ($WebinarPartPayment as $WebinarPartPayment1){
-    //             $webinars1 = Webinar:: where('id', $WebinarPartPayment1->webinar_id)
-    //         ->first();
-    //             $amount_paid[]=[ $WebinarPartPayment1->amount , strtotime($WebinarPartPayment1->created_at) , $webinars1->title,$WebinarPartPayment1->id,$WebinarPartPayment1->webinar_id,'part',''];
-    //         }
-    //         usort($amount_paid, function($a, $b) {
-    //             return $b[1] <=> $a[1];
-    //         });
-    //         $data['amount_paid'] = $amount_paid;
-
-
-    //     $data = [
-    //         'pageTitle' => trans('financial.summary_page_title'),
-    //         'accountings' => $accountings,
-    //         'amount_paid' => $amount_paid,
-    //         'commission' => getFinancialSettings('commission') ?? 0
-    //     ];
-    //     // print_r($data);
-    //     return view(getTemplate() . '.panel.financial.summary', $data);
-    // }
 
        public function index()
 {
     try {
         $userAuth = auth()->user();
-        
+
         if (!$userAuth) {
             return redirect()->route('login')->with('error', 'Please login first');
         }
 
-        // Accounting records fetch करें
         $accountings = Accounting::where('user_id', $userAuth->id)
             ->where('system', false)
             ->where('tax', false)
@@ -130,11 +51,9 @@ class AccountingController extends Controller
             ->orderBy('id', 'desc')
             ->paginate(10);
 
-        // Sales records fetch करें
         $sales = Sale::where(['buyer_id' => $userAuth->id, 'status' => null])->get();
         $amount_paid = [];
 
-        // Sales data process करें
         foreach ($sales as $sale) {
             try {
                 if ($sale->webinar_id) {
@@ -206,7 +125,7 @@ class AccountingController extends Controller
                 \Log::error('Error processing sale: ' . $e->getMessage(), [
                     'sale_id' => $sale->id ?? null
                 ]);
-                continue; // अगले sale को process करें
+                continue;
             }
         }
 
@@ -238,7 +157,6 @@ class AccountingController extends Controller
             \Log::error('Error fetching part payments: ' . $e->getMessage());
         }
 
-        
         usort($amount_paid, function ($a, $b) {
             return $b[1] <=> $a[1];
         });
@@ -264,171 +182,189 @@ class AccountingController extends Controller
 
     public function account($id = null)
     {
-        $userAuth = auth()->user();
+        try {
+            $userAuth = auth()->user();
 
-        $editOfflinePayment = null;
-        if (!empty($id)) {
-            $editOfflinePayment = OfflinePayment::where('id', $id)
-                ->where('user_id', $userAuth->id)
-                ->first();
-        }
-
-
-        $paymentChannels = PaymentChannel::where('status', 'active')->get();
-        $offlinePayments = OfflinePayment::where('user_id', $userAuth->id)->orderBy('created_at', 'desc')->get();
-
-        $offlineBanks = OfflineBank::query()
-            ->orderBy('created_at', 'desc')
-            ->with([
-                'specifications'
-            ])
-            ->get();
-
-        $razorpay = false;
-        foreach ($paymentChannels as $paymentChannel) {
-            if ($paymentChannel->class_name == 'Razorpay') {
-                $razorpay = true;
+            $editOfflinePayment = null;
+            if (!empty($id)) {
+                $editOfflinePayment = OfflinePayment::where('id', $id)
+                    ->where('user_id', $userAuth->id)
+                    ->first();
             }
+
+            $paymentChannels = PaymentChannel::where('status', 'active')->get();
+            $offlinePayments = OfflinePayment::where('user_id', $userAuth->id)->orderBy('created_at', 'desc')->get();
+
+            $offlineBanks = OfflineBank::query()
+                ->orderBy('created_at', 'desc')
+                ->with([
+                    'specifications'
+                ])
+                ->get();
+
+            $razorpay = false;
+            foreach ($paymentChannels as $paymentChannel) {
+                if ($paymentChannel->class_name == 'Razorpay') {
+                    $razorpay = true;
+                }
+            }
+
+            $registrationBonusSettings = getRegistrationBonusSettings();
+            $registrationBonusAccounting = Accounting::query()
+                ->where('user_id', $userAuth->id)
+                ->where('is_registration_bonus', true)
+                ->where('system', false)
+                ->first();
+            $registrationBonusAmount = (empty($registrationBonusAccounting) and !empty($registrationBonusSettings['status']) and !empty($registrationBonusSettings['registration_bonus_amount'])) ? $registrationBonusSettings['registration_bonus_amount'] : null;
+
+            $data = [
+                'pageTitle' => trans('financial.charge_account_page_title'),
+                'offlinePayments' => $offlinePayments,
+                'paymentChannels' => $paymentChannels,
+                'offlineBanks' => $offlineBanks,
+                'accountCharge' => $userAuth->getAccountingCharge(),
+                'readyPayout' => $userAuth->getPayout(),
+                'totalIncome' => $userAuth->getIncome(),
+                'editOfflinePayment' => $editOfflinePayment,
+                'razorpay' => $razorpay,
+                'registrationBonusAmount' => $registrationBonusAmount,
+            ];
+
+            return view('web.default.panel.financial.account', $data);
+        } catch (\Exception $e) {
+            \Log::error('account error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $registrationBonusSettings = getRegistrationBonusSettings();
-        $registrationBonusAccounting = Accounting::query()
-            ->where('user_id', $userAuth->id)
-            ->where('is_registration_bonus', true)
-            ->where('system', false)
-            ->first();
-        $registrationBonusAmount = (empty($registrationBonusAccounting) and !empty($registrationBonusSettings['status']) and !empty($registrationBonusSettings['registration_bonus_amount'])) ? $registrationBonusSettings['registration_bonus_amount'] : null;
-
-        $data = [
-            'pageTitle' => trans('financial.charge_account_page_title'),
-            'offlinePayments' => $offlinePayments,
-            'paymentChannels' => $paymentChannels,
-            'offlineBanks' => $offlineBanks,
-            'accountCharge' => $userAuth->getAccountingCharge(),
-            'readyPayout' => $userAuth->getPayout(),
-            'totalIncome' => $userAuth->getIncome(),
-            'editOfflinePayment' => $editOfflinePayment,
-            'razorpay' => $razorpay,
-            'registrationBonusAmount' => $registrationBonusAmount,
-        ];
-
-        return view('web.default.panel.financial.account', $data);
     }
 
     public function charge(Request $request)
     {
-        $rules = [
-            'amount' => 'required|numeric|min:0',
-            'gateway' => 'required',
-            'account' => 'required_if:gateway,offline',
-            'referral_code' => 'required_if:gateway,offline',
-            'date' => 'required_if:gateway,offline',
-        ];
-
-        if (!empty($request->file('attachment'))) {
-            $rules['attachment'] = 'image|mimes:jpeg,png,jpg|max:10240';
-        }
-
-        $this->validate($request, $rules);
-
-        $gateway = $request->input('gateway');
-        $amount = $request->input('amount');
-        $account = $request->input('account');
-        $referenceNumber = $request->input('referral_code');
-        $date = $request->input('date');
-
-        if ($amount <= 0) {
-            return back()->withErrors([
-                'amount' => trans('update.the_amount_must_be_greater_than_0')
-            ]);
-        }
-
-        $amount = convertPriceToDefaultCurrency($amount);
-        $userAuth = auth()->user();
-
-        if ($gateway === 'offline') {
-
-            $attachment = null;
+        try {
+            $rules = [
+                'amount' => 'required|numeric|min:0',
+                'gateway' => 'required',
+                'account' => 'required_if:gateway,offline',
+                'referral_code' => 'required_if:gateway,offline',
+                'date' => 'required_if:gateway,offline',
+            ];
 
             if (!empty($request->file('attachment'))) {
-                $attachment = $this->handleUploadAttachment($userAuth, $request->file('attachment'));
+                $rules['attachment'] = 'image|mimes:jpeg,png,jpg|max:10240';
             }
 
-            $date = convertTimeToUTCzone($date, getTimezone());
+            $this->validate($request, $rules);
 
-            OfflinePayment::create([
+            $gateway = $request->input('gateway');
+            $amount = $request->input('amount');
+            $account = $request->input('account');
+            $referenceNumber = $request->input('referral_code');
+            $date = $request->input('date');
+
+            if ($amount <= 0) {
+                return back()->withErrors([
+                    'amount' => trans('update.the_amount_must_be_greater_than_0')
+                ]);
+            }
+
+            $amount = convertPriceToDefaultCurrency($amount);
+            $userAuth = auth()->user();
+
+            if ($gateway === 'offline') {
+
+                $attachment = null;
+
+                if (!empty($request->file('attachment'))) {
+                    $attachment = $this->handleUploadAttachment($userAuth, $request->file('attachment'));
+                }
+
+                $date = convertTimeToUTCzone($date, getTimezone());
+
+                OfflinePayment::create([
+                    'user_id' => $userAuth->id,
+                    'amount' => $amount,
+                    'offline_bank_id' => $account,
+                    'reference_number' => $referenceNumber,
+                    'status' => OfflinePayment::$waiting,
+                    'pay_date' => $date->getTimestamp(),
+                    'attachment' => $attachment,
+                    'created_at' => time(),
+                ]);
+
+                $notifyOptions = [
+                    '[amount]' => handlePrice($amount),
+                    '[u.name]' => $userAuth->full_name
+                ];
+                sendNotification('offline_payment_request', $notifyOptions, $userAuth->id);
+                sendNotification('new_offline_payment_request', $notifyOptions, 1);
+
+                $sweetAlertData = [
+                    'msg' => trans('financial.offline_payment_request_success_store'),
+                    'status' => 'success'
+                ];
+                return back()->with(['sweetalert' => $sweetAlertData]);
+            }
+
+            $paymentChannel = PaymentChannel::where('class_name', $gateway)->where('status', 'active')->first();
+
+            if (!$paymentChannel) {
+                $toastData = [
+                    'title' => trans('public.request_failed'),
+                    'msg' => trans('public.payment_dont_access'),
+                    'status' => 'error'
+                ];
+                return back()->with(['toast' => $toastData]);
+            }
+
+            $order = Order::create([
                 'user_id' => $userAuth->id,
+                'status' => Order::$pending,
+                'payment_method' => Order::$paymentChannel,
+                'is_charge_account' => true,
+                'total_amount' => $amount,
                 'amount' => $amount,
-                'offline_bank_id' => $account,
-                'reference_number' => $referenceNumber,
-                'status' => OfflinePayment::$waiting,
-                'pay_date' => $date->getTimestamp(),
-                'attachment' => $attachment,
+                'created_at' => time(),
+                'type' => Order::$charge,
+            ]);
+
+            OrderItem::updateOrCreate([
+                'user_id' => $userAuth->id,
+                'order_id' => $order->id,
+            ], [
+                'amount' => $amount,
+                'total_amount' => $amount,
+                'tax' => 0,
+                'tax_price' => 0,
+                'commission' => 0,
+                'commission_price' => 0,
                 'created_at' => time(),
             ]);
 
-            $notifyOptions = [
-                '[amount]' => handlePrice($amount),
-                '[u.name]' => $userAuth->full_name
-            ];
-            sendNotification('offline_payment_request', $notifyOptions, $userAuth->id);
-            sendNotification('new_offline_payment_request', $notifyOptions, 1);
+            if ($paymentChannel->class_name == 'Razorpay') {
+                return $this->echoRozerpayForm($order);
+            } else {
+                $paymentController = new PaymentController();
 
-            $sweetAlertData = [
-                'msg' => trans('financial.offline_payment_request_success_store'),
-                'status' => 'success'
-            ];
-            return back()->with(['sweetalert' => $sweetAlertData]);
-        }
+                $paymentRequest = new Request();
+                $paymentRequest->merge([
+                    'gateway' => $paymentChannel->id,
+                    'order_id' => $order->id
+                ]);
 
-        $paymentChannel = PaymentChannel::where('class_name', $gateway)->where('status', 'active')->first();
-
-        if (!$paymentChannel) {
-            $toastData = [
-                'title' => trans('public.request_failed'),
-                'msg' => trans('public.payment_dont_access'),
-                'status' => 'error'
-            ];
-            return back()->with(['toast' => $toastData]);
-        }
-
-        $order = Order::create([
-            'user_id' => $userAuth->id,
-            'status' => Order::$pending,
-            'payment_method' => Order::$paymentChannel,
-            'is_charge_account' => true,
-            'total_amount' => $amount,
-            'amount' => $amount,
-            'created_at' => time(),
-            'type' => Order::$charge,
-        ]);
-
-        OrderItem::updateOrCreate([
-            'user_id' => $userAuth->id,
-            'order_id' => $order->id,
-        ], [
-            'amount' => $amount,
-            'total_amount' => $amount,
-            'tax' => 0,
-            'tax_price' => 0,
-            'commission' => 0,
-            'commission_price' => 0,
-            'created_at' => time(),
-        ]);
-
-
-        if ($paymentChannel->class_name == 'Razorpay') {
-            return $this->echoRozerpayForm($order);
-        } else {
-            $paymentController = new PaymentController();
-
-            $paymentRequest = new Request();
-            $paymentRequest->merge([
-                'gateway' => $paymentChannel->id,
-                'order_id' => $order->id
+                return $paymentController->paymentRequest($paymentRequest);
+            }
+        } catch (\Exception $e) {
+            \Log::error('charge error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
-
-            return $paymentController->paymentRequest($paymentRequest);
+            
+            throw $e;
         }
     }
 
@@ -485,7 +421,7 @@ class AccountingController extends Controller
                 })
             </script>
         </form>';
-        
+
         $userAuth = auth()->user();
 
         $editOfflinePayment = null;
@@ -495,7 +431,6 @@ class AccountingController extends Controller
                 ->where('user_id', $userAuth->id)
                 ->first();
         }
-
 
         $paymentChannels = PaymentChannel::where('status', 'active')->get();
         $offlinePayments = OfflinePayment::where('user_id', $userAuth->id)->orderBy('created_at', 'desc')->get();
@@ -536,71 +471,91 @@ class AccountingController extends Controller
         ];
 
         return view('web.default.panel.financial.account', $data);
-        // return '';
+
     }
 
     public function updateOfflinePayment(Request $request, $id)
     {
-        $user = auth()->user();
-        $offline = OfflinePayment::where('id', $id)
-            ->where('user_id', $user->id)
-            ->first();
+        try {
+            $user = auth()->user();
+            $offline = OfflinePayment::where('id', $id)
+                ->where('user_id', $user->id)
+                ->first();
 
-        if (!empty($offline)) {
-            $data = $request->all();
+            if (!empty($offline)) {
+                $data = $request->all();
 
-            $rules = [
-                'amount' => 'required|numeric',
-                'gateway' => 'required',
-                'account' => 'required_if:gateway,offline',
-                'referral_code' => 'required_if:gateway,offline',
-                'date' => 'required_if:gateway,offline',
-            ];
+                $rules = [
+                    'amount' => 'required|numeric',
+                    'gateway' => 'required',
+                    'account' => 'required_if:gateway,offline',
+                    'referral_code' => 'required_if:gateway,offline',
+                    'date' => 'required_if:gateway,offline',
+                ];
 
-            if (!empty($request->file('attachment'))) {
-                $rules['attachment'] = 'image|mimes:jpeg,png,jpg|max:10240';
+                if (!empty($request->file('attachment'))) {
+                    $rules['attachment'] = 'image|mimes:jpeg,png,jpg|max:10240';
+                }
+
+                $this->validate($request, $rules);
+
+                $attachment = $offline->attachment;
+
+                if (!empty($request->file('attachment'))) {
+                    $attachment = $this->handleUploadAttachment($user, $request->file('attachment'));
+                }
+
+                $date = convertTimeToUTCzone($data['date'], getTimezone());
+
+                $offline->update([
+                    'amount' => $data['amount'],
+                    'bank' => $data['account'],
+                    'reference_number' => $data['referral_code'],
+                    'status' => OfflinePayment::$waiting,
+                    'attachment' => $attachment,
+                    'pay_date' => $date->getTimestamp(),
+                ]);
+
+                return redirect('/panel/financial/account');
             }
 
-            $this->validate($request, $rules);
-
-            $attachment = $offline->attachment;
-
-            if (!empty($request->file('attachment'))) {
-                $attachment = $this->handleUploadAttachment($user, $request->file('attachment'));
-            }
-
-            $date = convertTimeToUTCzone($data['date'], getTimezone());
-
-            $offline->update([
-                'amount' => $data['amount'],
-                'bank' => $data['account'],
-                'reference_number' => $data['referral_code'],
-                'status' => OfflinePayment::$waiting,
-                'attachment' => $attachment,
-                'pay_date' => $date->getTimestamp(),
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('updateOfflinePayment error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
-
-            return redirect('/panel/financial/account');
+            
+            throw $e;
         }
-
-        abort(404);
     }
 
     public function deleteOfflinePayment($id)
     {
-        $user = auth()->user();
-        $offline = OfflinePayment::where('id', $id)
-            ->where('user_id', $user->id)
-            ->first();
+        try {
+            $user = auth()->user();
+            $offline = OfflinePayment::where('id', $id)
+                ->where('user_id', $user->id)
+                ->first();
 
-        if (!empty($offline)) {
-            $offline->delete();
+            if (!empty($offline)) {
+                $offline->delete();
 
-            return response()->json([
-                'code' => 200
-            ], 200);
+                return response()->json([
+                    'code' => 200
+                ], 200);
+            }
+
+            return response()->json([], 422);
+        } catch (\Exception $e) {
+            \Log::error('deleteOfflinePayment error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return response()->json([], 422);
     }
 }

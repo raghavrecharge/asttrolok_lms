@@ -110,7 +110,6 @@
                         </div>
                     </div>
 
-
                     <div class="col-md-3">
                         <div class="form-group">
                             <label class="input-label">{{ trans('admin/main.filters') }}</label>
@@ -121,7 +120,6 @@
                             </select>
                         </div>
                     </div>
-
 
                     <div class="col-md-3">
                         <div class="form-group">
@@ -134,7 +132,6 @@
                             </select>
                         </div>
                     </div>
-
 
                     <div class="col-md-3">
                         <div class="form-group">
@@ -159,7 +156,6 @@
                         </div>
                     </div>
 
-
                     <div class="col-md-3">
                         <div class="form-group mt-1">
                             <label class="input-label mb-4"> </label>
@@ -180,7 +176,7 @@
             @can('admin_enrollment_add_student_to_items')
                 <button type="button" id="addStudentToCourse" class="btn btn-primary mr-2">{{ trans('update.add_student_to_course') }}</button>
             @endcan
-            
+
              @can('admin_users_export_excel')
               {{--  <a href="{{ getAdminPanelUrl() }}/webinars/{{ $webinar->id }}/excel" class="btn btn-primary">{{ trans('admin/main.export_xls') }}</a> --}}
             @endcan
@@ -200,12 +196,12 @@
     }
 
     progress::-webkit-progress-value {
-        background-color: #007bff; /* Blue color for progress */
+        background-color: #007bff;
         border-radius: 4px;
     }
 
     progress::-moz-progress-bar {
-        background-color: #007bff; /* Blue color for Firefox */
+        background-color: #007bff;
         border-radius: 4px;
     }
 </style>
@@ -215,10 +211,9 @@
                     <tr>
                         <th class="text-left">ID</th>
                         <th class="text-left">{{ trans('admin/main.name') }}</th>
-                       
+
                         <th>{{ trans('update.learning') }}</th>
-                        
-                        
+
                         <th width="120">{{ trans('admin/main.actions') }}</th>
                     </tr>
 
@@ -245,43 +240,37 @@
                                 </div>
                             </td>
 
-
                             <td>
-                                
-                                
+
                                  @php
                                             $Progress = 0;
                                             $totalVideos =0;
                                             $webinar_id = request()->route('id');
-                                        
+
                                           $totalVideos =10;
                                           $watchedVideos = \App\Models\SubscriptionCourseProgress::where('subscription_id', (int) $webinar_id)
-                                            ->where('user_id',(int) $student->id)  
+                                            ->where('user_id',(int) $student->id)
                                             ->sum('watch_percentage');
-                                           
+
                                          $slugs = \App\Models\subscription::where('id', (int) $webinar_id)->where('status', 'active')->first();
-                                           
+
                                         @endphp
-                                      
+
                                         @if($totalVideos)
                                             @php
                                                 $Progress = (int) ($watchedVideos/ $totalVideos);
-                                                 
+
                                             @endphp
                                         @endif
                                          <a href="{{ url("/admin/users/{$student->id}/{$slugs->slug}/sub-courseprogress") }}" target="_blank" class="">
                                        <div class="mt-20">
                                         <label for="videoProgress" class="font-16 text-gray">Progress</label>
                                         <progress id="videoProgress" value="{{ $Progress }}" max="100" class="progress-bar"></progress>
-                                        <span id="progressValue" class="font-15 text-gray">{{ $Progress }}%</span> 
+                                        <span id="progressValue" class="font-15 text-gray">{{ $Progress }}%</span>
                                     </div>
                                     </a>
-                                      
+
                             </td>
-
-                           
-
-                       
 
                             <td class="text-center mb-2" width="120">
                                 @if(!empty($student->id))
@@ -327,7 +316,6 @@
 
     </div>
 
-
     <section class="card">
         <div class="card-body">
             <div class="section-title ml-0 mt-0 mb-3"><h5>{{trans('admin/main.hints')}}</h5></div>
@@ -346,14 +334,12 @@
                     </div>
                 </div>
 
-
                 <div class="col-md-4">
                     <div class="media-body">
                         <div class="text-primary mt-0 mb-1 font-weight-bold">{{trans('admin/main.students_hint_title_3')}}</div>
                         <div class="text-small font-600-bold">{{trans('admin/main.students_hint_description_3')}}</div>
                     </div>
                 </div>
-
 
             </div>
         </div>

@@ -4,7 +4,6 @@
     }
 @endphp
 
-
 <div class="tab-pane mt-3 fade  @if(request()->get('tab') == "user_banks") active show @endif" id="user_banks" role="tabpanel" aria-labelledby="user_banks-tab">
     <div class="row">
         <div class="col-12 col-md-6">
@@ -61,7 +60,6 @@
     </section>
 
 </div>
-
 
 @push('scripts_bottom')
     <script>

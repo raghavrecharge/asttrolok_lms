@@ -31,7 +31,6 @@
     </div>
 @endif
 
-
 <div id="newTextLessonForm" class="d-none">
     @include('web.default.panel.webinar.create_includes.accordions.text-lesson',['webinar' => $webinar])
 </div>

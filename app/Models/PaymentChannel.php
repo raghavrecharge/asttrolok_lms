@@ -59,7 +59,6 @@ class PaymentChannel extends Model
     static $jazzCash = 'JazzCash';
     static $redsys = 'Redsys';
 
-
     public function getCurrenciesAttribute()
     {
         if (!empty($this->attributes['currencies'])) {

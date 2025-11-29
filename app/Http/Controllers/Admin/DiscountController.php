@@ -19,21 +19,31 @@ class DiscountController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_discount_codes_list');
+        try {
+            $this->authorize('admin_discount_codes_list');
 
-        $query = Discount::query();
+            $query = Discount::query();
 
-        $query = $this->filters($query, $request);
+            $query = $this->filters($query, $request);
 
-        $discounts = $query->orderBy('created_at', 'desc')
-            ->paginate(10);
+            $discounts = $query->orderBy('created_at', 'desc')
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('admin/main.discount_codes_title'),
-            'discounts' => $discounts,
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.discount_codes_title'),
+                'discounts' => $discounts,
+            ];
 
-        return view('admin.financial.discount.lists', $data);
+            return view('admin.financial.discount.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function filters($query, $request)
@@ -44,9 +54,7 @@ class DiscountController extends Controller
         $user_ids = $request->get('user_ids', []);
         $sort = $request->get('sort');
 
-
         $query = fromAndToDateFilter($from, $to, $query, 'expired_at');
-
 
         if (!empty($user_ids) and count($user_ids)) {
             $discountIds = DiscountUser::whereIn('user_id', $user_ids)->pluck('discount_id');
@@ -56,7 +64,7 @@ class DiscountController extends Controller
 
         if (isset($search)) {
             $query =$query->where('title', 'like', '%' . $search . '%');
-           
+
         }
 
         if (!empty($sort)) {
@@ -121,74 +129,94 @@ class DiscountController extends Controller
 
     public function create()
     {
-        $this->authorize('admin_discount_codes_create');
+        try {
+            $this->authorize('admin_discount_codes_create');
 
-        $userGroups = Group::orderBy('created_at', 'desc')->where('status', 'active')->get();
+            $userGroups = Group::orderBy('created_at', 'desc')->where('status', 'active')->get();
 
-        $data = [
-            'pageTitle' => trans('admin/main.new_discount_title'),
-            'userGroups' => $userGroups,
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.new_discount_title'),
+                'userGroups' => $userGroups,
+            ];
 
-        return view('admin.financial.discount.new', $data);
+            return view('admin.financial.discount.new', $data);
+        } catch (\Exception $e) {
+            \Log::error('create error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function store(Request $request)
     {
-        $this->authorize('admin_discount_codes_create');
+        try {
+            $this->authorize('admin_discount_codes_create');
 
-        $this->validate($request, [
-            'title' => 'required',
-            'discount_type' => 'required|in:' . implode(',', Discount::$discountTypes),
-            'source' => 'required|in:' . implode(',', Discount::$discountSource),
-            'code' => 'required|unique:discounts',
-            'user_id' => 'nullable',
-            'percent' => 'nullable',
-            'amount' => 'nullable',
-            'count' => 'nullable',
-            'expired_at' => 'required',
-        ]);
+            $this->validate($request, [
+                'title' => 'required',
+                'discount_type' => 'required|in:' . implode(',', Discount::$discountTypes),
+                'source' => 'required|in:' . implode(',', Discount::$discountSource),
+                'code' => 'required|unique:discounts',
+                'user_id' => 'nullable',
+                'percent' => 'nullable',
+                'amount' => 'nullable',
+                'count' => 'nullable',
+                'expired_at' => 'required',
+            ]);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $user_id = $data['user_id'] ?? [];
+            $user_id = $data['user_id'] ?? [];
 
-        $discountType = 'all_users';
-        if (!empty($user_id)) {
-            $discountType = 'special_users';
+            $discountType = 'all_users';
+            if (!empty($user_id)) {
+                $discountType = 'special_users';
+            }
+
+            $expiredAt = convertTimeToUTCzone($data['expired_at'], getTimezone());
+
+            $discount = Discount::create([
+                'creator_id' => auth()->id(),
+                'title' => $data['title'],
+                'discount_type' => $data['discount_type'],
+                'source' => $data['source'],
+                'code' => $data['code'],
+                'percent' => (!empty($data['percent']) and $data['percent'] > 0) ? $data['percent'] : 0,
+                'amount' => $data['amount'],
+                'max_amount' => $data['max_amount'],
+                'minimum_order' => $data['minimum_order'],
+                'count' => (!empty($data['count']) and $data['count'] > 0) ? $data['count'] : 1,
+                'user_type' => $discountType,
+                'product_type' => $data['product_type'] ?? null,
+                'for_first_purchase' => $data['for_first_purchase'],
+                'status' => 'active',
+                'expired_at' => $expiredAt->getTimestamp(),
+                'created_at' => time(),
+            ]);
+            Log::channel('activity')->info('Discount created', [
+            'discount_id' => $discount->id,
+            'ip'    => $request->ip(),
+            'title' => $discount->title,
+            'code' => $discount->code,
+            'type' => $discount->discount_type,
+            ]);
+
+            $this->handleRelationItems($discount, $data);
+
+            return redirect(getAdminPanelUrl() . '/financial/discounts');
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $expiredAt = convertTimeToUTCzone($data['expired_at'], getTimezone());
-
-        $discount = Discount::create([
-            'creator_id' => auth()->id(),
-            'title' => $data['title'],
-            'discount_type' => $data['discount_type'],
-            'source' => $data['source'],
-            'code' => $data['code'],
-            'percent' => (!empty($data['percent']) and $data['percent'] > 0) ? $data['percent'] : 0,
-            'amount' => $data['amount'],
-            'max_amount' => $data['max_amount'],
-            'minimum_order' => $data['minimum_order'],
-            'count' => (!empty($data['count']) and $data['count'] > 0) ? $data['count'] : 1,
-            'user_type' => $discountType,
-            'product_type' => $data['product_type'] ?? null,
-            'for_first_purchase' => $data['for_first_purchase'],
-            'status' => 'active',
-            'expired_at' => $expiredAt->getTimestamp(),
-            'created_at' => time(),
-        ]);
-        Log::channel('activity')->info('Discount created', [
-        'discount_id' => $discount->id,
-        'ip'    => $request->ip(),
-        'title' => $discount->title,
-        'code' => $discount->code,
-        'type' => $discount->discount_type,
-       ]);
-
-        $this->handleRelationItems($discount, $data);
-        
-        return redirect(getAdminPanelUrl() . '/financial/discounts');
     }
 
     private function handleRelationItems($discount, $data)
@@ -250,105 +278,134 @@ class DiscountController extends Controller
 
     public function edit($id)
     {
-        $this->authorize('admin_discount_codes_edit');
+        try {
+            $this->authorize('admin_discount_codes_edit');
 
-        $discount = Discount::findOrFail($id);
-        $userDiscounts = DiscountUser::where('discount_id', $id)->get();
-        $userGroups = Group::orderBy('created_at', 'desc')->where('status', 'active')->get();
+            $discount = Discount::findOrFail($id);
+            $userDiscounts = DiscountUser::where('discount_id', $id)->get();
+            $userGroups = Group::orderBy('created_at', 'desc')->where('status', 'active')->get();
 
-        $discountGroupIds = [];
-        if (!empty($discount->discountGroups)) {
-            $discountGroupIds = $discount->discountGroups->pluck('group_id')->toArray();
+            $discountGroupIds = [];
+            if (!empty($discount->discountGroups)) {
+                $discountGroupIds = $discount->discountGroups->pluck('group_id')->toArray();
+            }
+
+            $data = [
+                'pageTitle' => trans('admin/main.edit_discount_title'),
+                'discount' => $discount,
+                'userDiscounts' => $userDiscounts,
+                'userGroups' => $userGroups,
+                'discountGroupIds' => $discountGroupIds,
+            ];
+
+            return view('admin.financial.discount.new', $data);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-
-        $data = [
-            'pageTitle' => trans('admin/main.edit_discount_title'),
-            'discount' => $discount,
-            'userDiscounts' => $userDiscounts,
-            'userGroups' => $userGroups,
-            'discountGroupIds' => $discountGroupIds,
-        ];
-
-        return view('admin.financial.discount.new', $data);
     }
 
     public function update(Request $request, $id)
     {
-        $this->authorize('admin_discount_codes_edit');
+        try {
+            $this->authorize('admin_discount_codes_edit');
 
-        $discount = Discount::findOrFail($id);
+            $discount = Discount::findOrFail($id);
 
-        $this->validate($request, [
-            'title' => 'required',
-            'discount_type' => 'required|in:' . implode(',', Discount::$discountTypes),
-            'source' => 'required|in:' . implode(',', Discount::$discountSource),
-            'code' => 'required|unique:discounts,code,' . $discount->id,
-            'user_id' => 'nullable',
-            'percent' => 'nullable',
-            'amount' => 'nullable',
-            'count' => 'nullable',
-            'expired_at' => 'required',
-        ]);
-
-        $data = $request->all();
-        $user_id = $data['user_id'] ?? [];
-
-        $discountType = 'all_users';
-        if (!empty($user_id)) {
-            $discountType = 'special_users';
-        }
-
-        $expiredAt = convertTimeToUTCzone($data['expired_at'], getTimezone());
-
-        $discount->update([
-            'title' => $data['title'],
-            'discount_type' => $data['discount_type'],
-            'source' => $data['source'],
-            'code' => $data['code'],
-            'percent' => (!empty($data['percent']) and $data['percent'] > 0) ? $data['percent'] : 0,
-            'amount' => $data['amount'],
-            'max_amount' => $data['max_amount'],
-            'minimum_order' => $data['minimum_order'],
-            'count' => (!empty($data['count']) and $data['count'] > 0) ? $data['count'] : 1,
-            'user_type' => $discountType,
-            'product_type' => $data['product_type'] ?? null,
-            'for_first_purchase' => $data['for_first_purchase'],
-            'status' => 'active',
-            'expired_at' => $expiredAt->getTimestamp(),
-        ]);
-
-        DiscountUser::where('discount_id', $discount->id)->delete();
-
-        DiscountCourse::where('discount_id', $discount->id)->delete();
-
-        DiscountBundle::where('discount_id', $discount->id)->delete();
-
-        DiscountCategory::where('discount_id', $discount->id)->delete();
-
-        DiscountGroup::where('discount_id', $discount->id)->delete();
-
-        $this->handleRelationItems($discount, $data);
-        Log::channel('activity')->info('Discount updated', [
-                'discount_id' => $discount->id,
-                'title' => $discount->title,
-                 'ip'    => $request->ip(),
-                'code' => $discount->code,
+            $this->validate($request, [
+                'title' => 'required',
+                'discount_type' => 'required|in:' . implode(',', Discount::$discountTypes),
+                'source' => 'required|in:' . implode(',', Discount::$discountSource),
+                'code' => 'required|unique:discounts,code,' . $discount->id,
+                'user_id' => 'nullable',
+                'percent' => 'nullable',
+                'amount' => 'nullable',
+                'count' => 'nullable',
+                'expired_at' => 'required',
             ]);
-        return redirect(getAdminPanelUrl() . '/financial/discounts');
+
+            $data = $request->all();
+            $user_id = $data['user_id'] ?? [];
+
+            $discountType = 'all_users';
+            if (!empty($user_id)) {
+                $discountType = 'special_users';
+            }
+
+            $expiredAt = convertTimeToUTCzone($data['expired_at'], getTimezone());
+
+            $discount->update([
+                'title' => $data['title'],
+                'discount_type' => $data['discount_type'],
+                'source' => $data['source'],
+                'code' => $data['code'],
+                'percent' => (!empty($data['percent']) and $data['percent'] > 0) ? $data['percent'] : 0,
+                'amount' => $data['amount'],
+                'max_amount' => $data['max_amount'],
+                'minimum_order' => $data['minimum_order'],
+                'count' => (!empty($data['count']) and $data['count'] > 0) ? $data['count'] : 1,
+                'user_type' => $discountType,
+                'product_type' => $data['product_type'] ?? null,
+                'for_first_purchase' => $data['for_first_purchase'],
+                'status' => 'active',
+                'expired_at' => $expiredAt->getTimestamp(),
+            ]);
+
+            DiscountUser::where('discount_id', $discount->id)->delete();
+
+            DiscountCourse::where('discount_id', $discount->id)->delete();
+
+            DiscountBundle::where('discount_id', $discount->id)->delete();
+
+            DiscountCategory::where('discount_id', $discount->id)->delete();
+
+            DiscountGroup::where('discount_id', $discount->id)->delete();
+
+            $this->handleRelationItems($discount, $data);
+            Log::channel('activity')->info('Discount updated', [
+                    'discount_id' => $discount->id,
+                    'title' => $discount->title,
+                     'ip'    => $request->ip(),
+                    'code' => $discount->code,
+                ]);
+            return redirect(getAdminPanelUrl() . '/financial/discounts');
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function destroy(Request $request, $id)
     {
-        $this->authorize('admin_discount_codes_delete');
-        $discount = Discount::findOrFail($id);
-        Discount::find($id)->delete();
-        Log::channel('activity')->info('Discount deleted', [
-        'discount_id' => $discount->id,
-        'ip'    => $request->ip(),
-        'title' => $discount->title,
-        'code' => $discount->code,
-    ]);
-        return redirect(getAdminPanelUrl() . '/financial/discounts');
+        try {
+            $this->authorize('admin_discount_codes_delete');
+            $discount = Discount::findOrFail($id);
+            Discount::find($id)->delete();
+            Log::channel('activity')->info('Discount deleted', [
+            'discount_id' => $discount->id,
+            'ip'    => $request->ip(),
+            'title' => $discount->title,
+            'code' => $discount->code,
+            ]);
+            return redirect(getAdminPanelUrl() . '/financial/discounts');
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

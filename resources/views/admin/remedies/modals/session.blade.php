@@ -23,7 +23,6 @@
             <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
         @endif
 
-
         <div class="form-group">
             <label class="input-label">{{ trans('webinars.select_session_api') }}</label>
 
@@ -81,7 +80,6 @@
             <input type="text" name="moderator_secret" class="js-ajax-moderator_secret form-control" value=""/>
             <div class="invalid-feedback"></div>
         </div>
-
 
         <div class="form-group">
             <label class="input-label">{{ trans('public.title') }}</label>

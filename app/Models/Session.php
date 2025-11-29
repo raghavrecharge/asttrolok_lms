@@ -24,7 +24,6 @@ class Session extends Model implements TranslatableContract
 
     static $sessionApis = ['local', 'big_blue_button', 'zoom', 'agora', 'jitsi'];
 
-
     public $translatedAttributes = ['title', 'description'];
 
     public function getTitleAttribute()
@@ -36,7 +35,6 @@ class Session extends Model implements TranslatableContract
     {
         return getTranslateAttributeValue($this, 'description');
     }
-
 
     public function creator()
     {
@@ -73,7 +71,7 @@ class Session extends Model implements TranslatableContract
         try {
             $date = \DateTime::createFromFormat('j M Y H:i', dateTimeFormat($this->date, 'j M Y H:i', false));
 
-            $link = Link::create($this->title, $date, $date); //->description('Cookies & cocktails!')
+            $link = Link::create($this->title, $date, $date);
 
             return $link->google();
         } catch (\Exception $exception) {
@@ -88,10 +86,6 @@ class Session extends Model implements TranslatableContract
         if ($this->session_api == 'big_blue_button') {
             $link = url('panel/sessions/' . $this->id . '/joinToBigBlueButton');
         }
-
-        /*if ($zoom_start_link and auth()->check() and auth()->id() == $this->creator_id and $this->session_api == 'zoom') {
-            $link = $this->zoom_start_link;
-        }*/
 
         if ($this->session_api == 'agora') {
             $link = url('panel/sessions/' . $this->id . '/joinToAgora');

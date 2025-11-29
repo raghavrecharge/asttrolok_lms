@@ -18,8 +18,7 @@ namespace App\Models\Api ;
             'income' => $this->getIncomeItem(),
             'webinar' => ($this->webinar_id) ? $this->webinar->brief: null,
             'meeting' => ($this->meeting_id) ? $this->meeting->details: null,
-      
-           
+
         ];
     }
 
@@ -79,7 +78,6 @@ namespace App\Models\Api ;
         return  $type ;
     }
 
-
     public function webinar()
     {
         return $this->belongsTo('App\Models\Api\Webinar', 'webinar_id', 'id');
@@ -124,6 +122,5 @@ namespace App\Models\Api ;
     {
         return $this->hasOne('App\Models\SaleLog', 'sale_id', 'id');
     }
-
 
  }

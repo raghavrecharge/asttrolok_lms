@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Web;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Accounting;
 use App\Models\Bundle;
@@ -16,29 +19,49 @@ class SubscribeController extends Controller
 {
     public function apply(Request $request, $webinarSlug)
     {
-        $webinar = Webinar::where('slug', $webinarSlug)
-            ->where('status', 'active')
-            ->where('subscribe', true)
-            ->first();
+        try {
+            $webinar = Webinar::where('slug', $webinarSlug)
+                ->where('status', 'active')
+                ->where('subscribe', true)
+                ->first();
 
-        if (!empty($webinar)) {
-            return $this->handleSale($webinar, 'webinar_id');
+            if (!empty($webinar)) {
+                return $this->handleSale($webinar, 'webinar_id');
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('apply error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
     }
 
     public function bundleApply($bundleSlug)
     {
-        $bundle = Bundle::where('slug', $bundleSlug)
-            ->where('subscribe', true)
-            ->first();
+        try {
+            $bundle = Bundle::where('slug', $bundleSlug)
+                ->where('subscribe', true)
+                ->first();
 
-        if (!empty($bundle)) {
-            return $this->handleSale($bundle, 'bundle_id');
+            if (!empty($bundle)) {
+                return $this->handleSale($bundle, 'bundle_id');
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('bundleApply error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
     }
 
     private function handleSale($item, $itemName = 'webinar_id')

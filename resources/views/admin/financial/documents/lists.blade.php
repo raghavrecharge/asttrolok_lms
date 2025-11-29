@@ -137,7 +137,6 @@
                                         <th>{{ trans('public.controls') }}</th>
                                     </tr>
 
-
                                     @if($documents->count() > 0)
                                         @foreach($documents as $document)
                                             <tr>

@@ -69,7 +69,6 @@
         </div>
     </section>
 
-
     <div class="modal fade" id="rewardSettingModal" tabindex="-1" aria-labelledby="contactMessageLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">

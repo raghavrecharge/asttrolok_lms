@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Web;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Bitwise\UserLevelOfTraining;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
@@ -23,64 +26,74 @@ class InstructorFinderController extends Controller
 
     public function index(Request $request)
     {
-        $query = User::where('users.status', 'active')
-            ->where(function ($query) {
-                $query->where('users.ban', false)
-                    ->orWhere(function ($query) {
-                        $query->whereNotNull('users.ban_end_at')
-                            ->orWhere('users.ban_end_at', '<', time());
-                    });
-            })
-            ->with([
-                'meeting' => function ($query) {
-                    $query->with('meetingTimes');
-                    $query->withCount('meetingTimes');
-                },
-                'occupations'
+        try {
+            $query = User::where('users.status', 'active')
+                ->where(function ($query) {
+                    $query->where('users.ban', false)
+                        ->orWhere(function ($query) {
+                            $query->whereNotNull('users.ban_end_at')
+                                ->orWhere('users.ban_end_at', '<', time());
+                        });
+                })
+                ->with([
+                    'meeting' => function ($query) {
+                        $query->with('meetingTimes');
+                        $query->withCount('meetingTimes');
+                    },
+                    'occupations'
+                ]);
+
+            $query = $this->handleFilters($query, $request);
+
+            $query = $query->addSelect(DB::raw('ST_AsText(location) as userLocation'));
+
+            $instructors = deepClone($query)->paginate(6);
+
+            foreach ($instructors as $instructor) {
+                $instructor->location = $instructor->userLocation;
+            }
+
+            if ($request->ajax()) {
+                return $this->handleLoadMoreHtml($instructors);
+            }
+
+            $mapUsers = $query->whereNotNull('location')->get();
+
+            foreach ($mapUsers as $mapUser) {
+                $mapUser->price = $mapUser->meeting ? $mapUser->meeting->amount : 0;
+                $mapUser->avatar = $mapUser->getAvatar();
+                $mapUser->rate = $mapUser->rates();
+                $mapUser->profileUrl = url($mapUser->getProfileUrl());
+
+                $mapUser->location = \Geo::get_geo_array($mapUser->userLocation);
+            }
+
+            $seoSettings = getSeoMetas('instructor_finder');
+            $pageTitle = !empty($seoSettings['title']) ? $seoSettings['title'] : trans('home.instructors');
+            $pageDescription = !empty($seoSettings['description']) ? $seoSettings['description'] : trans('home.instructors');
+            $pageRobot = getPageRobot('instructor_finder');
+
+            $data = [
+                'pageTitle' => $pageTitle,
+                'pageDescription' => $pageDescription,
+                'pageRobot' => $pageRobot,
+                'mapUsers' => $mapUsers,
+                'instructors' => $instructors,
+            ];
+
+            $locationData = $this->getLocationData($request);
+            $data = array_merge($data, $locationData);
+
+            return view('web.default.instructorFinder.index', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
-
-        $query = $this->handleFilters($query, $request);
-
-        $query = $query->addSelect(DB::raw('ST_AsText(location) as userLocation'));
-
-        $instructors = deepClone($query)->paginate(6);
-
-        foreach ($instructors as $instructor) {
-            $instructor->location = $instructor->userLocation;
+            
+            throw $e;
         }
-
-        if ($request->ajax()) {
-            return $this->handleLoadMoreHtml($instructors);
-        }
-
-        $mapUsers = $query->whereNotNull('location')->get();
-
-        foreach ($mapUsers as $mapUser) {
-            $mapUser->price = $mapUser->meeting ? $mapUser->meeting->amount : 0;
-            $mapUser->avatar = $mapUser->getAvatar();
-            $mapUser->rate = $mapUser->rates();
-            $mapUser->profileUrl = url($mapUser->getProfileUrl());
-
-            $mapUser->location = \Geo::get_geo_array($mapUser->userLocation);
-        }
-
-        $seoSettings = getSeoMetas('instructor_finder');
-        $pageTitle = !empty($seoSettings['title']) ? $seoSettings['title'] : trans('home.instructors');
-        $pageDescription = !empty($seoSettings['description']) ? $seoSettings['description'] : trans('home.instructors');
-        $pageRobot = getPageRobot('instructor_finder');
-
-        $data = [
-            'pageTitle' => $pageTitle,
-            'pageDescription' => $pageDescription,
-            'pageRobot' => $pageRobot,
-            'mapUsers' => $mapUsers,
-            'instructors' => $instructors,
-        ];
-
-        $locationData = $this->getLocationData($request);
-        $data = array_merge($data, $locationData);
-
-        return view('web.default.instructorFinder.index', $data);
     }
 
     private function handleLoadMoreHtml($instructors)
@@ -159,9 +172,7 @@ class InstructorFinderController extends Controller
 
         $query = $this->handlePriceFilter($query, $request);
 
-
         $query = $this->handleAgeFilter($query, $request);
-
 
         if (!empty($countryId)) {
             $query->where('country_id', $countryId);
@@ -201,7 +212,7 @@ class InstructorFinderController extends Controller
                 $query = $this->getTopSalesUsers($query);
             }
         } else {
-            // order by meetings
+
             $query->leftJoin('meetings', 'meetings.creator_id', '=', 'users.id')
                 ->select('users.*', DB::raw('count(meetings.id) as meetingCounts'))
                 ->groupBy('users.id')
@@ -419,7 +430,7 @@ class InstructorFinderController extends Controller
         $provinces = null;
         $cities = null;
         $districts = null;
-        $mapCenter = [37.718590, 37.617188]; // default Location
+        $mapCenter = [37.718590, 37.617188];
         $mapZoom = 3;
 
         if ($request->get('country_id')) {
@@ -470,7 +481,6 @@ class InstructorFinderController extends Controller
                 ->get();
         }
 
-
         if (!empty($districts) and $request->get('district_id')) {
             $district = $districts->where('id', $request->get('district_id'))->first();
 
@@ -492,67 +502,75 @@ class InstructorFinderController extends Controller
 
     public function wizard(Request $request)
     {
-        $step = $request->get('step', 1);
+        try {
+            $step = $request->get('step', 1);
 
-        if ($step > 4) {
-            $params = array_filter($request->all());
+            if ($step > 4) {
+                $params = array_filter($request->all());
 
-            $url = '/instructor-finder?' . http_build_query($params);
+                $url = '/instructor-finder?' . http_build_query($params);
 
-            return redirect($url);
-        }
+                return redirect($url);
+            }
 
-        $step = $step > 4 ? 4 : ($step < 1 ? 1 : $step);
+            $step = $step > 4 ? 4 : ($step < 1 ? 1 : $step);
 
-        $rules = [];
+            $rules = [];
 
-        if ($step == 2) {
-            $rules = [
-                'category_id' => 'required | integer'
+            if ($step == 2) {
+                $rules = [
+                    'category_id' => 'required | integer'
+                ];
+            }
+
+            if (!empty($rules)) {
+                $this->validate($request, $rules);
+            }
+
+            $instructorsCount = User::where('role_name', Role::$teacher)
+                ->where('status', 'active')
+                ->count();
+
+            $organizationsCount = User::where('role_name', Role::$organization)
+                ->where('status', 'active')
+                ->count();
+
+            $citiesCount = Region::where('type', Region::$city)
+                ->count();
+
+            $countries = null;
+
+            if ($step == 2) {
+                $countries = Region::select(DB::raw(' *, ST_AsText(geo_center) as geo_center'))
+                    ->where('type', Region::$country)
+                    ->get();
+            }
+
+            $seoSettings = getSeoMetas('instructor_finder_wizard');
+            $pageTitle = !empty($seoSettings['title']) ? $seoSettings['title'] : trans('home . instructors');
+            $pageDescription = !empty($seoSettings['description']) ? $seoSettings['description'] : trans('home . instructors');
+            $pageRobot = getPageRobot('instructor_finder_wizard');
+
+            $data = [
+                'pageTitle' => $pageTitle,
+                'pageDescription' => $pageDescription,
+                'pageRobot' => $pageRobot,
+                'step' => $step,
+                'countries' => $countries,
+                'instructorsCount' => $instructorsCount,
+                'organizationsCount' => $organizationsCount,
+                'citiesCount' => $citiesCount,
             ];
+
+            return view('web.default.instructorFinder.wizard', $data);
+        } catch (\Exception $e) {
+            \Log::error('wizard error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        if (!empty($rules)) {
-            $this->validate($request, $rules);
-        }
-
-
-        $instructorsCount = User::where('role_name', Role::$teacher)
-            ->where('status', 'active')
-            ->count();
-
-        $organizationsCount = User::where('role_name', Role::$organization)
-            ->where('status', 'active')
-            ->count();
-
-        $citiesCount = Region::where('type', Region::$city)
-            ->count();
-
-
-        $countries = null;
-
-        if ($step == 2) {
-            $countries = Region::select(DB::raw(' *, ST_AsText(geo_center) as geo_center'))
-                ->where('type', Region::$country)
-                ->get();
-        }
-
-        $seoSettings = getSeoMetas('instructor_finder_wizard');
-        $pageTitle = !empty($seoSettings['title']) ? $seoSettings['title'] : trans('home . instructors');
-        $pageDescription = !empty($seoSettings['description']) ? $seoSettings['description'] : trans('home . instructors');
-        $pageRobot = getPageRobot('instructor_finder_wizard');
-
-        $data = [
-            'pageTitle' => $pageTitle,
-            'pageDescription' => $pageDescription,
-            'pageRobot' => $pageRobot,
-            'step' => $step,
-            'countries' => $countries,
-            'instructorsCount' => $instructorsCount,
-            'organizationsCount' => $organizationsCount,
-            'citiesCount' => $citiesCount,
-        ];
-
-        return view('web.default.instructorFinder.wizard', $data);
     }
 }

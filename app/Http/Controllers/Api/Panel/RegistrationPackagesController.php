@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Mixins\RegistrationPackage\UserPackage;
 use App\Models\Order;
@@ -17,68 +20,73 @@ use Illuminate\Support\Facades\URL;
 
 class RegistrationPackagesController extends Controller
 {
-    //
+
     public function index()
     {
-        $user = apiAuth();
+        try {
+            $user = apiAuth();
 
-        $this->checkAccess($user);
+            $this->checkAccess($user);
 
-        $role = 'instructors';
+            $role = 'instructors';
 
+            if ($user->isOrganization()) {
 
-        if ($user->isOrganization()) {
+                $role = 'organizations';
+            }
 
-            $role = 'organizations';
+            $userPackage = new UserPackage($user);
+
+            $activePackage = $userPackage->getPackage();
+            $activePackage = [
+                'package_id' => $activePackage->package_id,
+                'instructors_count' => $activePackage->instructors_count,
+                'students_count' => $activePackage->students_count,
+                'meeting_count' => $activePackage->meeting_count,
+                'courses_capacity' => $activePackage->courses_capacity,
+                'courses_count' => $activePackage->courses_count,
+                'title' => $activePackage->title,
+                'activation_date' => $activePackage->activation_date,
+                'days_remained' => $activePackage->days_remained ?? 'unlimited',
+
+            ];
+
+            $packages = RegistrationPackage::where('role', $role)
+                ->where('status', 'active')
+                ->get()->map(function ($package) use ($activePackage) {
+                    return array_merge($package->details,
+                        [
+                            'is_active' => ($activePackage and $activePackage['package_id'] == $package->id) ? true : false
+                        ]
+                    );
+                });
+
+            $accountStatistics = $this->handleAccountStatistics($user);
+            $data = [
+                'packages' => $packages,
+                'active_package' => $activePackage,
+                'auth_role' => $user->role_name,
+                'account_courses_count' => ($activePackage and $activePackage['courses_count']) ? $accountStatistics['myCoursesCount'] . '/' . $activePackage['courses_count'] : null,
+                'account_meeting_count' => ($activePackage and $activePackage['meeting_count']) ? $accountStatistics['myMeetingCount'] . '/' . $activePackage['meeting_count'] : null,
+                'account_courses_capacity' => ($activePackage and $activePackage['courses_capacity']) ? $activePackage['courses_capacity'] : null,
+                'account_instructors_count' => ($activePackage and $activePackage['instructors_count']) ? $accountStatistics['myInstructorsCount'] . '/' . $activePackage['instructors_count'] : null,
+                'account_students_count' => ($activePackage and $activePackage['students_count']) ? $accountStatistics['myStudentsCount'] . '/' . $activePackage['students_count'] : null,
+
+                'account_statistics' => $accountStatistics,
+            ];
+
+            return apiResponse2(1, 'retrieved', trans('api.public.retrieved'),
+                $data
+            );
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $userPackage = new UserPackage($user);
-
-        $activePackage = $userPackage->getPackage();
-        $activePackage = [
-            'package_id' => $activePackage->package_id,
-            'instructors_count' => $activePackage->instructors_count,
-            'students_count' => $activePackage->students_count,
-            'meeting_count' => $activePackage->meeting_count,
-            'courses_capacity' => $activePackage->courses_capacity,
-            'courses_count' => $activePackage->courses_count,
-            'title' => $activePackage->title,
-            'activation_date' => $activePackage->activation_date,
-            'days_remained' => $activePackage->days_remained ?? 'unlimited',
-
-        ];
-
-
-        $packages = RegistrationPackage::where('role', $role)
-            ->where('status', 'active')
-            ->get()->map(function ($package) use ($activePackage) {
-                return array_merge($package->details,
-                    [
-                        'is_active' => ($activePackage and $activePackage['package_id'] == $package->id) ? true : false
-                    ]
-                );
-            });
-
-        /*    {{ $accountStatistics['myStudentsCount'] }}/{{ $activePackage->students_count }}*/
-
-        $accountStatistics = $this->handleAccountStatistics($user);
-        $data = [
-            'packages' => $packages,
-            'active_package' => $activePackage,
-            'auth_role' => $user->role_name,
-            'account_courses_count' => ($activePackage and $activePackage['courses_count']) ? $accountStatistics['myCoursesCount'] . '/' . $activePackage['courses_count'] : null,
-            'account_meeting_count' => ($activePackage and $activePackage['meeting_count']) ? $accountStatistics['myMeetingCount'] . '/' . $activePackage['meeting_count'] : null,
-            'account_courses_capacity' => ($activePackage and $activePackage['courses_capacity']) ? $activePackage['courses_capacity'] : null,
-            'account_instructors_count' => ($activePackage and $activePackage['instructors_count']) ? $accountStatistics['myInstructorsCount'] . '/' . $activePackage['instructors_count'] : null,
-            'account_students_count' => ($activePackage and $activePackage['students_count']) ? $accountStatistics['myStudentsCount'] . '/' . $activePackage['students_count'] : null,
-
-            'account_statistics' => $accountStatistics,
-        ];
-
-        return apiResponse2(1, 'retrieved', trans('api.public.retrieved'),
-            $data
-        );
-
     }
 
     private function checkAccess($user = null)
@@ -87,7 +95,6 @@ class RegistrationPackagesController extends Controller
             $user = apiAuth();
         }
 
-        // or !getRegistrationPackagesGeneralSettings('status')
         if (!($user->isOrganization() or $user->isTeacher())) {
             abort(404);
         }
@@ -118,29 +125,46 @@ class RegistrationPackagesController extends Controller
 
     public function webPayGenerator(Request $request)
     {
-        $user = apiAuth();
+        try {
+            $user = apiAuth();
 
-        validateParam($request->all(), [
-            'package_id' => 'required|exists:registration_packages,id'
-        ]);
+            validateParam($request->all(), [
+                'package_id' => 'required|exists:registration_packages,id'
+            ]);
 
+            return apiResponse2(1, 'generated', trans('api.link.generated'),
+                [
+                    'link' => URL::signedRoute('my_api.web.registration_packages', [apiAuth()->id
+                        , $request->input('package_id')
+                    ]),
 
-        return apiResponse2(1, 'generated', trans('api.link.generated'),
-            [
-                'link' => URL::signedRoute('my_api.web.registration_packages', [apiAuth()->id
-                    , $request->input('package_id')
-                ]),
-
-            ]
-        );
-
+                ]
+            );
+        } catch (\Exception $e) {
+            \Log::error('webPayGenerator error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function webPayRender(Request $request, User $user,$package_id)
     {
+        try {
+            Auth::login($user);
 
-        Auth::login($user);
-
-        return view('api.registration_package', compact('package_id'));
+            return view('api.registration_package', compact('package_id'));
+        } catch (\Exception $e) {
+            \Log::error('webPayRender error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

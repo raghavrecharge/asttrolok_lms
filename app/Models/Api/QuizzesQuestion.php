@@ -28,7 +28,6 @@ class QuizzesQuestion extends WebQuizzesQuestion{
             'answers'=>$this->answers ,
             'updated_at'=>$this->updated_at ,
 
-            
         ] ;
     }
 }

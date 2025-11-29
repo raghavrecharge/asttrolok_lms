@@ -10,7 +10,6 @@ class ProductSelectedSpecificationMultiValue extends Model
     public $timestamps = false;
     protected $guarded = ['id'];
 
-
     public function selectedSpecification()
     {
         return $this->belongsTo('App\Models\ProductSelectedSpecification','selected_specification_id','id');

@@ -14,7 +14,7 @@
         @if(!empty($favorites) and !$favorites->isEmpty())
 <div class="row mt-30">
             @foreach($favorites as $favorite)
-                
+
                     <div class="col-lg-6">
                         <div class="webinar-card webinar-list d-flex">
                             <div class="image-box" style="height:auto !important;">
@@ -87,7 +87,7 @@
                             </div>
                         </div>
                     </div>
-                
+
             @endforeach
             </div>
         @else

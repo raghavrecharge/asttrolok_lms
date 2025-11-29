@@ -30,14 +30,14 @@ class Webinar extends Model
             if (!$user->access_content) {
                 $error = [trans('update.not_access_to_content'), trans('update.not_access_to_content_hint')];
             }
-            //   return $user->private_content ? null : 'private_content';
+
         } else {
 
             if (getFeaturesSettings('webinar_private_content_status')) {
                 $error = [trans('update.private_content'), trans('update.private_content_login_hint')];
 
             }
-            // return !getFeaturesSettings('webinar_private_content_status');
+
         }
         return $error;
     }
@@ -51,7 +51,6 @@ class Webinar extends Model
         $user = apiAuth();
         $hasBought = $this->checkUserHasBought($user);
 
-        //  $sale = Sale::where('buyer_id', $user->id)->where('webinar_id', $this->id)->first();
         return [
             'image' => $this->getImage(),
             'auth' => ($user) ? true : false,
@@ -66,12 +65,10 @@ class Webinar extends Model
             'title' => $this->title,
             'private' => $this->private,
             'type' => $this->type,
-            'link' => $this->getUrl(), // getExpiredAccessDays
+            'link' => $this->getUrl(),
             'access_days' => $this->access_days,
             'lang' => $this->lang,
-            //  'expired' => ($sale and $this->access_days and !$this->checkHasExpiredAccessDays($sale->created_at)),
-            //   'expire_on' => ($sale and $this->getExpiredAccessDays($sale->created_at) ) ? $this->getExpiredAccessDays($sale->created_at) : null,
-            //  'expired' => ($sale and $this->checkHasExpiredAccessDays($sale->created_at)) ?$this->getExpiredAccessDays($sale->created_at)  : false,
+
             'live_webinar_status' => $this->liveWebinarStatus(),
             'auth_has_bought' => ($user) ? $hasBought : null,
             'sales' => [
@@ -89,33 +86,26 @@ class Webinar extends Model
             'best_ticket_price' => round(nicePriceWithTax($this->bestTicket(true)['bestTicket'])['price'], 3),
             'discount_percent' => $this->bestTicket(true)['percent'],
 
-
             'course_page_tax' => (!$this->activeSpecialOffer()) ? nicePriceWithTax($this->price)['tax'] :
                 nicePriceWithTax(number_format($this->price - ($this->price * $this->activeSpecialOffer()->percent / 100), 2))['tax']
             ,
-            // 'price_with_discount' => nicePrice(($this->activeSpecialOffer()) ? (
-            // number_format($this->price - ($this->price * $this->activeSpecialOffer()->percent / 100), 2))
-            //     : $this->price),
 
             'discount_amount' =>
                 ((int)nicePriceWithTax($this->price)['price']
                     - (int)round(nicePriceWithTax($this->bestTicket(true)['bestTicket'])['price']
                     )),
 
-
             'active_special_offer' => $this->activeSpecialOffer() ?: null,
-
-            // 'discount' => $this->getDiscount(),
 
             'duration' => $this->duration,
             'teacher' => $this->teacher->brief,
             'students_count' => $this->sales->count(),
             'rate' => $this->getRate(),
             'rate_type' => [
-                'content_quality' => $this->reviews->count() > 0 ? round($this->reviews->avg('content_quality'), 1) : 0,
-                'instructor_skills' => $this->reviews->count() > 0 ? round($this->reviews->avg('instructor_skills'), 1) : 0,
-                'purchase_worth' => $this->reviews->count() > 0 ? round($this->reviews->avg('purchase_worth'), 1) : 0,
-                'support_quality' => $this->reviews->count() > 0 ? round($this->reviews->avg('support_quality'), 1) : 0,
+                'content_quality' => $this->reviews->exists() ? round($this->reviews->avg('content_quality'), 1) : 0,
+                'instructor_skills' => $this->reviews->exists() ? round($this->reviews->avg('instructor_skills'), 1) : 0,
+                'purchase_worth' => $this->reviews->exists() ? round($this->reviews->avg('purchase_worth'), 1) : 0,
+                'support_quality' => $this->reviews->exists() ? round($this->reviews->avg('support_quality'), 1) : 0,
 
             ],
             'created_at' => $this->created_at,
@@ -128,7 +118,6 @@ class Webinar extends Model
             'progress_percent' => $this->getProgress(),
             'category' => $this->category->title ?? null,
             'capacity' => $this->capacity,
-
 
         ];
     }
@@ -153,7 +142,7 @@ class Webinar extends Model
     public function getDetailsAttribute()
     {
         $user = apiAuth();
-       
+
         $details = [
             'support' => $this->support ? true : false,
             'subscribe' => $this->subscribe ? true : false,
@@ -213,7 +202,7 @@ class Webinar extends Model
                     $query->where('type', WebinarChapterItem::$chapterFile);
                 })
                 ->where('status', WebinarChapter::$chapterActive)
-                //     ->where('type', WebinarChapter::$chapterFile)
+
                 ->orderBy('order', 'asc')
                 ->get()
                 ->map(function ($chapter) {
@@ -235,7 +224,7 @@ class Webinar extends Model
                     $query->where('type', WebinarChapterItem::$chapterTextLesson);
                 })
                 ->where('status', WebinarChapter::$chapterActive)
-                //   ->where('type', WebinarChapter::$chapterTextLesson)
+
                 ->get()
                 ->map(function ($chapter) {
                     return $chapter->details;
@@ -252,7 +241,7 @@ class Webinar extends Model
                 ->whereHas('chapterItems', function ($query) {
                     $query->where('type', WebinarChapterItem::$chapterTextLesson);
                 })
-                // ->where('type', WebinarChapter::$chapterTextLesson)
+
                 ->count(),
 
             'quizzes' => $this->quizzes()
@@ -292,13 +281,10 @@ class Webinar extends Model
             'auth_has_subscription' => ($user) ? $user->hasActiveSubscription : null,
             'can_add_to_cart' => $this->canAddToCart(),
             'can_buy_with_points' => ($this->canSale() and !$this->checkUserHasBought($user) and !empty($this->points) and $this->price > 0),
-            //////********************
+            ////
         ];
 
-
-        // return $details ;
         return array_merge($this->brief, $details);
-
 
     }
 
@@ -330,7 +316,6 @@ class Webinar extends Model
 
         return $quizzes->avg('result_grade');
     }
-
 
     public function getAssignmentsAverageGradeAttribute()
     {
@@ -504,10 +489,8 @@ class Webinar extends Model
 
             $webinarIdsHasDiscount = array_unique($webinarIdsHasDiscount);
 
-
             $query->whereIn('webinars.id', $webinarIdsHasDiscount);
         }
-
 
         if (!empty($filterOptions)) {
             $webinarIdsFilterOptions = WebinarFilterOption::where('filter_option_id', $filterOptions)
@@ -602,7 +585,6 @@ class Webinar extends Model
         return $query->where('private', false)->where('status', 'active');
     }
 
-
     private function liveWebinarStatus()
     {
         $live_webinar_status = null;
@@ -622,7 +604,7 @@ class Webinar extends Model
     public function progress()
     {
         $user = apiAuth();
-        /* progressbar status */
+
         $hasBought = $this->checkUserHasBought($user);
         $progress = null;
         if ($hasBought or $this->isWebinar()) {
@@ -752,15 +734,13 @@ class Webinar extends Model
                 ->first();
         }
 
-
         return ($sale) ? $sale->created_at : null;
     }
 
     public function contentItems()
     {
-        // if($this->ty)
-    }
 
+    }
 
     public function canAddToCart($user = null)
     {
@@ -779,7 +759,6 @@ class Webinar extends Model
     {
         $course = $this;
         $user = ($user) ?: apiAuth();
-
 
         if ($this->expired) return 'expired';
 
@@ -862,7 +841,6 @@ class Webinar extends Model
         return $isRequiredPrerequisite;
 
     }
-
 
     public function tickets()
     {
@@ -956,10 +934,10 @@ class Webinar extends Model
 
         return null;
     }
-    
+
     public function checkInstallment($course)
 {
-    // Convert array to object if necessary
+
     if (is_array($course)) {
         $course = (object) $course;
     }
@@ -993,7 +971,7 @@ class Webinar extends Model
             }
 
             if ($installments->count()) {
-                
+
                 $installmentsplan = true;
             }
         }
@@ -1001,7 +979,5 @@ class Webinar extends Model
 
     return $installmentsplan;
 }
-
-
 
 }

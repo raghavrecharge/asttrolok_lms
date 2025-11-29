@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin\traits;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 use App\Mixins\Installment\InstallmentAccounting;
 use App\Models\InstallmentOrder;
@@ -11,24 +13,34 @@ trait InstallmentOrdersTrait
 {
     public function details($orderId)
     {
-        $this->authorize('admin_installments_orders');
+        try {
+            $this->authorize('admin_installments_orders');
 
-        $order = InstallmentOrder::query()->findOrFail($orderId);
+            $order = InstallmentOrder::query()->findOrFail($orderId);
 
-        $topStats = $this->getDetailsTopStats($order->user);
+            $topStats = $this->getDetailsTopStats($order->user);
 
-        $data = [
-            'pageTitle' => trans('update.installment_verification') . ' - '.$order->user->full_name,
-            'order' => $order,
-            'payments' => $order->payments,
-            'installment' => $order->installment,
-            'attachments' => $order->attachments,
-            'itemPrice' => $order->getItemPrice(),
-        ];
+            $data = [
+                'pageTitle' => trans('update.installment_verification') . ' - '.$order->user->full_name,
+                'order' => $order,
+                'payments' => $order->payments,
+                'installment' => $order->installment,
+                'attachments' => $order->attachments,
+                'itemPrice' => $order->getItemPrice(),
+            ];
 
-        $data = array_merge($data, $topStats);
+            $data = array_merge($data, $topStats);
 
-        return view('admin.financial.installments.verification_request_details', $data);
+            return view('admin.financial.installments.verification_request_details', $data);
+        } catch (\Exception $e) {
+            \Log::error('details error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function getDetailsTopStats($user)
@@ -37,7 +49,6 @@ trait InstallmentOrdersTrait
             ->where('user_id', $user->id)
             ->where('status', '!=', 'paying');
 
-        /* Open Installments */
         $openInstallments = deepClone($query)->where('status', 'open')->get();
 
         $openInstallmentsCount = count($openInstallments);
@@ -57,11 +68,9 @@ trait InstallmentOrdersTrait
             }
         }
 
-        /* Pending Verification Installments */
         $pendingVerifications = deepClone($query)->where('status', 'pending_verification')->count();
 
         $overdueInstallmentsCount = $this->getDetailsOverdueInstallments($user);
-
 
         return [
             'openInstallments' => ['count' => $openInstallmentsCount, 'amount' => $openInstallmentsAmount],
@@ -89,143 +98,188 @@ trait InstallmentOrdersTrait
         return $count;
     }
 
-
     public function approve($orderId)
     {
-        $this->authorize('admin_installments_orders');
+        try {
+            $this->authorize('admin_installments_orders');
 
-        $order = InstallmentOrder::query()->findOrFail($orderId);
+            $order = InstallmentOrder::query()->findOrFail($orderId);
 
-        $order->update([
-            'status' => 'open'
-        ]);
+            $order->update([
+                'status' => 'open'
+            ]);
 
+            $installmentAccounting = new InstallmentAccounting();
+            $installmentAccounting->createAccountingForSeller($order);
 
-        /* Create Seller Accounting */
-        $installmentAccounting = new InstallmentAccounting();
-        $installmentAccounting->createAccountingForSeller($order);
+            $notifyOptions = [
+                '[installment_title]' => $order->installment->main_title,
+                '[time.date]' => dateTimeFormat(time(), 'j M Y - H:i'),
+            ];
 
+            sendNotification("approve_installment_verification_request", $notifyOptions, $order->user_id);
 
-        $notifyOptions = [
-            '[installment_title]' => $order->installment->main_title,
-            '[time.date]' => dateTimeFormat(time(), 'j M Y - H:i'),
-        ];
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.order_status_changes_to_approved'),
+                'status' => 'success'
+            ];
 
-        sendNotification("approve_installment_verification_request", $notifyOptions, $order->user_id);
-
-        $toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => trans('update.order_status_changes_to_approved'),
-            'status' => 'success'
-        ];
-
-        return back()->with(['toast' => $toastData]);
+            return back()->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('approve error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function reject($orderId)
     {
-        $this->authorize('admin_installments_orders');
+        try {
+            $this->authorize('admin_installments_orders');
 
-        $order = InstallmentOrder::query()->findOrFail($orderId);
+            $order = InstallmentOrder::query()->findOrFail($orderId);
 
-        $installmentRefund = new InstallmentAccounting();
-        $installmentRefund->refundOrder($order);
+            $installmentRefund = new InstallmentAccounting();
+            $installmentRefund->refundOrder($order);
 
-        $order->update([
-            'status' => 'rejected'
-        ]);
+            $order->update([
+                'status' => 'rejected'
+            ]);
 
-        $notifyOptions = [
-            '[installment_title]' => $order->installment->main_title,
-            '[time.date]' => dateTimeFormat(time(), 'j M Y - H:i'),
-        ];
+            $notifyOptions = [
+                '[installment_title]' => $order->installment->main_title,
+                '[time.date]' => dateTimeFormat(time(), 'j M Y - H:i'),
+            ];
 
-        sendNotification("reject_installment_verification_request", $notifyOptions, $order->user_id);
+            sendNotification("reject_installment_verification_request", $notifyOptions, $order->user_id);
 
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.order_status_changes_to_rejected'),
+                'status' => 'success'
+            ];
 
-        $toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => trans('update.order_status_changes_to_rejected'),
-            'status' => 'success'
-        ];
-
-        return back()->with(['toast' => $toastData]);
+            return back()->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('reject error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function cancel($orderId)
     {
-        $this->authorize('admin_installments_orders');
+        try {
+            $this->authorize('admin_installments_orders');
 
-        $order = InstallmentOrder::query()->findOrFail($orderId);
+            $order = InstallmentOrder::query()->findOrFail($orderId);
 
-        $order->update([
-            'status' => 'canceled'
-        ]);
+            $order->update([
+                'status' => 'canceled'
+            ]);
 
-        $toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => trans('update.order_status_changes_to_canceled'),
-            'status' => 'success'
-        ];
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.order_status_changes_to_canceled'),
+                'status' => 'success'
+            ];
 
-        return back()->with(['toast' => $toastData]);
+            return back()->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('cancel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function refund($orderId)
     {
-        $this->authorize('admin_installments_orders');
+        try {
+            $this->authorize('admin_installments_orders');
 
-        $order = InstallmentOrder::query()->findOrFail($orderId);
+            $order = InstallmentOrder::query()->findOrFail($orderId);
 
-        $installmentRefund = new InstallmentAccounting();
-        $installmentRefund->refundOrder($order);
+            $installmentRefund = new InstallmentAccounting();
+            $installmentRefund->refundOrder($order);
 
-        $order->update([
-            'status' => 'refunded',
-            'refund_at' => time(),
-        ]);
+            $order->update([
+                'status' => 'refunded',
+                'refund_at' => time(),
+            ]);
 
-        $toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => trans('update.installment_refunded_successful'),
-            'status' => 'success'
-        ];
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.installment_refunded_successful'),
+                'status' => 'success'
+            ];
 
-        return back()->with(['toast' => $toastData]);
+            return back()->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('refund error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function downloadAttachment($orderId, $attachmentId)
     {
-        $this->authorize('admin_installments_orders');
+        try {
+            $this->authorize('admin_installments_orders');
 
-        $order = InstallmentOrder::query()->findOrFail($orderId);
-        $attachment = $order->attachments()->where('id', $attachmentId)->first();
+            $order = InstallmentOrder::query()->findOrFail($orderId);
+            $attachment = $order->attachments()->where('id', $attachmentId)->first();
 
-        if (!empty($attachment)) {
-            $filePath = public_path($attachment->file);
+            if (!empty($attachment)) {
+                $filePath = public_path($attachment->file);
 
-            if (file_exists($filePath)) {
-                $extension = \Illuminate\Support\Facades\File::extension($filePath);
+                if (file_exists($filePath)) {
+                    $extension = \Illuminate\Support\Facades\File::extension($filePath);
 
-                $fileName = str_replace(' ', '-', $attachment->title);
-                $fileName = str_replace('.', '-', $fileName);
-                $fileName .= '.' . $extension;
+                    $fileName = str_replace(' ', '-', $attachment->title);
+                    $fileName = str_replace('.', '-', $fileName);
+                    $fileName .= '.' . $extension;
 
-                $headers = array(
-                    'Content-Type: application/*',
-                );
+                    $headers = array(
+                        'Content-Type: application/*',
+                    );
 
-                return response()->download($filePath, $fileName, $headers);
+                    return response()->download($filePath, $fileName, $headers);
+                }
+
+                $toastData = [
+                    'title' => trans('update.file_not_found'),
+                    'msg' => trans('update.the_address_entered_for_the_file_is_invalid_or_the_file_has_been_deleted'),
+                    'status' => 'error'
+                ];
+                return back()->with(['toast' => $toastData]);
             }
 
-            $toastData = [
-                'title' => trans('update.file_not_found'),
-                'msg' => trans('update.the_address_entered_for_the_file_is_invalid_or_the_file_has_been_deleted'),
-                'status' => 'error'
-            ];
-            return back()->with(['toast' => $toastData]);
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('downloadAttachment error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
     }
 }

@@ -21,7 +21,6 @@
                 </tr>
             </table>
 
-
             @include('admin.includes.delete_button',[
                              'url' => getAdminPanelUrl().'/users/become_instructors/'. $becomeInstructor->id .'/reject',
                              'btnClass' => 'mt-3 btn btn-danger',

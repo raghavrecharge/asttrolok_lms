@@ -49,16 +49,8 @@
 
   setTimeout(function() {
         $("[href='https://elfsight.com/google-reviews-widget/?utm_source=websites&utm_medium=clients&utm_content=google-reviews&utm_term=www.asttrolok.com&utm_campaign=free-widget']").hide();
-    //   $('.WidgetBackground__Content-sc-1ho7q3r-2 > a').find('.inline').last().attr("style", "display:none !important");
 
 }, 3000);
-//   setTimeout(function() {
-//         $("[href='https://elfsight.com/google-reviews-widget/?utm_source=websites&utm_medium=clients&utm_content=google-reviews&utm_term=www.asttrolok.com&utm_campaign=free-widget']").hide();
-//     //   $('.WidgetBackground__Content-sc-1ho7q3r-2 > a').find('.inline').last().attr("style", "display:none !important");
-
-// }, 4000);
-
-//   setTimeout(function() {
 
 </script>
 
@@ -213,17 +205,10 @@ try{
     $str_arr = explode ("/", $_SERVER['REQUEST_URI']);
     }
 
-    //print_r($_SERVER['REQUEST_URI']);
-    //if(in_array("what-is-pitru-paksha-and-why-it-is-observed", $str_arr)){
-
-                //print_r($str_arr[3]);
-
                 $duration1234 = 0;
-                //unset($_SESSION['duration1234']);
-                //unset($_SESSION['started1234']);
+
                 if(!empty($_SESSION['started1234']))
                 {
-                    // show banner and hide form
 
                  $time = ($_SESSION['duration1234'] - (time() - $_SESSION['started1234']));
 
@@ -241,23 +226,15 @@ try{
                   $_SESSION['duration1234']=$duration1234;
                   @endphp
                   <script>
-                    // $('#myModal21').modal();
 
-                //      setTimeout(function() {
-                //     $('#myModal21').modal();
-                // }, 30000);
                 </script>
                 @php
                 }
 
-    //}
-
  $duration123 = 0;
-//unset($_SESSION['duration123']);
-//unset($_SESSION['started123']);
+
 if(!empty($_SESSION['started123']))
 {
-    // show banner and hide form
 
  $time = ($_SESSION['duration123'] - (time() - $_SESSION['started123']));
 

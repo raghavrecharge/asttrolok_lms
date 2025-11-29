@@ -165,7 +165,6 @@
             <input type="text" name="tags" data-max-tag="5" value="{{ !empty($upcomingCourse) ? implode(',', $upcomingCourseTags) : '' }}" class="form-control inputtags" placeholder="{{ trans('public.type_tag_name_and_press_enter') }} ({{ trans('admin/main.max') }} : 5)"/>
         </div>
 
-
         <div class="form-group mt-15">
             <label class="input-label">{{ trans('public.category') }}</label>
 

@@ -44,7 +44,6 @@ class Gift extends Model
         return $this->belongsTo('App\Models\Product', 'product_id', 'id');
     }
 
-
     public function getItemTitle()
     {
         $title = '';
@@ -112,8 +111,8 @@ class Gift extends Model
             '[gift_type]' => $this->getItemType(),
             '[amount]' => (!empty($amount) and $amount > 0) ? handlePrice($amount) : trans('public.free'),
             '[gift_message]' => $this->description,
-            '[time.date]' => dateTimeFormat($this->created_at, "j M Y H:i"), // send date
-            '[time.date.2]' => !empty($this->date) ? dateTimeFormat($this->date, "j M Y H:i") : trans('update.instantly'), // gift publish date
+            '[time.date]' => dateTimeFormat($this->created_at, "j M Y H:i"),
+            '[time.date.2]' => !empty($this->date) ? dateTimeFormat($this->date, "j M Y H:i") : trans('update.instantly'),
         ];
 
         if (!empty($sender)) {
@@ -132,8 +131,8 @@ class Gift extends Model
             '[gift_title]' => $this->getItemTitle(),
             '[gift_type]' => $this->getItemType(),
             '[amount]' => (!empty($amount) and $amount > 0) ? handlePrice($amount) : trans('public.free'),
-            '[time.date]' => dateTimeFormat($this->created_at, "j M Y H:i"), // send date
-            '[time.date.2]' => !empty($this->date) ? dateTimeFormat($this->date, "j M Y H:i") : trans('update.instantly'), // gift publish date
+            '[time.date]' => dateTimeFormat($this->created_at, "j M Y H:i"),
+            '[time.date.2]' => !empty($this->date) ? dateTimeFormat($this->date, "j M Y H:i") : trans('update.instantly'),
         ];
 
         if (!empty($sender)) {

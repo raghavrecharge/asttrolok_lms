@@ -17,7 +17,6 @@ class AdvertisingBanner extends Model implements TranslatableContract
 
     public $translatedAttributes = ['title', 'image'];
 
-
     static $positions = [
         'home1', 'home2', 'course', 'course_sidebar', 'product_show', 'bundle', 'bundle_sidebar', 'upcoming_course', 'upcoming_course_sidebar'
     ];

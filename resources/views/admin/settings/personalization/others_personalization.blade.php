@@ -16,8 +16,6 @@
         <input type="hidden" name="page" value="personalization">
         <input type="hidden" name="others_personalization" value="others_personalization">
 
-
-
         <div class="row">
             <div class="col-12 col-md-6">
                 <h5 class="text-dark font-20">{{ trans('update.guarantee') }}</h5>
@@ -35,7 +33,6 @@
                     <label>{{ trans('update.enter_guarantee_text') }}</label>
                     <input type="text" name="value[guarantee_text]" value="{{ (!empty($itemValue) and !empty($itemValue['guarantee_text'])) ? $itemValue['guarantee_text'] : old('guarantee_text') }}" class="form-control "/>
                 </div>
-
 
                 <h5 class="text-dark font-20 mt-5">{{ trans('update.avatar_settings') }}</h5>
 
@@ -58,7 +55,6 @@
                         <input type="text" name="value[default_user_avatar]" id="default_user_avatar" value="{{ (!empty($itemValue) and !empty($itemValue['default_user_avatar'])) ? $itemValue['default_user_avatar'] : '' }}" class="form-control"/>
                     </div>
                 </div>
-
 
                 <h5 class="text-dark font-20 mt-5">{{ trans('update.platform_phone_and_email_position') }}</h5>
 

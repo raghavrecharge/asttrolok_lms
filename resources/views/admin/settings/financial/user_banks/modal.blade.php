@@ -19,7 +19,6 @@
         <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
     @endif
 
-
     <div class="form-group">
         <label>{{ trans('admin/main.title') }}</label>
         <input type="text" name="title" value="{{ (!empty($editBank) and !empty($editBank->translate($locale))) ? $editBank->translate($locale)->title : '' }}" class="js-ajax-title form-control "/>
@@ -63,7 +62,6 @@
             @endforeach
         @endif
     </div>
-
 
     <div class="d-flex align-items-center justify-content-end">
         <button type="button" class="js-save-bank btn btn-primary">{{ trans('admin/main.save') }}</button>

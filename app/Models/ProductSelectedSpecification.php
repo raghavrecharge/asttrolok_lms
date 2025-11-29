@@ -26,7 +26,6 @@ class ProductSelectedSpecification extends Model implements TranslatableContract
         return getTranslateAttributeValue($this, 'value');
     }
 
-
     public function specification()
     {
         return $this->belongsTo('App\Models\ProductSpecification', 'product_specification_id', 'id');

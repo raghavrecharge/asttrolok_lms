@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Web;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Api\Config\ConfigController;
 use App\Http\Controllers\Api\Controller;
 use App\Http\Controllers\Api\Objects\WebinarObj;
@@ -18,5 +21,5 @@ use Illuminate\Support\Facades\DB;
 
 class TextLessonsController extends Controller
 {
-   
+
 }

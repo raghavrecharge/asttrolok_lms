@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Admin\traits\InstallmentOrdersTrait;
 use App\Http\Controllers\Admin\traits\InstallmentOverdueTrait;
 use App\Http\Controllers\Admin\traits\InstallmentPurchasesTrait;
@@ -30,92 +33,121 @@ class InstallmentsController extends Controller
 
     public function index(Request $request)
     {
-        $this->authorize('admin_installments_list');
+        try {
+            $this->authorize('admin_installments_list');
 
-        $installments = Installment::query()
-            ->orderBy('created_at', 'desc')
-            ->withCount([
-                'steps'
-            ])
-            ->paginate(10);
+            $installments = Installment::query()
+                ->orderBy('created_at', 'desc')
+                ->withCount([
+                    'steps'
+                ])
+                ->paginate(10);
 
+            $data = [
+                'pageTitle' => trans('update.installment_plans'),
+                'installments' => $installments,
+            ];
 
-        $data = [
-            'pageTitle' => trans('update.installment_plans'),
-            'installments' => $installments,
-        ];
-
-        return view('admin.financial.installments.lists.index', $data);
+            return view('admin.financial.installments.lists.index', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function create()
     {
-        $this->authorize('admin_installments_create');
+        try {
+            $this->authorize('admin_installments_create');
 
-        $userGroups = Group::query()->where('status', 'active')->get();
+            $userGroups = Group::query()->where('status', 'active')->get();
 
-        $categories = Category::where('parent_id', null)
-            ->with('subCategories')
-            ->get();
-        $subscriptionPackages = Subscribe::all();
-        $registrationPackages = RegistrationPackage::all();
+            $categories = Category::where('parent_id', null)
+                ->with('subCategories')
+                ->get();
+            $subscriptionPackages = Subscribe::all();
+            $registrationPackages = RegistrationPackage::all();
 
-        $data = [
-            'pageTitle' => trans('update.new_installment_plan'),
-            'userGroups' => $userGroups,
-            'categories' => $categories,
-            'subscriptionPackages' => $subscriptionPackages,
-            'registrationPackages' => $registrationPackages,
-        ];
+            $data = [
+                'pageTitle' => trans('update.new_installment_plan'),
+                'userGroups' => $userGroups,
+                'categories' => $categories,
+                'subscriptionPackages' => $subscriptionPackages,
+                'registrationPackages' => $registrationPackages,
+            ];
 
-        return view('admin.financial.installments.create.index', $data);
+            return view('admin.financial.installments.create.index', $data);
+        } catch (\Exception $e) {
+            \Log::error('create error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function store(Request $request)
     {
-        $this->authorize('admin_installments_create');
+        try {
+            $this->authorize('admin_installments_create');
 
-        $this->validate($request, [
-            'title' => 'required',
-            'main_title' => 'required',
-            'description' => 'required',
-            'target_type' => 'required',
-            'upfront' => 'nullable|numeric',
-        ]);
+            $this->validate($request, [
+                'title' => 'required',
+                'main_title' => 'required',
+                'description' => 'required',
+                'target_type' => 'required',
+                'upfront' => 'nullable|numeric',
+            ]);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $startDate = !empty($data['start_date']) ? convertTimeToUTCzone($data['start_date'], getTimezone())->getTimestamp() : null;
-        $endDate = !empty($data['end_date']) ? convertTimeToUTCzone($data['end_date'], getTimezone())->getTimestamp() : null;
+            $startDate = !empty($data['start_date']) ? convertTimeToUTCzone($data['start_date'], getTimezone())->getTimestamp() : null;
+            $endDate = !empty($data['end_date']) ? convertTimeToUTCzone($data['end_date'], getTimezone())->getTimestamp() : null;
 
-        $installment = Installment::query()->create([
-            'target_type' => $data['target_type'],
-            'target' => $data['target'] ?? null,
-            'capacity' => $data['capacity'] ?? null,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'verification' => (!empty($data['verification']) and $data['verification'] == 'on'),
-            'request_uploads' => (!empty($data['request_uploads']) and $data['request_uploads'] == 'on'),
-            'bypass_verification_for_verified_users' => (!empty($data['bypass_verification_for_verified_users']) and $data['bypass_verification_for_verified_users'] == 'on'),
-            'upfront' => $data['upfront'] ?? null,
-            'upfront_type' => !empty($data['upfront']) ? $data['upfront_type'] : null,
-            'enable' => (!empty($data['enable']) and $data['enable'] == 'on'),
-            'created_at' => time(),
-        ]);
+            $installment = Installment::query()->create([
+                'target_type' => $data['target_type'],
+                'target' => $data['target'] ?? null,
+                'capacity' => $data['capacity'] ?? null,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'verification' => (!empty($data['verification']) and $data['verification'] == 'on'),
+                'request_uploads' => (!empty($data['request_uploads']) and $data['request_uploads'] == 'on'),
+                'bypass_verification_for_verified_users' => (!empty($data['bypass_verification_for_verified_users']) and $data['bypass_verification_for_verified_users'] == 'on'),
+                'upfront' => $data['upfront'] ?? null,
+                'upfront_type' => !empty($data['upfront']) ? $data['upfront_type'] : null,
+                'enable' => (!empty($data['enable']) and $data['enable'] == 'on'),
+                'created_at' => time(),
+            ]);
 
-        if (!empty($installment)) {
-            $this->storeExtraData($installment, $data);
+            if (!empty($installment)) {
+                $this->storeExtraData($installment, $data);
 
-            $toastData = [
-                'title' => trans('public.request_success'),
-                'msg' => trans('update.new_installments_were_successfully_created'),
-                'status' => 'success'
-            ];
+                $toastData = [
+                    'title' => trans('public.request_success'),
+                    'msg' => trans('update.new_installments_were_successfully_created'),
+                    'status' => 'success'
+                ];
 
-            return redirect(getAdminPanelUrl("/financial/installments/{$installment->id}/edit"))->with(['toast' => $toastData]);
+                return redirect(getAdminPanelUrl("/financial/installments/{$installment->id}/edit"))->with(['toast' => $toastData]);
+            }
+
+            abort(500);
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(500);
     }
 
     private function storeExtraData($installment, $data)
@@ -164,7 +196,6 @@ class InstallmentsController extends Controller
             }
         }
 
-        /* Steps */
         $ignoreStepIds = [];
         if (!empty($data['steps'])) {
 
@@ -213,7 +244,6 @@ class InstallmentsController extends Controller
             ->where('installment_id', $installment->id)
             ->delete();
 
-        /* User Groups */
         InstallmentUserGroup::query()->where('installment_id', $installment->id)->delete();
         if (!empty($data['group_ids'])) {
             $insert = [];
@@ -263,97 +293,127 @@ class InstallmentsController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $this->authorize('admin_installments_edit');
+        try {
+            $this->authorize('admin_installments_edit');
 
-        $installment = Installment::query()->findOrFail($id);
+            $installment = Installment::query()->findOrFail($id);
 
-        $userGroups = Group::query()->where('status', 'active')->get();
+            $userGroups = Group::query()->where('status', 'active')->get();
 
-        $categories = Category::where('parent_id', null)
-            ->with('subCategories')
-            ->get();
-        $subscriptionPackages = Subscribe::all();
-        $registrationPackages = RegistrationPackage::all();
+            $categories = Category::where('parent_id', null)
+                ->with('subCategories')
+                ->get();
+            $subscriptionPackages = Subscribe::all();
+            $registrationPackages = RegistrationPackage::all();
 
-        $defaultLocal = getDefaultLocale();
-        $locale = $request->get('locale', mb_strtolower($defaultLocal));
-        storeContentLocale($locale, $installment->getTable(), $installment->id);
+            $defaultLocal = getDefaultLocale();
+            $locale = $request->get('locale', mb_strtolower($defaultLocal));
+            storeContentLocale($locale, $installment->getTable(), $installment->id);
 
-        $data = [
-            'pageTitle' => trans('update.edit_installment_plan'),
-            'userGroups' => $userGroups,
-            'categories' => $categories,
-            'subscriptionPackages' => $subscriptionPackages,
-            'registrationPackages' => $registrationPackages,
-            'installment' => $installment,
-            'selectedLocale' => mb_strtolower($locale)
-        ];
+            $data = [
+                'pageTitle' => trans('update.edit_installment_plan'),
+                'userGroups' => $userGroups,
+                'categories' => $categories,
+                'subscriptionPackages' => $subscriptionPackages,
+                'registrationPackages' => $registrationPackages,
+                'installment' => $installment,
+                'selectedLocale' => mb_strtolower($locale)
+            ];
 
-        return view('admin.financial.installments.create.index', $data);
+            return view('admin.financial.installments.create.index', $data);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $this->authorize('admin_installments_edit');
+        try {
+            $this->authorize('admin_installments_edit');
 
-        $this->validate($request, [
-            'title' => 'required',
-            'main_title' => 'required',
-            'description' => 'required',
-            'target_type' => 'required',
-            'upfront' => 'nullable|numeric',
-        ]);
+            $this->validate($request, [
+                'title' => 'required',
+                'main_title' => 'required',
+                'description' => 'required',
+                'target_type' => 'required',
+                'upfront' => 'nullable|numeric',
+            ]);
 
-        $installment = Installment::query()->findOrFail($id);
-        $data = $request->all();
+            $installment = Installment::query()->findOrFail($id);
+            $data = $request->all();
 
-        $startDate = !empty($data['start_date']) ? convertTimeToUTCzone($data['start_date'], getTimezone())->getTimestamp() : null;
-        $endDate = !empty($data['end_date']) ? convertTimeToUTCzone($data['end_date'], getTimezone())->getTimestamp() : null;
+            $startDate = !empty($data['start_date']) ? convertTimeToUTCzone($data['start_date'], getTimezone())->getTimestamp() : null;
+            $endDate = !empty($data['end_date']) ? convertTimeToUTCzone($data['end_date'], getTimezone())->getTimestamp() : null;
 
-        $installment->update([
-            'target_type' => $data['target_type'],
-            'target' => $data['target'] ?? null,
-            'capacity' => $data['capacity'] ?? null,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'verification' => (!empty($data['verification']) and $data['verification'] == 'on'),
-            'request_uploads' => (!empty($data['request_uploads']) and $data['request_uploads'] == 'on'),
-            'bypass_verification_for_verified_users' => (!empty($data['bypass_verification_for_verified_users']) and $data['bypass_verification_for_verified_users'] == 'on'),
-            'upfront' => $data['upfront'] ?? null,
-            'upfront_type' => !empty($data['upfront']) ? $data['upfront_type'] : null,
-            'enable' => (!empty($data['enable']) and $data['enable'] == 'on'),
-        ]);
+            $installment->update([
+                'target_type' => $data['target_type'],
+                'target' => $data['target'] ?? null,
+                'capacity' => $data['capacity'] ?? null,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'verification' => (!empty($data['verification']) and $data['verification'] == 'on'),
+                'request_uploads' => (!empty($data['request_uploads']) and $data['request_uploads'] == 'on'),
+                'bypass_verification_for_verified_users' => (!empty($data['bypass_verification_for_verified_users']) and $data['bypass_verification_for_verified_users'] == 'on'),
+                'upfront' => $data['upfront'] ?? null,
+                'upfront_type' => !empty($data['upfront']) ? $data['upfront_type'] : null,
+                'enable' => (!empty($data['enable']) and $data['enable'] == 'on'),
+            ]);
 
-        if (!empty($installment)) {
-            $this->storeExtraData($installment, $data);
+            if (!empty($installment)) {
+                $this->storeExtraData($installment, $data);
 
-            $toastData = [
-                'title' => trans('public.request_success'),
-                'msg' => trans('update.installment_were_successfully_updated'),
-                'status' => 'success'
-            ];
+                $toastData = [
+                    'title' => trans('public.request_success'),
+                    'msg' => trans('update.installment_were_successfully_updated'),
+                    'status' => 'success'
+                ];
 
-            return redirect(getAdminPanelUrl("/financial/installments/{$installment->id}/edit"))->with(['toast' => $toastData]);
+                return redirect(getAdminPanelUrl("/financial/installments/{$installment->id}/edit"))->with(['toast' => $toastData]);
+            }
+
+            abort(500);
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(500);
     }
 
     public function delete($id)
     {
-        $this->authorize('admin_installments_delete');
+        try {
+            $this->authorize('admin_installments_delete');
 
-        $installment = Installment::query()->findOrFail($id);
+            $installment = Installment::query()->findOrFail($id);
 
-        $installment->delete();
+            $installment->delete();
 
-        $toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => trans('update.installment_were_successfully_deleted'),
-            'status' => 'success'
-        ];
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.installment_were_successfully_deleted'),
+                'status' => 'success'
+            ];
 
-        return redirect(getAdminPanelUrl("/financial/installments"))->with(['toast' => $toastData]);
+            return redirect(getAdminPanelUrl("/financial/installments"))->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('delete error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
 }

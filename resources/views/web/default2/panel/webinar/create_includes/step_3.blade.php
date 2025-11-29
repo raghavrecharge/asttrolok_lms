@@ -58,7 +58,6 @@
     <div class="">
         <h2 class="section-title after-line">{{ trans('webinars.sale_plans') }} ({{ trans('public.optional') }})</h2>
 
-
         <div class="mt-15">
             <p class="font-12 text-gray">- {{ trans('webinars.sale_plans_hint_1') }}</p>
             <p class="font-12 text-gray">- {{ trans('webinars.sale_plans_hint_2') }}</p>

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Web;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\File;
 use App\Models\Gift;
@@ -26,13 +29,22 @@ use App\User;
 use App\Models\Webinar;
 use App\Vbout\VboutService;
 
-
 class JobsController extends Controller
 {
     protected $vboutService;
     public function index(Request $request, $methodName)
     {
-        return $this->$methodName($request);
+        try {
+            return $this->$methodName($request);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function sdfds()
@@ -42,72 +54,81 @@ class JobsController extends Controller
 
     public function sendSessionsReminder($request)
     {
-        $buyersCount = 0;
-        $hour = getRemindersSettings('webinar_reminder_schedule') ?? 1;
-        $time = time();
-        $hoursLater = $time + ($hour * 60 * 60);
+        try {
+            $buyersCount = 0;
+            $hour = getRemindersSettings('webinar_reminder_schedule') ?? 1;
+            $time = time();
+            $hoursLater = $time + ($hour * 60 * 60);
 
-        $sessions = Session::where('date', '>=', $time)
-            ->whereBetween('date', [$time, $hoursLater])
-            ->with([
-                'webinar'
-            ])
-            ->get();
+            $sessions = Session::where('date', '>=', $time)
+                ->whereBetween('date', [$time, $hoursLater])
+                ->with([
+                    'webinar'
+                ])
+                ->get();
 
+            foreach ($sessions as $session) {
+                $webinar = $session->webinar;
 
-        foreach ($sessions as $session) {
-            $webinar = $session->webinar;
+                $buyers = Sale::whereNull('refund_at')
+                    ->where('webinar_id', $session->webinar_id)
+                    ->pluck('buyer_id')
+                    ->toArray();
 
-            $buyers = Sale::whereNull('refund_at')
-                ->where('webinar_id', $session->webinar_id)
-                ->pluck('buyer_id')
-                ->toArray();
+                $notifyOptions = [
+                    '[c.title]' => $webinar->title,
+                    '[time.date]' => dateTimeFormat($session->date, 'j M Y , H:i'),
+                ];
 
-            $notifyOptions = [
-                '[c.title]' => $webinar->title,
-                '[time.date]' => dateTimeFormat($session->date, 'j M Y , H:i'),
-            ];
+                $buyersCount = count($buyers);
 
-            $buyersCount = count($buyers);
+                if (count($buyers)) {
+                    foreach ($buyers as $buyer) {
+                        $check = SessionRemind::where('session_id', $session->id)
+                            ->where('user_id', $buyer)
+                            ->first();
 
-            if (count($buyers)) {
-                foreach ($buyers as $buyer) {
-                    $check = SessionRemind::where('session_id', $session->id)
-                        ->where('user_id', $buyer)
-                        ->first();
+                        if (empty($check)) {
+                            sendNotification('webinar_reminder', $notifyOptions, $buyer);
 
-                    if (empty($check)) {
-                        sendNotification('webinar_reminder', $notifyOptions, $buyer); // consultant
-
-                        SessionRemind::create([
-                            'session_id' => $session->id,
-                            'user_id' => $buyer,
-                            'created_at' => time()
-                        ]);
+                            SessionRemind::create([
+                                'session_id' => $session->id,
+                                'user_id' => $buyer,
+                                'created_at' => time()
+                            ]);
+                        }
                     }
+                }
+
+                $check = SessionRemind::where('session_id', $session->id)
+                    ->where('user_id', $session->creator_id)
+                    ->first();
+
+                if (empty($check)) {
+                    sendNotification('webinar_reminder', $notifyOptions, $session->creator_id);
+
+                    SessionRemind::create([
+                        'session_id' => $session->id,
+                        'user_id' => $session->creator_id,
+                        'created_at' => time()
+                    ]);
                 }
             }
 
-            $check = SessionRemind::where('session_id', $session->id)
-                ->where('user_id', $session->creator_id)
-                ->first();
-
-            if (empty($check)) {
-                sendNotification('webinar_reminder', $notifyOptions, $session->creator_id); // consultant
-
-                SessionRemind::create([
-                    'session_id' => $session->id,
-                    'user_id' => $session->creator_id,
-                    'created_at' => time()
-                ]);
-            }
+            return response()->json([
+                'sessions_count' => count($sessions),
+                'buyers' => $buyersCount,
+                'message' => "Notifications were sent for sessions starting from (" . dateTimeFormat($time, 'j M Y, H:i') . ')  to  (' . dateTimeFormat($hoursLater, 'j M Y, H:i') . ')'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('sendSessionsReminder error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return response()->json([
-            'sessions_count' => count($sessions),
-            'buyers' => $buyersCount,
-            'message' => "Notifications were sent for sessions starting from (" . dateTimeFormat($time, 'j M Y, H:i') . ')  to  (' . dateTimeFormat($hoursLater, 'j M Y, H:i') . ')'
-        ]);
     }
 
     public function sendMeetingsReminder($request)
@@ -150,7 +171,6 @@ class JobsController extends Controller
             'message' => "Notifications were sent for meetings starting from (" . dateTimeFormat($time, 'j M Y, H:i') . ')  to  (' . dateTimeFormat($hoursLater, 'j M Y, H:i') . ')'
         ]);
     }
-
 
     public function sendSubscribeReminder($request)
     {
@@ -216,138 +236,148 @@ class JobsController extends Controller
         ]);
     }
 
-    /**
-     * run once a day
-     * */
     public function sendInstallmentReminders()
     {
-        $sendCount = 0;
-        $timestamp = time();
+        try {
+            $sendCount = 0;
+            $timestamp = time();
 
-        $settings = getInstallmentsSettings();
-        $reminderBeforeOverdueDays = $settings['reminder_before_overdue_days'];
-        $reminderAfterOverdueDays = $settings['reminder_after_overdue_days'];
+            $settings = getInstallmentsSettings();
+            $reminderBeforeOverdueDays = $settings['reminder_before_overdue_days'];
+            $reminderAfterOverdueDays = $settings['reminder_after_overdue_days'];
 
-        $steps = InstallmentStep::query()
-            ->whereHas('installment', function ($query) {
-                $query->whereHas('orders');
-            })
-            ->get();
+            $steps = InstallmentStep::query()
+                ->whereHas('installment', function ($query) {
+                    $query->whereHas('orders');
+                })
+                ->get();
 
-        foreach ($steps as $step) {
-            $installment = $step->installment;
-            $orders = $installment->orders;
+            foreach ($steps as $step) {
+                $installment = $step->installment;
+                $orders = $installment->orders;
 
-            foreach ($orders as $order) {
-                $checkPayment = InstallmentOrderPayment::query()->where('installment_order_id', $order->id)
-                    ->where('step_id', $step->id)
-                    ->where('status', 'paid')
-                    ->first();
+                foreach ($orders as $order) {
+                    $checkPayment = InstallmentOrderPayment::query()->where('installment_order_id', $order->id)
+                        ->where('step_id', $step->id)
+                        ->where('status', 'paid')
+                        ->first();
 
-                if (empty($checkPayment)) {
-                    $itemPrice = $order->getItemPrice();
+                    if (empty($checkPayment)) {
+                        $itemPrice = $order->getItemPrice();
 
-                    $dueAt = ($step->deadline * 86400) + $order->created_at;
-                    $daysLeft = ($dueAt - $timestamp) / (86400);
+                        $dueAt = ($step->deadline * 86400) + $order->created_at;
+                        $daysLeft = ($dueAt - $timestamp) / (86400);
 
-                    $user = User::where('id',$order->user_id)->first();
-                    $webinar = Webinar::where('id',$order->webinar_id)->first();
-                    
-                    $reminderType = null;
-                    $template = null;
-                    $notifyOptions = [
-                        // '[installment_title]' => $installment->main_title,
-                        '[u.name]' => $user->full_name,
-                        '[c.title]' => $webinar->title,
-                        // '[time.date]' => dateTimeFormat($dueAt, 'j M Y - H:i'),
-                        // '[amount]' => handlePrice($step->getPrice($itemPrice)),
-                    ];
+                        $user = User::where('id',$order->user_id)->first();
+                        $webinar = Webinar::where('id',$order->webinar_id)->first();
 
-                    if (!empty($reminderBeforeOverdueDays) and $daysLeft > 0 and $daysLeft < $reminderBeforeOverdueDays) {
-                        $template = "reminder_installments_before_overdue";
-                        $reminderType = "before_due";
-                    } else if ($daysLeft < 0) {
-                        $template = "installment_due_reminder";
-                        $reminderType = "due";
+                        $reminderType = null;
+                        $template = null;
+                        $notifyOptions = [
 
-                        if (!empty($reminderAfterOverdueDays) and $daysLeft < (-1 * $reminderAfterOverdueDays)) {
-                            $template = "reminder_installments_after_overdue";
-                            $reminderType = "after_due";
+                            '[u.name]' => $user->full_name,
+                            '[c.title]' => $webinar->title,
+
+                        ];
+
+                        if (!empty($reminderBeforeOverdueDays) and $daysLeft > 0 and $daysLeft < $reminderBeforeOverdueDays) {
+                            $template = "reminder_installments_before_overdue";
+                            $reminderType = "before_due";
+                        } else if ($daysLeft < 0) {
+                            $template = "installment_due_reminder";
+                            $reminderType = "due";
+
+                            if (!empty($reminderAfterOverdueDays) and $daysLeft < (-1 * $reminderAfterOverdueDays)) {
+                                $template = "reminder_installments_after_overdue";
+                                $reminderType = "after_due";
+                            }
                         }
-                    }
 
-                    if (!empty($notifyOptions) and !empty($template) and !empty($reminderType)) {
-                        $checkReminder = InstallmentReminder::query()->where('installment_order_id', $order->id)
-                            ->where('installment_step_id', $step->id)
-                            ->where('user_id', $order->user_id)
-                            ->where('type', $reminderType)
-                            ->first();
+                        if (!empty($notifyOptions) and !empty($template) and !empty($reminderType)) {
+                            $checkReminder = InstallmentReminder::query()->where('installment_order_id', $order->id)
+                                ->where('installment_step_id', $step->id)
+                                ->where('user_id', $order->user_id)
+                                ->where('type', $reminderType)
+                                ->first();
 
-                        if (empty($checkReminder)) {
-                            InstallmentReminder::query()->create([
-                                'installment_order_id' => $order->id,
-                                'installment_step_id' => $step->id,
-                                'user_id' => $order->user_id,
-                                'type' => $reminderType,
-                                'created_at' => time()
-                            ]);
+                            if (empty($checkReminder)) {
+                                InstallmentReminder::query()->create([
+                                    'installment_order_id' => $order->id,
+                                    'installment_step_id' => $step->id,
+                                    'user_id' => $order->user_id,
+                                    'type' => $reminderType,
+                                    'created_at' => time()
+                                ]);
 
-                            $sendCount += 1;
+                                $sendCount += 1;
 
-     $vboutService = new VboutService();
+            $vboutService = new VboutService();
 
-        $listId = '142634';
- $contactData = [
-            'email' => $user->email,
-            'fields' => [
-                '940666' => $user->full_name,
-               '940665' => $webinar->title,
-            ],
-        ];
-        $resultxc = $vboutService->addContactToList($listId, $contactData);
-        // echo "<pre>";print_r($resultxc);die;
-        
-                            // sendNotification($template, $notifyOptions, $order->user_id);
+            $listId = '142634';
+            $contactData = [
+                'email' => $user->email,
+                'fields' => [
+                    '940666' => $user->full_name,
+                   '940665' => $webinar->title,
+                ],
+            ];
+            $resultxc = $vboutService->addContactToList($listId, $contactData);
+
+                            }
                         }
                     }
                 }
             }
-        }
 
-        return response()->json([
-            'count' => $sendCount,
-            'message' => "Notifications were sent for users installment overdue"
-        ]);
+            return response()->json([
+                'count' => $sendCount,
+                'message' => "Notifications were sent for users installment overdue"
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('sendInstallmentReminders error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
-    /*
-     * Route => /jobs/checkGiftsDate
-     * This jobs is executed every hour
-     * */
     public function checkGiftsDate()
     {
-        $start = time();
-        $end = $start + 3600; // one hour later
+        try {
+            $start = time();
+            $end = $start + 3600;
 
-        $gifts = Gift::query()->where('status', 'active')
-            ->whereNotNull('date')
-            ->whereBetween('date', [$start, $end])
-            ->get();
+            $gifts = Gift::query()->where('status', 'active')
+                ->whereNotNull('date')
+                ->whereBetween('date', [$start, $end])
+                ->get();
 
-        if ($gifts->isNotEmpty()) {
-            foreach ($gifts as $gift) {
-                $amount = $gift->sale->total_amount;
+            if ($gifts->isNotEmpty()) {
+                foreach ($gifts as $gift) {
+                    $amount = $gift->sale->total_amount;
 
-                $gift->sendReminderToSender($amount, 'gift_sender_notification');
+                    $gift->sendReminderToSender($amount, 'gift_sender_notification');
 
-                $gift->sendReminderToSender($amount, 'admin_gift_sending_confirmation');
+                    $gift->sendReminderToSender($amount, 'admin_gift_sending_confirmation');
+                }
             }
-        }
 
-        return response()->json([
-            'count' => $gifts->count(),
-            'message' => "Notifications were sent for gifts"
-        ]);
+            return response()->json([
+                'count' => $gifts->count(),
+                'message' => "Notifications were sent for gifts"
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('checkGiftsDate error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
 }

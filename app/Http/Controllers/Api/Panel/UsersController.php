@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Bitwise\UserLevelOfTraining;
 use App\Http\Controllers\Api\Controller;
 use App\Http\Controllers\Api\Objects\UserObj;
@@ -22,9 +25,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use App\Models\UserOccupation;
 
-
 use App\Http\Controllers\Api\UploadFileManager;
-
 
 class UsersController extends Controller
 
@@ -32,190 +33,203 @@ class UsersController extends Controller
 
     public function setting()
     {
-        $user = apiAuth();
-        return apiResponse2(1, 'retrieved', trans('api.public.retrieved'),
-            [
-                'user' => $user->details
-            ]
-        );
-
-
+        try {
+            $user = apiAuth();
+            return apiResponse2(1, 'retrieved', trans('api.public.retrieved'),
+                [
+                    'user' => $user->details
+                ]
+            );
+        } catch (\Exception $e) {
+            \Log::error('setting error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function updateImages(Request $request)
     {
-        $user = apiAuth();
-        $url = '';
-        if ($request->file('profile_image')) {
+        try {
+            $user = apiAuth();
+            $url = '';
+            if ($request->file('profile_image')) {
 
-            $profileImage = $this->createImage($user, $request->file('profile_image'));
+                $profileImage = $this->createImage($user, $request->file('profile_image'));
+
+                $url = $profileImage;
+                $user->update([
+                    'avatar' => $profileImage
+                ]);
+            }else{
+
+                $defaultUrl = 'https://storage.googleapis.com/astrolok/assets/default/img/default/avatar-1.png';
+                $user->update([
+                            'avatar' => $defaultUrl
+                        ]);
+
+            }
+
+            if ($request->file('identity_scan')) {
+
+                $storage = new UploadFileManager($request->file('identity_scan'));
+
+                $user->update([
+                    'identity_scan' => $storage->storage_path,
+                ]);
+
+            }
+
+            if ($request->file('certificate')) {
+
+                $storage = new UploadFileManager($request->file('certificate'));
+
+                $user->update([
+                    'certificate' => $storage->storage_path,
+                ]);
+
+            }
+
+            return apiResponse2(1, 'updated', trans('api.public.updated'),['url'=> $url]);
+        } catch (\Exception $e) {
+            \Log::error('updateImages error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
-            $url = $profileImage;
-            $user->update([
-                'avatar' => $profileImage
-            ]);
-        }else{
-        
-            $defaultUrl = 'https://storage.googleapis.com/astrolok/assets/default/img/default/avatar-1.png';
-            $user->update([
-                        'avatar' => $defaultUrl
-                    ]);
-                
+            throw $e;
         }
-
-        if ($request->file('identity_scan')) {
-
-            $storage = new UploadFileManager($request->file('identity_scan'));
-
-            $user->update([
-                'identity_scan' => $storage->storage_path,
-            ]);
-
-        }
-
-        if ($request->file('certificate')) {
-
-            $storage = new UploadFileManager($request->file('certificate'));
-
-            $user->update([
-                'certificate' => $storage->storage_path,
-            ]);
-
-
-        }
-// return $profileImage;
-        return apiResponse2(1, 'updated', trans('api.public.updated'),['url'=> $url]);
-
-
     }
-
 
     public function update(Request $request)
     {
-     
-     if ($request->input("password")) {
-        $available_inputs = [
-            'full_name', 'language', 'email', 'mobile', 'newsletter', 'public_message', 'timezone' ,'password',
-            'about', 'bio',
-            'account_type', 'iban', 'account_id',
-            'level_of_training', 'meeting_type',
-            'country_id', 'province_id', 'city_id', 'district_id',
-            'location'
-        ];
-     }else {
-         
-     
-         $available_inputs = [
-            'full_name', 'language', 'email', 'mobile', 'newsletter', 'public_message', 'timezone',
-            'about', 'bio',
-            'account_type', 'iban', 'account_id',
-            'level_of_training', 'meeting_type',
-            'country_id', 'province_id', 'city_id', 'district_id',
-            'location'
-        ];
-     }
-        $meta = ['address', 'gender', 'age'];
+        try {
+            if ($request->input("password")) {
+            $available_inputs = [
+                'full_name', 'language', 'email', 'mobile', 'newsletter', 'public_message', 'timezone' ,'password',
+                'about', 'bio',
+                'account_type', 'iban', 'account_id',
+                'level_of_training', 'meeting_type',
+                'country_id', 'province_id', 'city_id', 'district_id',
+                'location'
+            ];
+            }else {
 
-        $user = apiAuth();
-
-        validateParam($request->all(), [
-            'full_name' => 'string',
-            'language' => 'string',
-            'email' => 'email|unique:users,email,' . $user->id,
-            'mobile' => 'numeric|unique:users,mobile,' . $user->id,
-            'timezone' => ['string', Rule::in(getListOfTimezones())],
-            'public_message' => 'boolean',
-            'newsletter' => 'boolean',
-           // 'password' => 'required|string|min:6',
-
-            // 'account_type' => Rule::in(getOfflineBanksTitle()),
-            'iban' => 'required_with:account_type',
-            'account_id' => 'required_with:account_type',
-            // 'identity_scan' => 'required_with:account_type',
-
-            'bio' => 'nullable|string|min:3|max:48',
-            'level_of_training' => 'array|in:beginner,middle,expert',
-            'meeting_type' => 'in:in_person,all,online',
-
-            'gender' => 'nullable|in:man,woman',
-            'location' => 'array|size:2',
-            'location.latitude' => 'required_with:location',
-            'location.longitude' => 'required_with:location',
-            'address' => 'string',
-            'country_id' => 'exists:regions,id',
-            'province_id' => 'exists:regions,id',
-            'city_id' => 'exists:regions,id',
-            'district_id' => 'exists:regions,id',
-        ]);
-
-        $user = User::find($user->id);
-
-        foreach ($available_inputs as $input) {
-            if ($request->has($input)) {
-                $value = $request->input($input);
-                if ($input == 'level_of_training') {
-                    $value = (new UserLevelOfTraining())->getValue($value);
-                }
-                if ($input == 'location') {
-                    $value = DB::raw("POINT(" . $value['latitude'] . "," . $value['longitude'] . ")");
-                }
-                if ($input == 'password' && $request->input("password")) {
-                    $value = User::generatePassword($value);
-                }
-                
-
-                $user->update([
-                    $input => $value
-                ]);
+             $available_inputs = [
+                'full_name', 'language', 'email', 'mobile', 'newsletter', 'public_message', 'timezone',
+                'about', 'bio',
+                'account_type', 'iban', 'account_id',
+                'level_of_training', 'meeting_type',
+                'country_id', 'province_id', 'city_id', 'district_id',
+                'location'
+            ];
             }
-        }
-        
-        if ($request->input("password")) {
-                     $user->update([
-                    'pwd_hint' => $request->input("password")
-                ]);
-        }
+            $meta = ['address', 'gender', 'age'];
 
+            $user = apiAuth();
 
-        if (!$user->isUser()) {
-            if ($request->has('zoom_jwt_token') and !empty($request->input('zoom_jwt_token'))) {
+            validateParam($request->all(), [
+                'full_name' => 'string',
+                'language' => 'string',
+                'email' => 'email|unique:users,email,' . $user->id,
+                'mobile' => 'numeric|unique:users,mobile,' . $user->id,
+                'timezone' => ['string', Rule::in(getListOfTimezones())],
+                'public_message' => 'boolean',
+                'newsletter' => 'boolean',
 
-                UserZoomApi::updateOrCreate(
-                    [
-                        'user_id' => $user->id,
-                    ],
-                    [
-                        'jwt_token' => $request->input('zoom_jwt_token'),
-                        'created_at' => time()
-                    ]
-                );
+                'iban' => 'required_with:account_type',
+                'account_id' => 'required_with:account_type',
 
-            } else {
-                UserZoomApi::where('user_id', $user->id)->delete();
-            }
-        }
+                'bio' => 'nullable|string|min:3|max:48',
+                'level_of_training' => 'array|in:beginner,middle,expert',
+                'meeting_type' => 'in:in_person,all,online',
 
-        if ($request->has('newsletter')) {
-            $this->handleNewsletter($user->email, $user->id, $user->newsletter);
-        }
+                'gender' => 'nullable|in:man,woman',
+                'location' => 'array|size:2',
+                'location.latitude' => 'required_with:location',
+                'location.longitude' => 'required_with:location',
+                'address' => 'string',
+                'country_id' => 'exists:regions,id',
+                'province_id' => 'exists:regions,id',
+                'city_id' => 'exists:regions,id',
+                'district_id' => 'exists:regions,id',
+            ]);
 
-        // $this->updateMeta($meta);
-        
-            // return $request->has('occupations');
-        if ($request->has('occupations')) {
-            UserOccupation::where('user_id', $user->id)->delete();
-                    if (!empty($request->has('occupations'))) {
-                        foreach ($request->occupations as $category_id) {
-                            UserOccupation::create([
-                                'user_id' => $user->id,
-                                'category_id' => $category_id
-                            ]);
-                        }
+            $user = User::find($user->id);
+
+            foreach ($available_inputs as $input) {
+                if ($request->has($input)) {
+                    $value = $request->input($input);
+                    if ($input == 'level_of_training') {
+                        $value = (new UserLevelOfTraining())->getValue($value);
                     }
+                    if ($input == 'location') {
+                        $value = DB::raw("POINT(" . $value['latitude'] . "," . $value['longitude'] . ")");
+                    }
+                    if ($input == 'password' && $request->input("password")) {
+                        $value = User::generatePassword($value);
+                    }
+
+                    $user->update([
+                        $input => $value
+                    ]);
+                }
+            }
+
+            if ($request->input("password")) {
+                         $user->update([
+                        'pwd_hint' => $request->input("password")
+                    ]);
+            }
+
+            if (!$user->isUser()) {
+                if ($request->has('zoom_jwt_token') and !empty($request->input('zoom_jwt_token'))) {
+
+                    UserZoomApi::updateOrCreate(
+                        [
+                            'user_id' => $user->id,
+                        ],
+                        [
+                            'jwt_token' => $request->input('zoom_jwt_token'),
+                            'created_at' => time()
+                        ]
+                    );
+
+                } else {
+                    UserZoomApi::where('user_id', $user->id)->delete();
+                }
+            }
+
+            if ($request->has('newsletter')) {
+                $this->handleNewsletter($user->email, $user->id, $user->newsletter);
+            }
+
+            if ($request->has('occupations')) {
+                UserOccupation::where('user_id', $user->id)->delete();
+                        if (!empty($request->has('occupations'))) {
+                            foreach ($request->occupations as $category_id) {
+                                UserOccupation::create([
+                                    'user_id' => $user->id,
+                                    'category_id' => $category_id
+                                ]);
+                            }
+                        }
+            }
+
+            return apiResponse2(1, 'updated', trans('api.public.updated'));
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-
-        return apiResponse2(1, 'updated', trans('api.public.updated'));
     }
 
     private function handleNewsletter($email, $user_id, $joinNewsletter)
@@ -253,230 +267,224 @@ class UsersController extends Controller
 
     public function updatePassword(Request $request)
     {
-        validateParam($request->all(), [
-            'current_password' => 'required',
-            'new_password' => 'required|string|min:6',
-        ]);
-
-        $user = apiAuth();
-        if (Hash::check($request->input('current_password'), $user->password)) {
-            $user->update([
-                'password' => User::generatePassword($request->input('new_password'))
-            ]);
-            $token = auth('api')->refresh();
-
-            return apiResponse2(1, 'updated', trans('api.public.updated'), [
-                'token' => $token
+        try {
+            validateParam($request->all(), [
+                'current_password' => 'required',
+                'new_password' => 'required|string|min:6',
             ]);
 
+            $user = apiAuth();
+            if (Hash::check($request->input('current_password'), $user->password)) {
+                $user->update([
+                    'password' => User::generatePassword($request->input('new_password'))
+                ]);
+                $token = auth('api')->refresh();
+
+                return apiResponse2(1, 'updated', trans('api.public.updated'), [
+                    'token' => $token
+                ]);
+
+            }
+            return apiResponse2(0, 'incorrect', trans('api.public.profile_setting.incorrect'));
+        } catch (\Exception $e) {
+            \Log::error('updatePassword error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        return apiResponse2(0, 'incorrect', trans('api.public.profile_setting.incorrect'));
-
-
     }
 
-    // private function updateMeta($updateUserMeta)
-    // {
-    //     $user = apiAuth();
-    //     foreach ($updateUserMeta as $name) {
-    //         $value = request()->input($name);
-    //         $checkMeta = UserMeta::where('user_id', $user->id)
-    //             ->where('name', $name)
-    //             ->first();
-
-    //         if (!empty($checkMeta)) {
-    //             if (!empty($value)) {
-    //                 $checkMeta->update([
-    //                     'value' => $value
-    //                 ]);
-    //             } else {
-    //                 $checkMeta->delete();
-    //             }
-    //         } else if (!empty($value)) {
-    //             UserMeta::create([
-    //                 'user_id' => $user->id,
-    //                 'name' => $name,
-    //                 'value' => $value
-    //             ]);
-    //         }
-    //     }
-    // }
-    
     public function storeMetas(Request $request)
     {
-        $data = $request->all();
+        try {
+            $data = $request->all();
 
-        if (!empty($data['name']) and !empty($data['value'])) {
+            if (!empty($data['name']) and !empty($data['value'])) {
 
-            if (!empty($data['user_id'])) {
-                $organization = apiAuth();
-                $user = User::where('id', $data['user_id'])
-                    ->where('organ_id', $organization->id)
-                    ->first();
-            } else {
-                $user = apiAuth();
+                if (!empty($data['user_id'])) {
+                    $organization = apiAuth();
+                    $user = User::where('id', $data['user_id'])
+                        ->where('organ_id', $organization->id)
+                        ->first();
+                } else {
+                    $user = apiAuth();
+                }
+                $UserMeta = UserMeta::where('user_id', $user->id)
+                        ->where('name', $data['name'])
+                        ->where('value', $data['value'])
+                        ->first();
+                if(!isset($UserMeta)){
+                    UserMeta::create([
+                        'user_id' => $user->id,
+                        'name' => $data['name'],
+                        'value' => $data['value'],
+                    ]);
+                    return apiResponse2(1, 'updated', trans('api.public.updated'));
+                }
+                return apiResponse2(0, 'duplicate', 'You entered duplicate value');
+
             }
-            $UserMeta = UserMeta::where('user_id', $user->id)
-                    ->where('name', $data['name'])
-                    ->where('value', $data['value'])
-                    ->first();
-            if(!isset($UserMeta)){
-                UserMeta::create([
-                    'user_id' => $user->id,
-                    'name' => $data['name'],
-                    'value' => $data['value'],
-                ]);
-                return apiResponse2(1, 'updated', trans('api.public.updated'));
-            }
-            return apiResponse2(0, 'duplicate', 'You entered duplicate value');
-            // return response()->json([
-            //     'code' => 200
-            // ], 200);
+             return apiResponse2(0, 'incorrect', 'Please give correct value');
+        } catch (\Exception $e) {
+            \Log::error('storeMetas error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-         return apiResponse2(0, 'incorrect', 'Please give correct value');
-        // return response()->json([], 422);
     }
 
     public function deleteMeta(Request $request)
     {
-        $data = $request->all();
-        $user = apiAuth();
+        try {
+            $data = $request->all();
+            $user = apiAuth();
 
-        if (!empty($user)) {
-            $checkUser = User::find($user->id);
+            if (!empty($user)) {
+                $checkUser = User::find($user->id);
 
-            if (!empty($checkUser) and ($user->id == $user->id or $checkUser->organ_id == $user->id)) {
-                $meta = UserMeta::where('user_id', $user->id)
-                    ->where('name', $data['name'])
-                    ->where('value', $data['value'])
-                    ->first();
+                if (!empty($checkUser) and ($user->id == $user->id or $checkUser->organ_id == $user->id)) {
+                    $meta = UserMeta::where('user_id', $user->id)
+                        ->where('name', $data['name'])
+                        ->where('value', $data['value'])
+                        ->first();
 
-                $meta->delete();
-                return apiResponse2(1, 'deleted', 'the item has been deleted');
-                // return response()->json([
-                //     'code' => 200
-                // ], 200);
+                    $meta->delete();
+                    return apiResponse2(1, 'deleted', 'the item has been deleted');
+
+                }
             }
+            return apiResponse2(0, 'login', 'please login');
+            return response()->json([], 422);
+        } catch (\Exception $e) {
+            \Log::error('deleteMeta error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        return apiResponse2(0, 'login', 'please login');
-        return response()->json([], 422);
     }
 
     public function followToggle(Request $request, $id)
     {
-        // dd('ff') ;
-        $authUser = apiAuth();
-        validateParam($request->all(), [
-            'status' => 'required|boolean'
-        ]);
+        try {
+            $authUser = apiAuth();
+            validateParam($request->all(), [
+                'status' => 'required|boolean'
+            ]);
 
-        $status = $request->input('status');
+            $status = $request->input('status');
 
-        $user = User::where('id', $id)->first();
-        if (!$user) {
-            abort(404);
-        }
-        $followStatus = false;
-        $follow = Follow::where('follower', $authUser->id)
-            ->where('user_id', $user->id)
-            ->first();
+            $user = User::where('id', $id)->first();
+            if (!$user) {
+                abort(404);
+            }
+            $followStatus = false;
+            $follow = Follow::where('follower', $authUser->id)
+                ->where('user_id', $user->id)
+                ->first();
 
-        if ($status) {
+            if ($status) {
 
-            if (empty($follow)) {
-                Follow::create([
-                    'follower' => $authUser->id,
-                    'user_id' => $user->id,
-                    'status' => Follow::$accepted,
-                ]);
+                if (empty($follow)) {
+                    Follow::create([
+                        'follower' => $authUser->id,
+                        'user_id' => $user->id,
+                        'status' => Follow::$accepted,
+                    ]);
 
-                $followStatus = true;
+                    $followStatus = true;
+
+                }
+                return apiResponse2(1, 'followed', trans('api.user.followed'));
 
             }
-            return apiResponse2(1, 'followed', trans('api.user.followed'));
 
+            if (!empty($follow)) {
 
+                $follow->delete();
+                return apiResponse2(1, 'unfollowed', trans('api.user.unfollowed'));
+
+            }
+
+            return apiResponse2(0, 'not_followed', trans('api.user.not_followed'));
+        } catch (\Exception $e) {
+            \Log::error('followToggle error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        if (!empty($follow)) {
-
-            $follow->delete();
-            return apiResponse2(1, 'unfollowed', trans('api.user.unfollowed'));
-
-        }
-
-        return apiResponse2(0, 'not_followed', trans('api.user.not_followed'));
-
-
     }
 
     public function createImages($user, $img)
     {
-        $folderPath = "/" . $user->id . '/avatar';
+        try {
+            $folderPath = "/" . $user->id . '/avatar';
 
-        //     $image_parts = explode(";base64,", $img);
-        //   $image_type_aux = explode("image/", $image_parts[0]);
-        //   $image_type = $image_type_aux[1];
-        //  $image_base64 = base64_decode($image_parts[1]);
-        // $file = uniqid() . '.' . $image_type;
-
-        $file = uniqid() . '.' . $img->getClientOriginalExtension();
-        $storage_path = $img->storeAs($folderPath, $file);
-        return 'store/' . $storage_path;
-
-        //    Storage::disk('public')->put($folderPath . $file, $img);
-
-        //  return Storage::disk('public')->url($folderPath . $file);
+            $file = uniqid() . '.' . $img->getClientOriginalExtension();
+            $storage_path = $img->storeAs($folderPath, $file);
+            return 'store/' . $storage_path;
+        } catch (\Exception $e) {
+            \Log::error('createImages error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
 public function createImage($user, $img)
 {
     try {
         $folderPath = "/" . $user->id . '/avatar/';
-        
-        // Check if it's an UploadedFile object
+
         if ($img instanceof \Illuminate\Http\UploadedFile) {
-            // Get original filename without extension
+
             $originalName = pathinfo($img->getClientOriginalName(), PATHINFO_FILENAME);
-            
-            // Clean filename (remove special characters)
+
             $originalName = preg_replace('/[^A-Za-z0-9\-_]/', '_', $originalName);
-            
-            // Get extension
+
             $extension = $img->getClientOriginalExtension();
-            
-            // Create filename: originalname_timestamp.ext
+
             $file = $originalName . '.' . $extension;
-            
-            // Get file contents
+
             $fileContents = file_get_contents($img->getRealPath());
-            
-            // Upload to GCS
+
             Storage::disk('gcs')->put($folderPath . $file, $fileContents);
-            
+
             return Storage::disk('gcs')->url($folderPath . $file);
         }
-        
-        // Handle base64 string
+
         if (is_string($img) && strpos($img, 'data:image') === 0) {
             $image_parts = explode(";base64,", $img);
             $image_type_aux = explode("image/", $image_parts[0]);
             $image_type = $image_type_aux[1];
             $image_base64 = base64_decode($image_parts[1]);
             $file = uniqid() . '.' . $image_type;
-            
+
             Storage::disk('gcs')->put($folderPath . $file, $image_base64);
-            
+
             return Storage::disk('gcs')->url($folderPath . $file);
         }
-        
+
         return response()->json(['error' => 'Invalid image format'], 400);
-        
+
     } catch (\Exception $e) {
         \Log::error('Image upload failed: ' . $e->getMessage());
         return response()->json(['error' => 'Image upload failed: ' . $e->getMessage()], 500);
     }
 }
-
 
 }

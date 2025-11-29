@@ -15,7 +15,6 @@ class OfflineBank extends Model implements TranslatableContract
 
     protected $guarded = ['id'];
 
-
     public $translatedAttributes = ['title'];
 
     public function getTitleAttribute()

@@ -11,7 +11,6 @@ class SubscribeUse extends Model
     protected $dateFormat = 'U';
     protected $guarded = ['id'];
 
-
     public function subscribe()
     {
         return $this->belongsTo('App\Models\Subscribe', 'subscribe_id', 'id');

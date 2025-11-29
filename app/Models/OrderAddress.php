@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderAddress extends Model
 {
-    protected $table = 'order_address';  
+    protected $table = 'order_address';
 
   protected $fillable = [
         'order_id',
@@ -23,5 +23,5 @@ class OrderAddress extends Model
         'AddressType',
         'DeliveryInstructions',
     ];
-  
+
 }

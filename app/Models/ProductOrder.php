@@ -41,12 +41,11 @@ class ProductOrder extends Model
     {
         return $this->belongsTo('App\Models\Gift', 'gift_id', 'id');
     }
-    
+
        public function order()
     {
-      
+
         return $this->belongsTo(Order::class, 'sale_id', 'id');
     }
-    
- 
+
 }

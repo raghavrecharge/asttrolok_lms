@@ -33,7 +33,7 @@ class Badge extends Model implements TranslatableContract
     static function getUserBadges($user, $customBadges = false, $getNext = false)
     {
         $earnedBadges = [];
-        $nextBadges = []; // for normal user just register_date and for instructor and organization just sale_count
+        $nextBadges = [];
         $nextBadge = null;
         $badges = self::all();
         $badges = $badges->groupBy('type');

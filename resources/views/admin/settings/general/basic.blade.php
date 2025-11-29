@@ -83,7 +83,6 @@
                     <div class="text-muted text-small mt-1">{{ trans('admin/main.user_languages_lists_hint') }}</div>
                 </div>
 
-
                 <div class="form-group">
                     <label class="input-label d-block">{{ trans('admin/main.rtl_languages') }}</label>
                     <select name="value[rtl_languages][]" multiple class="form-control select2" data-placeholder="{{ trans('admin/main.rtl_languages') }}">
@@ -186,7 +185,6 @@
                     </label>
                     <div class="text-muted text-small mt-1">{{ trans('update.app_debugbar_hint') }}</div>
                 </div>
-
 
                 <button type="submit" class="btn btn-primary">{{ trans('admin/main.save_change') }}</button>
             </form>

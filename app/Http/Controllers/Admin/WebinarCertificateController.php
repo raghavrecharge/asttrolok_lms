@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Mixins\Certificate\MakeCertificate;
 use App\Models\Certificate;
@@ -13,46 +16,55 @@ class WebinarCertificateController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_course_certificate_list');
+        try {
+            $this->authorize('admin_course_certificate_list');
 
-        $query = Certificate::whereNotNull('webinar_id');
+            $query = Certificate::whereNotNull('webinar_id');
 
-        $query = $this->filters($query, $request);
+            $query = $this->filters($query, $request);
 
-        $certificates = $query->with(
-            [
-                'webinar',
-                'student',
-            ]
-        )->orderBy('created_at', 'desc')
-            ->paginate(10);
+            $certificates = $query->with(
+                [
+                    'webinar',
+                    'student',
+                ]
+            )->orderBy('created_at', 'desc')
+                ->paginate(10);
 
+            $data = [
+                'pageTitle' => trans('update.competition_certificates'),
+                'certificates' => $certificates,
+            ];
 
-        $data = [
-            'pageTitle' => trans('update.competition_certificates'),
-            'certificates' => $certificates,
-        ];
+            $teacher_ids = $request->get('teacher_ids');
+            $student_ids = $request->get('student_ids');
+            $webinarsIds = $request->get('webinars_ids');
 
-        $teacher_ids = $request->get('teacher_ids');
-        $student_ids = $request->get('student_ids');
-        $webinarsIds = $request->get('webinars_ids');
+            if (!empty($teacher_ids)) {
+                $data['teachers'] = User::select('id', 'full_name')
+                    ->whereIn('id', $teacher_ids)->get();
+            }
 
-        if (!empty($teacher_ids)) {
-            $data['teachers'] = User::select('id', 'full_name')
-                ->whereIn('id', $teacher_ids)->get();
+            if (!empty($student_ids)) {
+                $data['students'] = User::select('id', 'full_name')
+                    ->whereIn('id', $student_ids)->get();
+            }
+
+            if (!empty($webinarsIds)) {
+                $data['webinars'] = Webinar::select('id')
+                    ->whereIn('id', $webinarsIds)->get();
+            }
+
+            return view('admin.certificates.course_certificates', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        if (!empty($student_ids)) {
-            $data['students'] = User::select('id', 'full_name')
-                ->whereIn('id', $student_ids)->get();
-        }
-
-        if (!empty($webinarsIds)) {
-            $data['webinars'] = Webinar::select('id')
-                ->whereIn('id', $webinarsIds)->get();
-        }
-
-        return view('admin.certificates.course_certificates', $data);
     }
 
     private function filters($query, $request)
@@ -84,16 +96,26 @@ class WebinarCertificateController extends Controller
 
     public function show($certificateId)
     {
-        $this->authorize('admin_course_certificate_list');
+        try {
+            $this->authorize('admin_course_certificate_list');
 
-        $certificate = Certificate::findOrFail($certificateId);
+            $certificate = Certificate::findOrFail($certificateId);
 
-        if ($certificate->type == 'course') {
-            $makeCertificate = new MakeCertificate();
+            if ($certificate->type == 'course') {
+                $makeCertificate = new MakeCertificate();
 
-            return $makeCertificate->makeCourseCertificate($certificate);
+                return $makeCertificate->makeCourseCertificate($certificate);
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('show error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
     }
 }

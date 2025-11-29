@@ -5,7 +5,7 @@
                 {{ csrf_field() }}
                 <input type="hidden" name="name" value="home_hero2">
                 <input type="hidden" name="page" value="personalization">
-@php 
+@php
 if (!empty($itemValue) and $itemValue['home_slider']) {
     $itemValue1 = $itemValue;
 }else {
@@ -115,7 +115,7 @@ if (!empty($itemValue) and $itemValue['home_slider']) {
                 <td>{{ $row->button_text }}</td>
                 <td>{{ $row->button_url }}</td>
                 <td>{{ $row->button_color }}</td>
-               
+
                 <td>
                     @can('admin_settings_personalization')
                         <a href="{{ getAdminPanelUrl() }}/settings/home_slider/{{ $row['id'] }}/edit" class="btn-sm" data-toggle="tooltip" data-placement="top" title="{{ trans('admin/main.edit') }}">

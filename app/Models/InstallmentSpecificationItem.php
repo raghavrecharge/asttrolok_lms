@@ -12,5 +12,4 @@ class InstallmentSpecificationItem extends Model
     public $timestamps = false;
     protected $guarded = ['id'];
 
-
 }

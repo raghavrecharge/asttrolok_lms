@@ -149,7 +149,6 @@
                             <span class="badge badge-danger badge-popular px-15 py-5">{{ trans('update.percent_off', ['percent' => $specialOffer->percent]) }}</span>
                         @endif
 
-
                         <div class="plan-icon">
                             <img src="{{ config('app.img_dynamic_url') }}{{ $package->icon }}" class="img-cover" alt="">
                         </div>

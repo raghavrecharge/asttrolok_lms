@@ -1,7 +1,7 @@
 <div class="tab-pane mt-3 fade  show active" id="socials" role="tabpanel" aria-labelledby="socials-tab">
     <div class="row">
         <div class="col-12 col-md-8 col-lg-6">
-          
+
             <form action="{{ getAdminPanelUrl() }}/settings/sidebanner/store" method="post">
                 {{ csrf_field() }}
 

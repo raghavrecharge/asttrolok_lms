@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Bundle;
 use App\Models\Translation\WebinarExtraDescriptionTranslation;
@@ -15,56 +18,66 @@ class WebinarExtraDescriptionController extends Controller
 {
     public function store(Request $request)
     {
-        $user = auth()->user();
-        $data = $request->get('ajax')['new'];
+        try {
+            $user = auth()->user();
+            $data = $request->get('ajax')['new'];
 
-        $validator = Validator::make($data, [
-            'type' => 'required|in:' . implode(',', WebinarExtraDescription::$types),
-            'value' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $canStore = $this->checkItem($user, $data);
-
-        if ($canStore) {
-            $columnName = !empty($data['webinar_id']) ? 'webinar_id' : 'upcoming_course_id';
-            $columnValue = !empty($data['webinar_id']) ? $data['webinar_id'] : $data['upcoming_course_id'];
-
-            $order = WebinarExtraDescription::query()
-                    ->where($columnName, $columnValue)
-                    ->where('type', $data['type'])
-                    ->count() + 1;
-
-            $webinarExtraDescription = WebinarExtraDescription::create([
-                'creator_id' => $user->id,
-                'webinar_id' => !empty($data['webinar_id']) ? $data['webinar_id'] : null,
-                'upcoming_course_id' => !empty($data['upcoming_course_id']) ? $data['upcoming_course_id'] : null,
-                'type' => $data['type'],
-                'order' => $order,
-                'created_at' => time()
+            $validator = Validator::make($data, [
+                'type' => 'required|in:' . implode(',', WebinarExtraDescription::$types),
+                'value' => 'required',
             ]);
 
-            if (!empty($webinarExtraDescription)) {
-                WebinarExtraDescriptionTranslation::updateOrCreate([
-                    'webinar_extra_description_id' => $webinarExtraDescription->id,
-                    'locale' => mb_strtolower($data['locale']),
-                ], [
-                    'value' => $data['value'],
-                ]);
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
             }
 
-            return response()->json([
-                'code' => 200,
-            ], 200);
-        }
+            $canStore = $this->checkItem($user, $data);
 
-        abort(403);
+            if ($canStore) {
+                $columnName = !empty($data['webinar_id']) ? 'webinar_id' : 'upcoming_course_id';
+                $columnValue = !empty($data['webinar_id']) ? $data['webinar_id'] : $data['upcoming_course_id'];
+
+                $order = WebinarExtraDescription::query()
+                        ->where($columnName, $columnValue)
+                        ->where('type', $data['type'])
+                        ->count() + 1;
+
+                $webinarExtraDescription = WebinarExtraDescription::create([
+                    'creator_id' => $user->id,
+                    'webinar_id' => !empty($data['webinar_id']) ? $data['webinar_id'] : null,
+                    'upcoming_course_id' => !empty($data['upcoming_course_id']) ? $data['upcoming_course_id'] : null,
+                    'type' => $data['type'],
+                    'order' => $order,
+                    'created_at' => time()
+                ]);
+
+                if (!empty($webinarExtraDescription)) {
+                    WebinarExtraDescriptionTranslation::updateOrCreate([
+                        'webinar_extra_description_id' => $webinarExtraDescription->id,
+                        'locale' => mb_strtolower($data['locale']),
+                    ], [
+                        'value' => $data['value'],
+                    ]);
+                }
+
+                return response()->json([
+                    'code' => 200,
+                ], 200);
+            }
+
+            abort(403);
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function checkItem($user, $data)
@@ -90,73 +103,93 @@ class WebinarExtraDescriptionController extends Controller
 
     public function update(Request $request, $id)
     {
-        $user = auth()->user();
-        $data = $request->get('ajax')[$id];
+        try {
+            $user = auth()->user();
+            $data = $request->get('ajax')[$id];
 
-        $validator = Validator::make($data, [
-            'type' => 'required|in:' . implode(',', WebinarExtraDescription::$types),
-            'value' => 'required'
-        ]);
+            $validator = Validator::make($data, [
+                'type' => 'required|in:' . implode(',', WebinarExtraDescription::$types),
+                'value' => 'required'
+            ]);
 
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $canStore = $this->checkItem($user, $data);
-
-        if ($canStore) {
-            $columnName = !empty($data['webinar_id']) ? 'webinar_id' : 'upcoming_course_id';
-            $columnValue = !empty($data['webinar_id']) ? $data['webinar_id'] : $data['upcoming_course_id'];
-
-            $webinarExtraDescription = WebinarExtraDescription::where('id', $id)
-                ->where(function ($query) use ($user, $columnName, $columnValue) {
-                    $query->where('creator_id', $user->id);
-                    $query->orWhere($columnName, $columnValue);
-                })
-                ->first();
-
-            if (!empty($webinarExtraDescription)) {
-
-                WebinarExtraDescriptionTranslation::updateOrCreate([
-                    'webinar_extra_description_id' => $webinarExtraDescription->id,
-                    'locale' => mb_strtolower($data['locale']),
-                ], [
-                    'value' => $data['value'],
-                ]);
-
-                return response()->json([
-                    'code' => 200,
-                ], 200);
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
             }
-        }
 
-        abort(403);
+            $canStore = $this->checkItem($user, $data);
+
+            if ($canStore) {
+                $columnName = !empty($data['webinar_id']) ? 'webinar_id' : 'upcoming_course_id';
+                $columnValue = !empty($data['webinar_id']) ? $data['webinar_id'] : $data['upcoming_course_id'];
+
+                $webinarExtraDescription = WebinarExtraDescription::where('id', $id)
+                    ->where(function ($query) use ($user, $columnName, $columnValue) {
+                        $query->where('creator_id', $user->id);
+                        $query->orWhere($columnName, $columnValue);
+                    })
+                    ->first();
+
+                if (!empty($webinarExtraDescription)) {
+
+                    WebinarExtraDescriptionTranslation::updateOrCreate([
+                        'webinar_extra_description_id' => $webinarExtraDescription->id,
+                        'locale' => mb_strtolower($data['locale']),
+                    ], [
+                        'value' => $data['value'],
+                    ]);
+
+                    return response()->json([
+                        'code' => 200,
+                    ], 200);
+                }
+            }
+
+            abort(403);
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function destroy(Request $request, $id)
     {
-        $user = auth()->user();
-        $webinarExtraDescription = WebinarExtraDescription::where('id', $id)
-            ->first();
+        try {
+            $user = auth()->user();
+            $webinarExtraDescription = WebinarExtraDescription::where('id', $id)
+                ->first();
 
-        if (!empty($webinarExtraDescription)) {
-            $item = null;
-            if (!empty($webinarExtraDescription->webinar_id)) {
-                $item = Webinar::query()->find($webinarExtraDescription->webinar_id);
-            } else if (!empty($webinarExtraDescription->upcoming_course_id)) {
-                $item = UpcomingCourse::find($webinarExtraDescription->upcoming_course_id);
+            if (!empty($webinarExtraDescription)) {
+                $item = null;
+                if (!empty($webinarExtraDescription->webinar_id)) {
+                    $item = Webinar::query()->find($webinarExtraDescription->webinar_id);
+                } else if (!empty($webinarExtraDescription->upcoming_course_id)) {
+                    $item = UpcomingCourse::find($webinarExtraDescription->upcoming_course_id);
+                }
+
+                if ($webinarExtraDescription->creator_id == $user->id or (!empty($item) and $item->canAccess($user))) {
+                    $webinarExtraDescription->delete();
+                }
             }
 
-            if ($webinarExtraDescription->creator_id == $user->id or (!empty($item) and $item->canAccess($user))) {
-                $webinarExtraDescription->delete();
-            }
+            return response()->json([
+                'code' => 200
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return response()->json([
-            'code' => 200
-        ], 200);
     }
 }

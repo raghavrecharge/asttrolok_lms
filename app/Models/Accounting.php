@@ -260,7 +260,6 @@ class Accounting extends Model
         $commissionPrice = $orderItem->commission_price;
         $affiliateCommissionPrice = 0;
 
-
         $referralSettings = getReferralSettings();
         $affiliateStatus = (!empty($referralSettings) and !empty($referralSettings['status']));
         $affiliateUser = null;
@@ -377,7 +376,6 @@ class Accounting extends Model
             ]);
         }
     }
-
 
     public static function refundAccounting($sale, $productOrderId = null)
     {
@@ -515,7 +513,6 @@ class Accounting extends Model
         return true;
     }
 
-
     public static function createAccountingForSubscribe($orderItem, $type = null)
     {
         self::createAccountingBuyer($orderItem, $type);
@@ -550,7 +547,6 @@ class Accounting extends Model
 
         sendNotification('promotion_plan', $notifyOptions, $orderItem->user_id);
     }
-
 
     public static function createAccountingSystemForPromotion($orderItem)
     {
@@ -672,7 +668,6 @@ class Accounting extends Model
         ]);
     }
 
-
     public static function createAccountingForInstallmentPayment($orderItem, $type = null)
     {
         self::createAccountingBuyer($orderItem, $type);
@@ -699,14 +694,13 @@ class Accounting extends Model
         ]);
     }
 
-
     public static function createRegistrationBonusUserAmountAccounting($userId, $amount, $typeAccount)
     {
         $check = Accounting::query()->where('user_id', $userId)
             ->where('is_registration_bonus', true)
             ->first();
 
-        if (!empty($amount) and empty($check)) { //
+        if (!empty($amount) and empty($check)) {
             Accounting::updateOrCreate([
                 'user_id' => $userId,
                 'is_registration_bonus' => true,

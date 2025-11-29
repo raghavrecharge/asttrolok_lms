@@ -887,12 +887,11 @@ height: 100%;
 
                  @foreach($featureWebinars as $webinar)
               @php
-              //$user = auth()->user();
-              //if($user->id==1504){
+
               if($webinar->id==2069){
 
               $name= "Upcomming Course";
-              //}
+
               }
               @endphp
 
@@ -1141,12 +1140,7 @@ height: 100%;
         var offlineSuccess = '{{ trans('panel.offline_success') }}';
         var $chartDataMonths = @json($monthlyChart['months']);
         var $chartData = @json($monthlyChart['data']);
-//         var divHeight = $('.owl-stage').height();
-//         alert(divHeight);
-// $('.sidebar-ads').css('max-height', divHeight+'px');
-//  var divHeight = $('.sidebar-ads').height();
-//         // alert(divHeight);
-// $('#slider1').css('min-height', divHeight+'px');
+
     </script>
 
     <script src="{{ config('app.js_css_url') }}/assets/default/js/panel/dashboard.min.js"></script>

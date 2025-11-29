@@ -1086,7 +1086,7 @@ $count_homesection=0;
             document.getElementById('popup').style.display = 'block';
         }
         function closePopup() {
-            // Hide the popup
+
             document.getElementById('popup').style.display = 'none';
         }
         </script>

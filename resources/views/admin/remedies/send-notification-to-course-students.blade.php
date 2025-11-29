@@ -42,7 +42,6 @@
                             <div class="invalid-feedback">@error('message') {{ $message }} @enderror</div>
                         </div>
 
-
                         <div class="form-group">
                             <div class="col-md-12">
                                 <button class="btn btn-primary" type="submit">{{ trans('notification.send_notification') }}</button>

@@ -203,7 +203,6 @@
         </div>
     </section>
 
-
     <section>
         <div class="row">
             <div class="col-12 col-md-6 mt-20">
@@ -340,7 +339,6 @@
             makePieChart('assignmentsStatusChart', @json($assignmentsStatusChart['labels']),@json($assignmentsStatusChart['data']));
             @endif
 
-
             @if(!empty($monthlySalesChart))
             handleMonthlySalesChart(@json($monthlySalesChart['labels']),@json($monthlySalesChart['data']));
             @endif
@@ -349,7 +347,6 @@
             handleCourseProgressChart(@json($courseProgressLineChart['labels']),@json($courseProgressLineChart['data']));
             @endif
 
-            // handleCourseProgressChartChart();
         })(jQuery)
     </script>
 @endpush

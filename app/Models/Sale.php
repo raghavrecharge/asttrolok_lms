@@ -30,7 +30,7 @@ class Sale extends Model
     {
         return $this->belongsTo('App\Models\Webinar', 'webinar_id', 'id');
     }
-    
+
     public function installment()
     {
         return $this->belongsTo('App\Models\InstallmentOrderPayment', 'installment_payment_id', 'id');
@@ -174,7 +174,7 @@ if(!empty($orderItem->webinar_id)){
         $date=time();
 	 date_default_timezone_set('Asia/Kolkata');
 	  $webhookurl='https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjUwNTZmMDYzMDA0MzE1MjZmNTUzMzUxMzci_pc';
-// Collection object
+
 $webhookdata = [
   'u_id' => $u_id,
   'u_name' => $u_name,
@@ -183,26 +183,21 @@ $webhookdata = [
   'webinar_title' => $webinar_title,
   'price' => $price,
   'dateTime' => date("Y/m/d H:i")
-  
-  
-];
-// Initializes a new cURL session
-$webhookcurl = curl_init($webhookurl);
-// Set the CURLOPT_RETURNTRANSFER option to true
-curl_setopt($webhookcurl, CURLOPT_RETURNTRANSFER, true);
-// Set the CURLOPT_POST option to true for POST request
-curl_setopt($webhookcurl, CURLOPT_POST, true);
-// Set the request data as JSON using json_encode function
-curl_setopt($webhookcurl, CURLOPT_POSTFIELDS,  json_encode($webhookdata));
-// Set custom headers for RapidAPI Auth and Content-Type header
 
-// Execute cURL request with all previous settings
+];
+
+$webhookcurl = curl_init($webhookurl);
+
+curl_setopt($webhookcurl, CURLOPT_RETURNTRANSFER, true);
+
+curl_setopt($webhookcurl, CURLOPT_POST, true);
+
+curl_setopt($webhookcurl, CURLOPT_POSTFIELDS,  json_encode($webhookdata));
+
 $webhookresponse = curl_exec($webhookcurl);
-// Close cURL session
+
 curl_close($webhookcurl);
-	
-// print_r($webhookdata);die();
-        
+
     }else{
         $u_id=$orderItem->user_id;
         $u_name = $orderItem->user->full_name;
@@ -213,7 +208,7 @@ curl_close($webhookcurl);
         $date=time();
 	 date_default_timezone_set('Asia/Kolkata');
 	  $webhookurl='https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjUwNTZmMDYzZTA0MzU1MjZhNTUzYzUxMzYi_pc';
-// Collection object
+
 $webhookdata = [
   'u_id' => $u_id,
   'u_name' => $u_name,
@@ -222,26 +217,21 @@ $webhookdata = [
   'webinar_title' => $webinar_title,
   'price' => $price,
   'dateTime' => date("Y/m/d H:i")
-  
-  
-];
-// Initializes a new cURL session
-$webhookcurl = curl_init($webhookurl);
-// Set the CURLOPT_RETURNTRANSFER option to true
-curl_setopt($webhookcurl, CURLOPT_RETURNTRANSFER, true);
-// Set the CURLOPT_POST option to true for POST request
-curl_setopt($webhookcurl, CURLOPT_POST, true);
-// Set the request data as JSON using json_encode function
-curl_setopt($webhookcurl, CURLOPT_POSTFIELDS,  json_encode($webhookdata));
-// Set custom headers for RapidAPI Auth and Content-Type header
 
-// Execute cURL request with all previous settings
+];
+
+$webhookcurl = curl_init($webhookurl);
+
+curl_setopt($webhookcurl, CURLOPT_RETURNTRANSFER, true);
+
+curl_setopt($webhookcurl, CURLOPT_POST, true);
+
+curl_setopt($webhookcurl, CURLOPT_POSTFIELDS,  json_encode($webhookdata));
+
 $webhookresponse = curl_exec($webhookcurl);
-// Close cURL session
+
 curl_close($webhookcurl);
-	
-// print_r($webhookdata);die();
-        
+
     }
 }
 
@@ -255,7 +245,6 @@ curl_close($webhookcurl);
         $buyReward = RewardAccounting::calculateScore(Reward::BUY, $orderItem->total_amount);
         RewardAccounting::makeRewardAccounting($orderItem->user_id, $buyReward, Reward::BUY);
 
-        /* Registration Bonus Accounting */
         $registrationBonusAccounting = new RegistrationBonusAccounting();
         $registrationBonusAccounting->checkBonusAfterSale($orderItem->user_id);
 
@@ -308,7 +297,7 @@ curl_close($webhookcurl);
             sendNotification('product_new_purchase', $notifyOptions, $orderItem->user_id);
             sendNotification('new_store_order', $notifyOptions, 1);
         } elseif (!empty($orderItem->installment_payment_id)) {
-            // TODO:: installment notification
+
         } else {
             $notifyOptions = [
                 '[c.title]' => $title,
@@ -326,43 +315,6 @@ curl_close($webhookcurl);
                 '[time.date]' => dateTimeFormat(time(), 'j M Y H:i'),
             ];
             sendNotification("new_course_enrollment", $notifyOptions, 1);
-            
-//             try {
-//     $vboutService = new VboutService();
-//         $listId = '143033';
-        
-//         $contactData = [
-//             'email' => 'astrolok.vedic@gmail.com',
-//             'fields' => [
-//             '941988' => $orderItem->user->full_name,
-//              '941989' => $title,
-//               '941991' => handlePrice($orderItem->total_amount),
-//               '941992' => dateTimeFormat(time(), 'j M Y H:i'),
-//             ],
-//         ];
-//         $result = $vboutService->addContactToList($listId, $contactData);
-// } catch (\Exception $e) {
-
-// }
-//  try {
-//  $vboutService1 = new VboutService();
-//         $listId1 = '143046';
-        
-//         $contactData1 = [
-//             'email' => $orderItem->user->email,
-//             'fields' => [
-//             '941988' => $orderItem->user->full_name,
-//              '941989' => $title,
-//               '941991' => handlePrice($orderItem->total_amount),
-//               '941992' => dateTimeFormat(time(), 'j M Y H:i'),
-//             ],
-//         ];
-//         $result1 = $vboutService1->addContactToList($listId1, $contactData1);
-// } catch (\Exception $e) {
-
-// }
-            // sendNotificationToEmail("new_course_enrollment", $notifyOptions, $orderItem->user->email);
-            //     sendNotificationToEmail("new_course_enrollment", $notifyOptions, 'asttrolok.vedic@gmail.com');
 
         }
 

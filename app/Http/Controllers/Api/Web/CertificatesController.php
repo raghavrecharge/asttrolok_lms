@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Web;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Api\Certificate;
 use Illuminate\Http\Request;
@@ -10,33 +13,42 @@ class CertificatesController extends Controller
 {
     public function checkValidate(Request $request)
     {
-        validateParam($request->all(), [
-            'certificate_id' => 'required|numeric',
-        ]);
+        try {
+            validateParam($request->all(), [
+                'certificate_id' => 'required|numeric',
+            ]);
 
-        $certificateId = $request->input('certificate_id');
+            $certificateId = $request->input('certificate_id');
 
-        $certificate = Certificate::where('id', $certificateId)->first();
+            $certificate = Certificate::where('id', $certificateId)->first();
 
-        if (!empty($certificate)) {
-            $result = [
-                'student' => $certificate->student->full_name,
-                'webinar_title' => $certificate->quiz->webinar->title,
-                'date' => dateTimeFormat($certificate->created_at, 'j F Y'),
-            ];
+            if (!empty($certificate)) {
+                $result = [
+                    'student' => $certificate->student->full_name,
+                    'webinar_title' => $certificate->quiz->webinar->title,
+                    'date' => dateTimeFormat($certificate->created_at, 'j F Y'),
+                ];
+                return apiResponse2(1, 'retrieved', 'api.public.retrieved',
+                    [
+                        'is_valid' => true,
+                        'certificate' => $certificate->details
+                    ]
+                );
+            }
             return apiResponse2(1, 'retrieved', 'api.public.retrieved',
                 [
-                    'is_valid' => true,
-                    'certificate' => $certificate->details
+                    'is_valid' => false,
+                    'certificate' => null
                 ]
             );
+        } catch (\Exception $e) {
+            \Log::error('checkValidate error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        return apiResponse2(1, 'retrieved', 'api.public.retrieved',
-            [
-                'is_valid' => false,
-                'certificate' => null
-            ]
-        );
-
     }
 }

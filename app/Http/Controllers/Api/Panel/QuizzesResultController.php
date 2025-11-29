@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Api\Controller;
 use App\Models\Api\Quiz;
 use App\Models\Reward;
@@ -18,425 +21,472 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
-
 class QuizzesResultController extends Controller
 {
 
     public function myResults(Request $request)
 {
-    $user = apiAuth();
+        try {
+            $user = apiAuth();
 
-    $query = QuizzesResult::where('user_id', $user->id);
+            $query = QuizzesResult::where('user_id', $user->id);
 
-    $quizResultsCount = deepClone($query)->count();
-    $passedCount = deepClone($query)->where('status', QuizzesResult::$passed)->count();
-    $failedCount = deepClone($query)->where('status', QuizzesResult::$failed)->count();
-    $waitingCount = deepClone($query)->where('status', QuizzesResult::$waiting)->count();
+            $quizResultsCount = deepClone($query)->count();
+            $passedCount = deepClone($query)->where('status', QuizzesResult::$passed)->count();
+            $failedCount = deepClone($query)->where('status', QuizzesResult::$failed)->count();
+            $waitingCount = deepClone($query)->where('status', QuizzesResult::$waiting)->count();
 
-    $query = $this->resultFilters($request, deepClone($query));
+            $query = $this->resultFilters($request, deepClone($query));
 
-    $quizResults = $query->with([
-        'quiz' => function ($query) {
-            $query->with('webinar');
+            $quizResults = $query->with([
+            'quiz' => function ($query) {
+                $query->with('webinar');
+            }
+            ])->orderBy('created_at', 'desc')->groupBy('quiz_id');
+
+            $result = $quizResults->first();
+            $quiz = $result->quiz ?? null;
+
+            $title = null;
+            if ($quiz && $quiz->webinar) {
+            $title = $quiz->webinar->title;
+            }
+
+            $quizResult = QuizzesResult::with('quiz')->where('user_id', $user->id)->get();
+
+            return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), [
+            'pageTitle' => trans('quiz.my_results'),
+            'title' => $title,
+            'quizzesResults' => $quizResult,
+            'quizzesResultsCount' => $quizResultsCount,
+            'passedCount' => $passedCount,
+            'failedCount' => $failedCount,
+            'waitingCount' => $waitingCount
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('myResults error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-    ])->orderBy('created_at', 'desc')->groupBy('quiz_id');
-
-    $result = $quizResults->first();
-    $quiz = $result->quiz ?? null;
-
-    $title = null;
-    if ($quiz && $quiz->webinar) {
-        $title = $quiz->webinar->title;
     }
 
-    $quizResult = QuizzesResult::with('quiz')->where('user_id', $user->id)->get();
-
-    return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), [
-        'pageTitle' => trans('quiz.my_results'),
-        'title' => $title,
-        'quizzesResults' => $quizResult,
-        'quizzesResultsCount' => $quizResultsCount,
-        'passedCount' => $passedCount,
-        'failedCount' => $failedCount,
-        'waitingCount' => $waitingCount
-    ]);
-}
-
-
-    
  public function resultFilters(Request $request, $query)
     {
-        $from = $request->get('from', null);
-        $to = $request->get('to', null);
-        $quiz_id = $request->get('quiz_id', null);
-        $total_mark = $request->get('total_mark', null);
-        $status = $request->get('status', null);
-        $user_id = $request->get('user_id', null);
-        $instructor = $request->get('instructor', null);
-        $open_results = $request->get('open_results', null);
+        try {
+            $from = $request->get('from', null);
+            $to = $request->get('to', null);
+            $quiz_id = $request->get('quiz_id', null);
+            $total_mark = $request->get('total_mark', null);
+            $status = $request->get('status', null);
+            $user_id = $request->get('user_id', null);
+            $instructor = $request->get('instructor', null);
+            $open_results = $request->get('open_results', null);
 
-        $query = fromAndToDateFilter($from, $to, $query, 'created_at');
+            $query = fromAndToDateFilter($from, $to, $query, 'created_at');
 
-        if (!empty($quiz_id) and $quiz_id != 'all') {
-            $query->where('quiz_id', $quiz_id);
+            if (!empty($quiz_id) and $quiz_id != 'all') {
+                $query->where('quiz_id', $quiz_id);
+            }
+
+            if ($total_mark) {
+                $query->where('total_mark', $total_mark);
+            }
+
+            if (!empty($user_id) and $user_id != 'all') {
+                $query->where('user_id', $user_id);
+            }
+
+            if ($instructor) {
+                $userIds = User::whereIn('role_name', [Role::$teacher, Role::$organization])
+                    ->where('full_name', 'like', '%' . $instructor . '%')
+                    ->pluck('id')->toArray();
+
+                $query->whereIn('creator_id', $userIds);
+            }
+
+            if ($status and $status != 'all') {
+                $query->where('status', strtolower($status));
+            }
+
+            if (!empty($open_results)) {
+                $query->where('status', 'waiting');
+            }
+
+            return $query;
+        } catch (\Exception $e) {
+            \Log::error('resultFilters error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        if ($total_mark) {
-            $query->where('total_mark', $total_mark);
-        }
-
-        if (!empty($user_id) and $user_id != 'all') {
-            $query->where('user_id', $user_id);
-        }
-
-        if ($instructor) {
-            $userIds = User::whereIn('role_name', [Role::$teacher, Role::$organization])
-                ->where('full_name', 'like', '%' . $instructor . '%')
-                ->pluck('id')->toArray();
-
-            $query->whereIn('creator_id', $userIds);
-        }
-
-        if ($status and $status != 'all') {
-            $query->where('status', strtolower($status));
-        }
-
-        if (!empty($open_results)) {
-            $query->where('status', 'waiting');
-        }
-
-        return $query;
     }
     public function myStudentResult(Request $request)
     {
-        $user = apiAuth();
-        $quizzes_id = Quiz::where('creator_id', $user->id)
-            ->where('status', 'active')
-            ->get()->pluck('id')->toArray();
+        try {
+            $user = apiAuth();
+            $quizzes_id = Quiz::where('creator_id', $user->id)
+                ->where('status', 'active')
+                ->pluck('id')->toArray();
 
-        $quizResults = QuizzesResult::whereIn('quiz_id', $quizzes_id)->handleFilters()
-            ->orderBy('created_at', 'desc')
-            ->get()->map(function ($quizResult) {
-                return $quizResult->details;
-            });
-        return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), [
-            'results' => $quizResults
-        ]);
-
+            $quizResults = QuizzesResult::whereIn('quiz_id', $quizzes_id)->handleFilters()
+                ->orderBy('created_at', 'desc')
+                ->get()->map(function ($quizResult) {
+                    return $quizResult->details;
+                });
+            return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), [
+                'results' => $quizResults
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('myStudentResult error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function status($quizResultId)
     {
-        $user = apiAuth();
+        try {
+            $user = apiAuth();
 
-        $quizResult = QuizzesResult::where('id', $quizResultId)
-            ->where('user_id', $user->id)
-            ->first();
+            $quizResult = QuizzesResult::where('id', $quizResultId)
+                ->where('user_id', $user->id)
+                ->first();
 
-        if (!$quizResult) {
-            return apiResponse2(0, 'failed', 'Data Not Found');
+            if (!$quizResult) {
+                return apiResponse2(0, 'failed', 'Data Not Found');
+            }
+
+            return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), [
+                'result' => $quizResult->details
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('status error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), [
-            'result' => $quizResult->details
-        ]);
-
     }
 
     public function start(Request $request, $id)
     {
-        
-        $user = apiAuth();
-        $quiz = Quiz::find($id);
-        if (!$quiz) {
-           return response()->json(['status' => 'failed', 'message' => 'data not Found'], 404);
+        try {
+            $user = apiAuth();
+            $quiz = Quiz::find($id);
+            if (!$quiz) {
+               return response()->json(['status' => 'failed', 'message' => 'data not Found'], 404);
+            }
+            $auth_can_take_quiz_status = $quiz->auth_can_take_quiz_status;
+
+            if ($auth_can_take_quiz_status != 'ok') {
+                return apiResponse2(0, $auth_can_take_quiz_status, 'Maximum Attempts Reached');
+            }
+
+            $userQuizDone = QuizzesResult::where('quiz_id', $quiz->id)
+                ->where('user_id', $user->id)
+                ->get();
+
+            $newQuizStart = QuizzesResult::create([
+                'quiz_id' => $quiz->id,
+                'user_id' => $user->id,
+                'results' => '',
+                'user_grade' => 0,
+                'status' => 'waiting',
+                'created_at' => time()
+            ]);
+
+            return apiResponse2(1, 'stored', trans('api.public.stored'),
+                [
+                    'quiz_result_id' => $newQuizStart->id,
+                    'quiz' => $quiz->details, 'attempt_number' => $userQuizDone->count() + 1]);
+        } catch (\Exception $e) {
+            \Log::error('start error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        $auth_can_take_quiz_status = $quiz->auth_can_take_quiz_status;
-
-        if ($auth_can_take_quiz_status != 'ok') {
-            return apiResponse2(0, $auth_can_take_quiz_status, 'Maximum Attempts Reached');
-        }
-
-        $userQuizDone = QuizzesResult::where('quiz_id', $quiz->id)
-            ->where('user_id', $user->id)
-            ->get();
-
-        $newQuizStart = QuizzesResult::create([
-            'quiz_id' => $quiz->id,
-            'user_id' => $user->id,
-            'results' => '',
-            'user_grade' => 0,
-            'status' => 'waiting',
-            'created_at' => time()
-        ]);
-
-        return apiResponse2(1, 'stored', trans('api.public.stored'),
-            [
-                'quiz_result_id' => $newQuizStart->id,
-                'quiz' => $quiz->details, 'attempt_number' => $userQuizDone->count() + 1]);
-
-
     }
 
     public function quizzesStoreResult(Request $request, $id)
     {
+        try {
+            $user = apiAuth();
+            $quiz = Quiz::where('id', $id)->first();
 
+            if(empty($quiz)){
+            return apiResponse2(0, 'failed', 'Data Not Found');
+            }
 
-        $user = apiAuth();
-        $quiz = Quiz::where('id', $id)->first();
-        // abort_unless($quiz, 404);
-        
-        if(empty($quiz)){
-    return apiResponse2(0, 'failed', 'Data Not Found');
-}
+            validateParam($request->all(), [
+                'quiz_result_id' => [
+                    'required', Rule::exists('quizzes_results', 'id')->where('user_id', $user->id)
+                ],
+                'answer_sheet' => ['nullable', 'array', 'min:0'],
 
-        validateParam($request->all(), [
-            'quiz_result_id' => [
-                'required', Rule::exists('quizzes_results', 'id')->where('user_id', $user->id)
-            ],
-            'answer_sheet' => ['nullable', 'array', 'min:0'],
+                'answer_sheet.*.question_id' => ['required', Rule::exists('quizzes_questions', 'id')
+                    ->where('quiz_id', $quiz->id)
+                ],
+                'answer_sheet.*.answer' => ['nullable',
 
-            'answer_sheet.*.question_id' => ['required', Rule::exists('quizzes_questions', 'id')
-                ->where('quiz_id', $quiz->id)
-            ],
-            'answer_sheet.*.answer' => ['nullable',
+                ],
 
-                // Rule::exists('quizzes_questions_answers', 'id')
+            ]);
 
-            ],
+            $auth_can_take_quiz_status = $quiz->auth_can_take_quiz_status;
 
-        ]);
+            $answer_sheet = $request->get('answer_sheet');
+            $quizResultId = $request->get('quiz_result_id');
 
-        $auth_can_take_quiz_status = $quiz->auth_can_take_quiz_status;
+            $questionn = [];
+            foreach ($answer_sheet as $sheet) {
 
+                $questionn[$sheet['question_id']] = [
+                    'answer' => $sheet['answer']
+                ];
+            }
 
-        $answer_sheet = $request->get('answer_sheet');
-        $quizResultId = $request->get('quiz_result_id');
+            if ($quiz) {
+                $results = $questionn;
 
-        $questionn = [];
-        foreach ($answer_sheet as $sheet) {
+                if (!empty($quizResultId)) {
 
-            $questionn[$sheet['question_id']] = [
-                'answer' => $sheet['answer']
-            ];
-        }
-        //  dd($questionn);
+                    $quizResult = QuizzesResult::where('id', $quizResultId)
+                        ->where('user_id', $user->id)
+                        ->first();
 
+                    if (!empty($quizResult)) {
 
-        if ($quiz) {
-            $results = $questionn;
+                        $passMark = $quiz->pass_mark;
+                        $totalMark = 0;
+                        $status = '';
 
-            if (!empty($quizResultId)) {
+                        if (!empty($results)) {
+                            foreach ($results as $questionId => $result) {
 
-                $quizResult = QuizzesResult::where('id', $quizResultId)
-                    ->where('user_id', $user->id)
-                    ->first();
+                                if (!is_array($result)) {
+                                    unset($results[$questionId]);
 
-                if (!empty($quizResult)) {
+                                } else {
 
-                    $passMark = $quiz->pass_mark;
-                    $totalMark = 0;
-                    $status = '';
-
-                    if (!empty($results)) {
-                        foreach ($results as $questionId => $result) {
-
-                            if (!is_array($result)) {
-                                unset($results[$questionId]);
-
-                            } else {
-
-                                $question = QuizzesQuestion::where('id', $questionId)
-                                    ->where('quiz_id', $quiz->id)
-                                    ->first();
-
-                                if ($question and !empty($result['answer'])) {
-                                    $answer = QuizzesQuestionsAnswer::where('id', $result['answer'])
-                                        ->where('question_id', $question->id)
-                                        ->where('creator_id', $quiz->creator_id)
+                                    $question = QuizzesQuestion::where('id', $questionId)
+                                        ->where('quiz_id', $quiz->id)
                                         ->first();
 
-                                    $results[$questionId]['status'] = false;
-                                    $results[$questionId]['grade'] = $question->grade;
+                                    if ($question and !empty($result['answer'])) {
+                                        $answer = QuizzesQuestionsAnswer::where('id', $result['answer'])
+                                            ->where('question_id', $question->id)
+                                            ->where('creator_id', $quiz->creator_id)
+                                            ->first();
 
-                                    if ($answer and $answer->correct) {
-                                        $results[$questionId]['status'] = true;
-                                        $totalMark += (int)$question->grade;
-                                    }
+                                        $results[$questionId]['status'] = false;
+                                        $results[$questionId]['grade'] = $question->grade;
 
-                                    if ($question->type == 'descriptive') {
-                                        $status = 'waiting';
+                                        if ($answer and $answer->correct) {
+                                            $results[$questionId]['status'] = true;
+                                            $totalMark += (int)$question->grade;
+                                        }
+
+                                        if ($question->type == 'descriptive') {
+                                            $status = 'waiting';
+                                        }
                                     }
                                 }
                             }
                         }
+
+                        if (empty($status)) {
+                            $status = ($totalMark >= $passMark) ? QuizzesResult::$passed : QuizzesResult::$failed;
+                        }
+
+                        $attempt_count = QuizzesResult::where('quiz_id', $quiz->id)
+                            ->where('user_id', $user->id)
+                            ->count();
+
+                        $results["attempt_number"] = $attempt_count;
+
+                        $quizResult->update([
+                            'results' => json_encode($results),
+                            'user_grade' => $totalMark,
+                            'status' => $status,
+                            'created_at' => time()
+                        ]);
+
+                        if ($quizResult->status == QuizzesResult::$waiting) {
+                            $notifyOptions = [
+                                '[c.title]' => $quiz->webinar ? $quiz->webinar->title : '-',
+                                '[student.name]' => $user->full_name,
+                                '[q.title]' => $quiz->title,
+                            ];
+                            sendNotification('waiting_quiz', $notifyOptions, $quiz->creator_id);
+                        }
+
+                        if ($quizResult->status == QuizzesResult::$passed) {
+                            $passTheQuizReward = RewardAccounting::calculateScore(Reward::PASS_THE_QUIZ);
+                            RewardAccounting::makeRewardAccounting($quizResult->user_id, $passTheQuizReward, Reward::PASS_THE_QUIZ, $quiz->id, true);
+                        }
+
+                        if ($quiz->certificate) {
+                            $certificateReward = RewardAccounting::calculateScore(Reward::CERTIFICATE);
+                            RewardAccounting::makeRewardAccounting($quizResult->user_id, $certificateReward, Reward::CERTIFICATE, $quiz->id, true);
+                        }
+
+                        return apiResponse2(1, 'stored', trans('api.public.stored'), [
+                            'result' => $quizResult->details
+                        ]);
+
                     }
-
-                    if (empty($status)) {
-                        $status = ($totalMark >= $passMark) ? QuizzesResult::$passed : QuizzesResult::$failed;
-                    }
-
-                    $attempt_count = QuizzesResult::where('quiz_id', $quiz->id)
-                        ->where('user_id', $user->id)
-                        ->count();
-
-                    $results["attempt_number"] = $attempt_count;
-
-                    $quizResult->update([
-                        'results' => json_encode($results),
-                        'user_grade' => $totalMark,
-                        'status' => $status,
-                        'created_at' => time()
-                    ]);
-
-                    if ($quizResult->status == QuizzesResult::$waiting) {
-                        $notifyOptions = [
-                            '[c.title]' => $quiz->webinar ? $quiz->webinar->title : '-',
-                            '[student.name]' => $user->full_name,
-                            '[q.title]' => $quiz->title,
-                        ];
-                        sendNotification('waiting_quiz', $notifyOptions, $quiz->creator_id);
-                    }
-
-                    if ($quizResult->status == QuizzesResult::$passed) {
-                        $passTheQuizReward = RewardAccounting::calculateScore(Reward::PASS_THE_QUIZ);
-                        RewardAccounting::makeRewardAccounting($quizResult->user_id, $passTheQuizReward, Reward::PASS_THE_QUIZ, $quiz->id, true);
-                    }
-
-                    if ($quiz->certificate) {
-                        $certificateReward = RewardAccounting::calculateScore(Reward::CERTIFICATE);
-                        RewardAccounting::makeRewardAccounting($quizResult->user_id, $certificateReward, Reward::CERTIFICATE, $quiz->id, true);
-                    }
-
-                    return apiResponse2(1, 'stored', trans('api.public.stored'), [
-                        'result' => $quizResult->details
-                    ]);
-                    //  return redirect()->route('quiz_status', ['quizResultId' => $quizResult]);
                 }
             }
+            return apiResponse2(0, 'failed', trans('api.public.failed'));
+        } catch (\Exception $e) {
+            \Log::error('quizzesStoreResult error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        return apiResponse2(0, 'failed', trans('api.public.failed'));
     }
 
     public function updateResult(Request $request, $quizResultId)
     {
+        try {
+            $user = apiAuth();
 
-        $user = apiAuth();
+            $quizResult = QuizzesResult::where('id', $quizResultId)->first();
+            abort_unless($quizResult, 404);
 
-        $quizResult = QuizzesResult::where('id', $quizResultId)->first();
-        abort_unless($quizResult, 404);
+            $quiz = $quizResult->quiz()->where('creator_id', $user->id)->first();
+            abort_unless($quiz, 404);
 
+            validateParam($request->all(), [
 
-        $quiz = $quizResult->quiz()->where('creator_id', $user->id)->first();
-        abort_unless($quiz, 404);
+                '*.question_id' => ['required', Rule::exists('quizzes_questions', 'id')
+                    ->where('quiz_id', $quiz->id)->where('type', 'descriptive')
+                ],
 
+                '*.grade' => 'required',
 
-        validateParam($request->all(), [
-            // 'correction'=>'array|required' ,
-            '*.question_id' => ['required', Rule::exists('quizzes_questions', 'id')
-                ->where('quiz_id', $quiz->id)->where('type', 'descriptive')
-            ],
+            ]);
 
-            //  'correction.*.answer'=>'required' ,
-            '*.grade' => 'required',
+            if (!$quizResult->reviewable) {
+                return apiResponse2(0, 'unreviewable', trans('api.quiz.retrieved'));
+            }
+            $reviews = [];
 
-        ]);
+            foreach ($request->all() as $re) {
+                if (!empty($re['question_id'])) {
+                    $reviews[$re['question_id']] = [
+                        'correct_answer' => $re['answer'],
+                        'grade' => $re['grade']
+                    ];
+                }
 
-        if (!$quizResult->reviewable) {
-            return apiResponse2(0, 'unreviewable', trans('api.quiz.retrieved'));
-        }
-        $reviews = [];
-
-        foreach ($request->all() as $re) {
-            if (!empty($re['question_id'])) {
-                $reviews[$re['question_id']] = [
-                    'correct_answer' => $re['answer'],
-                    'grade' => $re['grade']
-                ];
             }
 
-        }
+            $quizResult = QuizzesResult::where('id', $quizResultId)
+                ->where('quiz_id', $quiz->id)
+                ->first();
 
-        $quizResult = QuizzesResult::where('id', $quizResultId)
-            ->where('quiz_id', $quiz->id)
-            ->first();
+            $oldResults = json_decode($quizResult->results, true);
+            $totalMark = 0;
+            $status = '';
+            $user_grade = $quizResult->user_grade;
 
-        $oldResults = json_decode($quizResult->results, true);
-        $totalMark = 0;
-        $status = '';
-        $user_grade = $quizResult->user_grade;
+            if (!empty($oldResults) and count($oldResults)) {
+                foreach ($oldResults as $question_id => $result) {
+                    foreach ($reviews as $question_id2 => $review) {
+                        if ($question_id2 == $question_id) {
+                            $question = QuizzesQuestion::where('id', $question_id)
+                                ->where('creator_id', $user->id)
+                                ->first();
 
-        if (!empty($oldResults) and count($oldResults)) {
-            foreach ($oldResults as $question_id => $result) {
-                foreach ($reviews as $question_id2 => $review) {
-                    if ($question_id2 == $question_id) {
-                        $question = QuizzesQuestion::where('id', $question_id)
-                            ->where('creator_id', $user->id)
-                            ->first();
+                            if ($question->type == 'descriptive') {
+                                if (!empty($result['status']) and $result['status']) {
+                                    $user_grade = $user_grade - (isset($result['grade']) ? (int)$result['grade'] : 0);
+                                    $user_grade = $user_grade + (isset($review['grade']) ? (int)$review['grade'] : (int)$question->grade);
+                                } else if (isset($result['status']) and !$result['status']) {
+                                    $user_grade = $user_grade + (isset($review['grade']) ? (int)$review['grade'] : (int)$question->grade);
+                                    $oldResults[$question_id]['grade'] = isset($review['grade']) ? $review['grade'] : $question->grade;
+                                }
 
-                        if ($question->type == 'descriptive') {
-                            if (!empty($result['status']) and $result['status']) {
-                                $user_grade = $user_grade - (isset($result['grade']) ? (int)$result['grade'] : 0);
-                                $user_grade = $user_grade + (isset($review['grade']) ? (int)$review['grade'] : (int)$question->grade);
-                            } else if (isset($result['status']) and !$result['status']) {
-                                $user_grade = $user_grade + (isset($review['grade']) ? (int)$review['grade'] : (int)$question->grade);
-                                $oldResults[$question_id]['grade'] = isset($review['grade']) ? $review['grade'] : $question->grade;
+                                $oldResults[$question_id]['status'] = true;
                             }
-
-                            $oldResults[$question_id]['status'] = true;
                         }
                     }
                 }
-            }
-        } elseif (!empty($reviews) and count($reviews)) {
-            foreach ($reviews as $questionId => $review) {
+            } elseif (!empty($reviews) and count($reviews)) {
+                foreach ($reviews as $questionId => $review) {
 
-                if (!is_array($review)) {
-                    unset($reviews[$questionId]);
-                } else {
-                    $question = QuizzesQuestion::where('id', $questionId)
-                        ->where('quiz_id', $quiz->id)
-                        ->first();
+                    if (!is_array($review)) {
+                        unset($reviews[$questionId]);
+                    } else {
+                        $question = QuizzesQuestion::where('id', $questionId)
+                            ->where('quiz_id', $quiz->id)
+                            ->first();
 
-                    if ($question and $question->type == 'descriptive') {
-                        $user_grade += (isset($review['grade']) ? (int)$review['grade'] : 0);
+                        if ($question and $question->type == 'descriptive') {
+                            $user_grade += (isset($review['grade']) ? (int)$review['grade'] : 0);
+                        }
                     }
                 }
+
+                $oldResults = $reviews;
             }
 
-            $oldResults = $reviews;
+            $quizResult->user_grade = $user_grade;
+            $passMark = $quiz->pass_mark;
+
+            if ($quizResult->user_grade >= $passMark) {
+                $quizResult->status = QuizzesResult::$passed;
+            } else {
+                $quizResult->status = QuizzesResult::$failed;
+            }
+
+            $quizResult->results = json_encode($oldResults);
+            $quizResult->save();
+            $notifyOptions = [
+                '[c.title]' => $quiz->webinar ? $quiz->webinar->title : '-',
+                '[q.title]' => $quiz->title,
+                '[q.result]' => $quizResult->status,
+            ];
+            sendNotification('waiting_quiz_result', $notifyOptions, $quizResult->user_id);
+            if ($quizResult->status == QuizzesResult::$passed) {
+                $passTheQuizReward = RewardAccounting::calculateScore(Reward::PASS_THE_QUIZ);
+                RewardAccounting::makeRewardAccounting($quizResult->user_id, $passTheQuizReward, Reward::PASS_THE_QUIZ, $passTheQuizReward->id, true);
+            }
+
+            if ($quiz->certificate) {
+                $certificateReward = RewardAccounting::calculateScore(Reward::CERTIFICATE);
+                RewardAccounting::makeRewardAccounting($quizResult->user_id, $certificateReward, Reward::CERTIFICATE, $quiz->id, true);
+            }
+            return apiResponse2(1, 'stored', trans('api.public.stored'));
+        } catch (\Exception $e) {
+            \Log::error('updateResult error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $quizResult->user_grade = $user_grade;
-        $passMark = $quiz->pass_mark;
-
-        if ($quizResult->user_grade >= $passMark) {
-            $quizResult->status = QuizzesResult::$passed;
-        } else {
-            $quizResult->status = QuizzesResult::$failed;
-        }
-
-        $quizResult->results = json_encode($oldResults);
-        $quizResult->save();
-        $notifyOptions = [
-            '[c.title]' => $quiz->webinar ? $quiz->webinar->title : '-',
-            '[q.title]' => $quiz->title,
-            '[q.result]' => $quizResult->status,
-        ];
-        sendNotification('waiting_quiz_result', $notifyOptions, $quizResult->user_id);
-        if ($quizResult->status == QuizzesResult::$passed) {
-            $passTheQuizReward = RewardAccounting::calculateScore(Reward::PASS_THE_QUIZ);
-            RewardAccounting::makeRewardAccounting($quizResult->user_id, $passTheQuizReward, Reward::PASS_THE_QUIZ, $passTheQuizReward->id, true);
-        }
-
-        if ($quiz->certificate) {
-            $certificateReward = RewardAccounting::calculateScore(Reward::CERTIFICATE);
-            RewardAccounting::makeRewardAccounting($quizResult->user_id, $certificateReward, Reward::CERTIFICATE, $quiz->id, true);
-        }
-        return apiResponse2(1, 'stored', trans('api.public.stored'));
-
-
     }
-
 
 }

@@ -307,14 +307,11 @@ $(".pdfs").removeClass("active");
      </script>
 @if(empty($authUser))
 <script>
-//      setTimeout(function() {
-//     $('#textpop').modal();
-// }, 5000);
+
 </script>
 @endif
 
 <script>
-// Get the modal
 
 function viewfile(src1,id){
 
@@ -337,7 +334,7 @@ function viewfile(src1,id){
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/video/vimeo.js"></script>
 <script>
     function buy_course(){
-        // alert('');
+
         $('.buy_now').click();
     }
 
@@ -347,8 +344,7 @@ function viewfile(src1,id){
 
 $("#myModal2").modal('show');
   $('.modal-dialog').addClass('afterpop');
-    // $('.btn-demo').click();
-    // $('.modal-dialog').addClass('afterpop');
+
 </script>
 @endif
 @php
@@ -400,7 +396,7 @@ $("#myModal2").modal('show');
 @endpush
 <style>
 @media screen and (max-width: 992px) {
-  #pre1 {
+
       width: -webkit-fill-available;
     height: 283px;
 
@@ -410,11 +406,10 @@ $("#myModal2").modal('show');
   }
 }
 @media screen and (min-width: 991px) {
-  #pre1 {
+
       width:-webkit-fill-available;
       height:450px;
   }
-  #mob1 {
 
       display:none !important;
   }

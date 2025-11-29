@@ -22,7 +22,6 @@ class RazorpayWebhookController extends Controller
         try {
             Log::info('Razorpay Webhook Received', $request->all());
 
-            // Verify signature
             if (!$this->verifySignature($request)) {
                 Log::error('Webhook signature verification failed');
                 return response()->json(['error' => 'Invalid signature'], 400);
@@ -70,7 +69,6 @@ class RazorpayWebhookController extends Controller
 
         $razorpayPaymentId = $payment['id'];
 
-        // Check if already processed using YOUR table
         $existing = TransactionsHistoryRazorpay::where('razorpay_payment_id', $razorpayPaymentId)
             ->where('status', 'completed')
             ->whereNotNull('processed_at')
@@ -83,7 +81,6 @@ class RazorpayWebhookController extends Controller
 
         $notes = $payment['notes'] ?? [];
 
-        // Store in YOUR transactions_history_razorpay table
         TransactionsHistoryRazorpay::updateOrCreate(
             ['razorpay_payment_id' => $razorpayPaymentId],
             [
@@ -103,7 +100,6 @@ class RazorpayWebhookController extends Controller
             ]
         );
 
-        // Dispatch your existing BuyNowProcessJob
         $jobData = [
             'razorpay_payment_id' => $razorpayPaymentId,
             'order_id' => $notes['order_id'] ?? null,

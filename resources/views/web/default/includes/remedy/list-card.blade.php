@@ -1,25 +1,22 @@
 <div class="webinar-card webinar-list webinar-list-2 d-flex mt-15">
-    
 
     <div class="col-8 col-md-6 col-lg-8 webinar-card-body w-100 d-flex flex-column">
         <div class="d-flex align-items-center justify-content-between">
             <a href="{{ $remedy->getUrl() }}">
                 <h3 class=" webinar-title1 font-weight-bold font-16 text-dark-blue">{{ clean($remedy->title,'title') }}</h3>
             </a>
-            
+
         </div>
         <div style="max-height: 38px; overflow:hidden;font-size: 9px;">
         <p class="duration font-14 ml-5">{!! $remedy->description !!}</p>
         </div>
-
-        
 
         @include(getTemplate() . '.includes.remedy.rate',['rate' => $remedy->getRate()])
 
         <div class="ml-10 d-flex justify-content-between mt-auto">
             <div class="d-flex justify-content-between mt-5">
                 <div class="d-flex align-items-center">
-                    
+
 <svg width="18" height="18" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M45 22.5C45 18.1875 44.8125 14.25 44.0625 12C43.3125 9.375 42.375 6.9375 40.125 4.6875C37.3125 2.0625 34.875 1.3125 31.125 0.5625C28.5 0.1875 25.3125 0 23.4375 0C22.875 0 22.3125 0 21.75 0C19.6875 0 16.6875 0.1875 13.875 0.5625C10.125 1.3125 7.5 2.25 4.875 4.6875C2.4375 6.9375 1.6875 9.375 0.9375 12C0.1875 14.25 0 18.1875 0 22.5C0 26.8125 0.1875 30.75 0.9375 33C1.6875 35.625 2.625 38.0625 4.875 40.3125C7.6875 42.9375 10.125 43.6875 13.875 44.4375C16.875 45 20.625 45 22.5 45C24.375 45 28.125 45 31.3125 44.4375C34.875 43.6875 37.5 42.9375 40.3125 40.3125C42.5625 38.25 43.5 35.8125 44.25 33C44.8125 30.75 45 26.8125 45 22.5Z" fill="url(#paint0_linear_1110_4234)"/>
 <path d="M14.4898 13.4118L31.336 23.1176C31.6944 23.2941 31.8736 23.8235 31.6944 24.1765C31.5152 24.3529 31.5152 24.3529 31.336 24.5294L14.3106 34.4118C14.1314 34.4118 13.7729 34.4118 13.4145 33.8824C13.2353 33.7059 13.2353 33.5294 13.2353 33.3529V13.9412C13.2353 13.4118 13.5937 13.2353 13.9522 13.2353C14.3106 13.4118 14.4898 13.4118 14.4898 13.4118Z" fill="white"/>
@@ -30,7 +27,6 @@
 </linearGradient>
 </defs>
 </svg>
-
 
                     <span class="duration font-14 ml-5">: Videos ({{ $remedy->files->where('file_type','video')->count() }})  </span>
                 </div>
@@ -46,18 +42,16 @@
 
                     <span class="date-published font-14 ml-5">: PDFs ({{ $remedy->files->where('file_type','pdf')->count()+$remedy->files->where('file_type','powerpoint')->count()+$remedy->files->where('file_type','image')->count()+$remedy->files->where('file_type','document')->count() }})</span>
                 </div>
-                
-                
+
             </div>
 
             <div class="webinar-price-box d-flex flex-column justify-content-center align-items-center">
-            
+
             </div>
         </div>
     </div>
 
     <div class="remedies-list image-box">
-
 
         <a href="{{ $remedy->getUrl() }}">
             <img loading="lazy"src="{{ config('app.img_dynamic_url') }}{{ $remedy->getImage() }}" class="img-cover" alt="{{ $remedy->title }}" style="border-radius:10px;">

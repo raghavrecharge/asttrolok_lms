@@ -47,7 +47,6 @@
                                             <div class="text-muted text-small">{{ trans('update.gifts_setting_active_hint') }}</div>
                                         </div>
 
-
                                         <div class="js-show-after-enable {{ (!empty($basicValue) and !empty($basicValue['status']) and $basicValue['status']) ? '' : 'd-none' }}">
                                             @php
                                                 $otherSwitches = ['allow_sending_gift_for_courses', 'allow_sending_gift_for_bundles', 'allow_sending_gift_for_products'];

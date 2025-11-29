@@ -15,7 +15,6 @@
             </div>
         </div>
 
-
         <div class="section-body">
 
             <div class="row">
@@ -43,7 +42,6 @@
                                 @else
                                     <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
                                 @endif
-
 
                                 <div class="form-group">
                                     <label>{{ trans('admin/main.title') }}</label>

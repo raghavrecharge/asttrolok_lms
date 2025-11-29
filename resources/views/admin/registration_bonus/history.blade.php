@@ -126,7 +126,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.user')}}</label>
@@ -156,7 +155,6 @@
                                 </div>
                             </div>
 
-
                             {{--<div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('update.bonus_wallet')}}</label>
@@ -180,7 +178,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group mt-1">
@@ -266,13 +263,11 @@
                                                 @endif
                                             @endif
 
-
                                             {{--<td class="font-12">{{ !empty($user->bonus_wallet) ? trans('update.'.$user->bonus_wallet) : '-' }}</td>--}}
 
                                             <td class="font-12">{{ dateTimeFormat($user->created_at, 'j M Y') }}</td>
 
                                             <td class="font-12">{{ $user->bonus_status }}</td>
-
 
                                             <td class="text-center mb-2" width="120">
                                                 @can('admin_users_impersonate')

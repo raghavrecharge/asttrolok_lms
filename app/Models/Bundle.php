@@ -14,7 +14,6 @@ use Jorenvh\Share\ShareFacade;
 class Bundle extends Model implements TranslatableContract
 {
     use Translatable;
-    // use Sluggable;
 
     protected $table = 'bundles';
     public $timestamps = false;
@@ -106,11 +105,6 @@ class Bundle extends Model implements TranslatableContract
             ->where('type', 'bundle');
     }
 
-    /**
-     * Return the sluggable configuration array for this model.
-     *
-     * @return array
-     */
     public function sluggable(): array
     {
         return [
@@ -137,11 +131,6 @@ class Bundle extends Model implements TranslatableContract
 
         return false;
     }
-
-    // public function getUrl()
-    // {
-    //     return url('/bundles/' . $this->slug);
-    // }
 
     public function getUrl()
     {
@@ -171,11 +160,10 @@ class Bundle extends Model implements TranslatableContract
                 ->where('status', 'active')
                 ->get();
 
-            if (!empty($reviews) and $reviews->count() > 0) {
+            if (!empty($reviews) and $reviews->exists()) {
                 $rate = number_format($reviews->avg('rates'), 2);
             }
         }
-
 
         if ($rate > 5) {
             $rate = 5;
@@ -243,8 +231,6 @@ class Bundle extends Model implements TranslatableContract
 
     public function checkHasExpiredAccessDays($purchaseDate, $giftId = null)
     {
-        // true => has access
-        // false => not access (expired)
 
         if (!empty($giftId)) {
             $gift = Gift::query()->where('id', $giftId)
@@ -343,7 +329,6 @@ class Bundle extends Model implements TranslatableContract
                 $hasBought = $user->isAdmin();
             }
 
-            /* Check Installment */
             if (!$hasBought) {
                 $installmentOrder = $this->getInstallmentOrder();
 
@@ -360,7 +345,6 @@ class Bundle extends Model implements TranslatableContract
                 }
             }
 
-            /* Check Gift */
             if (!$hasBought) {
                 $gift = Gift::query()->where('email', $user->email)
                     ->where('status', 'active')
@@ -430,7 +414,6 @@ class Bundle extends Model implements TranslatableContract
 
     public function canSale()
     {
-        // TODO:: If there was a sales restriction like the courses, we apply here
 
         return true;
     }
@@ -492,7 +475,6 @@ class Bundle extends Model implements TranslatableContract
             ->pluck('buyer_id')
             ->toArray();
 
-        // get users by installments
         $installmentOrders = InstallmentOrder::query()
             ->where('bundle_id', $this->id)
             ->where('status', 'open')
@@ -517,7 +499,6 @@ class Bundle extends Model implements TranslatableContract
             }
         }
 
-        // get users by gifts
         $gifts = Gift::query()
             ->where('status', 'active')
             ->where('bundle_id', $this->id)
@@ -545,7 +526,7 @@ class Bundle extends Model implements TranslatableContract
     }
     public function canJoinToWaitlist()
     {
-        // Example logic (modify as per your requirement)
+
         return $this->capacity > $this->enrollments_count;
     }
 }

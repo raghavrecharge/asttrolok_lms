@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Mail\sendContactReply;
 use App\Mail\SendNotifications;
@@ -12,32 +15,52 @@ class ContactController extends Controller
 {
     public function index()
     {
-        $this->authorize('admin_contacts_lists');
+        try {
+            $this->authorize('admin_contacts_lists');
 
-        $contacts = Contact::orderBy('status', 'asc')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            $contacts = Contact::orderBy('status', 'asc')
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('admin/pages/users.contacts_lists'),
-            'contacts' => $contacts
-        ];
+            $data = [
+                'pageTitle' => trans('admin/pages/users.contacts_lists'),
+                'contacts' => $contacts
+            ];
 
-        return view('admin.contacts.lists', $data);
+            return view('admin.contacts.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function reply($id)
     {
-        $this->authorize('admin_contacts_reply');
+        try {
+            $this->authorize('admin_contacts_reply');
 
-        $contact = Contact::findOrFail($id);
+            $contact = Contact::findOrFail($id);
 
-        $data = [
-            'pageTitle' => trans('admin/main.reply'),
-            'contact' => $contact
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.reply'),
+                'contact' => $contact
+            ];
 
-        return view('admin.contacts.reply', $data);
+            return view('admin.contacts.reply', $data);
+        } catch (\Exception $e) {
+            \Log::error('reply error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function storeReply(Request $request, $id)
@@ -59,8 +82,7 @@ class ContactController extends Controller
             try {
             \Mail::to($contact->email)->send(new sendContactReply($contact));
             } catch (\Exception $e) {
-    // Log the error message if needed
-    // Log::error('Mail sending failed: ' . $e->getMessage());
+
 }
         }
 
@@ -69,12 +91,22 @@ class ContactController extends Controller
 
     public function delete($id)
     {
-        $this->authorize('admin_contacts_delete');
+        try {
+            $this->authorize('admin_contacts_delete');
 
-        $contact = Contact::findOrFail($id);
+            $contact = Contact::findOrFail($id);
 
-        $contact->delete();
+            $contact->delete();
 
-        return redirect(getAdminPanelUrl().'/contacts');
+            return redirect(getAdminPanelUrl().'/contacts');
+        } catch (\Exception $e) {
+            \Log::error('delete error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

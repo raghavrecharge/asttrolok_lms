@@ -47,7 +47,6 @@
                             <input type="hidden" name="ajax[{{ !empty($faq) ? $faq->id : 'new' }}][locale]" value="{{ $defaultLocale }}">
                         @endif
 
-
                         <div class="form-group">
                             <label class="input-label">{{ trans('public.title') }}</label>
                             <input type="text" name="ajax[{{ !empty($faq) ? $faq->id : 'new' }}][title]" class="js-ajax-title form-control" value="{{ !empty($faq) ? $faq->title : '' }}" placeholder="{{ trans('forms.maximum_255_characters') }}"/>

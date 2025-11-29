@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="/assets/admin/vendor/bootstrap/bootstrap.min.css"/>
     <link rel="stylesheet" href="/assets/vendors/fontawesome/css/all.min.css"/>
 
-
     <link rel="stylesheet" href="/assets/admin/css/style.css">
     <link rel="stylesheet" href="/assets/admin/css/custom.css">
     <link rel="stylesheet" href="/assets/admin/css/components.css">
@@ -182,7 +181,6 @@
                                             </div>
                                         </div>
                                     </div>
-
 
                                 </div>
                             </div>

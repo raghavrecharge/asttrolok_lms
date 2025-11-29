@@ -85,7 +85,6 @@
                                     <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
                                 @endif
 
-
                                             <div class="form-group">
                                                 <label>{{ trans('admin/main.title') }}</label>
                                                 <input type="text" name="title"

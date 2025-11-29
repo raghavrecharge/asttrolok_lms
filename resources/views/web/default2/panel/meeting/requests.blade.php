@@ -136,7 +136,6 @@
         </div>
     </section>
 
-
     <section class="mt-35 pb-50 mb-50">
         <form action="/panel/meetings/requests?{{ http_build_query(request()->all()) }}" method="get" class="d-flex align-items-start align-items-md-center justify-content-between flex-column flex-md-row">
             <h2 class="section-title">{{ trans('panel.meeting_requests_list') }}</h2>
@@ -229,7 +228,6 @@
                                                 <input type="hidden" class="js-meeting-password-{{ $ReserveMeeting->id }}" value="{{ $ReserveMeeting->password }}">
                                                 <input type="hidden" class="js-meeting-link-{{ $ReserveMeeting->id }}" value="{{ $ReserveMeeting->link }}">
 
-
                                                 <div class="btn-group dropdown table-actions">
                                                     <button type="button" class="btn-transparent dropdown-toggle"
                                                             data-toggle="dropdown" aria-haspopup="true"
@@ -247,7 +245,6 @@
                                                                         class="js-join-meeting-session btn-transparent webinar-actions d-block mt-10 text-primary">{{ trans('update.join_to_session') }}</button>
                                                             @endif
                                                         @endif
-
 
                                                         @if($ReserveMeeting->meeting_type != 'in_person' and !empty($ReserveMeeting->link) and $ReserveMeeting->status == \App\Models\ReserveMeeting::$open)
                                                             <button type="button" data-reserve-id="{{ $ReserveMeeting->id }}"
@@ -293,7 +290,6 @@
             ])
         @endif
     </section>
-
 
     <div class="d-none" id="liveMeetingLinkModal">
         <h3 class="section-title after-line font-20 text-dark-blue mb-25">{{ trans('panel.add_live_meeting_link') }}</h3>

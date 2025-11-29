@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserBadge extends Model
 {
-    // custom user badges
 
     protected $table = 'users_badges';
     public $timestamps = false;

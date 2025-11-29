@@ -4,7 +4,6 @@
 
 @endpush
 
-
 @section('content')
     @if((!empty($webinars) and count($webinars)) or (!empty($blogs) and count($blogs)) or (!empty($products) and count($products)) or (!empty($teachers) and count($teachers)) or (!empty($organizations) and count($organizations) ) or (!empty($remedies) and count($remedies) ))
         <section class="site-top-banner search-top-banner opacity-04 position-relative">
@@ -57,7 +56,7 @@
                     </div>
                 </section>
             @endif
-            
+
             @if(!empty($remedies) and count($remedies))
                 <section class="mt-50">
                     <h2 class="font-24 font-weight-bold text-secondary">Remedies</h2>

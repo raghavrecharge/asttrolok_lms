@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin\Store;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductDiscount;
@@ -11,28 +14,37 @@ class DiscountController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_store_discounts');
+        try {
+            $this->authorize('admin_store_discounts');
 
-        $query = ProductDiscount::query();
+            $query = ProductDiscount::query();
 
-        $discounts = $this->filters($query, $request)
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            $discounts = $this->filters($query, $request)
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
 
+            $data = [
+                'pageTitle' => trans('admin/main.discounts'),
+                'discounts' => $discounts,
+            ];
 
-        $data = [
-            'pageTitle' => trans('admin/main.discounts'),
-            'discounts' => $discounts,
-        ];
+            $product_ids = $request->get('product_ids');
+            if (!empty($product_ids)) {
+                $data['products'] = Product::select('id')
+                    ->whereIn('id', $product_ids)
+                    ->get();
+            }
 
-        $product_ids = $request->get('product_ids');
-        if (!empty($product_ids)) {
-            $data['products'] = Product::select('id')
-                ->whereIn('id', $product_ids)
-                ->get();
+            return view('admin.store.discounts.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return view('admin.store.discounts.lists', $data);
     }
 
     private function filters($query, $request)
@@ -94,116 +106,166 @@ class DiscountController extends Controller
 
     public function create()
     {
-        $this->authorize('admin_store_discounts_create');
+        try {
+            $this->authorize('admin_store_discounts_create');
 
-        $data = [
-            'pageTitle' => trans('admin/main.create'),
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.create'),
+            ];
 
-        return view('admin.store.discounts.new', $data);
+            return view('admin.store.discounts.new', $data);
+        } catch (\Exception $e) {
+            \Log::error('create error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function store(Request $request)
     {
-        $this->authorize('admin_store_discounts_create');
+        try {
+            $this->authorize('admin_store_discounts_create');
 
-        $this->validate($request, [
-            'product_id' => 'required',
-            'percent' => 'required',
-            'status' => 'nullable|in:active,inactive',
-            'count' => 'nullable|numeric',
-            'start_date' => 'required',
-            'end_date' => 'required',
-        ]);
+            $this->validate($request, [
+                'product_id' => 'required',
+                'percent' => 'required',
+                'status' => 'nullable|in:active,inactive',
+                'count' => 'nullable|numeric',
+                'start_date' => 'required',
+                'end_date' => 'required',
+            ]);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $product = Product::findOrFail($data["product_id"]);
+            $product = Product::findOrFail($data["product_id"]);
 
-        $activeDiscountForProduct = $product->getActiveDiscount();
+            $activeDiscountForProduct = $product->getActiveDiscount();
 
-        if ($activeDiscountForProduct) {
-            $toastData = [
-                'title' => trans('public.request_failed'),
-                'msg' => trans('update.this_product_has_an_active_discount'),
-                'status' => 'error'
-            ];
-            return back()->with(['toast' => $toastData]);
+            if ($activeDiscountForProduct) {
+                $toastData = [
+                    'title' => trans('public.request_failed'),
+                    'msg' => trans('update.this_product_has_an_active_discount'),
+                    'status' => 'error'
+                ];
+                return back()->with(['toast' => $toastData]);
+            }
+
+            $startDate = convertTimeToUTCzone($data['start_date'], getTimezone());
+            $endDate = convertTimeToUTCzone($data['end_date'], getTimezone());
+
+            ProductDiscount::create([
+                'creator_id' => auth()->id(),
+                'name' => $data["name"],
+                'product_id' => $data["product_id"],
+                'percent' => $data["percent"],
+                'status' => $data["status"],
+                'count' => $data["count"] ?? null,
+                'created_at' => time(),
+                'start_date' => $startDate->getTimestamp(),
+                'end_date' => $endDate->getTimestamp(),
+            ]);
+
+            return redirect(getAdminPanelUrl().'/store/discounts');
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $startDate = convertTimeToUTCzone($data['start_date'], getTimezone());
-        $endDate = convertTimeToUTCzone($data['end_date'], getTimezone());
-
-        ProductDiscount::create([
-            'creator_id' => auth()->id(),
-            'name' => $data["name"],
-            'product_id' => $data["product_id"],
-            'percent' => $data["percent"],
-            'status' => $data["status"],
-            'count' => $data["count"] ?? null,
-            'created_at' => time(),
-            'start_date' => $startDate->getTimestamp(),
-            'end_date' => $endDate->getTimestamp(),
-        ]);
-
-        return redirect(getAdminPanelUrl().'/store/discounts');
     }
 
     public function edit($id)
     {
-        $this->authorize('admin_product_discount_edit');
+        try {
+            $this->authorize('admin_product_discount_edit');
 
-        $discount = ProductDiscount::findOrFail($id);
+            $discount = ProductDiscount::findOrFail($id);
 
-        $data = [
-            'pageTitle' => trans('admin/main.edit'),
-            'discount' => $discount,
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.edit'),
+                'discount' => $discount,
+            ];
 
-        return view('admin.store.discounts.new', $data);
+            return view('admin.store.discounts.new', $data);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $this->authorize('admin_store_discounts_create');
+        try {
+            $this->authorize('admin_store_discounts_create');
 
-        $this->validate($request, [
-            'product_id' => 'required',
-            'percent' => 'required',
-            'status' => 'nullable|in:active,inactive',
-            'count' => 'nullable|numeric',
-            'start_date' => 'required',
-            'end_date' => 'required',
-        ]);
+            $this->validate($request, [
+                'product_id' => 'required',
+                'percent' => 'required',
+                'status' => 'nullable|in:active,inactive',
+                'count' => 'nullable|numeric',
+                'start_date' => 'required',
+                'end_date' => 'required',
+            ]);
 
-        $discount = ProductDiscount::findOrfail($id);
+            $discount = ProductDiscount::findOrfail($id);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $startDate = convertTimeToUTCzone($data['start_date'], getTimezone());
-        $endDate = convertTimeToUTCzone($data['end_date'], getTimezone());
+            $startDate = convertTimeToUTCzone($data['start_date'], getTimezone());
+            $endDate = convertTimeToUTCzone($data['end_date'], getTimezone());
 
-        $discount->update([
-            'creator_id' => auth()->id(),
-            'name' => $data["name"],
-            'product_id' => $data["product_id"],
-            'percent' => $data["percent"],
-            'status' => $data["status"],
-            'count' => $data["count"] ?? null,
-            'created_at' => time(),
-            'start_date' => $startDate->getTimestamp(),
-            'end_date' => $endDate->getTimestamp(),
-        ]);
+            $discount->update([
+                'creator_id' => auth()->id(),
+                'name' => $data["name"],
+                'product_id' => $data["product_id"],
+                'percent' => $data["percent"],
+                'status' => $data["status"],
+                'count' => $data["count"] ?? null,
+                'created_at' => time(),
+                'start_date' => $startDate->getTimestamp(),
+                'end_date' => $endDate->getTimestamp(),
+            ]);
 
-        return redirect(getAdminPanelUrl().'/store/discounts');
+            return redirect(getAdminPanelUrl().'/store/discounts');
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function destroy(Request $request, $id)
     {
-        $this->authorize('admin_store_discounts_delete');
+        try {
+            $this->authorize('admin_store_discounts_delete');
 
-        ProductDiscount::findOrfail($id)->delete();
+            ProductDiscount::findOrfail($id)->delete();
 
-        return redirect()->back();
+            return redirect()->back();
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

@@ -271,62 +271,7 @@
 
     <script   src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script   >
-    //   $(document).ready(function(){
-    //     $(".load-card-list").slice(0,10).show();
-    //   $("#listloadMore").click(function(e){
-    //     e.preventDefault();
-    //     $(".load-card-list:hidden").slice(0,10).fadeIn("slow");
-    //     console.log($(".load-card-list:hidden").length);
-    //     if($(".load-card-list:hidden").length == 0){
-    //       $("#listloadMore").fadeOut("slow");
-    //       }
-    //   });
-    //   if($(".load-card-list").length < 9){
-    //   $("#listloadMore").hide();
 
-    //   }
-    //   $(".load-card-list1").slice(0,10).show();
-    //   $("#listloadMore1").click(function(e){
-    //     e.preventDefault();
-    //     $(".load-card-list1:hidden").slice(0,10).fadeIn("slow");
-    //     console.log($(".load-card-list1:hidden").length);
-    //     if($(".load-card-list1:hidden").length == 0){
-    //       $("#listloadMore1").fadeOut("slow");
-    //       }
-    //   });
-    //   if($(".load-card-list1").length < 9){
-    //   $("#listloadMore1").hide();
-
-    //   }
-
-    //   $(".loadid").slice(0,10).show();
-    //   $("#loadMore").click(function(e){
-    //     e.preventDefault();
-    //     $(".loadid:hidden").slice(0,10).fadeIn("slow");
-    //     console.log($(".loadid:hidden").length);
-    //     if($(".loadid:hidden").length == 0){
-    //       $("#loadMore").fadeOut("slow");
-    //       }
-    //   });
-    //   if($(".loadid").length < 10){
-    //   $("#loadMore").hide();
-
-    //   }
-
-    //   $(".loadid1").slice(0,10).show();
-    //   $("#loadMore1").click(function(e){
-    //     e.preventDefault();
-    //     $(".loadid1:hidden").slice(0,10).fadeIn("slow");
-    //     console.log($(".loadid1:hidden").length);
-    //     if($(".loadid1:hidden").length == 0){
-    //       $("#loadMore1").fadeOut("slow");
-    //       }
-    //   });
-    //   if($(".loadid1").length < 10){
-    //   $("#loadMore1").hide();
-
-    //   }
-    // })
     </script>
 
 @endsection

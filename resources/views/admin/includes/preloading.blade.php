@@ -4,9 +4,9 @@
 
 <script>
     window.paceOptions = {
-        ajax: false, // disabled
-        document: false, // disabled
-        eventLag: false, // disabled
+        ajax: false,
+        document: false,
+        eventLag: false,
     };
 </script>
 <script src="/assets/default/vendors/pace-loading/pace.min.js"></script>

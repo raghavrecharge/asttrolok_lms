@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Api\Controller;
 use App\Http\Resources\CertificateResource;
 use App\Mixins\Certificate\MakeCertificate;
@@ -20,76 +23,109 @@ class CertificatesController extends Controller
 {
     public function created(Request $request)
     {
-        $user = apiAuth();
+        try {
+            $user = apiAuth();
 
-        $quizzes = Quiz::where('creator_id', $user->id)
-            ->where('status', Quiz::ACTIVE)->handleFilters()->get();
+            $quizzes = Quiz::where('creator_id', $user->id)
+                ->where('status', Quiz::ACTIVE)->handleFilters()->get();
 
-        return apiResponse2(1, 'retrieved', trans('public.retrieved'), [
-            'certificates' => CertificateResource::collection($quizzes),
-        ]);
-
-
+            return apiResponse2(1, 'retrieved', trans('public.retrieved'), [
+                'certificates' => CertificateResource::collection($quizzes),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('created error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function students()
     {
-        $user = apiAuth();
+        try {
+            $user = apiAuth();
 
-        $quizzes = Quiz::where('creator_id', $user->id)
-            ->pluck('id')->toArray();
+            $quizzes = Quiz::where('creator_id', $user->id)
+                ->pluck('id')->toArray();
 
+            $ee = Certificate::whereIn('quiz_id', $quizzes)
+                ->get()
+                ->map(function ($certificate) {
 
-        $ee = Certificate::whereIn('quiz_id', $quizzes)
-            ->get()
-            ->map(function ($certificate) {
+                    return $certificate->details;
 
-                return $certificate->details;
+                });
 
-            });
-
-        return apiResponse2(1, 'retrieved', trans('public.retrieved'), $ee);
+            return apiResponse2(1, 'retrieved', trans('public.retrieved'), $ee);
+        } catch (\Exception $e) {
+            \Log::error('students error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function achievements(Request $request)
     {
-        $user = apiAuth();
-        $results = QuizzesResult::where('user_id', $user->id)->where('status', QuizzesResult::$passed)
-            ->whereHas('quiz', function ($query) {
-                $query->where('status', Quiz::ACTIVE);
-            })
-            ->get()->map(function ($result) {
+        try {
+            $user = apiAuth();
+            $results = QuizzesResult::where('user_id', $user->id)->where('status', QuizzesResult::$passed)
+                ->whereHas('quiz', function ($query) {
+                    $query->where('status', Quiz::ACTIVE);
+                })
+                ->get()->map(function ($result) {
 
-                return array_merge($result->details,
-                    ['certificate' => $result->certificate->brief ?? null]
-                );
+                    return array_merge($result->details,
+                        ['certificate' => $result->certificate->brief ?? null]
+                    );
 
-            });
+                });
 
-
-        return apiResponse2(1, 'retrieved', trans('public.retrieved'), $results);
-
-
+            return apiResponse2(1, 'retrieved', trans('public.retrieved'), $results);
+        } catch (\Exception $e) {
+            \Log::error('achievements error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function makeCertificate($quizResultId)
     {
-        $user = apiAuth();
+        try {
+            $user = apiAuth();
 
-        $makeCertificate = new MakeCertificate();
+            $makeCertificate = new MakeCertificate();
 
-        $quizResult = QuizzesResult::where('id', $quizResultId)
-            //->where('user_id', $user->id)
-            ->where('status', QuizzesResult::$passed)
-            ->first();
+            $quizResult = QuizzesResult::where('id', $quizResultId)
 
-        if (!empty($quizResult)) {
-            return $makeCertificate->makeQuizCertificate($quizResult);
+                ->where('status', QuizzesResult::$passed)
+                ->first();
+
+            if (!empty($quizResult)) {
+                return $makeCertificate->makeQuizCertificate($quizResult);
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('makeCertificate error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
     }
-
 
 }
 

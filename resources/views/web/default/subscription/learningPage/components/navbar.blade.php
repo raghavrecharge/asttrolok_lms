@@ -1,5 +1,5 @@
 @php
- //   $percent = $subscription->getProgress(true);
+
 @endphp
 
 <div class="learning-page-navbar d-flex align-items-lg-center justify-content-between flex-column flex-lg-row px-15 px-lg-35 py-10">

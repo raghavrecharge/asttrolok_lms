@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Tag;
 use Illuminate\Http\Request;
@@ -10,79 +13,138 @@ class TagController extends Controller
 {
     public function index()
     {
-        $this->authorize('admin_tags_list');
+        try {
+            $this->authorize('admin_tags_list');
 
-        $tags = Tag::orderBy('id','desc')
-            ->paginate(10);;
-        $data = [
-            'pageTitle' => trans('admin/pages/tags.tags_list_page_title'),
-            'tags' => $tags
-        ];
+            $tags = Tag::orderBy('id','desc')
+                ->paginate(10);;
+            $data = [
+                'pageTitle' => trans('admin/pages/tags.tags_list_page_title'),
+                'tags' => $tags
+            ];
 
-        return view('admin.tags.lists', $data);
+            return view('admin.tags.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function create()
     {
-        $this->authorize('admin_tags_create');
+        try {
+            $this->authorize('admin_tags_create');
 
-        $data = [
-            'pageTitle' => trans('admin/main.tag_new_page_title'),
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.tag_new_page_title'),
+            ];
 
-        return view('admin.tags.create', $data);
+            return view('admin.tags.create', $data);
+        } catch (\Exception $e) {
+            \Log::error('create error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function store(Request $request)
     {
-        $this->authorize('admin_tags_create');
+        try {
+            $this->authorize('admin_tags_create');
 
-        $this->validate($request, [
-            'title' => 'required|min:3|max:128',
-        ]);
+            $this->validate($request, [
+                'title' => 'required|min:3|max:128',
+            ]);
 
-        $tag = Tag::create([
-            'title' => $request->input('title'),
-        ]);
+            $tag = Tag::create([
+                'title' => $request->input('title'),
+            ]);
 
-
-        return redirect(getAdminPanelUrl().'/tags');
+            return redirect(getAdminPanelUrl().'/tags');
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function edit($id)
     {
-        $this->authorize('admin_tags_edit');
+        try {
+            $this->authorize('admin_tags_edit');
 
-        $tag = Tag::findOrFail($id);
-        $data = [
-            'pageTitle' => trans('admin/pages/tags.edit_page_title'),
-            'tag' => $tag,
-        ];
+            $tag = Tag::findOrFail($id);
+            $data = [
+                'pageTitle' => trans('admin/pages/tags.edit_page_title'),
+                'tag' => $tag,
+            ];
 
-        return view('admin.tags.create', $data);
+            return view('admin.tags.create', $data);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $this->authorize('admin_tags_edit');
+        try {
+            $this->authorize('admin_tags_edit');
 
-        $this->validate($request, [
-            'title' => 'required|min:3|max:128',
-        ]);
-        $tag = Tag::findOrFail($id);
-        $tag->update([
-            'title' => $request->input('title'),
-        ]);
+            $this->validate($request, [
+                'title' => 'required|min:3|max:128',
+            ]);
+            $tag = Tag::findOrFail($id);
+            $tag->update([
+                'title' => $request->input('title'),
+            ]);
 
-        return redirect(getAdminPanelUrl().'/tags');
+            return redirect(getAdminPanelUrl().'/tags');
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function destroy(Request $request, $id)
     {
-        $this->authorize('admin_tags_delete');
+        try {
+            $this->authorize('admin_tags_delete');
 
-        Tag::find($id)->delete();
+            Tag::find($id)->delete();
 
-        return redirect(getAdminPanelUrl().'/tags');
+            return redirect(getAdminPanelUrl().'/tags');
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

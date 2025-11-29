@@ -8,7 +8,6 @@
     }
 @endphp
 
-
 <form action="{{ getAdminPanelUrl('/registration_bonus/settings') }}" method="post">
     {{ csrf_field() }}
     <input type="hidden" name="page" value="general">
@@ -33,7 +32,6 @@
             @else
                 <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
             @endif
-
 
             <div class="form-group mt-15">
                 <label class="input-label">{{ trans('public.image') }}</label>

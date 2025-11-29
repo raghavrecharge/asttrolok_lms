@@ -66,11 +66,11 @@
                         <div class="installment-step d-flex align-items-center font-12 text-gray">{{ $installmentStep->getDeadlineTitle($itemPrice) }}</div>
                     @endforeach
                 </div>
-                
+
                 <form action="/cart/coupon/validate1" method="Post">
                     {{ csrf_field() }}
-                    <div class="row"> 
-                    <div class="col-12 col-lg-9"> 
+                    <div class="row">
+                    <div class="col-12 col-lg-9">
                     <div class="form-group">
                         <input type="text" name="coupon" id="coupon_input" class="form-control mt-25"
                          placeholder="{{ trans('cart.enter_your_code_here') }}">
@@ -88,8 +88,6 @@
         </div>
     </div>
 </div>
-
-
 
 @push('scripts_bottom')
 <script   type="text/javascript">

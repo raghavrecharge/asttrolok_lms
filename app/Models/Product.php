@@ -14,7 +14,6 @@ use Jorenvh\Share\ShareFacade;
 class Product extends Model implements TranslatableContract
 {
     use Translatable;
-    // use Sluggable;
 
     protected $table = 'products';
     public $timestamps = false;
@@ -29,7 +28,6 @@ class Product extends Model implements TranslatableContract
     static $pending = 'pending';
     static $draft = 'draft';
     static $inactive = 'inactive';
-
 
     public $translatedAttributes = ['title', 'seo_description', 'summary', 'description'];
 
@@ -86,9 +84,6 @@ class Product extends Model implements TranslatableContract
         return SlugService::createSlug(self::class, 'slug', $title);
     }
 
-    /*
-     * Relations
-     * */
     public function creator()
     {
         return $this->belongsTo('App\User', 'creator_id', 'id');
@@ -183,10 +178,6 @@ class Product extends Model implements TranslatableContract
         return $this->salesCountCache;
     }
 
-    /*
-     * .\  Relations
-     * */
-
     public function isVirtual(): bool
     {
         return ($this->type == self::$virtual);
@@ -249,7 +240,6 @@ class Product extends Model implements TranslatableContract
 
     public function getPrice()
     {
-        // this method used in installment
 
         return $this->getPriceWithActiveDiscountPrice();
     }
@@ -273,10 +263,6 @@ class Product extends Model implements TranslatableContract
         return $this->availabilityCount;
     }
 
-    // public function getUrl()
-    // {
-    //     return url('/products/' . $this->slug);
-    // }
      public function getUrl()
     {
         $baseUrl = config('app.manual_base_url');
@@ -304,7 +290,7 @@ class Product extends Model implements TranslatableContract
             ->where('status', 'active')
             ->get();
 
-        if (!empty($reviews) and $reviews->count() > 0) {
+        if (!empty($reviews) and $reviews->exists()) {
             $rate = number_format($reviews->avg('rates'), 2);
         }
 

@@ -58,5 +58,4 @@ class ReserveMeeting extends Model
         return $this->belongsTo('App\Models\Api\User', 'user_id', 'id');
     }
 
-
 }

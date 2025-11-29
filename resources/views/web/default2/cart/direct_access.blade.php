@@ -3,16 +3,12 @@
 @push('styles_top')
     <style>
 .loader {
-  //border: 16px solid #f3f3f3;
-  //border-radius: 50%;
-  //border-top: 16px solid #3498db;
 
   height: 120px;
   -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
-#loader {
     position: fixed;
     left: 50%;
     top: 50%;
@@ -124,10 +120,6 @@ function validateForm() {
     showError('mobileError', 'Mobile number is required.');
     isValid = false;
   }
-//   else if (!/^\d{14}$/.test(mobile)) {
-//     showError('mobileError', 'Please enter a valid 10-digit mobile number.');
-//     isValid = false;
-//   }
 
   let course = document.getElementById('course').value;
   if (course.trim() === '') {
@@ -176,7 +168,6 @@ function submitForm() {
    document.body.classList.add('disabled-page');
    document.getElementById('loader').style.display = 'block';
 
-    // Collect form data
     var formData = {
       email: $('#email').val(),
       mobile: $('#mobile').val(),
@@ -186,16 +177,16 @@ function submitForm() {
       _token: '{{ csrf_token() }}'
     };
 var   url="{{ url('/directaccess')}}";
-    // AJAX request
+
     $.ajax({
       url: url,
       type: 'POST',
       data: formData,
       success: function(response) {
-        // Handle success response
+
         document.body.classList.remove('disabled-page');
         document.getElementById('loader').style.display = 'none';
-        // document.documentElement.style.overflow = 'none';
+
        if (response.status === 'success') {
           Swal.fire({
             icon: 'success',
@@ -215,8 +206,7 @@ var   url="{{ url('/directaccess')}}";
         console.log(response);
       },
       error: function(xhr, status, error) {
-        // Handle error response
-        // alert('An error occurred. Please try again.');
+
         document.body.classList.remove('disabled-page');
         document.getElementById('loader').style.display = 'none';
         console.log(error);
@@ -226,8 +216,6 @@ var   url="{{ url('/directaccess')}}";
 </script>
 
 <script>
-
-//   $("#loader").css("display", "none");
 
     $(document).ready(function(){
 
@@ -254,7 +242,7 @@ $('#customer_number').on('keypress', function(e) {
  var $this = $(this);
  var regex = new RegExp("^[0-9\b]+$");
  var str = String.fromCharCode(!e.charCode ? e.which : e.charCode);
- // for 10 digit number only
+
  if ($this.val().length > 14) {
     e.preventDefault();
     return false;

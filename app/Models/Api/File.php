@@ -12,7 +12,7 @@ class File extends WebFile
     public function getDetailsAttribute()
     {
         return [
-            //  'icon_by_type' => $this->getIconByType(),
+
             'id' => $this->id,
             'title' => $this->title,
             'auth_has_read' => $this->read,
@@ -26,7 +26,7 @@ class File extends WebFile
             'auth_has_access' => $this->auth_has_access,
             'user_has_access' => $this->user_has_access,
             'file' => $this->file(),
-            //  'file' => $this->storage == 'local' ? url("/course/" . $this->webinar->slug . "/file/" . $this->id . "/play") : $this->file,
+
             'volume' => $this->volume,
             'file_type' => $this->file_type,
             'is_video' => $this->isVideo(),
@@ -49,7 +49,6 @@ class File extends WebFile
         }
         return url($this->file);
     }
-
 
     public function getUserHasAccessAttribute()
     {
@@ -79,9 +78,7 @@ class File extends WebFile
 
         }
 
-
         return $canAccess;
-
 
     }
 
@@ -98,7 +95,6 @@ class File extends WebFile
         }
 
         return ($this->learningStatus()->where('user_id', $user->id)->count()) ? true : false;
-
 
     }
 }

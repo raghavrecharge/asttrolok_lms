@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Exports\salesExport;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting;
@@ -21,123 +24,126 @@ class SaleController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_sales_list');
+        try {
+            $this->authorize('admin_sales_list');
 
-        $query = Sale::whereNull('product_order_id')->whereNull('status');
-        
-        $totalSales = [
-            'count' => deepClone($query)->count(),
-            'amount' => deepClone($query)->sum('total_amount'),
-        ];
+            $query = Sale::whereNull('product_order_id')->whereNull('status');
 
-        $classesSales = [
-            'count' => deepClone($query)->whereNotNull('webinar_id')->count(),
-            'amount' => deepClone($query)->whereNotNull('webinar_id')->sum('total_amount'),
-        ];
-        
-        $appointmentSales = [
-            'count' => deepClone($query)->whereNotNull('meeting_id')->count(),
-            'amount' => deepClone($query)->whereNotNull('meeting_id')->sum('total_amount'),
-        ];
-        
-        //############################ part payment start #########################################
-         $querypart =  WebinarPartPayment :: query();
-       
-        $classesSalespart  = [
-            'count' => deepClone($querypart)->whereNotNull('webinar_id')->count(),
-            'amount' => deepClone($querypart)->whereNotNull('webinar_id')->sum('amount'),
-        ];
-        $salesQuerypart = $this->getSalesFilterspart($querypart, $request);
-        $salespart = $salesQuerypart->selectRaw("*, UNIX_TIMESTAMP(created_at) as created_at")
-        ->selectRaw("amount as total_amount")
-        ->orderByRaw('created_at DESC')
-            ->with([
-                 'buyer',
-                'webinar'
-            ]) ->get();
-            
-         //############################ part payment end #########################################
-         
-        $failedSales = Order::where('status', Order::$fail)->count();
-        $salesQuery = $this->getSalesFilters($query, $request);
-        $sales1 = $salesQuery->where('status',NULL)->orderBy('created_at', 'desc')
-            ->with([
-                'buyer',
-                'webinar',
-                'meeting',
-                'subscribe',
-                'promotion'
-            ]) ->get();
-            
-      
-        foreach ($sales1 as $sale) {
-            $sale = $this->makeTitle($sale);
+            $totalSales = [
+                'count' => deepClone($query)->count(),
+                'amount' => deepClone($query)->sum('total_amount'),
+            ];
 
-            if (empty($sale->saleLog)) {
-                SaleLog::create([
-                    'sale_id' => $sale->id,
-                    'viewed_at' => time()
-                ]);
+            $classesSales = [
+                'count' => deepClone($query)->whereNotNull('webinar_id')->count(),
+                'amount' => deepClone($query)->whereNotNull('webinar_id')->sum('total_amount'),
+            ];
+
+            $appointmentSales = [
+                'count' => deepClone($query)->whereNotNull('meeting_id')->count(),
+                'amount' => deepClone($query)->whereNotNull('meeting_id')->sum('total_amount'),
+            ];
+
+             $querypart =  WebinarPartPayment :: query();
+
+            $classesSalespart  = [
+                'count' => deepClone($querypart)->whereNotNull('webinar_id')->count(),
+                'amount' => deepClone($querypart)->whereNotNull('webinar_id')->sum('amount'),
+            ];
+            $salesQuerypart = $this->getSalesFilterspart($querypart, $request);
+            $salespart = $salesQuerypart->selectRaw("*, UNIX_TIMESTAMP(created_at) as created_at")
+            ->selectRaw("amount as total_amount")
+            ->orderByRaw('created_at DESC')
+                ->with([
+                     'buyer',
+                    'webinar'
+                ]) ->get();
+
+            $failedSales = Order::where('status', Order::$fail)->count();
+            $salesQuery = $this->getSalesFilters($query, $request);
+            $sales1 = $salesQuery->where('status',NULL)->orderBy('created_at', 'desc')
+                ->with([
+                    'buyer',
+                    'webinar',
+                    'meeting',
+                    'subscribe',
+                    'promotion'
+                ]) ->get();
+
+            foreach ($sales1 as $sale) {
+                $sale = $this->makeTitle($sale);
+
+                if (empty($sale->saleLog)) {
+                    SaleLog::create([
+                        'sale_id' => $sale->id,
+                        'viewed_at' => time()
+                    ]);
+                }
             }
+            $mergedData = $sales1->merge($salespart);
+
+            $mergedCollection = collect($mergedData);
+
+            $sortedCollection = $mergedCollection->sortByDesc('created_at');
+            $totalSales['amount'] = $sortedCollection->sum('total_amount');
+            $classesSales['amount'] = $sortedCollection->whereNotNull('webinar_id')->whereNull('installment_payment_id')->sum('total_amount');
+            $classesSales['amount'] += $sortedCollection->whereNotNull('installment_payment_id')->whereNull('status')->sum('total_amount');
+
+            $classesSales['count'] = $sales1->whereNotNull('webinar_id')->whereNull('installment_payment_id')->count();
+            $classesSales['count'] += $sales1->whereNotNull('installment_payment_id')->whereNull('status')->count();
+
+            $page = $request->page ?? 1;
+            $perPage = 10;
+            $offset = ($page - 1) * $perPage;
+
+            $paginatedCollection = new LengthAwarePaginator(
+            $sortedCollection->slice($offset, $perPage),
+            $mergedCollection->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+
+            );
+
+            $data = [
+                'pageTitle' => trans('admin/pages/financial.sales_page_title'),
+                'sales' => $paginatedCollection,
+                'totalSales' => $totalSales,
+                'classesSales' => $classesSales,
+                'appointmentSales' => $appointmentSales,
+                'failedSales' => $failedSales,
+
+            ];
+
+            $teacher_ids = $request->get('teacher_ids');
+            $student_ids = $request->get('student_ids');
+            $webinar_ids = $request->get('webinar_ids');
+
+            if (!empty($teacher_ids)) {
+                $data['teachers'] = User::select('id', 'full_name')
+                    ->whereIn('id', $teacher_ids)->get();
+            }
+
+            if (!empty($student_ids)) {
+                $data['students'] = User::select('id', 'full_name')
+                    ->whereIn('id', $student_ids)->get();
+            }
+
+            if (!empty($webinar_ids)) {
+                $data['webinars'] = Webinar::select('id')
+                    ->whereIn('id', $webinar_ids)->get();
+            }
+
+            return view('admin.financial.sales.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
- $mergedData = $sales1->merge($salespart);
- 
-    // // Convert the merged data into a Laravel collection
-    $mergedCollection = collect($mergedData);
-
-    // // Sort by date or any other criteria if needed
-    $sortedCollection = $mergedCollection->sortByDesc('created_at');
-    $totalSales['amount'] = $sortedCollection->sum('total_amount');
-$classesSales['amount'] = $sortedCollection->whereNotNull('webinar_id')->whereNull('installment_payment_id')->sum('total_amount');
-$classesSales['amount'] += $sortedCollection->whereNotNull('installment_payment_id')->whereNull('status')->sum('total_amount');
-
-$classesSales['count'] = $sales1->whereNotNull('webinar_id')->whereNull('installment_payment_id')->count();
-$classesSales['count'] += $sales1->whereNotNull('installment_payment_id')->whereNull('status')->count();
-
-    $page = $request->page ?? 1; // Get the current page or default to 1
-$perPage = 10; // Number of items per page
-$offset = ($page - 1) * $perPage; // Calculate the offset
-
-// Create a LengthAwarePaginator instance
-$paginatedCollection = new LengthAwarePaginator(
-    $sortedCollection->slice($offset, $perPage), // Paginate the collection
-    $mergedCollection->count(), // Total number of items in the collection
-    $perPage, // Number of items per page
-    $page, // Current page
-    ['path' => request()->url(), 'query' => request()->query()] // Append URL parameters
-   
-);
-
-        $data = [
-            'pageTitle' => trans('admin/pages/financial.sales_page_title'),
-            'sales' => $paginatedCollection,
-            'totalSales' => $totalSales,
-            'classesSales' => $classesSales,
-            'appointmentSales' => $appointmentSales,
-            'failedSales' => $failedSales,
-            // 'paginatedItems' =>$paginatedItems
-        ];
-
-        $teacher_ids = $request->get('teacher_ids');
-        $student_ids = $request->get('student_ids');
-        $webinar_ids = $request->get('webinar_ids');
-
-        if (!empty($teacher_ids)) {
-            $data['teachers'] = User::select('id', 'full_name')
-                ->whereIn('id', $teacher_ids)->get();
-        }
-
-        if (!empty($student_ids)) {
-            $data['students'] = User::select('id', 'full_name')
-                ->whereIn('id', $student_ids)->get();
-        }
-
-        if (!empty($webinar_ids)) {
-            $data['webinars'] = Webinar::select('id')
-                ->whereIn('id', $webinar_ids)->get();
-        }
-
-        return view('admin.financial.sales.lists', $data);
     }
 
     private function makeTitle($sale)
@@ -282,155 +288,183 @@ $paginatedCollection = new LengthAwarePaginator(
 
     public function refund($id)
     {
-        $this->authorize('admin_sales_refund');
+        try {
+            $this->authorize('admin_sales_refund');
 
-        $sale = Sale::findOrFail($id);
+            $sale = Sale::findOrFail($id);
 
-        if ($sale->type == Sale::$subscribe) {
-            $salesWithSubscribe = Sale::whereNotNull('webinar_id')
-                ->where('buyer_id', $sale->buyer_id)
-                ->where('subscribe_id', $sale->subscribe_id)
-                ->whereNull('refund_at')
-                ->with('webinar', 'subscribe')
-                ->get();
+            if ($sale->type == Sale::$subscribe) {
+                $salesWithSubscribe = Sale::whereNotNull('webinar_id')
+                    ->where('buyer_id', $sale->buyer_id)
+                    ->where('subscribe_id', $sale->subscribe_id)
+                    ->whereNull('refund_at')
+                    ->with('webinar', 'subscribe')
+                    ->get();
 
-            foreach ($salesWithSubscribe as $saleWithSubscribe) {
-                $saleWithSubscribe->update([
-                    'refund_at' => time()
-                ]);
+                foreach ($salesWithSubscribe as $saleWithSubscribe) {
+                    $saleWithSubscribe->update([
+                        'refund_at' => time()
+                    ]);
 
-                if (!empty($saleWithSubscribe->webinar) and !empty($saleWithSubscribe->subscribe)) {
-                    Accounting::refundAccountingForSaleWithSubscribe($saleWithSubscribe->webinar, $saleWithSubscribe->subscribe);
+                    if (!empty($saleWithSubscribe->webinar) and !empty($saleWithSubscribe->subscribe)) {
+                        Accounting::refundAccountingForSaleWithSubscribe($saleWithSubscribe->webinar, $saleWithSubscribe->subscribe);
+                    }
                 }
             }
-        }
 
-        if (!empty($sale->total_amount)) {
-            Accounting::refundAccounting($sale);
-        }
-
-        if (!empty($sale->meeting_id) and $sale->type == Sale::$meeting) {
-            $appointment = ReserveMeeting::where('meeting_id', $sale->meeting_id)
-                ->where('sale_id', $sale->id)
-                ->first();
-
-            if (!empty($appointment)) {
-                $appointment->update([
-                    'status' => ReserveMeeting::$canceled
-                ]);
+            if (!empty($sale->total_amount)) {
+                Accounting::refundAccounting($sale);
             }
+
+            if (!empty($sale->meeting_id) and $sale->type == Sale::$meeting) {
+                $appointment = ReserveMeeting::where('meeting_id', $sale->meeting_id)
+                    ->where('sale_id', $sale->id)
+                    ->first();
+
+                if (!empty($appointment)) {
+                    $appointment->update([
+                        'status' => ReserveMeeting::$canceled
+                    ]);
+                }
+            }
+
+            $sale->update(['refund_at' => time()]);
+
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('refund error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $sale->update(['refund_at' => time()]);
-
-        return back();
     }
 
    public function invoice($id)
     {
-        $this->authorize('admin_sales_invoice');
+        try {
+            $this->authorize('admin_sales_invoice');
 
-        $sale = Sale::where('id', $id)
-            ->with([
-                'order',
-                'orderAddress',
+            $sale = Sale::where('id', $id)
+                ->with([
+                    'order',
+                    'orderAddress',
 
-                'buyer' => function ($query) {
-                    $query->select('id', 'full_name');
-                },
-                'webinar' => function ($query) {
-                    $query->with([
-                        'teacher' => function ($query) {
-                            $query->select('id', 'full_name');
-                        },
-                        'creator' => function ($query) {
-                            $query->select('id', 'full_name');
-                        },
-                        'webinarPartnerTeacher' => function ($query) {
-                            $query->with([
-                                'teacher' => function ($query) {
-                                    $query->select('id', 'full_name');
-                                },
-                            ]);
-                        }
-                    ]);
-                },
-                'subscription' => function ($query) {
-            $query->select('id', 'slug as title', 'price');
-        },
-                'bundle' => function ($query) {
-            $query->select('id', 'slug as title', 'price');
+                    'buyer' => function ($query) {
+                        $query->select('id', 'full_name');
+                    },
+                    'webinar' => function ($query) {
+                        $query->with([
+                            'teacher' => function ($query) {
+                                $query->select('id', 'full_name');
+                            },
+                            'creator' => function ($query) {
+                                $query->select('id', 'full_name');
+                            },
+                            'webinarPartnerTeacher' => function ($query) {
+                                $query->with([
+                                    'teacher' => function ($query) {
+                                        $query->select('id', 'full_name');
+                                    },
+                                ]);
+                            }
+                        ]);
+                    },
+                    'subscription' => function ($query) {
+                $query->select('id', 'slug as title', 'price');
+            },
+                    'bundle' => function ($query) {
+                $query->select('id', 'slug as title', 'price');
+            }
+                ])
+                ->first();
+
+            if (!empty($sale)) {
+                $webinar = $sale->webinar;
+            $subscription = $sale->subscription;
+            $bundle = $sale->bundle;
+            $orderAddress = $sale->orderAddress ?? null;
+
+            if (!empty($webinar) || !empty($subscription) || !empty($bundle)) {
+                $data = [
+                    'pageTitle' => trans('webinars.invoice_page_title'),
+                    'sale' => $sale,
+                    'webinar' => $webinar,
+                    'subscription' => $subscription,
+                    'bundle' => $bundle,
+                     'orderAddress' => $orderAddress,
+
+                ];
+
+                return view('admin.financial.sales.invoice', $data);
+            }
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('invoice error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-            ])
-            ->first();
-
-        if (!empty($sale)) {
-            $webinar = $sale->webinar;
-        $subscription = $sale->subscription;
-       $bundle = $sale->bundle;
-       $orderAddress = $sale->orderAddress ?? null;
-
-
-        if (!empty($webinar) || !empty($subscription) || !empty($bundle)) {
-            $data = [
-                'pageTitle' => trans('webinars.invoice_page_title'),
-                'sale' => $sale,
-                'webinar' => $webinar,
-                'subscription' => $subscription,
-                'bundle' => $bundle,
-                 'orderAddress' => $orderAddress,
-                
-            ];
-        
-            return view('admin.financial.sales.invoice', $data);
-        }
-        }
-
-        abort(404);
     }
 
     public function exportExcel(Request $request)
     {
-        $this->authorize('admin_sales_export');
+        try {
+            $this->authorize('admin_sales_export');
 
-        $query = Sale::query();
+            $query = Sale::query();
 
-        $salesQuery = $this->getSalesFilters($query, $request);
+            $salesQuery = $this->getSalesFilters($query, $request);
 
-        $sales = $salesQuery->orderBy('created_at', 'desc')
-            ->with([
-                'buyer',
-                'webinar',
-                'meeting',
-                'subscribe',
-                'promotion'
-            ])
-            ->get();
+            $sales = $salesQuery->orderBy('created_at', 'desc')
+                ->with([
+                    'buyer',
+                    'webinar',
+                    'meeting',
+                    'subscribe',
+                    'promotion'
+                ])
+                ->get();
+
+                $querypart =  WebinarPartPayment :: query();
+
+            $salesQuerypart = $this->getSalesFilterspart($querypart, $request);
+            $salespart = $salesQuerypart->selectRaw("*, UNIX_TIMESTAMP(created_at) as created_at")
+            ->selectRaw("amount as total_amount")
+            ->selectRaw("'part' as type")
+            ->orderByRaw('created_at DESC')
+                ->with([
+                     'buyer',
+                    'webinar'
+                ]) ->get();
+
+                $mergedData = $sales->merge($salespart);
+                $mergedCollection = collect($mergedData);
+
+            $sortedCollection = $mergedCollection->sortByDesc('created_at');
+
+            foreach ($sortedCollection as $sale) {
+                $sale = $this->makeTitle($sale);
+            }
+
+            $export = new salesExport($sortedCollection);
+
+            return Excel::download($export, 'sales.xlsx');
+        } catch (\Exception $e) {
+            \Log::error('exportExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
-            $querypart =  WebinarPartPayment :: query();
-       
-        $salesQuerypart = $this->getSalesFilterspart($querypart, $request);
-        $salespart = $salesQuerypart->selectRaw("*, UNIX_TIMESTAMP(created_at) as created_at")
-        ->selectRaw("amount as total_amount")
-        ->selectRaw("'part' as type")
-        ->orderByRaw('created_at DESC')
-            ->with([
-                 'buyer',
-                'webinar'
-            ]) ->get();
-            
-            $mergedData = $sales->merge($salespart);
-            $mergedCollection = collect($mergedData);
-
-    // // Sort by date or any other criteria if needed
-    $sortedCollection = $mergedCollection->sortByDesc('created_at');
-
-        foreach ($sortedCollection as $sale) {
-            $sale = $this->makeTitle($sale);
+            throw $e;
         }
-
-        $export = new salesExport($sortedCollection);
-
-        return Excel::download($export, 'sales.xlsx');
     }
 }

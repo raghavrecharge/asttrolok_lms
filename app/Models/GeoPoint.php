@@ -7,17 +7,11 @@ class GeoPoint
     public $latitude;
     public $longitude;
 
-    /**
-     * Point constructor.
-     * @param $latitude
-     * @param $longitude
-     */
     public function __construct($latitude = null, $longitude = null)
     {
         $this->latitude = $latitude;
         $this->longitude = $longitude;
     }
-
 
     public function parse($point)
     {
@@ -57,6 +51,5 @@ class GeoPoint
         }
         return "POINT({$this->latitude} {$this->longitude})";
     }
-
 
 }

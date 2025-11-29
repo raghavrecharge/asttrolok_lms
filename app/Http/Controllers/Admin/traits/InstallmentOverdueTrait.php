@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin\traits;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 use App\Exports\InstallmentOverdueExport;
 use App\Exports\InstallmentOverdueHistoriesExport;
@@ -18,17 +20,27 @@ trait InstallmentOverdueTrait
 {
     public function overdueLists(Request $request)
     {
-        $this->authorize('admin_installments_overdue_lists');
+        try {
+            $this->authorize('admin_installments_overdue_lists');
 
-        $orders = $this->getOverdueListsQuery($request)
-            ->paginate(10);
+            $orders = $this->getOverdueListsQuery($request)
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('update.overdue_installments'),
-            'orders' => $orders
-        ];
+            $data = [
+                'pageTitle' => trans('update.overdue_installments'),
+                'orders' => $orders
+            ];
 
-        return view('admin.financial.installments.overdue_installments', $data);
+            return view('admin.financial.installments.overdue_installments', $data);
+        } catch (\Exception $e) {
+            \Log::error('overdueLists error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function getOverdueListsQuery(Request $request)
@@ -43,7 +55,7 @@ trait InstallmentOverdueTrait
                 DB::raw('((installment_steps.deadline * 86400) + installment_orders.created_at) as overdue_date')
             )
             ->whereRaw("((installment_steps.deadline * 86400) + installment_orders.created_at) < {$time}")
-            ->where(function ($query) { // Where Doesnt Have payment
+            ->where(function ($query) {
                 $query->whereRaw("installment_order_payments.id < 1");
                 $query->orWhereRaw("installment_order_payments.id is null");
             })
@@ -55,27 +67,47 @@ trait InstallmentOverdueTrait
 
     public function overdueListsExportExcel(Request $request)
     {
-        $this->authorize('admin_installments_overdue_lists');
+        try {
+            $this->authorize('admin_installments_overdue_lists');
 
-        $orders = $this->getOverdueListsQuery($request)->get();
+            $orders = $this->getOverdueListsQuery($request)->get();
 
-        $export = new InstallmentOverdueExport($orders);
-        return Excel::download($export, 'InstallmentOverdue.xlsx');
+            $export = new InstallmentOverdueExport($orders);
+            return Excel::download($export, 'InstallmentOverdue.xlsx');
+        } catch (\Exception $e) {
+            \Log::error('overdueListsExportExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function overdueHistories(Request $request)
     {
-        $this->authorize('admin_installments_overdue_lists');
+        try {
+            $this->authorize('admin_installments_overdue_lists');
 
-        $orders = $this->getOverdueHistoriesQuery($request)
-            ->paginate(10);
+            $orders = $this->getOverdueHistoriesQuery($request)
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('update.overdue_installments'),
-            'orders' => $orders
-        ];
+            $data = [
+                'pageTitle' => trans('update.overdue_installments'),
+                'orders' => $orders
+            ];
 
-        return view('admin.financial.installments.overdue_history', $data);
+            return view('admin.financial.installments.overdue_history', $data);
+        } catch (\Exception $e) {
+            \Log::error('overdueHistories error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function getOverdueHistoriesQuery(Request $request)
@@ -94,7 +126,7 @@ trait InstallmentOverdueTrait
             ->whereRaw("((installment_steps.deadline * 86400) + installment_orders.created_at) < {$time}")
             ->where('installment_orders.status', 'open')
             ->where(function ($query) {
-                $query->where(function ($query) { // Where Doesnt Have payment
+                $query->where(function ($query) {
                     $query->whereRaw("installment_order_payments.id < 1");
                     $query->orWhereRaw("installment_order_payments.id is null");
                 });
@@ -107,12 +139,22 @@ trait InstallmentOverdueTrait
 
     public function overdueHistoriesExportExcel(Request $request)
     {
-        $this->authorize('admin_installments_overdue_lists');
+        try {
+            $this->authorize('admin_installments_overdue_lists');
 
-        $orders = $this->getOverdueHistoriesQuery($request)
-            ->paginate(10);
+            $orders = $this->getOverdueHistoriesQuery($request)
+                ->paginate(10);
 
-        $export = new InstallmentOverdueHistoriesExport($orders);
-        return Excel::download($export, 'InstallmentOverdueHistories.xlsx');
+            $export = new InstallmentOverdueHistoriesExport($orders);
+            return Excel::download($export, 'InstallmentOverdueHistories.xlsx');
+        } catch (\Exception $e) {
+            \Log::error('overdueHistoriesExportExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

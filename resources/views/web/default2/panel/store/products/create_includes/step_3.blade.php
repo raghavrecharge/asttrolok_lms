@@ -14,7 +14,6 @@
             </div>
             <button id="productAddFile" data-product-id="{{ $product->id }}" type="button" class="btn btn-primary btn-sm mt-15">{{ trans('public.add_new_files') }}</button>
 
-
             <div class="accordion-content-wrapper mt-15" id="filesAccordion" role="tablist" aria-multiselectable="true">
                 @if(!empty($product->files) and count($product->files))
                     <ul class="draggable-lists" data-order-path="/panel/store/products/files/order-items">
@@ -37,7 +36,6 @@
 
         </div>
     @endif
-
 
     <div class="col-12 col-md-6 mt-15">
 

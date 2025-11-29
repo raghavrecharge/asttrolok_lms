@@ -43,7 +43,6 @@
                                         <div class="invalid-feedback">@error('webinar_id') {{ $message }} @enderror</div>
                                     </div>
 
-
                                     <div class="form-group">
                                         <label class="input-label control-label">{!! trans('update.color') !!}</label>
                                         <select name="color" id="colorSelect" class="form-control @error('color') is-invalid @enderror">
@@ -78,7 +77,6 @@
                             <textarea name="message" class="summernote form-control text-left  @error('message') is-invalid @enderror">{{ (!empty($noticeboard)) ? $noticeboard->message :'' }}</textarea>
                             <div class="invalid-feedback">@error('message') {{ $message }} @enderror</div>
                         </div>
-
 
                         <div class="form-group">
                             <div>

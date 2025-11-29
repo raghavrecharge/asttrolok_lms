@@ -7,7 +7,6 @@ use App\Models\WebinarChapter as Model;
 class WebinarChapter extends Model
 {
 
-
     public function sessions()
     {
         return $this->hasMany('App\Models\Api\Session', 'chapter_id', 'id');
@@ -69,7 +68,6 @@ class WebinarChapter extends Model
 
         ];
     }
-
 
     public function getChapterContentAttribute()
     {

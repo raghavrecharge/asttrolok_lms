@@ -16,7 +16,6 @@
         <input type="hidden" name="page" value="personalization">
         <input type="hidden" name="cookie_settings" value="cookie_settings">
 
-
         <h5 class="mb-3">{{ trans('update.cookie_settings_modal') }}</h5>
         <div class="row">
             <div class="col-12 col-md-6">
@@ -55,7 +54,6 @@
 
                         <button type="button" data-parent="cookie_settings_modal_items" data-main-row="cookieSettingsItemsMainRow" class="btn btn-success add-btn"><i class="fa fa-plus"></i> {{ trans('admin/main.add') }}</button>
                     </div>
-
 
                     @if(!empty($itemValue) and !empty($itemValue['cookie_settings_modal_items']))
                         @foreach($itemValue['cookie_settings_modal_items'] as $modalItemKey => $modalItemValue)

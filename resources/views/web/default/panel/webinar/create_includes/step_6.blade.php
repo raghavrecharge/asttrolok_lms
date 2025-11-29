@@ -2,7 +2,6 @@
     <link href="{{ config('app.js_css_url') }}/assets/default/vendors/sortable/jquery-ui.min.css"/>
 @endpush
 
-
 <section class="mt-50">
     <div class="">
         <h2 class="section-title after-line">{{ trans('public.faq') }} ({{ trans('public.optional') }})</h2>
@@ -87,7 +86,6 @@
         )
     </div>
 @endforeach
-
 
 @push('scripts_bottom')
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/sortable/jquery-ui.min.js"></script>

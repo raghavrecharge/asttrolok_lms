@@ -38,7 +38,6 @@
                     </div>
                 </div>
 
-
                 <div class=" mt-4">
                     <button class="btn btn-primary">{{ trans('admin/main.submit') }}</button>
                 </div>

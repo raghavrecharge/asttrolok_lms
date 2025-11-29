@@ -7,7 +7,6 @@
                     <input type="hidden" name="item_id" value="{{ $navbarButton->id }}">
                 @endif
 
-
                 @if(!empty(getGeneralSettings('content_translate')))
                     <div class="form-group">
                         <label class="input-label">{{ trans('auth.language') }}</label>
@@ -47,7 +46,6 @@
                     </div>
                     @enderror
                 </div>
-
 
                 <div class="form-group">
                     <label>{{ trans('admin/main.title') }}</label>

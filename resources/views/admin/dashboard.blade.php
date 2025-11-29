@@ -8,7 +8,6 @@
 
 @section('content')
 
-
     <section class="section">
         <div class="row">
             <div class="col-12 mb-4">
@@ -87,7 +86,6 @@
                     @endif
                 @endcan
             </div>
-
 
             <div class="col-lg-4 col-md-4 col-sm-12">
                 @can('admin_general_dashboard_income_statistics')
@@ -243,7 +241,6 @@
 
         </div>
 
-
         <div class="row">
             @can('admin_general_dashboard_sales_statistics_chart')
                 <div class="col-lg-8 col-md-12 col-12 col-sm-12">
@@ -367,7 +364,6 @@
             @endcan
         </div>
 
-
         <div class="row">
 
             @can('admin_general_dashboard_recent_tickets')
@@ -487,7 +483,6 @@
                             <div class="card-body p-0">
                                 <div class="tickets-list">
 
-
                                     @foreach($recentCourses['courses'] as $course)
                                         <a href="{{ getAdminPanelUrl() }}/webinars/{{ $course->id }}/edit" class="ticket-item">
                                             <div class="ticket-title">
@@ -523,7 +518,6 @@
                                             </div>
                                         </a>
                                     @endforeach
-
 
                                     <a href="{{ getAdminPanelUrl() }}/webinars?type=course" class="ticket-item ticket-more">
                                         {{trans('admin/main.view_all')}} <i class="fas fa-chevron-right"></i>

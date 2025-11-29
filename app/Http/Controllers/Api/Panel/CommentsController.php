@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Api\Controller;
 use App\Http\Controllers\Api\Objects\BlogObj;
 use App\Http\Controllers\Api\Objects\UserObj;
@@ -19,63 +22,88 @@ class CommentsController extends Controller
 {
     public function list(Request $request)
     {
-        $data = [
-            'my_comment' => $this->myComments($request),
-            'class_comment' => $this->myClassComments($request),
-        ];
-        return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), $data);
+        try {
+            $data = [
+                'my_comment' => $this->myComments($request),
+                'class_comment' => $this->myClassComments($request),
+            ];
+            return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), $data);
+        } catch (\Exception $e) {
+            \Log::error('list error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function myClassComments(Request $request)
     {
-        $user = apiAuth();
+        try {
+            $user = apiAuth();
 
-        $comments = Comment::where('status', 'active')
-            ->whereHas('webinar', function ($query) use ($user) {
-                $query->where(function ($query) use ($user) {
-                    $query->where('creator_id', $user->id);
-                    $query->orWhere('teacher_id', $user->id);
-                });
-            })->handleFilters()->orderBy('created_at', 'desc')
-            ->get();
+            $comments = Comment::where('status', 'active')
+                ->whereHas('webinar', function ($query) use ($user) {
+                    $query->where(function ($query) use ($user) {
+                        $query->where('creator_id', $user->id);
+                        $query->orWhere('teacher_id', $user->id);
+                    });
+                })->handleFilters()->orderBy('created_at', 'desc')
+                ->get();
 
-
-        foreach ($comments->whereNull('viewed_at') as $comment) {
-            $comment->update([
-                'viewed_at' => time()
+            foreach ($comments->whereNull('viewed_at') as $comment) {
+                $comment->update([
+                    'viewed_at' => time()
+                ]);
+            }
+            $comments = $comments->map(function ($comment) {
+                return $comment->details;
+            });
+            return $comments;
+        } catch (\Exception $e) {
+            \Log::error('myClassComments error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
+            
+            throw $e;
         }
-        $comments = $comments->map(function ($comment) {
-            return $comment->details;
-        });
-        return $comments;
-
     }
 
     public function myComments(Request $request)
     {
-        $user = apiAuth();
+        try {
+            $user = apiAuth();
 
-        $query = Comment::where('user_id', $user->id);
+            $query = Comment::where('user_id', $user->id);
 
-        $webinar_query = clone $query;
-        $webinar_comments = $webinar_query->whereNotNull('webinar_id')
-            ->handleFilters()->orderBy('created_at', 'desc')
-            ->get()->map(function ($comment) {
-                return $comment->details;
-            });;
+            $webinar_query = clone $query;
+            $webinar_comments = $webinar_query->whereNotNull('webinar_id')
+                ->handleFilters()->orderBy('created_at', 'desc')
+                ->get()->map(function ($comment) {
+                    return $comment->details;
+                });;
 
+            $blog_comments = clone $query;
+            $blog_comments = $blog_comments->whereNotNull('blog_id')
+                ->handleFilters()->orderBy('created_at', 'desc')
+                ->get()->map(function ($comment) {
+                    return $comment->details;
+                });
 
-        $blog_comments = clone $query;
-        $blog_comments = $blog_comments->whereNotNull('blog_id')
-            ->handleFilters()->orderBy('created_at', 'desc')
-            ->get()->map(function ($comment) {
-                return $comment->details;
-            });
-
-
-        return ['blogs' => $blog_comments, 'webinar' => $webinar_comments];
-
+            return ['blogs' => $blog_comments, 'webinar' => $webinar_comments];
+        } catch (\Exception $e) {
+            \Log::error('myComments error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function handleFilter($query, $request)
@@ -109,225 +137,243 @@ class CommentsController extends Controller
 
     public function store(Request $request)
     {
-        $rules = [
-            'item_id' => 'required',
-            'item_name' => ['required', Rule::in(['blog', 'webinar', 'product', 'bundle'])],
-            'comment' => 'required|string',
-        ];
-
-
-        $item_name = $request->input('item_name');
-        $item_id = $request->input('item_id');
-
-        if ($item_name == 'webinar') {
-            $rules['item_id'] = 'required|exists:webinars,id';
-        } elseif ($item_name == 'blog') {
-            $rules['item_id'] = 'required|exists:blog,id';
-        } elseif ($item_name == 'product') {
-            $rules['item_id'] = 'required|exists:products,id';
-        } elseif ($item_name == 'bundle') {
-            $rules['item_id'] = 'required|exists:bundles,id';
-        }
-        validateParam($request->all(), $rules);
-
-
-        $user = apiAuth();
-        $item_name = $item_name . '_id';
-
-        $comment = Comment::create([
-            $item_name => $item_id,
-            'user_id' => $user->id,
-            'comment' => $request->input('comment'),
-            'reply_id' => $request->input('reply_id'),
-            'status' => $request->input('status') ?? Comment::$pending,
-            'created_at' => time()
-        ]);
-
-        if ($item_name == 'webinar_id') {
-            $webinar = Webinar::FindOrFail($item_id);
-            $notifyOptions = [
-                '[c.title]' => $webinar->title,
-                '[u.name]' => $user->full_name
+        try {
+            $rules = [
+                'item_id' => 'required',
+                'item_name' => ['required', Rule::in(['blog', 'webinar', 'product', 'bundle'])],
+                'comment' => 'required|string',
             ];
-            sendNotification('new_comment', $notifyOptions, 1);
-        } elseif ($item_name == 'product_id') {
-            $product = $comment->product;
 
-            $notifyOptions = [
-                '[p.title]' => $product->title,
-                '[u.name]' => $user->full_name
-            ];
-            sendNotification('product_new_comment', $notifyOptions, 1);
-        } elseif ($item_name == 'blog_id') {
-            $blog = $comment->blog;
+            $item_name = $request->input('item_name');
+            $item_id = $request->input('item_id');
 
-            if (!empty($blog) and !$blog->author->isAdmin()) {
+            if ($item_name == 'webinar') {
+                $rules['item_id'] = 'required|exists:webinars,id';
+            } elseif ($item_name == 'blog') {
+                $rules['item_id'] = 'required|exists:blog,id';
+            } elseif ($item_name == 'product') {
+                $rules['item_id'] = 'required|exists:products,id';
+            } elseif ($item_name == 'bundle') {
+                $rules['item_id'] = 'required|exists:bundles,id';
+            }
+            validateParam($request->all(), $rules);
+
+            $user = apiAuth();
+            $item_name = $item_name . '_id';
+
+            $comment = Comment::create([
+                $item_name => $item_id,
+                'user_id' => $user->id,
+                'comment' => $request->input('comment'),
+                'reply_id' => $request->input('reply_id'),
+                'status' => $request->input('status') ?? Comment::$pending,
+                'created_at' => time()
+            ]);
+
+            if ($item_name == 'webinar_id') {
+                $webinar = Webinar::FindOrFail($item_id);
                 $notifyOptions = [
-                    '[blog_title]' => $blog->title,
+                    '[c.title]' => $webinar->title,
                     '[u.name]' => $user->full_name
                 ];
-                sendNotification('new_comment_for_instructor_blog_post', $notifyOptions, $blog->author->id);
+                sendNotification('new_comment', $notifyOptions, 1);
+            } elseif ($item_name == 'product_id') {
+                $product = $comment->product;
 
-                $buyStoreReward = RewardAccounting::calculateScore(Reward::COMMENT_FOR_INSTRUCTOR_BLOG);
-                RewardAccounting::makeRewardAccounting($comment->user_id, $buyStoreReward, Reward::COMMENT_FOR_INSTRUCTOR_BLOG, $comment->id);
+                $notifyOptions = [
+                    '[p.title]' => $product->title,
+                    '[u.name]' => $user->full_name
+                ];
+                sendNotification('product_new_comment', $notifyOptions, 1);
+            } elseif ($item_name == 'blog_id') {
+                $blog = $comment->blog;
+
+                if (!empty($blog) and !$blog->author->isAdmin()) {
+                    $notifyOptions = [
+                        '[blog_title]' => $blog->title,
+                        '[u.name]' => $user->full_name
+                    ];
+                    sendNotification('new_comment_for_instructor_blog_post', $notifyOptions, $blog->author->id);
+
+                    $buyStoreReward = RewardAccounting::calculateScore(Reward::COMMENT_FOR_INSTRUCTOR_BLOG);
+                    RewardAccounting::makeRewardAccounting($comment->user_id, $buyStoreReward, Reward::COMMENT_FOR_INSTRUCTOR_BLOG, $comment->id);
+                }
             }
+
+            return apiResponse2(1, 'stored',
+                trans('product.comment_success_store_msg'),
+                null,
+                trans('product.comment_success_store')
+
+            );
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return apiResponse2(1, 'stored',
-            trans('product.comment_success_store_msg'),
-            null,
-            trans('product.comment_success_store')
-
-        );
     }
 
     public function update(Request $request, $id)
     {
-        validateParam($request->all(), [
-            'comment' => 'required',
-        ]);
+        try {
+            validateParam($request->all(), [
+                'comment' => 'required',
+            ]);
 
-        $user = apiAuth();
+            $user = apiAuth();
 
-        $comment = Comment::where('id', $id)
-            ->where('user_id', $user->id)
-            ->first();
+            $comment = Comment::where('id', $id)
+                ->where('user_id', $user->id)
+                ->first();
 
-        if (empty($comment)) {
-            abort(404);
+            if (empty($comment)) {
+                abort(404);
+            }
+            $comment->update([
+                'comment' => $request->input('comment'),
+                'status' => 'pending',
+            ]);
+            return apiResponse2(1, 'updated', trans('api.public.updated'));
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        $comment->update([
-            'comment' => $request->input('comment'),
-            'status' => 'pending',
-        ]);
-        return apiResponse2(1, 'updated', trans('api.public.updated'));
-
     }
 
     public function destroy(Request $request, $id)
     {
-        $user = apiAuth();
-        $comment = Comment::where('id', $id)
-            ->where('user_id', $user->id)
-            ->first();
-        if (!$comment) {
-            abort(404);
+        try {
+            $user = apiAuth();
+            $comment = Comment::where('id', $id)
+                ->where('user_id', $user->id)
+                ->first();
+            if (!$comment) {
+                abort(404);
+            }
+            $comment->delete();
+
+            return apiResponse2(1, 'deleted', trans('api.public.deleted'));
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        $comment->delete();
-
-        return apiResponse2(1, 'deleted', trans('api.public.deleted'));
-
-
     }
 
     public function reply(Request $request, $id)
     {
-        validateParam($request->all(), [
-            'reply' => 'required|string'
-        ]);
+        try {
+            validateParam($request->all(), [
+                'reply' => 'required|string'
+            ]);
 
-        $user = apiAuth();
+            $user = apiAuth();
 
+            $comment = Comment::where('id', $id)->first();
+            if ($comment->webinar_id) {
+                $item_name = 'webinar_id';
+            } elseif ($comment->blog_id) {
+                $item_name = 'blog_id';
+            } elseif ($comment->bundle_id) {
+                $item_name = 'bundle_id';
+            } elseif ($comment->product_id) {
+                $item_name = 'product_id';
+            }
 
-        $comment = Comment::where('id', $id)->first();
-        if ($comment->webinar_id) {
-            $item_name = 'webinar_id';
-        } elseif ($comment->blog_id) {
-            $item_name = 'blog_id';
-        } elseif ($comment->bundle_id) {
-            $item_name = 'bundle_id';
-        } elseif ($comment->product_id) {
-            $item_name = 'product_id';
+            if (!$comment) {
+                abort(404);
+            }
+            $status = 'pending';
+
+            if ($comment->webinar->creator_id ?? null == $user->id or $comment->product->creator_id ?? null == $user->id) {
+                $status = 'active';
+            }
+
+            Comment::create([
+                'user_id' => $user->id,
+                $item_name => $id,
+                'comment' => $request->get('reply'),
+                'webinar_id' => $comment->webinar_id,
+                'product_id' => $comment->product_id,
+                'reply_id' => $comment->id,
+                'status' => 'pending',
+                'created_at' => time()
+            ]);
+
+            return apiResponse2(1, 'stored', trans('api.public.stored'));
+        } catch (\Exception $e) {
+            \Log::error('reply error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        /* $comment = Comment::where('id', $id)
-             ->where(function ($query) use ($user) {
-                 $query->where('user_id', $user->id);
-                 $query->orWhereHas('webinar', function ($query) use ($user) {
-                     $query->where(function ($query) use ($user) {
-                         $query->where('creator_id', $user->id);
-                         $query->orWhere('teacher_id', $user->id);
-                     });
-                 });
-                 $query->orWhereHas('product', function ($query) use ($user) {
-                     $query->where('creator_id', $user->id);
-                 });
-             })->first();*/
-
-        if (!$comment) {
-            abort(404);
-        }
-        $status = 'pending';
-
-        if ($comment->webinar->creator_id ?? null == $user->id or $comment->product->creator_id ?? null == $user->id) {
-            $status = 'active';
-        }
-
-        Comment::create([
-            'user_id' => $user->id,
-            $item_name => $id,
-            'comment' => $request->get('reply'),
-            'webinar_id' => $comment->webinar_id,
-            'product_id' => $comment->product_id,
-            'reply_id' => $comment->id,
-            'status' => 'pending',
-            'created_at' => time()
-        ]);
-
-        return apiResponse2(1, 'stored', trans('api.public.stored'));
-
-
     }
 
     public function report(Request $request, $id)
     {
-        validateParam($request->all(), [
-            'message' => 'required|string'
-        ]);
+        try {
+            validateParam($request->all(), [
+                'message' => 'required|string'
+            ]);
 
-        $user = apiAuth();
-        $userWebinarsIds = $user->webinars->pluck('id')->toArray();
+            $user = apiAuth();
+            $userWebinarsIds = $user->webinars->pluck('id')->toArray();
 
-        $comment = Comment::where('id', $id)
-            /*  ->where(function ($query) use ($user, $userWebinarsIds) {
-                  $query->where('user_id', $user)
-                      ->orWhereIn('webinar_id', $userWebinarsIds);})*/
-            ->first();
-        if (!$comment) {
-            abort(404);
+            $comment = Comment::where('id', $id)
+
+                ->first();
+            if (!$comment) {
+                abort(404);
+            }
+            $item_name = null;
+            if ($comment->webinar_id) {
+                $idd= $comment->webinar_id;
+                $item_name = 'webinar_id';
+            } elseif ($comment->blog_id) {
+                $idd= $comment->blog_id;
+                $item_name = 'blog_id';
+            } elseif ($comment->bundle_id) {
+                $idd= $comment->bundle_id;
+                $item_name = 'bundle_id';
+            } elseif ($comment->product_id) {
+                $idd= $comment->product_id;
+                $item_name = 'product_id';
+            }
+
+            CommentReport::create([
+                $item_name => $idd,
+                'user_id' => $user->id,
+                'comment_id' => $comment->id,
+                'message' => $request->input('message'),
+                'created_at' => time()
+            ]);
+
+            return apiResponse2(1, 'stored', trans('panel.report_success'));
+        } catch (\Exception $e) {
+            \Log::error('report error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        $item_name = null;
-        if ($comment->webinar_id) {
-            $idd= $comment->webinar_id;
-            $item_name = 'webinar_id';
-        } elseif ($comment->blog_id) {
-            $idd= $comment->blog_id;
-            $item_name = 'blog_id';
-        } elseif ($comment->bundle_id) {
-            $idd= $comment->bundle_id;
-            $item_name = 'bundle_id';
-        } elseif ($comment->product_id) {
-            $idd= $comment->product_id;
-            $item_name = 'product_id';
-        }
-
-        CommentReport::create([
-            $item_name => $idd,
-            'user_id' => $user->id,
-            'comment_id' => $comment->id,
-            'message' => $request->input('message'),
-            'created_at' => time()
-        ]);
-
-        return apiResponse2(1, 'stored', trans('panel.report_success'));
-
     }
 }
-
-
-
-
-
-
-
-
 

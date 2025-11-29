@@ -8,7 +8,7 @@ class Cart extends Model
 {
 
     public function getDetailsAttribute(){
-       // dd($this->webinar->brief ) ;
+
         return [
             'id'=>$this->id  ,
             'user'=>$this->user->brief ,
@@ -16,7 +16,6 @@ class Cart extends Model
             'price'=>$this->price ,
             'discount'=>$this->discount ,
             'meeting'=>$this->reserveMeeting->details??null
-
 
         ] ;
     }
@@ -26,7 +25,7 @@ class Cart extends Model
         return $this->webinar->price - $this->webinar->getDiscount($this->ticket) ;
         }
         return null ;
-      //  $cart->webinar->price - $cart->webinar->getDiscount($cart->ticket), 2, ".", ""
+
     }
     public function getPriceAttribute(){
         if($this->webinar_id){

@@ -49,7 +49,6 @@
                                     @enderror
                                 </div>
 
-
                                 <div class="form-group">
                                     <label class="input-label">{{ trans('admin/main.trend_icon') }}</label>
                                     <div class="input-group">

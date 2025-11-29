@@ -55,7 +55,7 @@ $url_array=explode("/",$main_url);
 ?>
 <meta property="og:url" content="https://www.asttrolok.com{{$main_url}}">
 <?php
-//	echo $main_url;
+
 if(isset($url_array[2])){
 if($url_array[1]=="blog")
 {
@@ -78,7 +78,7 @@ else{
 <meta property="twitter:description" content="{{ (!empty($ogDescription)) ? $ogDescription : $pageDescription }}">
 @endif
 	<?php
-//	echo $main_url;
+
 if(isset($url_array[2])){
 if($url_array[1]=="blog")
 {
@@ -96,17 +96,6 @@ else{
 {!! getSeoMetas('extra_meta_tags') !!}
 
 <script defer>
-//     setTimeout(function() {
-//     var headID = document.getElementsByTagName("head")[0];
-//     var newScript = document.createElement('script');
-//     newScript.type = 'text/javascript';
-//     newScript.src = '//code.jivosite.com/widget/0vDO9nN5Jy';
-//     headID.appendChild(newScript);
-
-// //      jivo_api.open = function() {
-// //     return false;
-// // };
-// }, 20000);
 
  </script>
 
@@ -122,7 +111,6 @@ else{
         document.head.appendChild(script);
       }
 
-      // Load after 10s OR first interaction
       setTimeout(loadJivo, 10000);
       ['scroll', 'mousemove', 'touchstart', 'click'].forEach(evt => {
         window.addEventListener(evt, loadJivo, { once: true });
@@ -135,7 +123,7 @@ else{
 $main_url =  $_SERVER['REQUEST_URI'];
 
 	$url_array=explode("/",$main_url);
- //	echo $main_url;
+
 if(isset($url_array[1])){
 	if($url_array[1]=="instructors")
 	{	?>
@@ -159,10 +147,8 @@ if(isset($url_array[1])){
 	}
 	?>
 <?php
-$host = $_SERVER['HTTP_HOST'];        // domain (www.asttrolok.com)
-// $host = request()->getHost();
+$host = $_SERVER['HTTP_HOST'];
 
-// full canonical URL banao
 $canonical = "https://" . $host . $main_url;
 ?>
 

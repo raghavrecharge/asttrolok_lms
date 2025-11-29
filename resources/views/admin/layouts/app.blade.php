@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="/assets/vendors/fontawesome/css/all.min.css"/>
     <link rel="stylesheet" href="/assets/default/vendors/toast/jquery.toast.min.css">
 
-
     @stack('libraries_top')
 
     <link rel="stylesheet" href="/assets/admin/css/style.css">
@@ -42,7 +41,6 @@
         @include('admin.includes.navbar')
 
         @include('admin.includes.sidebar')
-
 
         <div class="main-content">
 

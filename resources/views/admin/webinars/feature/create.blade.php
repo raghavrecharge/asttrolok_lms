@@ -44,7 +44,6 @@
                                             <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
                                         @endif
 
-
                                         <div class="form-group">
                                             <label class="input-label">{{ trans('admin/main.position') }}</label>
                                             <select name="page" class="form-control">

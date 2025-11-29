@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Mail\SendNotifications;
 use App\Models\Group;
@@ -14,57 +17,87 @@ class NotificationsController extends Controller
 {
     public function index()
     {
-        $this->authorize('admin_notifications_list');
+        try {
+            $this->authorize('admin_notifications_list');
 
-        $notifications = Notification::where('user_id', 1)
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            $notifications = Notification::where('user_id', 1)
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('admin/main.notifications'),
-            'notifications' => $notifications
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.notifications'),
+                'notifications' => $notifications
+            ];
 
-        return view('admin.notifications.lists', $data);
+            return view('admin.notifications.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function posted()
     {
-        $this->authorize('admin_notifications_posted_list');
+        try {
+            $this->authorize('admin_notifications_posted_list');
 
-        $notifications = Notification::where('sender', Notification::$AdminSender)
-            ->orderBy('created_at', 'desc')
-            ->with([
-                'senderUser' => function ($query) {
-                    $query->select('id', 'full_name');
-                },
-                'user' => function ($query) {
-                    $query->select('id', 'full_name');
-                },
-                'notificationStatus'
-            ])
-            ->paginate(10);
+            $notifications = Notification::where('sender', Notification::$AdminSender)
+                ->orderBy('created_at', 'desc')
+                ->with([
+                    'senderUser' => function ($query) {
+                        $query->select('id', 'full_name');
+                    },
+                    'user' => function ($query) {
+                        $query->select('id', 'full_name');
+                    },
+                    'notificationStatus'
+                ])
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('admin/main.posted_notifications'),
-            'notifications' => $notifications
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.posted_notifications'),
+                'notifications' => $notifications
+            ];
 
-        return view('admin.notifications.posted', $data);
+            return view('admin.notifications.posted', $data);
+        } catch (\Exception $e) {
+            \Log::error('posted error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function create()
     {
-        $this->authorize('admin_notifications_send');
+        try {
+            $this->authorize('admin_notifications_send');
 
-        $userGroups = Group::all();
+            $userGroups = Group::all();
 
-        $data = [
-            'pageTitle' => trans('notification.send_notification'),
-            'userGroups' => $userGroups
-        ];
+            $data = [
+                'pageTitle' => trans('notification.send_notification'),
+                'userGroups' => $userGroups
+            ];
 
-        return view('admin.notifications.send', $data);
+            return view('admin.notifications.send', $data);
+        } catch (\Exception $e) {
+            \Log::error('create error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function store(Request $request)
@@ -100,126 +133,173 @@ class NotificationsController extends Controller
                 try{
                 \Mail::to($user->email)->send(new SendNotifications(['title' => $data['title'], 'message' => $data['message']]));
             } catch (\Exception $e) {
-    // Log the error message if needed
-    // Log::error('Mail sending failed: ' . $e->getMessage());
+
 }
             }
         }
-
 
         return redirect(getAdminPanelUrl().'/notifications/posted');
     }
 
     public function edit($id)
     {
-        $this->authorize('admin_notifications_edit');
+        try {
+            $this->authorize('admin_notifications_edit');
 
-        $notification = Notification::where('id', $id)
-            ->with([
-                'user' => function ($query) {
-                    $query->select('id', 'full_name');
-                },
-                'group'
-            ])->first();
+            $notification = Notification::where('id', $id)
+                ->with([
+                    'user' => function ($query) {
+                        $query->select('id', 'full_name');
+                    },
+                    'group'
+                ])->first();
 
-        if (!empty($notification)) {
-            $userGroups = Group::all();
+            if (!empty($notification)) {
+                $userGroups = Group::all();
 
-            $data = [
-                'pageTitle' => trans('notification.edit_notification'),
-                'userGroups' => $userGroups,
-                'notification' => $notification
-            ];
+                $data = [
+                    'pageTitle' => trans('notification.edit_notification'),
+                    'userGroups' => $userGroups,
+                    'notification' => $notification
+                ];
 
-            return view('admin.notifications.send', $data);
+                return view('admin.notifications.send', $data);
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
     }
 
     public function update(Request $request, $id)
     {
-        $this->authorize('admin_notifications_edit');
+        try {
+            $this->authorize('admin_notifications_edit');
 
-        $this->validate($request, [
-            'title' => 'required|string',
-            'type' => 'required|string',
-            'user_id' => 'required_if:type,single',
-            'group_id' => 'required_if:type,group',
-            'webinar_id' => 'required_if:type,course_students',
-            'message' => 'required|string',
-        ]);
+            $this->validate($request, [
+                'title' => 'required|string',
+                'type' => 'required|string',
+                'user_id' => 'required_if:type,single',
+                'group_id' => 'required_if:type,group',
+                'webinar_id' => 'required_if:type,course_students',
+                'message' => 'required|string',
+            ]);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $notification = Notification::findOrFail($id);
+            $notification = Notification::findOrFail($id);
 
-        $notification->update([
-            'user_id' => !empty($data['user_id']) ? $data['user_id'] : null,
-            'group_id' => !empty($data['group_id']) ? $data['group_id'] : null,
-            'webinar_id' => !empty($data['webinar_id']) ? $data['webinar_id'] : null,
-            'title' => $data['title'],
-            'message' => $data['message'],
-            'type' => $data['type'],
-            'created_at' => time()
-        ]);
+            $notification->update([
+                'user_id' => !empty($data['user_id']) ? $data['user_id'] : null,
+                'group_id' => !empty($data['group_id']) ? $data['group_id'] : null,
+                'webinar_id' => !empty($data['webinar_id']) ? $data['webinar_id'] : null,
+                'title' => $data['title'],
+                'message' => $data['message'],
+                'type' => $data['type'],
+                'created_at' => time()
+            ]);
 
-        return redirect(getAdminPanelUrl().'/notifications');
+            return redirect(getAdminPanelUrl().'/notifications');
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function delete($id)
     {
-        $this->authorize('admin_notifications_delete');
+        try {
+            $this->authorize('admin_notifications_delete');
 
-        $notification = Notification::findOrFail($id);
+            $notification = Notification::findOrFail($id);
 
-        $notification->delete();
+            $notification->delete();
 
-        return redirect(getAdminPanelUrl().'/notifications');
+            return redirect(getAdminPanelUrl().'/notifications');
+        } catch (\Exception $e) {
+            \Log::error('delete error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function markAllRead()
     {
-        $this->authorize('admin_notifications_markAllRead');
+        try {
+            $this->authorize('admin_notifications_markAllRead');
 
-        $adminUser = User::find(1);
+            $adminUser = User::find(1);
 
-        $unreadNotifications = $adminUser->getUnReadNotifications();
+            $unreadNotifications = $adminUser->getUnReadNotifications();
 
-        if (!empty($unreadNotifications) and !$unreadNotifications->isEmpty()) {
-            foreach ($unreadNotifications as $unreadNotification) {
-                NotificationStatus::updateOrCreate(
-                    [
-                        'user_id' => $adminUser->id,
-                        'notification_id' => $unreadNotification->id,
-                    ],
-                    [
-                        'seen_at' => time()
-                    ]
-                );
+            if (!empty($unreadNotifications) and !$unreadNotifications->isEmpty()) {
+                foreach ($unreadNotifications as $unreadNotification) {
+                    NotificationStatus::updateOrCreate(
+                        [
+                            'user_id' => $adminUser->id,
+                            'notification_id' => $unreadNotification->id,
+                        ],
+                        [
+                            'seen_at' => time()
+                        ]
+                    );
+                }
             }
-        }
 
-        return back();
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('markAllRead error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function markAsRead($id)
     {
-        $this->authorize('admin_notifications_edit');
+        try {
+            $this->authorize('admin_notifications_edit');
 
-        $adminUser = User::find(1);
+            $adminUser = User::find(1);
 
-        NotificationStatus::updateOrCreate(
-            [
-                'user_id' => $adminUser->id,
-                'notification_id' => $id,
-            ],
-            [
-                'seen_at' => time()
-            ]
-        );
+            NotificationStatus::updateOrCreate(
+                [
+                    'user_id' => $adminUser->id,
+                    'notification_id' => $id,
+                ],
+                [
+                    'seen_at' => time()
+                ]
+            );
 
-
-        return response()->json([], 200);
+            return response()->json([], 200);
+        } catch (\Exception $e) {
+            \Log::error('markAsRead error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

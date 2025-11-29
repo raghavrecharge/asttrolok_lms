@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Noticeboard;
 use App\Models\Role;
@@ -12,23 +15,33 @@ class NoticeboardController extends Controller
 {
     public function index(Request $request)
     {
-        $query = $this->filters(Noticeboard::query(), $request);
+        try {
+            $query = $this->filters(Noticeboard::query(), $request);
 
-        $noticeboards = $query->orderBy('created_at', 'desc')
-            ->paginate(10);
+            $noticeboards = $query->orderBy('created_at', 'desc')
+                ->paginate(10);
 
-        $organizations = User::select('id', 'full_name', 'created_at')
-            ->where('role_name', Role::$organization)
-            ->orderBy('created_at', 'desc')
-            ->get();
+            $organizations = User::select('id', 'full_name', 'created_at')
+                ->where('role_name', Role::$organization)
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        $data = [
-            'pageTitle' => trans('panel.noticeboards'),
-            'noticeboards' => $noticeboards,
-            'organizations' => $organizations,
-        ];
+            $data = [
+                'pageTitle' => trans('panel.noticeboards'),
+                'noticeboards' => $noticeboards,
+                'organizations' => $organizations,
+            ];
 
-        return view('admin.noticeboards.lists', $data);
+            return view('admin.noticeboards.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function filters($query, $request)
@@ -65,101 +78,151 @@ class NoticeboardController extends Controller
 
     public function create()
     {
-        $this->authorize('admin_noticeboards_send');
+        try {
+            $this->authorize('admin_noticeboards_send');
 
-        $data = [
-            'pageTitle' => trans('admin/main.new_notice_title')
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.new_notice_title')
+            ];
 
-        return view('admin.noticeboards.send', $data);
+            return view('admin.noticeboards.send', $data);
+        } catch (\Exception $e) {
+            \Log::error('create error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function store(Request $request)
     {
-        $this->authorize('admin_noticeboards_send');
+        try {
+            $this->authorize('admin_noticeboards_send');
 
-        $this->validate($request, [
-            'title' => 'required',
-            'type' => 'required',
-            'message' => 'required',
-        ]);
+            $this->validate($request, [
+                'title' => 'required',
+                'type' => 'required',
+                'message' => 'required',
+            ]);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        Noticeboard::create([
-            'organ_id' => null,
-            'type' => $data['type'],
-            'sender' => 'Staff',
-            'title' => $data['title'],
-            'message' => $data['message'],
-            'created_at' => time()
-        ]);
+            Noticeboard::create([
+                'organ_id' => null,
+                'type' => $data['type'],
+                'sender' => 'Staff',
+                'title' => $data['title'],
+                'message' => $data['message'],
+                'created_at' => time()
+            ]);
 
-        $toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => trans('admin/main.send_noticeboard_success'),
-            'status' => 'success'
-        ];
-        return redirect(getAdminPanelUrl().'/noticeboards')->with(['toast' => $toastData]);
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('admin/main.send_noticeboard_success'),
+                'status' => 'success'
+            ];
+            return redirect(getAdminPanelUrl().'/noticeboards')->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function edit($id)
     {
-        $this->authorize('admin_noticeboards_edit');
+        try {
+            $this->authorize('admin_noticeboards_edit');
 
-        $noticeboard = Noticeboard::findOrFail($id);
+            $noticeboard = Noticeboard::findOrFail($id);
 
-        $data = [
-            'pageTitle' => trans('admin/main.edit_noticeboard'),
-            'noticeboard' => $noticeboard
-        ];
+            $data = [
+                'pageTitle' => trans('admin/main.edit_noticeboard'),
+                'noticeboard' => $noticeboard
+            ];
 
-        return view('admin.noticeboards.send', $data);
+            return view('admin.noticeboards.send', $data);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function update(Request $request,$id)
     {
-        $this->authorize('admin_noticeboards_edit');
+        try {
+            $this->authorize('admin_noticeboards_edit');
 
-        $this->validate($request, [
-            'title' => 'required',
-            'type' => 'required',
-            'message' => 'required',
-        ]);
+            $this->validate($request, [
+                'title' => 'required',
+                'type' => 'required',
+                'message' => 'required',
+            ]);
 
-        $data = $request->all();
-        $noticeboard = Noticeboard::findOrFail($id);
+            $data = $request->all();
+            $noticeboard = Noticeboard::findOrFail($id);
 
-        $noticeboard->update([
-            'organ_id' => null,
-            'type' => $data['type'],
-            'sender' => 'Staff',
-            'title' => $data['title'],
-            'message' => $data['message'],
-            'created_at' => time()
-        ]);
+            $noticeboard->update([
+                'organ_id' => null,
+                'type' => $data['type'],
+                'sender' => 'Staff',
+                'title' => $data['title'],
+                'message' => $data['message'],
+                'created_at' => time()
+            ]);
 
-        $toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => trans('admin/main.edit_noticeboard_success'),
-            'status' => 'success'
-        ];
-        return redirect(getAdminPanelUrl().'/noticeboards')->with(['toast' => $toastData]);
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('admin/main.edit_noticeboard_success'),
+                'status' => 'success'
+            ];
+            return redirect(getAdminPanelUrl().'/noticeboards')->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function delete($id)
     {
-        $this->authorize('admin_noticeboards_delete');
+        try {
+            $this->authorize('admin_noticeboards_delete');
 
-        $notification = Noticeboard::findOrFail($id);
+            $notification = Noticeboard::findOrFail($id);
 
-        $notification->delete();
+            $notification->delete();
 
-        $toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => trans('admin/main.delete_noticeboard_success'),
-            'status' => 'success'
-        ];
-        return redirect(getAdminPanelUrl().'/noticeboards')->with(['toast' => $toastData]);
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('admin/main.delete_noticeboard_success'),
+                'status' => 'success'
+            ];
+            return redirect(getAdminPanelUrl().'/noticeboards')->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('delete error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

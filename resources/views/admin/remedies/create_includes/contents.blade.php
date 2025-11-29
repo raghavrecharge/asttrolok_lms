@@ -23,12 +23,9 @@
     </div>
 @endif
 
-
 <!--<div id="newTextLessonForm" class="d-none">-->
 <!--    @include('admin.remedies.create_includes.accordions.text-lesson',['remedy' => $remedy])-->
 <!--</div>-->
-
-
 
 <!--@if(getFeaturesSettings('remedy_assignment_status'))-->
 <!--    <div id="newAssignmentForm" class="d-none">-->

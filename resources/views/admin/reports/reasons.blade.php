@@ -41,7 +41,6 @@
                                             <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
                                         @endif
 
-
                                         <div id="addAccountTypes" class="ml-0">
                                             <strong class="d-block mb-4">{{ trans('admin/main.add_report_reasons') }}</strong>
 

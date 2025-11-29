@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Mixins\Certificate\MakeCertificate;
 use App\Models\Certificate;
@@ -21,21 +24,98 @@ class CertificateController extends Controller
 
     public function lists(Request $request)
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        if (!$user->isUser()) {
-            $query = Quiz::where('creator_id', $user->id)
+            if (!$user->isUser()) {
+                $query = Quiz::where('creator_id', $user->id)
+                    ->where('status', Quiz::ACTIVE);
+
+                $activeQuizzes = $query->count();
+
+                $quizzesIds = $query->pluck('id')->toArray();
+
+                $achievementsCount = Certificate::whereIn('quiz_id', $quizzesIds)->count();
+
+                $quizResultQuery = QuizzesResult::whereIn('quiz_id', $quizzesIds);
+                $failedResults = deepClone($quizResultQuery)->where('status', QuizzesResult::$failed)->count();
+                $avgGrade = deepClone($quizResultQuery)->where('status', QuizzesResult::$passed)->avg('user_grade');
+
+                $userAllQuizzes = deepClone($query)->get();
+
+                $query = $this->quizFilters(deepClone($query), $request);
+
+                $quizzes = $query->with([
+                    'webinar',
+                    'certificates',
+                    'quizResults' => function ($query) {
+                        $query->orderBy('id', 'desc');
+                    },
+                ])->paginate(10);
+
+                foreach ($quizzes as $quiz) {
+                    $quizResults = $quiz->quizResults;
+
+                    $quiz->avg_grade = $quizResults->where('status', QuizzesResult::$passed)->avg('user_grade');
+                }
+
+                $userWebinars = Webinar::select('id')
+                    ->where(function ($query) use ($user) {
+                        $query->where('creator_id', $user->id)
+                            ->orWhere('teacher_id', $user->id);
+                    })
+                    ->where('status', 'active')
+                    ->get();
+
+                $data = [
+                    'pageTitle' => trans('quiz.certificates_lists'),
+                    'quizzes' => $quizzes,
+                    'activeQuizzes' => $activeQuizzes,
+                    'achievementsCount' => $achievementsCount,
+                    'avgGrade' => round($avgGrade, 2),
+                    'failedResults' => $failedResults,
+                    'userWebinars' => $userWebinars,
+                    'userAllQuizzes' => $userAllQuizzes,
+                ];
+
+                return view('web.default.panel.certificates.list', $data);
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('lists error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    public function achievements(Request $request)
+    {
+        try {
+            $user = auth()->user();
+
+            $results = QuizzesResult::where('user_id', $user->id);
+
+            $failedQuizzes = deepClone($results)->where('status', QuizzesResult::$failed)->count();
+            $avgGrades = deepClone($results)->where('status', QuizzesResult::$passed)->avg('user_grade');
+
+            if (!empty($request->get('grade'))) {
+                $results->where('user_grade', $request->get('grade'));
+            }
+
+            $quizzesIds = $results->where('status', QuizzesResult::$passed)
+                ->pluck('quiz_id')
+                ->toArray();
+            $quizzesIds = array_unique($quizzesIds);
+
+            $query = Quiz::whereIn('id', $quizzesIds)
                 ->where('status', Quiz::ACTIVE);
 
-            $activeQuizzes = $query->count();
-
-            $quizzesIds = $query->pluck('id')->toArray();
-
-            $achievementsCount = Certificate::whereIn('quiz_id', $quizzesIds)->count();
-
-            $quizResultQuery = QuizzesResult::whereIn('quiz_id', $quizzesIds);
-            $failedResults = deepClone($quizResultQuery)->where('status', QuizzesResult::$failed)->count();
-            $avgGrade = deepClone($quizResultQuery)->where('status', QuizzesResult::$passed)->avg('user_grade');
+            $certificatesCount = deepClone($query)->count();
 
             $userAllQuizzes = deepClone($query)->get();
 
@@ -43,110 +123,52 @@ class CertificateController extends Controller
 
             $quizzes = $query->with([
                 'webinar',
-                'certificates',
                 'quizResults' => function ($query) {
                     $query->orderBy('id', 'desc');
                 },
             ])->paginate(10);
 
+            $canDownloadCertificate = false;
             foreach ($quizzes as $quiz) {
-                $quizResults = $quiz->quizResults;
+                $userQuizDone = $quiz->quizResults;
 
-                $quiz->avg_grade = $quizResults->where('status', QuizzesResult::$passed)->avg('user_grade');
+                if (count($userQuizDone)) {
+                    $quiz->result = $userQuizDone->first();
+
+                    if ($quiz->result->status == 'passed') {
+                        $canDownloadCertificate = true;
+                    }
+                }
+
+                $quiz->can_download_certificate = $canDownloadCertificate;
             }
 
+            $webinarsIds = $user->getPurchasedCoursesIds();
             $userWebinars = Webinar::select('id')
-                ->where(function ($query) use ($user) {
-                    $query->where('creator_id', $user->id)
-                        ->orWhere('teacher_id', $user->id);
-                })
+                ->whereIn('id', $webinarsIds)
                 ->where('status', 'active')
                 ->get();
 
             $data = [
-                'pageTitle' => trans('quiz.certificates_lists'),
+                'pageTitle' => trans('quiz.my_achievements_lists'),
                 'quizzes' => $quizzes,
-                'activeQuizzes' => $activeQuizzes,
-                'achievementsCount' => $achievementsCount,
-                'avgGrade' => round($avgGrade, 2),
-                'failedResults' => $failedResults,
+                'failedQuizzes' => $failedQuizzes,
+                'avgGrades' => round($avgGrades, 2),
+                'certificatesCount' => $certificatesCount,
                 'userWebinars' => $userWebinars,
                 'userAllQuizzes' => $userAllQuizzes,
             ];
 
-            return view('web.default.panel.certificates.list', $data);
+            return view(getTemplate() . '.panel.certificates.achievements', $data);
+        } catch (\Exception $e) {
+            \Log::error('achievements error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
-    }
-
-    public function achievements(Request $request)
-    {
-        $user = auth()->user();
-
-        $results = QuizzesResult::where('user_id', $user->id);
-
-        $failedQuizzes = deepClone($results)->where('status', QuizzesResult::$failed)->count();
-        $avgGrades = deepClone($results)->where('status', QuizzesResult::$passed)->avg('user_grade');
-
-        if (!empty($request->get('grade'))) {
-            $results->where('user_grade', $request->get('grade'));
-        }
-
-        $quizzesIds = $results->where('status', QuizzesResult::$passed)
-            ->pluck('quiz_id')
-            ->toArray();
-        $quizzesIds = array_unique($quizzesIds);
-
-        $query = Quiz::whereIn('id', $quizzesIds)
-            ->where('status', Quiz::ACTIVE);
-
-        $certificatesCount = deepClone($query)->count();
-
-        $userAllQuizzes = deepClone($query)->get();
-
-        $query = $this->quizFilters(deepClone($query), $request);
-
-        $quizzes = $query->with([
-            'webinar',
-            'quizResults' => function ($query) {
-                $query->orderBy('id', 'desc');
-            },
-        ])->paginate(10);
-
-
-        $canDownloadCertificate = false;
-        foreach ($quizzes as $quiz) {
-            $userQuizDone = $quiz->quizResults;
-
-            if (count($userQuizDone)) {
-                $quiz->result = $userQuizDone->first();
-
-                if ($quiz->result->status == 'passed') {
-                    $canDownloadCertificate = true;
-                }
-            }
-
-            $quiz->can_download_certificate = $canDownloadCertificate;
-        }
-
-        $webinarsIds = $user->getPurchasedCoursesIds();
-        $userWebinars = Webinar::select('id')
-            ->whereIn('id', $webinarsIds)
-            ->where('status', 'active')
-            ->get();
-
-        $data = [
-            'pageTitle' => trans('quiz.my_achievements_lists'),
-            'quizzes' => $quizzes,
-            'failedQuizzes' => $failedQuizzes,
-            'avgGrades' => round($avgGrades, 2),
-            'certificatesCount' => $certificatesCount,
-            'userWebinars' => $userWebinars,
-            'userAllQuizzes' => $userAllQuizzes,
-        ];
-
-        return view(getTemplate() . '.panel.certificates.achievements', $data);
     }
 
     private function quizFilters($query, $request)
@@ -156,7 +178,6 @@ class CertificateController extends Controller
         $webinar_id = $request->get('webinar_id');
         $quiz_id = $request->get('quiz_id');
         $grade = $request->get('grade');
-
 
         fromAndToDateFilter($from, $to, $query, 'created_at');
 
@@ -173,22 +194,32 @@ class CertificateController extends Controller
 
     public function makeCertificate($quizResultId)
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $makeCertificate = new MakeCertificate();
+            $makeCertificate = new MakeCertificate();
 
-        $quizResult = QuizzesResult::where('id', $quizResultId)
-            ->where('user_id', $user->id)
-            ->where('status', QuizzesResult::$passed)
-            ->with(['quiz' => function ($query) {
-                $query->with(['webinar']);
-            }])
-            ->first();
+            $quizResult = QuizzesResult::where('id', $quizResultId)
+                ->where('user_id', $user->id)
+                ->where('status', QuizzesResult::$passed)
+                ->with(['quiz' => function ($query) {
+                    $query->with(['webinar']);
+                }])
+                ->first();
 
-        if (!empty($quizResult)) {
-            return $makeCertificate->makeQuizCertificate($quizResult);
+            if (!empty($quizResult)) {
+                return $makeCertificate->makeQuizCertificate($quizResult);
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('makeCertificate error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
     }
 }

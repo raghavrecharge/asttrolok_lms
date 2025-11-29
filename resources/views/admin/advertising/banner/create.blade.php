@@ -15,7 +15,6 @@
             </div>
         </div>
 
-
         <div class="section-body">
 
             <div class="card">
@@ -42,7 +41,6 @@
                                 @else
                                     <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
                                 @endif
-
 
                                 <div class="form-group">
                                     <label>{{ trans('admin/main.title') }}</label>
@@ -130,7 +128,6 @@
                                         <label class="custom-switch-description mb-0 cursor-pointer" for="published">{{ trans('admin/main.published') }}</label>
                                     </label>
                                 </div>
-
 
                                 <div class=" mt-4">
                                     <button class="btn btn-primary">{{ trans('admin/main.submit') }}</button>

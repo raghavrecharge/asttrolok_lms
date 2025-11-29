@@ -58,7 +58,6 @@
 
                         @include('web.default.instructorFinder.components.location_filters')
 
-
                     </div>
                 </div>
             </form>
@@ -66,7 +65,6 @@
     </div>
 
 @endsection
-
 
 @push('scripts_bottom')
     <script src="{{ config('app.js_css_url') }}/assets/vendors/wrunner-html-range-slider-with-2-handles/js/wrunner-jquery.js"></script>

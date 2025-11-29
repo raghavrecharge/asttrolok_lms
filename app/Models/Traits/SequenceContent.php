@@ -14,9 +14,9 @@ trait SequenceContent
 
     public function checkSequenceContent($user = null, $test = false)
     {
-        //$this->test = $test; // use for debug
+
         $user = $user ?: auth()->user();
-        $result = null; // null means user can access to this content
+        $result = null;
 
         if ($this->checkUserCanPass($this, $user)) {
             return $result;
@@ -70,9 +70,8 @@ trait SequenceContent
                 ->where('type', $type)
                 ->first();
 
-
             $previousItems = $this->getPreviousItemsByChapter($chapter, !empty($currentItemOrder) ? $currentItemOrder->order : null);
-            
+
             if (empty($previousItems) or count($previousItems) < 1) {
                 if (!empty($chapter)){
                 $previousChapters = $chapter->getPreviousContents();
@@ -156,7 +155,6 @@ trait SequenceContent
                 $item = $chapterItem->quiz;
             }
 
-            // Only check previous content that has the check_previous_parts enabled => Vahid Daghighy
             if (!empty($item)) {
                 if ($chapterItem->type == \App\Models\WebinarChapterItem::$chapterSession or
                     $chapterItem->type == \App\Models\WebinarChapterItem::$chapterFile or
@@ -214,13 +212,13 @@ trait SequenceContent
 
     private function getPreviousItemsByChapter($chapter, $currentItemOrder = null)
     {
-        
+
         if (!is_null($chapter)) {
             $query = $chapter->chapterItems();
         }else {
             $query = $chapter;
         }
-       
+
 ;
         if (!empty($currentItemOrder)) {
             $query->where('order', '<', $currentItemOrder);
@@ -231,49 +229,8 @@ trait SequenceContent
         }else{
            return $chapter;
         }
-       
-    
+
     }
-
-    /*private function getPreviousItems()
-    {
-        $currentItemOrder = WebinarChapterItem::where('user_id', $this->creator_id)
-            ->where('item_id', $this->id)
-            ->where('chapter_id', $this->chapter_id)
-            ->first();
-
-        $webinar = Webinar::where('id', $this->webinar_id)
-            ->where(function ($query) {
-                $query->where('creator_id', $this->creator_id)
-                    ->orWhere('teacher_id', $this->creator_id);
-            })
-            ->first();
-
-        if (!empty($webinar)) {
-            $creatorIds = [$webinar->creator_id, $webinar->teacher_id];
-
-            $query = $this->newQuery();
-            $query->join('webinar_chapter_items', 'webinar_chapter_items.item_id', "{$this->table}.id");
-            $query->select("{$this->table}.*", DB::raw('webinar_chapter_items.order as itemOrder'));
-            $query->where("{$this->table}.chapter_id", $this->chapter_id);
-            $query->where("{$this->table}.webinar_id", $this->webinar_id);
-            $query->whereIn("{$this->table}.creator_id", $creatorIds);
-            $query->where("webinar_chapter_items.chapter_id", $this->chapter_id);
-            $query->whereIn("webinar_chapter_items.user_id", $creatorIds);
-            $query->where('status', 'active');
-            $query->where("{$this->table}.id", '!=', $this->id);
-
-            if (!empty($currentItemOrder)) {
-                $query->where("webinar_chapter_items.order", '<', $currentItemOrder->order);
-            }
-
-            $query->orderBy('itemOrder', 'desc');
-
-            return $query->get();
-        }
-
-        return null;
-    }*/
 
     private function checkUserCanPass($item, $user = null)
     {
@@ -284,7 +241,6 @@ trait SequenceContent
         if (!empty($user)) {
             $invitedWebinars = WebinarPartnerTeacher::query()->where('teacher_id', $user->id)->pluck('webinar_id')->toArray();
 
-            // Creator, Teacher, Admin and invited partners can pass
             if (
                 $user->id == $item->creator_id or
                 $user->id == $item->teacher_id or

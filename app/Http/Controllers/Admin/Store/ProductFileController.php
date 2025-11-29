@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin\Store;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductFile;
@@ -13,123 +16,39 @@ class ProductFileController extends Controller
 {
     public function store(Request $request)
     {
-        $this->authorize('admin_store_edit_product');
+        try {
+            $this->authorize('admin_store_edit_product');
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $rules = [
-            'product_id' => 'required',
-            'title' => 'required|max:255',
-            'path' => 'required|max:255',
-            'description' => 'required',
-            'file_type' => 'required',
-            'volume' => 'required',
-        ];
+            $rules = [
+                'product_id' => 'required',
+                'title' => 'required|max:255',
+                'path' => 'required|max:255',
+                'description' => 'required',
+                'file_type' => 'required',
+                'volume' => 'required',
+            ];
 
-        $validator = Validator::make($data, $rules);
+            $validator = Validator::make($data, $rules);
 
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $product = Product::where('id', $data['product_id'])
-            ->first();
-
-        if (!empty($product)) {
-
-            $file = ProductFile::create([
-                'creator_id' => $product->creator_id,
-                'product_id' => $data['product_id'],
-                'path' => $data['path'],
-                'order' => null,
-                'volume' => $data['volume'],
-                'file_type' => $data['file_type'],
-                'online_viewer' => (!empty($data['online_viewer']) and $data['online_viewer'] == 'on'),
-                'status' => (!empty($data['status']) and $data['status'] == 'on') ? ProductFile::$Active : ProductFile::$Inactive,
-                'created_at' => time(),
-            ]);
-
-            if (!empty($file)) {
-                ProductFileTranslation::updateOrCreate([
-                    'product_file_id' => $file->id,
-                    'locale' => mb_strtolower($data['locale']),
-                ], [
-                    'title' => $data['title'],
-                    'description' => $data['description'],
-                ]);
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
             }
 
-            return response()->json([
-                'code' => 200,
-            ], 200);
-        }
-
-        abort(403);
-    }
-
-    public function edit(Request $request, $id)
-    {
-        $this->authorize('admin_store_edit_product');
-
-        $file = ProductFile::where('id', $id)->first();
-
-        if (!empty($file)) {
-            $locale = $request->get('locale', getDefaultLocale());
-            if (empty($locale)) {
-                $locale = getDefaultLocale();
-            }
-            storeContentLocale($locale, $file->getTable(), $file->id);
-
-            $file->title = $file->getTitleAttribute();
-            $file->description = $file->getDescriptionAttribute();
-            $file->locale = mb_strtoupper($locale);
-
-            return response()->json([
-                'file' => $file
-            ], 200);
-        }
-
-        return response()->json([], 422);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $this->authorize('admin_store_edit_product');
-
-        $data = $request->all();
-
-        $rules = [
-            'product_id' => 'required',
-            'title' => 'required|max:255',
-            'path' => 'required|max:255',
-            'description' => 'required',
-            'file_type' => 'required',
-            'volume' => 'required',
-        ];
-
-        $validator = Validator::make($data, $rules);
-
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $product = Product::where('id', $data['product_id'])
-            ->first();
-
-        if (!empty($product)) {
-            $file = ProductFile::where('id', $id)
-                ->where('product_id', $product->id)
+            $product = Product::where('id', $data['product_id'])
                 ->first();
 
-            if (!empty($file)) {
-                $file->update([
+            if (!empty($product)) {
+
+                $file = ProductFile::create([
+                    'creator_id' => $product->creator_id,
+                    'product_id' => $data['product_id'],
                     'path' => $data['path'],
+                    'order' => null,
                     'volume' => $data['volume'],
                     'file_type' => $data['file_type'],
                     'online_viewer' => (!empty($data['online_viewer']) and $data['online_viewer'] == 'on'),
@@ -137,34 +56,158 @@ class ProductFileController extends Controller
                     'created_at' => time(),
                 ]);
 
-                ProductFileTranslation::updateOrCreate([
-                    'product_file_id' => $file->id,
-                    'locale' => mb_strtolower($data['locale']),
-                ], [
-                    'title' => $data['title'],
-                    'description' => $data['description'],
-                ]);
+                if (!empty($file)) {
+                    ProductFileTranslation::updateOrCreate([
+                        'product_file_id' => $file->id,
+                        'locale' => mb_strtolower($data['locale']),
+                    ], [
+                        'title' => $data['title'],
+                        'description' => $data['description'],
+                    ]);
+                }
 
                 return response()->json([
                     'code' => 200,
                 ], 200);
             }
-        }
 
-        abort(403);
+            abort(403);
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    public function edit(Request $request, $id)
+    {
+        try {
+            $this->authorize('admin_store_edit_product');
+
+            $file = ProductFile::where('id', $id)->first();
+
+            if (!empty($file)) {
+                $locale = $request->get('locale', getDefaultLocale());
+                if (empty($locale)) {
+                    $locale = getDefaultLocale();
+                }
+                storeContentLocale($locale, $file->getTable(), $file->id);
+
+                $file->title = $file->getTitleAttribute();
+                $file->description = $file->getDescriptionAttribute();
+                $file->locale = mb_strtoupper($locale);
+
+                return response()->json([
+                    'file' => $file
+                ], 200);
+            }
+
+            return response()->json([], 422);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $this->authorize('admin_store_edit_product');
+
+            $data = $request->all();
+
+            $rules = [
+                'product_id' => 'required',
+                'title' => 'required|max:255',
+                'path' => 'required|max:255',
+                'description' => 'required',
+                'file_type' => 'required',
+                'volume' => 'required',
+            ];
+
+            $validator = Validator::make($data, $rules);
+
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $product = Product::where('id', $data['product_id'])
+                ->first();
+
+            if (!empty($product)) {
+                $file = ProductFile::where('id', $id)
+                    ->where('product_id', $product->id)
+                    ->first();
+
+                if (!empty($file)) {
+                    $file->update([
+                        'path' => $data['path'],
+                        'volume' => $data['volume'],
+                        'file_type' => $data['file_type'],
+                        'online_viewer' => (!empty($data['online_viewer']) and $data['online_viewer'] == 'on'),
+                        'status' => (!empty($data['status']) and $data['status'] == 'on') ? ProductFile::$Active : ProductFile::$Inactive,
+                        'created_at' => time(),
+                    ]);
+
+                    ProductFileTranslation::updateOrCreate([
+                        'product_file_id' => $file->id,
+                        'locale' => mb_strtolower($data['locale']),
+                    ], [
+                        'title' => $data['title'],
+                        'description' => $data['description'],
+                    ]);
+
+                    return response()->json([
+                        'code' => 200,
+                    ], 200);
+                }
+            }
+
+            abort(403);
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function destroy($id)
     {
-        $this->authorize('admin_store_edit_product');
+        try {
+            $this->authorize('admin_store_edit_product');
 
-        $file = ProductFile::where('id', $id)
-            ->first();
+            $file = ProductFile::where('id', $id)
+                ->first();
 
-        if (!empty($file)) {
-            $file->delete();
+            if (!empty($file)) {
+                $file->delete();
+            }
+
+            return redirect()->back();
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return redirect()->back();
     }
 }

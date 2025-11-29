@@ -118,7 +118,6 @@
         </div>
     </section>
 
-
     <section class="mt-35">
         <div class="d-flex align-items-start align-items-md-center justify-content-between flex-column flex-md-row">
             <h2 class="section-title">{{ trans('update.my_assignments') }}</h2>
@@ -193,7 +192,6 @@
                                                 @endswitch
                                             @endif
                                         </td>
-
 
                                         <td class="align-middle text-right">
 

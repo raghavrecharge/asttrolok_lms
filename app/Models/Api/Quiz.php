@@ -34,8 +34,6 @@ class Quiz extends Model
             'certificate' => $this->certificate,
             'teacher' => $this->creator->brief,
 
-            /**********************/
-
             'auth_attempt_count' => $this->auth_attempt_count,
             'attempt_state' => $this->attempt_state,
             'auth_can_start' => $this->auth_can_take_quiz,
@@ -54,15 +52,12 @@ class Quiz extends Model
             'auth_can_download_certificate' => $this->auth_can_download_certificate,
             'participated_count' => $this->quizResults->count(),
 
-
-
             'latest_students' => $this->latest_students,
 
         ];
 
         return array_merge($this->brief, $details);
     }
-
 
     public function getAuthCanTakeQuizStatusAttribute()
     {
@@ -76,14 +71,13 @@ class Quiz extends Model
             $status = 'not_purchased';
         } elseif ($this->auth_passed_quiz) {
             $status = 'passed';
-        } //  !$this->results && $this->status == QuizzesResult::$waiting
+        }
         elseif (isset($this->attempt) and
             $this->auth_attempt_count >= $this->attempt
 
         ) {
             $status = 'max_attempt';
         }
-
 
         return $status;
 
@@ -144,7 +138,7 @@ class Quiz extends Model
 
     public function getAuthResultsAttribute()
     {
-        // $user->quizResults->where('quiz_id', $this->id)
+
         $user = apiAuth();
         if (!$user) {
             return null;
@@ -201,12 +195,8 @@ class Quiz extends Model
     public function getLatestStudentsAttribute()
     {
 
-        ///   return 'f' ;
-        // return $this->quizResults()->orderBy('created_at', 'desc')->groupBy('user_id')->get()->map(function ($result) {
-        //     return $result->user->brief/// ->user()
-        //         ;
-        // });
-        
+        /
+
          return $this->quizResults()
     ->with('user')
     ->orderBy('created_at', 'desc')
@@ -217,10 +207,8 @@ class Quiz extends Model
 
     public function getAverageGradeAttribute()
     {
-       // $quiz->avg_grade = $quizResults->where('status', \App\Models\QuizzesResult::$passed)->avg('user_grade');
 
         return  round($this->quizResults->where('status', QuizzesResult::$passed)->avg('user_grade'),2);
-
 
     }
 
@@ -238,7 +226,7 @@ class Quiz extends Model
         if (!$user_quiz_result->count()) {
             return 'not_participated';
         }
-        if ($user_quiz_result->where('status', 'passed')->count() > 0) {
+        if ($user_quiz_result->where('status', 'passed')->exists()) {
             return 'passed';
         }
         if ($user_quiz_result->first()->status == 'waiting') {
@@ -252,7 +240,6 @@ class Quiz extends Model
         return null;
 
     }
-
 
     public function scopeHandleFilters($query)
     {
@@ -308,7 +295,6 @@ class Quiz extends Model
         return $query;
     }
 
-
     public function webinar()
     {
         return $this->belongsTo('App\Models\Api\Webinar', 'webinar_id', 'id');
@@ -334,10 +320,5 @@ class Quiz extends Model
         return $this->belongsTo('App\Models\Api\User', 'creator_id', 'id');
     }
 
-
 }
-
-
-
-
 

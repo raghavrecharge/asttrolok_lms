@@ -33,7 +33,6 @@
                                 <div class="invalid-feedback">@error('webinar_id') {{ $message }} @enderror</div>
                             </div>
 
-
                             <div class="form-group">
                                 <label class="input-label control-label">{!! trans('update.color') !!}</label>
                                 <select name="color" id="colorSelect" class="form-control @error('color') is-invalid @enderror">
@@ -60,7 +59,7 @@
                                         <option value="course" @if(!empty($noticeboard) and !empty($noticeboard->webinar_id)) selected @endif>{{ trans('update.course_students') }}</option>
                                     @endif
 
-                                </select>         
+                                </select>
                                 <div>
                                     <p class="font-12 text-gray">{{ trans('update.new_notice_hint') }}</p>
                                 </div>

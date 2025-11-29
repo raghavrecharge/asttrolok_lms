@@ -162,7 +162,6 @@
                                 </div>
                             @endif
 
-
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="input-label">{{ trans('admin/main.user') }}</label>
@@ -178,7 +177,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-4">
                                 <div class="form-group mt-1">
                                     <label class="input-label mb-4"> </label>
@@ -190,7 +188,6 @@
                     </form>
                 </div>
             </section>
-
 
             <div class="row">
                 <div class="col-12 col-md-12">

@@ -6,7 +6,7 @@ use App\Models\RewardAccounting as Model;
 
 class RewardAccounting extends Model
 {
-    //
+
     public function getDetailsAttribute()
     {
         return [

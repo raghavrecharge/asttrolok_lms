@@ -3,7 +3,6 @@
     <link href="{{ config('app.js_css_url') }}/assets/default/vendors/sortable/jquery-ui.min.css"/>
 @endpush
 
-
 <section class="mt-50">
     <div class="">
         <h2 class="section-title after-line">{{ trans('product.courses') }}</h2>
@@ -36,7 +35,6 @@
 <div id="newBundleWebinarForm" class="d-none">
     @include('web.default.panel.bundle.create_includes.accordions.bundle-webinars',['bundle' => $bundle])
 </div>
-
 
 @push('scripts_bottom')
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/select2/select2.min.js"></script>

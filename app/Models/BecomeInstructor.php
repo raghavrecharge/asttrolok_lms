@@ -21,7 +21,6 @@ class BecomeInstructor extends Model
         return $this->belongsTo('App\Models\RegistrationPackage', 'package_id', 'id');
     }
 
-
     public function sendNotificationToUser($status)
     {
         $notifyOptions = [

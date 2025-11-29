@@ -6,7 +6,6 @@ use App\Models\QuizzesResult as WebQuizzesResult;
 use App\User;
 use App\Models\Role;
 
-
 class QuizzesResult extends WebQuizzesResult
 {
     public function getBriefAttribute()
@@ -37,7 +36,6 @@ class QuizzesResult extends WebQuizzesResult
         return array_merge($this->brief, $details);
     }
 
-
     public function getFinishedAttribute()
     {
         if (
@@ -50,52 +48,39 @@ class QuizzesResult extends WebQuizzesResult
         return true;
     }
 
-
     public function getQuizReviewAttribute()
     {
 
         $r = [];
 
-
         foreach ($this->quiz->quizQuestions as $question) {
 
             $details = $question->details;
-
 
             $answer_sheet = json_decode($this->results, true);
             $user_answer = $answer_sheet[$question['id']] ?? null;
             if (!$user_answer) {
                 continue;
             }
-            // $question->user_answer= $user_answer ;
+
             $details['user_answer'] = [
                 'grade' => $user_answer['grade'] ?? null,
                 'status' => $user_answer['status'] ?? null,
             ];
             $details['user_answer']['answer'] = $user_answer['answer'] ?? null;
 
-            // if($question->type==QuizzesQuestion::$descriptive){
-            //     $details['user_answer']['answer'] =$user_answer['answer']??null ;
-            // }else{
-            //     $details['user_answer']['answer_id'] =$user_answer['answer']??null ;
-            // }
-
-
             $correct_answer = $question->quizzesQuestionsAnswers()->where('correct', 1)->first();
-
 
             $details['descriptive_correct_answer'] = ($question->type == QuizzesQuestion::$descriptive) ? $question->correct : null;
             $details['multiple_correct_answer'] = ($question->type == QuizzesQuestion::$multiple) ? $correct_answer->details : null;
 
             $r[] = $details;
 
-
         }
 
         return $r;
 
     }
-
 
     public function getReviewableAttribute()
     {

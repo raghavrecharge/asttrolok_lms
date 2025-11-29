@@ -60,7 +60,7 @@
                         {{ trans('update.message') }}
                     </label>
                     <textarea name="message" id="message" class="form-control @error('message') is-invalid @enderror" rows="3">{{ old('message') }}</textarea>
-                    
+
                     @error('message')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -94,70 +94,58 @@ function findById(array, id) {
     return array.find(item => parseInt(item.id) === parseInt(id));
 }
 
-// Load JSON
 $.getJSON("{{ asset('json/countries_states_cities.json') }}", function(countriesData) {
-    // console.log("JSON Loaded:", countriesData);
+
 let selectedCountry = sessionStorage.getItem("cty");
 
 console.log('selectedCountry', sessionStorage.getItem("cty"));
 if(selectedCountry){
-    
+
     $.each(countriesData, function(index, country) {
-        // console.log('country.name', country.name);
+
         let selected = (selectedCountry == country.id) ? 'selected' : '';
         $('#country').append('<option value="' + country.id + '" ' + selected + '>' + country.name + '</option>');
     });
-    
-    // var countryId = $(this).val();
-        // var country = selectedCountry;
-        var country = findById(countriesData, selectedCountry);
-        
-        // console.log('country', country);
 
-        // Reset dependent dropdowns
+        var country = findById(countriesData, selectedCountry);
+
         $('#state').html('<option value="">' + selectProvinceText + '</option>').prop('disabled', false);
         $('#city').html('<option value="">' + selectCityText + '</option>').prop('disabled', true);
         $('#district').html('<option value="">' + selectDistrictText + '</option>').prop('disabled', true);
-        // console.log('country', country);
-        // Populate province dropdown using 'states' from JSON
+
         if (country && country.states && country.states.length) {
             country.states.forEach(function(state) {
                 $('#state').append('<option value="' + state.id + '">' + state.name + '</option>');
-                // console.log('state', state.name);
+
             });
         }
-    
+
 }else{
-    
+
     console.log('selectedCountry1', sessionStorage.getItem("cty"));
-    // Populate Country dropdown
+
     $.each(countriesData, function(index, country) {
         $('#country').append('<option value="' + country.id + '">' + country.name + '</option>');
     });
 }
-    // Country change → populate province (states)
+
     $('#country').on('change', function() {
         var countryId = $(this).val();
         var country = findById(countriesData, countryId);
-        
-        // Reset dependent dropdowns
+
         $('#state').html('<option value="">' + selectProvinceText + '</option>').prop('disabled', false);
         $('#city').html('<option value="">' + selectCityText + '</option>').prop('disabled', true);
         $('#district').html('<option value="">' + selectDistrictText + '</option>').prop('disabled', true);
-        // console.log('country', country);
-        // Populate province dropdown using 'states' from JSON
+
         if (country && country.states && country.states.length) {
             country.states.forEach(function(state) {
                 $('#state').append('<option value="' + state.id + '">' + state.name + '</option>');
-                // console.log('state', state.name);
+
             });
         } else {
-            // console.log('No states found for this country.');
+
         }
-        
-        // console.log("Selected Country ID:", countryId);
-        // console.log("Selected Country Name:", country ? country.name : "Not Found");
-        
+
          if (country && !( country.name.toLowerCase() === "india")) {
            handleNonIndiaCountry(country);
         }else{
@@ -175,9 +163,8 @@ if(selectedCountry){
                 }
             });
 
-            // ek key hatane ke liye
         sessionStorage.setItem("cty", 101);
-        // window.location.reload();
+
         document.body.classList.add('disabled-page');
             document.getElementById('loader').style.display = 'block';
             document.documentElement.style.overflow = 'hidden';
@@ -186,25 +173,18 @@ if(selectedCountry){
         }, 3000);
         }
 
-        
-        
-        
-        
             });
-            
-    // Province change → populate city
+
     $('#state').on('change', function() {
         var countryId = $('#country').val();
         var stateId = $('#state').val();
         var country = findById(countriesData, countryId);
         var state = country ? findById(country.states, stateId) : null;
-       console.log('Selected state:', state); // <-- check
-    
-        // Reset city & district
+       console.log('Selected state:', state);
+
         $('#city').html('<option value="">{{ trans("update.select_city") }}</option>').prop('disabled', true);
         $('#district').html('<option value="">{{ trans("update.select_district") }}</option>').prop('disabled', true);
 
-        // Populate cities
         if (state && state.cities && state.cities.length > 0) {
             $.each(state.cities, function(index, city) {
                 $('#city').append('<option value="' + city.id + '">' + city.name + '</option>');
@@ -213,7 +193,6 @@ if(selectedCountry){
         }
     });
 
-    // City change → populate district
     $('#city').on('change', function() {
         var countryId = $('#country').val();
         var stateId = $('#state').val();
@@ -222,7 +201,6 @@ if(selectedCountry){
         var state = country ? findById(country.states, stateId) : null;
         var city = state ? findById(state.cities, cityId) : null;
 
-        // Reset district
         $('#district').html('<option value="">{{ trans("update.select_district") }}</option>').prop('disabled', true);
 
         if (city && city.districts && city.districts.length > 0) {
@@ -234,25 +212,19 @@ if(selectedCountry){
     });
 });
     function handleNonIndiaCountry(country) {
-        // yaha aap apna logic likho
+
         console.log("Function Triggered! Country:", country.id);
         let carts = @json($carts);
         let tax_international = carts[0].product_order.product.tax_international;
         let delivery_fee_international = carts[0].product_order.product.delivery_fee_international;
-        // console.log("Function Triggered! Country:", carts);
-        // console.log("tax for india:", carts[0].product_order.product.tax);
+
         console.log("tax for international:", delivery_fee_international);
-        // console.log("delivery fee for india:", carts[0].product_order.product.delivery_fee);
+
         console.log("delivery fee for international:", delivery_fee_international);
         console.log("delivery fee for international:", country.id);
-        
+
         sessionStorage.setItem("cty", country.id)
-        
-    
-        // if (sessionStorage.getItem("cty")) {
-           
-        // }
-    
+
         if (delivery_fee_international) {
             fetch("{{ route('set.session') }}", {
                 method: "POST",
@@ -270,20 +242,14 @@ if(selectedCountry){
                 console.log("Session set:", data);
             });
         }
-     
-        // window.location.href = "/cart";
-        // window.location.reload();
+
         document.body.classList.add('disabled-page');
             document.getElementById('loader').style.display = 'block';
             document.documentElement.style.overflow = 'hidden';
         setTimeout(function() {
             window.location.reload();
         }, 3000);
-        
 
-
-    
-        
     }
 </script>
 

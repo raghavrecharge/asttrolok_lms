@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Web\CartManagerController;
 use App\Models\Reward;
@@ -16,31 +19,11 @@ use Illuminate\Validation\ValidationException;
 use Jenssegers\Agent\Agent;
 class LoginController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Login Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller handles authenticating users for the application and
-    | redirecting them to your home screen. The controller uses a trait
-    | to conveniently provide its functionality to your applications.
-    |
-    */
 
     use AuthenticatesUsers;
 
-    /**
-     * Where to redirect users after login.
-     *
-     * @var string
-     */
     protected $redirectTo = '/panel';
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
@@ -48,83 +31,121 @@ class LoginController extends Controller
 
     public function showLoginForm()
     {
-        $seoSettings = getSeoMetas('login');
-        $pageTitle = !empty($seoSettings['title']) ? $seoSettings['title'] : trans('site.login_page_title');
-        $pageDescription = !empty($seoSettings['description']) ? $seoSettings['description'] : trans('site.login_page_title');
-        $pageRobot = getPageRobot('login');
+        try {
+            $seoSettings = getSeoMetas('login');
+            $pageTitle = !empty($seoSettings['title']) ? $seoSettings['title'] : trans('site.login_page_title');
+            $pageDescription = !empty($seoSettings['description']) ? $seoSettings['description'] : trans('site.login_page_title');
+            $pageRobot = getPageRobot('login');
 
-        $data = [
-            'pageTitle' => $pageTitle,
-            'pageDescription' => $pageDescription,
-            'pageRobot' => $pageRobot,
-        ];
+            $data = [
+                'pageTitle' => $pageTitle,
+                'pageDescription' => $pageDescription,
+                'pageRobot' => $pageRobot,
+            ];
 
-     $agent = new Agent();
-                    if ($agent->isMobile()){
-                        return view(getTemplate() . '.auth.login', $data);
-                }else{
-                    return view('web.default2' . '.auth.login', $data);
-                }
-        // return view(getTemplate() . '.auth.login', $data);
+            $agent = new Agent();
+                        if ($agent->isMobile()){
+                            return view(getTemplate() . '.auth.login', $data);
+                    }else{
+                        return view('web.default2' . '.auth.login', $data);
+                    }
+        } catch (\Exception $e) {
+            \Log::error('showLoginForm error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function login(Request $request)
     {
-        // print_r($request);die();
-        $rules = [
-            'username' => 'required|numeric|max:60',
-            'password' => 'required|min:6|max:40',
-        ];
+        try {
+            $rules = [
+                'username' => 'required|numeric|max:60',
+                'password' => 'required|min:6|max:40',
+            ];
 
-        if ($this->username() == 'email') {
-            $rules['username'] = 'required|email';
-        }
+            if ($this->username() == 'email') {
+                $rules['username'] = 'required|email';
+            }
 
-        if (!empty(getGeneralSecuritySettings('captcha_for_login'))) {
-            $rules['captcha'] = 'required|captcha';
-        }
+            if (!empty(getGeneralSecuritySettings('captcha_for_login'))) {
+                $rules['captcha'] = 'required|captcha';
+            }
 
-        $this->validate($request, $rules);
+            $this->validate($request, $rules);
 
-        if ($this->attemptLogin($request)) {
+            if ($this->attemptLogin($request)) {
+
+                return $this->afterLogged($request);
+
+            }
+
+            return $this->sendFailedLoginResponse($request);
+        } catch (\Exception $e) {
+            \Log::error('login error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
-            return $this->afterLogged($request);
-            
+            throw $e;
         }
-
-        return $this->sendFailedLoginResponse($request);
     }
 
     public function logout(Request $request)
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $this->guard()->logout();
+            $this->guard()->logout();
 
-        $request->session()->invalidate();
+            $request->session()->invalidate();
 
-        $request->session()->regenerateToken();
+            $request->session()->regenerateToken();
 
-        if (!empty($user) and $user->logged_count > 0) {
-            $user->update([
-                'logged_count' => $user->logged_count - 1
+            if (!empty($user) and $user->logged_count > 0) {
+                $user->update([
+                    'logged_count' => $user->logged_count - 1
+                ]);
+            }
+
+            return redirect('/');
+        } catch (\Exception $e) {
+            \Log::error('logout error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
+            
+            throw $e;
         }
-
-        return redirect('/');
     }
 
     public function username()
     {
-        $email_regex = "/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,})$/i";
+        try {
+            $email_regex = "/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,})$/i";
 
-        if (empty($this->username)) {
-            $this->username = 'mobile';
-            if (preg_match($email_regex, request('username', null))) {
-                $this->username = 'email';
+            if (empty($this->username)) {
+                $this->username = 'mobile';
+                if (preg_match($email_regex, request('username', null))) {
+                    $this->username = 'email';
+                }
             }
+            return $this->username;
+        } catch (\Exception $e) {
+            \Log::error('username error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        return $this->username;
     }
 
     protected function attemptLogin(Request $request)
@@ -135,19 +156,24 @@ class LoginController extends Controller
         ];
         $remember = true;
 
-        /*if (!empty($request->get('remember')) and $request->get('remember') == true) {
-            $remember = true;
-        }*/
-        
-        
         return $this->guard()->attempt($credentials, $remember);
     }
 
     public function sendFailedLoginResponse(Request $request)
     {
-        throw ValidationException::withMessages([
-            'username' => [trans('validation.password_or_username')],
-        ]);
+        try {
+            throw ValidationException::withMessages([
+                'username' => [trans('validation.password_or_username')],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('sendFailedLoginResponse error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     protected function sendBanResponse($user)
@@ -181,159 +207,165 @@ class LoginController extends Controller
 
     public function afterLogged(Request $request, $verify = false)
     {
-        $user = auth()->user();
-        $deviceId = $request->header('User-Agent'); // Device ko identify karne ke liye
-        // Pehle se login session ko check karein
-        
+        try {
+            $user = auth()->user();
+            $deviceId = $request->header('User-Agent');
 
-        // Naya device ID store karein
-        $user->update(['device_id' => $deviceId]);
-        $token = bin2hex(random_bytes(64)); 
-        $user->update(['token_login' => $token]);
-        session()->put('token_login', $token);
-        
-        if ($user->ban) {
-            $time = time();
-            $endBan = $user->ban_end_at;
-            if (!empty($endBan) and $endBan > $time) {
+            $user->update(['device_id' => $deviceId]);
+            $token = bin2hex(random_bytes(64));
+            $user->update(['token_login' => $token]);
+            session()->put('token_login', $token);
+
+            if ($user->ban) {
+                $time = time();
+                $endBan = $user->ban_end_at;
+                if (!empty($endBan) and $endBan > $time) {
+                    $this->guard()->logout();
+                    $request->session()->flush();
+                    $request->session()->regenerate();
+
+                    return $this->sendBanResponse($user);
+                } elseif (!empty($endBan) and $endBan < $time) {
+                    $user->update([
+                        'ban' => false,
+                        'ban_start_at' => null,
+                        'ban_end_at' => null,
+                    ]);
+                }
+            }
+
+            if ($user->status != User::$active and !$verify) {
                 $this->guard()->logout();
                 $request->session()->flush();
                 $request->session()->regenerate();
 
-                return $this->sendBanResponse($user);
-            } elseif (!empty($endBan) and $endBan < $time) {
+                $verificationController = new VerificationController();
+                $checkConfirmed = $verificationController->checkConfirmed($user, $this->username(), $request->get('username'));
+
+                if ($checkConfirmed['status'] == 'send') {
+                    return redirect('/verification');
+                }
+            } elseif ($verify) {
+                session()->forget('verificationId');
+
                 $user->update([
-                    'ban' => false,
-                    'ban_start_at' => null,
-                    'ban_end_at' => null,
+                    'status' => User::$active,
                 ]);
+
+                $registerReward = RewardAccounting::calculateScore(Reward::REGISTER);
+                RewardAccounting::makeRewardAccounting($user->id, $registerReward, Reward::REGISTER, $user->id, true);
             }
-        }
 
-//  $agent = new Agent();
+            if ($user->status != User::$active) {
+                $this->guard()->logout();
+                $request->session()->flush();
+                $request->session()->regenerate();
 
-  
-
- 
-        if ($user->status != User::$active and !$verify) {
-            $this->guard()->logout();
-            $request->session()->flush();
-            $request->session()->regenerate();
-
-            $verificationController = new VerificationController();
-            $checkConfirmed = $verificationController->checkConfirmed($user, $this->username(), $request->get('username'));
-
-            if ($checkConfirmed['status'] == 'send') {
-                return redirect('/verification');
+                return $this->sendNotActiveResponse($user);
             }
-        } elseif ($verify) {
-            session()->forget('verificationId');
+
+            $checkLoginDeviceLimit = $this->checkLoginDeviceLimit($user);
+            if ($checkLoginDeviceLimit != "ok") {
+                $this->guard()->logout();
+                $request->session()->flush();
+                $request->session()->regenerate();
+
+                return $this->sendMaximumActiveSessionResponse();
+            }
 
             $user->update([
-                'status' => User::$active,
+                'logged_count' => (int)$user->logged_count + 1
             ]);
 
-            $registerReward = RewardAccounting::calculateScore(Reward::REGISTER);
-            RewardAccounting::makeRewardAccounting($user->id, $registerReward, Reward::REGISTER, $user->id, true);
-        }
+                $userAgent = $request->header('User-Agent');
+            $parsed = $this->parseUserAgent($userAgent);
+            date_default_timezone_set('Asia/Kolkata');
+            LoginLog::create([
+            'user_id'    => $user->id,
+            'ip_address' => '0',
+            'browser'    => $parsed['browser'],
+            'device'     => $parsed['device'],
+            'platform'   => $parsed['platform'],
+            'login_at'   => now(),
+            ]);
 
-        if ($user->status != User::$active) {
-            $this->guard()->logout();
-            $request->session()->flush();
-            $request->session()->regenerate();
+            $cartManagerController = new CartManagerController();
+            $cartManagerController->storeCookieCartsToDB();
 
-            return $this->sendNotActiveResponse($user);
-        }
-
-        $checkLoginDeviceLimit = $this->checkLoginDeviceLimit($user);
-        if ($checkLoginDeviceLimit != "ok") {
-            $this->guard()->logout();
-            $request->session()->flush();
-            $request->session()->regenerate();
-
-            return $this->sendMaximumActiveSessionResponse();
-        }
-        
-        
-
-        $user->update([
-            'logged_count' => (int)$user->logged_count + 1
-        ]);
-        
-            $userAgent = $request->header('User-Agent');
-    $parsed = $this->parseUserAgent($userAgent);
-date_default_timezone_set('Asia/Kolkata'); 
-    LoginLog::create([
-        'user_id'    => $user->id,
-        'ip_address' => '0',
-        'browser'    => $parsed['browser'],
-        'device'     => $parsed['device'],
-        'platform'   => $parsed['platform'],
-        'login_at'   => now(),
-    ]);
-
-
-        $cartManagerController = new CartManagerController();
-        $cartManagerController->storeCookieCartsToDB();
-
-        if ($user->isAdmin()) {
-            return redirect(getAdminPanelUrl() . '');
-        } else {
-            $rdn='';
-            if ($request->has('rd')) {
-    $rdn=$request->get('rd');
-}
-             
-            if($rdn!=''){
-                // $rdn=$request->get('rd');
-                 return redirect($rdn);
-            }else{
-            return redirect('/panel');
+            if ($user->isAdmin()) {
+                return redirect(getAdminPanelUrl() . '');
+            } else {
+                $rdn='';
+                if ($request->has('rd')) {
+            $rdn=$request->get('rd');
             }
-            // return redirect('/panel');
+
+                if($rdn!=''){
+
+                     return redirect($rdn);
+                }else{
+                return redirect('/panel');
+                }
+
+            }
+        } catch (\Exception $e) {
+            \Log::error('afterLogged error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
     }
-    
-    
+
     public function parseUserAgent($userAgent)
 {
-    $browser = 'Unknown';
-    $platform = 'Unknown';
+        try {
+            $browser = 'Unknown';
+            $platform = 'Unknown';
 
-    // Detect platform (OS)
-    if (preg_match('/android/i', $userAgent)) {
-        $platform = 'Android';
-    } elseif (preg_match('/macintosh|mac os x/i', $userAgent)) {
-        $platform = 'Mac';
-    } elseif (preg_match('/windows|win32/i', $userAgent)) {
-        $platform = 'Windows';
-    } elseif (preg_match('/linux/i', $userAgent)) {
-        $platform = 'Linux';
-    } elseif (preg_match('/iphone|ipad/i', $userAgent)) {
-        $platform = 'iOS';
+            if (preg_match('/android/i', $userAgent)) {
+            $platform = 'Android';
+            } elseif (preg_match('/macintosh|mac os x/i', $userAgent)) {
+            $platform = 'Mac';
+            } elseif (preg_match('/windows|win32/i', $userAgent)) {
+            $platform = 'Windows';
+            } elseif (preg_match('/linux/i', $userAgent)) {
+            $platform = 'Linux';
+            } elseif (preg_match('/iphone|ipad/i', $userAgent)) {
+            $platform = 'iOS';
+            }
+
+            if (preg_match('/MSIE/i', $userAgent) || preg_match('/Trident/i', $userAgent)) {
+            $browser = 'Internet Explorer';
+            } elseif (preg_match('/Firefox/i', $userAgent)) {
+            $browser = 'Firefox';
+            } elseif (preg_match('/Chrome/i', $userAgent)) {
+            $browser = 'Chrome';
+            } elseif (preg_match('/Safari/i', $userAgent)) {
+            $browser = 'Safari';
+            } elseif (preg_match('/Opera|OPR/i', $userAgent)) {
+            $browser = 'Opera';
+            } elseif (preg_match('/Edge/i', $userAgent)) {
+            $browser = 'Edge';
+            }
+
+            return [
+            'browser'  => $browser,
+            'platform' => $platform,
+            'device'   => 'Unknown',
+            ];
+        } catch (\Exception $e) {
+            \Log::error('parseUserAgent error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
-
-    // Detect browser
-    if (preg_match('/MSIE/i', $userAgent) || preg_match('/Trident/i', $userAgent)) {
-        $browser = 'Internet Explorer';
-    } elseif (preg_match('/Firefox/i', $userAgent)) {
-        $browser = 'Firefox';
-    } elseif (preg_match('/Chrome/i', $userAgent)) {
-        $browser = 'Chrome';
-    } elseif (preg_match('/Safari/i', $userAgent)) {
-        $browser = 'Safari';
-    } elseif (preg_match('/Opera|OPR/i', $userAgent)) {
-        $browser = 'Opera';
-    } elseif (preg_match('/Edge/i', $userAgent)) {
-        $browser = 'Edge';
-    }
-
-    return [
-        'browser'  => $browser,
-        'platform' => $platform,
-        'device'   => 'Unknown', // You can improve this by more regex later
-    ];
-}
 
     private function checkLoginDeviceLimit($user)
     {

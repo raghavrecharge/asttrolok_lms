@@ -18,7 +18,6 @@ trait CheckForSaleTrait
             return apiResponse2(0, 'already_bought', trans('site.you_bought_webinar'));
         }
 
-
         if ($this->notPassedRequiredPrerequisite2($user)) {
             return apiResponse2(0, 'required_prerequisites', trans('cart.this_course_has_required_prerequisite'));
         }

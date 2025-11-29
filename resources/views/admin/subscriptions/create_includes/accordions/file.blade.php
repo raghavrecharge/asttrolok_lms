@@ -7,14 +7,14 @@
      .toggle-row {
     display: flex;
     align-items: center;
-    gap: 8px; /* Space between toggle and label */
+    gap: 8px;
     justify-content: flex-end;
 }
 .custom-toggle {
-    /* Your toggle styling */
+
 }
 .toggle-label {
-    /* Optional label styling */
+
 }
  </style>
      <li data-id="{{ $subscriptionItem->id }}" id="file-item-{{ $file->id }}" data-id="{{ $file->id }}" class="accordion-row bg-white rounded-sm border border-gray300 mt-20 py-15 py-lg-30 px-10 px-lg-20">
@@ -33,9 +33,9 @@
             </div>
             </div>
 <div class="d-flex align-items-center">
-            
+
 <label class="custom-control custom-switch mr-20">
-    <input type="checkbox" class="custom-control-input" 
+    <input type="checkbox" class="custom-control-input"
         {{ $file->status == 'active' ? 'checked' : '' }}
         onchange="toggleStatus({{ $file->id }}, this.checked)">
     <span id="status-label-{{ $file->id }}" class="custom-control-label">
@@ -48,11 +48,7 @@
                     </button>
                 @endif--}}
 
-                
-   
         <i data-feather="move" class="move-icon mr-10 cursor-pointer" height="20"></i>
-        
-   
 
                {{-- @if(!empty($file))
                     <a href="{{ getAdminPanelUrl() }}/files/{{ $file->id }}/delete" class="delete-action btn btn-sm btn-transparent text-gray">
@@ -141,7 +137,6 @@
 
                                 <div class="invalid-feedback"></div>
                             </div>
-
 
                             <div class="form-group js-file-path-input {{ (!empty($file) and $file->storage == 's3') ? 'd-none' : '' }}">
                                 <div class="local-input input-group">
@@ -285,7 +280,7 @@
                 iframe: '{{ trans('update.file_source_iframe_placeholder') }}',
                 s3: '{{ trans('update.file_source_s3_placeholder') }}',
             }
-    
+
 function toggleStatus(id, isChecked) {
     let status = isChecked ? 'active' : 'inactive';
 
@@ -299,11 +294,10 @@ function toggleStatus(id, isChecked) {
     })
     .then(res => res.json())
     .then(data => {
-        console.log('API response:', data); // Debug actual response
+        console.log('API response:', data);
 
-        // Check success based on response title or message
         if (data.title === 'Request done successfully!' || data.msg === 'Items sorted successfully') {
-            
+
             document.getElementById("status-label-" + id).innerText = status === "active" ? "Active" : "Inactive";
 
             let li = document.getElementById("file-item-" + id);
@@ -343,11 +337,6 @@ function toggleStatus(id, isChecked) {
         console.error("Error:", err);
     });
 }
-
-
-
-    
-
 
 </script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>

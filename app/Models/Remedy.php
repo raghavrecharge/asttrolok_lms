@@ -14,7 +14,6 @@ use Astrotomic\Translatable\Translatable;
 class Remedy extends Model implements TranslatableContract
 {
     use Translatable;
-    // use Sluggable;
 
     protected $table = 'remedies';
     public $timestamps = false;
@@ -27,14 +26,10 @@ class Remedy extends Model implements TranslatableContract
     static $inactive = 'inactive';
 
     static $remedy = 'remedy';
-    // static $course = 'course';
-    // static $textLesson = 'text_lesson';
 
     static $statuses = [
         'active', 'pending', 'is_draft', 'inactive'
     ];
-
-    // static $videoDemoSource = ['upload', 'youtube', 'vimeo', 'external_link'];
 
     public $translatedAttributes = ['title', 'description','seo_description','seo_title'];
 
@@ -48,20 +43,11 @@ class Remedy extends Model implements TranslatableContract
         return getTranslateAttributeValue($this, 'description');
     }
 
-    // public function getSeoDescriptionAttribute()
-    // {
-    //     return getTranslateAttributeValue($this, 'seo_description');
-    // }
-
     public function getPriceAttribute()
     {
         $result = $this->attributes['price'] ?? null;
 
         $user = auth()->user();
-
-        // if (!empty($this->attributes['organization_price']) and !empty($user) and $this->creator->isOrganization() and $user->organ_id == $this->creator_id) {
-        //     $result = $this->attributes['organization_price'];
-        // }
 
         return $result;
     }
@@ -91,7 +77,6 @@ class Remedy extends Model implements TranslatableContract
         return $this->hasMany('App\Models\Ticket', 'remedy_id', 'id');
     }
 
-
     public function chapters()
     {
         return $this->hasMany('App\Models\RemedyChapter', 'remedy_id', 'id');
@@ -106,11 +91,6 @@ class Remedy extends Model implements TranslatableContract
     {
         return $this->hasMany('App\Models\Refile', 'remedy_id', 'id');
     }
-
-    // public function assignments()
-    // {
-    //     return $this->hasMany('App\Models\RemedyAssignment', 'remedy_id', 'id');
-    // }
 
     public function textLessons()
     {
@@ -134,11 +114,6 @@ class Remedy extends Model implements TranslatableContract
         return $this->hasMany('App\Models\RemedyExtraDescription', 'remedy_id', 'id');
     }
 
-    // public function prerequisites()
-    // {
-    //     return $this->hasMany('App\Models\Prerequisite', 'remedy_id', 'id');
-    // }
-
     public function quizzes()
     {
         return $this->hasMany('App\Models\Quiz', 'remedy_id', 'id');
@@ -158,11 +133,6 @@ class Remedy extends Model implements TranslatableContract
     {
         return $this->hasMany('App\Models\Purchase', 'remedy_id', 'id');
     }
-
-    // public function comments()
-    // {
-    //     return $this->hasMany('App\Models\Comment', 'remedy_id', 'id');
-    // }
 
     public function reviews()
     {
@@ -202,11 +172,10 @@ class Remedy extends Model implements TranslatableContract
                 ->where('status', 'active')
                 ->get();
 
-            if (!empty($reviews) and $reviews->count() > 0) {
+            if (!empty($reviews) and $reviews->exists()) {
                 $rate = number_format($reviews->avg('rates'), 2);
             }
         }
-
 
         if ($rate > 5) {
             $rate = 5;
@@ -215,11 +184,6 @@ class Remedy extends Model implements TranslatableContract
         return $rate > 0 ? number_format($rate, 2) : 0;
     }
 
-    /**
-     * Return the sluggable configuration array for this model.
-     *
-     * @return array
-     */
     public function sluggable(): array
     {
         return [
@@ -332,8 +296,6 @@ class Remedy extends Model implements TranslatableContract
 
     public function checkHasExpiredAccessDays($purchaseDate, $giftId = null)
     {
-        // true => has access
-        // false => not access (expired)
 
         if (!empty($giftId)) {
             $gift = Gift::query()->where('id', $giftId)
@@ -451,22 +413,6 @@ class Remedy extends Model implements TranslatableContract
                 $hasBought = $user->isAdmin();
             }
 
-            // if (!$hasBought) {
-            //     $bundleRemedy = BundleRemedy::where('remedy_id', $this->id)
-            //         ->with([
-            //             'bundle'
-            //         ])->get();
-
-            //     if ($bundleRemedy->isNotEmpty()) {
-            //         foreach ($bundleRemedy as $item) {
-            //             if (!empty($item->bundle) and $item->bundle->checkUserHasBought($user)) {
-            //                 $hasBought = true;
-            //             }
-            //         }
-            //     }
-            // }
-
-            /* Check Installment */
             if (!$hasBought) {
                 $installmentOrder = $this->getInstallmentOrder();
 
@@ -483,7 +429,6 @@ class Remedy extends Model implements TranslatableContract
                 }
             }
 
-            /* Check Gift */
             if (!$hasBought) {
                 $gift = Gift::query()->where('email', $user->email)
                     ->where('status', 'active')
@@ -676,14 +621,9 @@ class Remedy extends Model implements TranslatableContract
             $user_id = auth()->id();
 
             $filesStat = $this->getFilesLearningProgressStat($user_id);
-            // $sessionsStat = $this->getSessionsLearningProgressStat($user_id);
-            // $textLessonsStat = $this->getTextLessonsLearningProgressStat($user_id);
-            // $assignmentsStat = $this->getAssignmentsLearningProgressStat($user_id);
-            // $quizzesStat = $this->getQuizzesLearningProgressStat($user_id);
 
-            // $passed = $filesStat['passed'] + $sessionsStat['passed'] + $textLessonsStat['passed'] + $assignmentsStat['passed'] + $quizzesStat['passed'];
             $passed = $filesStat['passed'];
-            // $count = $filesStat['count'] + $sessionsStat['count'] + $textLessonsStat['count'] + $assignmentsStat['count'] + $quizzesStat['count'];
+
             $count = $filesStat['count'];
 
             if ($passed > 0 and $count > 0) {
@@ -741,11 +681,6 @@ class Remedy extends Model implements TranslatableContract
         return $this->thumbnail;
     }
 
-    // public function getUrl()
-    // {
-    //     return url('/remedy/' . $this->slug);
-    // }
-
     public function getUrl()
     {
         $baseUrl = config('app.manual_base_url');
@@ -782,7 +717,6 @@ class Remedy extends Model implements TranslatableContract
     {
         return ($this->type == 'remedy');
     }
-
 
     public function canAccess($user = null)
     {
@@ -848,7 +782,7 @@ class Remedy extends Model implements TranslatableContract
 
         $date = \DateTime::createFromFormat('j M Y H:i', dateTimeFormat($this->start_date, 'j M Y H:i', false));
 
-        $link = Link::create($this->title, $date, $date); //->description('Cookies & cocktails!')
+        $link = Link::create($this->title, $date, $date);
 
         return $link->google();
     }
@@ -892,7 +826,7 @@ class Remedy extends Model implements TranslatableContract
     public function isProgressing()
     {
         $lastSession = $this->lastSession();
-        //$nextSession = $this->nextSession();
+
         $isProgressing = false;
 
         if ($this->start_date <= time() or (!empty($lastSession) and $lastSession->date > time())) {
@@ -918,7 +852,7 @@ class Remedy extends Model implements TranslatableContract
     {
         $downloadable = $this->downloadable;
 
-        if ($this->files->count() > 0) {
+        if ($this->files->exists()) {
             $downloadableFiles = $this->files->where('downloadable', true)->count();
 
             if ($downloadableFiles > 0) {
@@ -938,17 +872,6 @@ class Remedy extends Model implements TranslatableContract
         return (($this->creator_id == $userId) or ($this->teacher_id == $userId));
     }
 
-    // public function isPartnerTeacher($userId = null)
-    // {
-    //     if (empty($userId)) {
-    //         $userId = auth()->id();
-    //     }
-
-    //     $partnerTeachers = !empty($this->remedyPartnerTeacher) ? $this->remedyPartnerTeacher->pluck('teacher_id')->toArray() : [];
-
-    //     return in_array($userId, $partnerTeachers);
-    // }
-
     public function getPrice()
     {
         $price = $this->price;
@@ -960,77 +883,6 @@ class Remedy extends Model implements TranslatableContract
 
         return $price;
     }
-
-    // public function getStudentsIds()
-    // {
-    //     $studentsIds = Sale::query()->where('remedy_id', $this->id)
-    //         ->whereNull('refund_at')
-    //         ->whereHas('buyer')
-    //         ->pluck('buyer_id')
-    //         ->toArray();
-
-    //     // get users by installments
-    //     $installmentOrders = InstallmentOrder::query()
-    //         ->where('remedy_id', $this->id)
-    //         ->where('status', 'open')
-    //         ->whereNull('refund_at')
-    //         ->get();
-
-    //     foreach ($installmentOrders as $installmentOrder) {
-    //         if (!empty($installmentOrder)) {
-    //             $hasBought = true;
-
-    //             if ($installmentOrder->checkOrderHasOverdue()) {
-    //                 $overdueIntervalDays = getInstallmentsSettings('overdue_interval_days');
-
-    //                 if (empty($overdueIntervalDays) or $installmentOrder->overdueDaysPast() > $overdueIntervalDays) {
-    //                     $hasBought = false;
-    //                 }
-    //             }
-
-    //             if ($hasBought) {
-    //                 $studentsIds[] = $installmentOrder->user_id;
-    //             }
-    //         }
-    //     }
-
-    //     // get users by gifts
-    //     $gifts = Gift::query()
-    //         ->where('status', 'active')
-    //         ->where('remedy_id', $this->id)
-    //         ->where(function ($query) {
-    //             $query->whereNull('date');
-    //             $query->orWhere('date', '<', time());
-    //         })
-    //         ->whereHas('sale')
-    //         ->get();
-
-    //     foreach ($gifts as $gift) {
-    //         $user = User::query()->select('id', 'email')->where('email', $gift->email)->first();
-
-    //         if (!empty($user)) {
-    //             $studentsIds[] = $user->id;
-    //         }
-    //     }
-
-    //     // get users by bundle
-    //     $bundleRemedy = BundleRemedy::where('remedy_id', $this->id)
-    //         ->with([
-    //             'bundle'
-    //         ])->get();
-
-    //     if ($bundleRemedy->isNotEmpty()) {
-    //         foreach ($bundleRemedy as $item) {
-    //             if (!empty($item->bundle)) {
-    //                 $bundleStudents = $item->bundle->getStudentsIds();
-
-    //                 $studentsIds = array_merge($studentsIds, $bundleStudents);
-    //             }
-    //         }
-    //     }
-
-    //     return array_unique($studentsIds);
-    // }
 
     public function sendNotificationToAllStudentsForNewQuizPublished($quiz)
     {

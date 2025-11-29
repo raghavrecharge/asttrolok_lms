@@ -144,7 +144,6 @@
                                                     <a href="/panel/webinars/{{ $webinar->id }}/duplicate" class="webinar-actions d-block mt-10">{{ trans('public.duplicate') }}</a>
                                                 @endif
 
-
                                                 <a href="/panel/webinars/{{ $webinar->id }}/statistics" class="webinar-actions d-block mt-10">{{ trans('update.statistics') }}</a>
 
                                                 @if($webinar->creator_id == $authUser->id)

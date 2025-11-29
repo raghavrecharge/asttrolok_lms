@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin\traits;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Models\OfflineBank;
 use App\Models\OfflineBankSpecification;
 use App\Models\Translation\OfflineBankSpecificationTranslation;
@@ -14,51 +17,71 @@ trait FinancialOfflineBankSettings
 
     public function financialOfflineBankForm()
     {
-        $data = [
-            'locale' => mb_strtolower(app()->getLocale())
-        ];
+        try {
+            $data = [
+                'locale' => mb_strtolower(app()->getLocale())
+            ];
 
-        $html = (string)view()->make("admin.settings.financial.offline_banks.modal", $data);
+            $html = (string)view()->make("admin.settings.financial.offline_banks.modal", $data);
 
-        return response()->json([
-            'code' => 200,
-            'html' => $html
-        ]);
+            return response()->json([
+                'code' => 200,
+                'html' => $html
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('financialOfflineBankForm error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function financialOfflineBankStore(Request $request)
     {
-        $data = $request->all();
+        try {
+            $data = $request->all();
 
-        $validator = Validator::make($data, [
-            "title" => "required",
-            "logo" => "required",
-        ]);
+            $validator = Validator::make($data, [
+                "title" => "required",
+                "logo" => "required",
+            ]);
 
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $bank = OfflineBank::query()->create([
+                "logo" => $data['logo'],
+                "created_at" => time(),
+            ]);
+
+            OfflineBankTranslation::query()->updateOrCreate([
+                'offline_bank_id' => $bank->id,
+                'locale' => mb_strtolower($data['locale'])
+            ], [
+                'title' => $data['title']
+            ]);
+
+            $this->handleBankSpecifications($bank, $data);
+
+            return response()->json([
+                'code' => 200
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('financialOfflineBankStore error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $bank = OfflineBank::query()->create([
-            "logo" => $data['logo'],
-            "created_at" => time(),
-        ]);
-
-        OfflineBankTranslation::query()->updateOrCreate([
-            'offline_bank_id' => $bank->id,
-            'locale' => mb_strtolower($data['locale'])
-        ], [
-            'title' => $data['title']
-        ]);
-
-        $this->handleBankSpecifications($bank, $data);
-
-        return response()->json([
-            'code' => 200
-        ]);
     }
 
     private function handleBankSpecifications($bank, $data)
@@ -105,64 +128,93 @@ trait FinancialOfflineBankSettings
 
     public function financialOfflineBankEdit(Request $request, $id)
     {
-        $bank = OfflineBank::query()->findOrFail($id);
+        try {
+            $bank = OfflineBank::query()->findOrFail($id);
 
+            $data = [
+                'editBank' => $bank,
+                'locale' => mb_strtolower($request->get('locale', app()->getLocale()))
+            ];
 
-        $data = [
-            'editBank' => $bank,
-            'locale' => mb_strtolower($request->get('locale', app()->getLocale()))
-        ];
+            $html = (string)view()->make('admin.settings.financial.offline_banks.modal', $data);
 
-        $html = (string)view()->make('admin.settings.financial.offline_banks.modal', $data);
-
-        return response()->json([
-            'code' => 200,
-            'html' => $html
-        ], 200);
+            return response()->json([
+                'code' => 200,
+                'html' => $html
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('financialOfflineBankEdit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function financialOfflineBankUpdate(Request $request, $id)
     {
-        $data = $request->all();
+        try {
+            $data = $request->all();
 
-        $validator = Validator::make($data, [
-            "title" => "required",
-            "logo" => "required",
-        ]);
+            $validator = Validator::make($data, [
+                "title" => "required",
+                "logo" => "required",
+            ]);
 
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $bank = OfflineBank::query()->findOrFail($id);
+
+            $bank->update([
+                "logo" => $data['logo'],
+            ]);
+
+            OfflineBankTranslation::query()->updateOrCreate([
+                'offline_bank_id' => $bank->id,
+                'locale' => mb_strtolower($data['locale'])
+            ], [
+                'title' => $data['title']
+            ]);
+
+            $this->handleBankSpecifications($bank, $data);
+
+            return response()->json([
+                'code' => 200
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('financialOfflineBankUpdate error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $bank = OfflineBank::query()->findOrFail($id);
-
-        $bank->update([
-            "logo" => $data['logo'],
-        ]);
-
-        OfflineBankTranslation::query()->updateOrCreate([
-            'offline_bank_id' => $bank->id,
-            'locale' => mb_strtolower($data['locale'])
-        ], [
-            'title' => $data['title']
-        ]);
-
-        $this->handleBankSpecifications($bank, $data);
-
-        return response()->json([
-            'code' => 200
-        ]);
     }
 
     public function financialOfflineBankDelete($id)
     {
-        $bank = OfflineBank::query()->findOrFail($id);
+        try {
+            $bank = OfflineBank::query()->findOrFail($id);
 
-        $bank->delete();
+            $bank->delete();
 
-        return redirect()->back();
+            return redirect()->back();
+        } catch (\Exception $e) {
+            \Log::error('financialOfflineBankDelete error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

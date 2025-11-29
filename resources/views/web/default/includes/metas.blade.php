@@ -48,7 +48,7 @@
 $main_url =  $_SERVER['REQUEST_URI'];
 
 	$url_array=explode("/",$main_url);
- //	echo $main_url;
+
 if(isset($url_array[2])){
 	if($url_array[1]=="blog")
 	{	?>
@@ -69,7 +69,7 @@ if(isset($url_array[2])){
     var headID = document.getElementsByTagName("head")[0];
     var newScript = document.createElement('script');
     newScript.type = 'text/javascript';
-    newScript.src = '//code.jivosite.com/widget/0vDO9nN5Jy';
+    newScript.src = '
     headID.appendChild(newScript);
 }, 20000);
 
@@ -80,7 +80,7 @@ if(isset($url_array[2])){
 $main_url =  $_SERVER['REQUEST_URI'];
 
 	$url_array=explode("/",$main_url);
- //	echo $main_url;
+
 if(isset($url_array[1])){
 	if($url_array[1]=="instructors")
 	{	?>
@@ -104,10 +104,9 @@ if(isset($url_array[1])){
 	}
 	?>
 	<?php
-// $host = $_SERVER['HTTP_HOST'];        // domain (www.asttrolok.com)
+
 $host = request()->getHost();
 
-// full canonical URL banao
 $canonical = "https://" . $host . $main_url;
 ?>
 

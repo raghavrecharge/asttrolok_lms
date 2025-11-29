@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Web;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Bundle;
 use App\Models\Cart;
@@ -21,109 +24,50 @@ class CartManagerController extends Controller
 
     public function getCarts()
     {
-        $carts = null;
+        try {
+            $carts = null;
 
-        if (auth()->check()) {
-            $user = auth()->user();
+            if (auth()->check()) {
+                $user = auth()->user();
 
-            $user->carts()
-                ->whereNotNull('product_order_id')
-                ->where(function ($query) {
-                    $query->whereDoesntHave('productOrder');
-                    $query->orWhereDoesntHave('productOrder.product');
-                })
-                ->delete();
+                $user->carts()
+                    ->whereNotNull('product_order_id')
+                    ->where(function ($query) {
+                        $query->whereDoesntHave('productOrder');
+                        $query->orWhereDoesntHave('productOrder.product');
+                    })
+                    ->delete();
 
-            $carts = $user->carts()
-                ->with([
-                    'webinar',
-                    'bundle',
-                    'installmentPayment',
-                    'productOrder' => function ($query) {
-                        $query->with(['product']);
-                    }
-                ])
-                ->get();
-        } else {
+                $carts = $user->carts()
+                    ->with([
+                        'webinar',
+                        'bundle',
+                        'installmentPayment',
+                        'productOrder' => function ($query) {
+                            $query->with(['product']);
+                        }
+                    ])
+                    ->get();
+            } else {
+
+                 if (session('cart_id')) {
+
+                 $carts = Cart::where('id',session('cart_id'))->orwhere('cart_id',session('cart_id'))->get();
+
+                 }
+
+            }
+
+            return $carts;
+        } catch (\Exception $e) {
+            \Log::error('getCarts error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
-             if (session('cart_id')) {
-            
-             $carts = Cart::where('id',session('cart_id'))->orwhere('cart_id',session('cart_id'))->get();
-             
-             }
-            
-            // $cookieCarts = Cookie::get($this->cookieKey);
-
-            // if (!empty($cookieCarts)) {
-            //     $cookieCarts = json_decode($cookieCarts, true);
-
-            //     if (!empty($cookieCarts) and count($cookieCarts)) {
-            //         $carts = collect();
-
-            //         foreach ($cookieCarts as $cookieCart) {
-
-            //             if (!empty($cookieCart['item_name']) and $cookieCart['item_name'] == 'webinar_id') {
-            //                 $webinar = Webinar::where('id', $cookieCart['item_id'])
-            //                     ->where('private', false)
-            //                     ->where('status', 'active')
-            //                     ->first();
-
-            //                 if (!empty($webinar)) {
-            //                     $ticket = null;
-
-            //                     if (!empty($cookieCart['ticket_id'])) {
-            //                         $ticket = Ticket::where('id', $cookieCart['ticket_id'])->first();
-            //                     }
-
-            //                     $item = new Cart();
-            //                     $item->webinar_id = $webinar->id;
-            //                     $item->webinar = $webinar;
-            //                     $item->ticket = $ticket;
-            //                     $item->ticket_id = !empty($ticket) ? $ticket->id : null;
-
-            //                     $carts->add($item);
-            //                 }
-            //             } elseif (!empty($cookieCart['item_name']) and $cookieCart['item_name'] == 'bundle_id') {
-            //                 $bundle = Bundle::where('id', $cookieCart['item_id'])
-            //                     ->where('status', 'active')
-            //                     ->first();
-
-            //                 if (!empty($bundle)) {
-            //                     $ticket = null;
-
-            //                     if (!empty($cookieCart['ticket_id'])) {
-            //                         $ticket = Ticket::where('id', $cookieCart['ticket_id'])->first();
-            //                     }
-
-            //                     $item = new Cart();
-            //                     $item->bundle_id = $bundle->id;
-            //                     $item->bundle = $bundle;
-            //                     $item->ticket = $ticket;
-            //                     $item->ticket_id = !empty($ticket) ? $ticket->id : null;
-
-            //                     $carts->add($item);
-            //                 }
-            //             } elseif (!empty($cookieCart['item_name']) and $cookieCart['item_name'] == 'product_id') {
-            //                 $product = Product::where('id', $cookieCart['item_id'])->first();
-
-            //                 if (!empty($product)) {
-            //                     $item = new Cart();
-
-            //                     $item->product_order_id = $product->id;
-            //                     $item->productOrder = (object)[
-            //                         'quantity' => $cookieCart['quantity'] ?? 1,
-            //                         'product' => $product
-            //                     ];
-
-            //                     $carts->add($item);
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
+            throw $e;
         }
-
-        return $carts;
     }
 
     public function storeCookieCartsToDB()
@@ -161,416 +105,417 @@ class CartManagerController extends Controller
 
     public function storeUserWebinarCart($user, $data)
     {
-        $webinar_id = $data['item_id'];
-        $ticket_id = $data['ticket_id'] ?? null;
+        try {
+            $webinar_id = $data['item_id'];
+            $ticket_id = $data['ticket_id'] ?? null;
 
-        $webinar = Webinar::where('id', $webinar_id)
-            ->where('private', false)
-            ->where('status', 'active')
-            ->first();
-
-        if (!empty($webinar) and !empty($user)) {
-            $checkCourseForSale = checkCourseForSale($webinar, $user);
-
-            if ($checkCourseForSale != 'ok') {
-                return $checkCourseForSale;
-            }
-
-            $activeSpecialOffer = $webinar->activeSpecialOffer();
-
-            // Cart::updateOrCreate([
-            //     'creator_id' => $user->id,
-            //     'webinar_id' => $webinar_id,
-            // ], [
-            //     'ticket_id' => $ticket_id,
-            //     'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
-            //     'created_at' => time()
-            // ]);
-            
-             if(empty(session('cart_id'))){
-                 
-                  
-                 
-           $cart= Cart::Create([
-                'creator_id' => $user->id,
-                'webinar_id' => $webinar_id,
-                'ticket_id' => $ticket_id,
-                'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
-                'created_at' => time(),
-                'cart_id' => NULL
-            ]);
-              session(['cart_id' => $cart->id]);
-            }else{
-                $cart = Cart::where('cart_id', session('cart_id'))->where('webinar_id', $webinar_id)
+            $webinar = Webinar::where('id', $webinar_id)
+                ->where('private', false)
+                ->where('status', 'active')
                 ->first();
-                $cart1 = Cart::where('id', session('cart_id'))->where('webinar_id', $webinar_id)
-                ->first();
-                 if(!empty($cart1)){
-                    
-                    $toastData = [
-                        'title' => 'add to cart',
-                        'msg' => 'Course has already been added to cart',
-                        'status' => 'warning'
-                    ];
-                    return back()->with(['toast' => $toastData]);
-                           
-                 
+
+            if (!empty($webinar) and !empty($user)) {
+                $checkCourseForSale = checkCourseForSale($webinar, $user);
+
+                if ($checkCourseForSale != 'ok') {
+                    return $checkCourseForSale;
                 }
-                if(!empty($cart)){
-                    
-                    $toastData = [
-                        'title' => 'add to cart',
-                        'msg' => 'Course has already been added to cart',
-                        'status' => 'warning'
-                    ];
-                    return back()->with(['toast' => $toastData]);
-                           
-                 
+
+                $activeSpecialOffer = $webinar->activeSpecialOffer();
+
+                 if(empty(session('cart_id'))){
+
+               $cart= Cart::Create([
+                    'creator_id' => $user->id,
+                    'webinar_id' => $webinar_id,
+                    'ticket_id' => $ticket_id,
+                    'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
+                    'created_at' => time(),
+                    'cart_id' => NULL
+                ]);
+                  session(['cart_id' => $cart->id]);
                 }else{
-            
-                        $cart= Cart::Create([
-                            'creator_id' => $user->id,
-                            'webinar_id' => $webinar_id,
-                            'ticket_id' => $ticket_id,
-                            'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
-                            'created_at' => time(),
-                            'cart_id' => session('cart_id')
-                        ]);
+                    $cart = Cart::where('cart_id', session('cart_id'))->where('webinar_id', $webinar_id)
+                    ->first();
+                    $cart1 = Cart::where('id', session('cart_id'))->where('webinar_id', $webinar_id)
+                    ->first();
+                     if(!empty($cart1)){
+
+                        $toastData = [
+                            'title' => 'add to cart',
+                            'msg' => 'Course has already been added to cart',
+                            'status' => 'warning'
+                        ];
+                        return back()->with(['toast' => $toastData]);
+
+                    }
+                    if(!empty($cart)){
+
+                        $toastData = [
+                            'title' => 'add to cart',
+                            'msg' => 'Course has already been added to cart',
+                            'status' => 'warning'
+                        ];
+                        return back()->with(['toast' => $toastData]);
+
+                    }else{
+
+                            $cart= Cart::Create([
+                                'creator_id' => $user->id,
+                                'webinar_id' => $webinar_id,
+                                'ticket_id' => $ticket_id,
+                                'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
+                                'created_at' => time(),
+                                'cart_id' => session('cart_id')
+                            ]);
+                    }
+
                 }
-                
+
+                return 'ok';
             }
 
-
-            return 'ok';
+            $toastData = [
+                'title' => trans('public.request_failed'),
+                'msg' => trans('cart.course_not_found'),
+                'status' => 'error'
+            ];
+            return back()->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('storeUserWebinarCart error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $toastData = [
-            'title' => trans('public.request_failed'),
-            'msg' => trans('cart.course_not_found'),
-            'status' => 'error'
-        ];
-        return back()->with(['toast' => $toastData]);
     }
 
     public function storeUserBundleCart($user, $data)
     {
-        $bundle_id = $data['item_id'];
-        $ticket_id = $data['ticket_id'] ?? null;
+        try {
+            $bundle_id = $data['item_id'];
+            $ticket_id = $data['ticket_id'] ?? null;
 
-        $bundle = Bundle::where('id', $bundle_id)
-            ->where('status', 'active')
-            ->first();
-
-        if (!empty($bundle) and !empty($user)) {
-            $checkCourseForSale = checkCourseForSale($bundle, $user);
-
-            if ($checkCourseForSale != 'ok') {
-                return $checkCourseForSale;
-            }
-
-            
-            $activeSpecialOffer = $bundle->activeSpecialOffer();
-
-        //   $cart=   Cart::Create([
-        //         'creator_id' => $user->id,
-        //         'bundle_id' => $bundle_id,
-        //     ], [
-        //         'ticket_id' => $ticket_id,
-        //         'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
-        //         'created_at' => time()
-        //     ]);
-            
-            if(empty(session('cart_id'))){
-                 
-                  
-                 
-           $cart= Cart::Create([
-                'creator_id' => $user->id,
-                'bundle_id' => $bundle_id,
-                'ticket_id' => $ticket_id,
-                'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
-                'created_at' => time(),
-                'cart_id' => NULL
-            ]);
-              session(['cart_id' => $cart->id]);
-            }else{
-                $cart = Cart::where('cart_id', session('cart_id'))->where('bundle_id', $bundle_id)
+            $bundle = Bundle::where('id', $bundle_id)
+                ->where('status', 'active')
                 ->first();
-                $cart1 = Cart::where('id', session('cart_id'))->where('bundle_id', $bundle_id)
-                ->first();
-                 if(!empty($cart1)){
-                    
-                    $toastData = [
-                        'title' => 'add to cart',
-                        'msg' => 'Course has already been added to cart',
-                        'status' => 'warning'
-                    ];
-                    return back()->with(['toast' => $toastData]);
-                           
-                 
+
+            if (!empty($bundle) and !empty($user)) {
+                $checkCourseForSale = checkCourseForSale($bundle, $user);
+
+                if ($checkCourseForSale != 'ok') {
+                    return $checkCourseForSale;
                 }
-                if(!empty($cart)){
-                    
-                    $toastData = [
-                        'title' => 'add to cart',
-                        'msg' => 'Course has already been added to cart',
-                        'status' => 'warning'
-                    ];
-                    return back()->with(['toast' => $toastData]);
-                           
-                 
+
+                $activeSpecialOffer = $bundle->activeSpecialOffer();
+
+                if(empty(session('cart_id'))){
+
+               $cart= Cart::Create([
+                    'creator_id' => $user->id,
+                    'bundle_id' => $bundle_id,
+                    'ticket_id' => $ticket_id,
+                    'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
+                    'created_at' => time(),
+                    'cart_id' => NULL
+                ]);
+                  session(['cart_id' => $cart->id]);
                 }else{
-            
-                        $cart= Cart::Create([
-                            'creator_id' => $user->id,
-                            'bundle_id' => $bundle_id,
-                            'ticket_id' => $ticket_id,
-                            'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
-                            'created_at' => time(),
-                            'cart_id' => session('cart_id')
-                        ]);
-                }
-                
-            }
-            return 'ok';
-        }
+                    $cart = Cart::where('cart_id', session('cart_id'))->where('bundle_id', $bundle_id)
+                    ->first();
+                    $cart1 = Cart::where('id', session('cart_id'))->where('bundle_id', $bundle_id)
+                    ->first();
+                     if(!empty($cart1)){
 
-        $toastData = [
-            'title' => trans('public.request_failed'),
-            'msg' => trans('cart.course_not_found'),
-            'status' => 'error'
-        ];
-        return back()->with(['toast' => $toastData]);
+                        $toastData = [
+                            'title' => 'add to cart',
+                            'msg' => 'Course has already been added to cart',
+                            'status' => 'warning'
+                        ];
+                        return back()->with(['toast' => $toastData]);
+
+                    }
+                    if(!empty($cart)){
+
+                        $toastData = [
+                            'title' => 'add to cart',
+                            'msg' => 'Course has already been added to cart',
+                            'status' => 'warning'
+                        ];
+                        return back()->with(['toast' => $toastData]);
+
+                    }else{
+
+                            $cart= Cart::Create([
+                                'creator_id' => $user->id,
+                                'bundle_id' => $bundle_id,
+                                'ticket_id' => $ticket_id,
+                                'special_offer_id' => !empty($activeSpecialOffer) ? $activeSpecialOffer->id : null,
+                                'created_at' => time(),
+                                'cart_id' => session('cart_id')
+                            ]);
+                    }
+
+                }
+                return 'ok';
+            }
+
+            $toastData = [
+                'title' => trans('public.request_failed'),
+                'msg' => trans('cart.course_not_found'),
+                'status' => 'error'
+            ];
+            return back()->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('storeUserBundleCart error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function storeUserProductCart($user, $data)
     {
-        $product_id = $data['item_id'];
-        $specifications = $data['specifications'] ?? null;
-        $quantity = $data['quantity'] ?? 1;
+        try {
+            $product_id = $data['item_id'];
+            $specifications = $data['specifications'] ?? null;
+            $quantity = $data['quantity'] ?? 1;
 
-        $product = Product::where('id', $product_id)
-            ->where('status', 'active')
-            ->first();
-
-        if (!empty($product) and !empty($user)) {
-            $checkProductForSale = checkProductForSale($product, $user);
-
-            if ($checkProductForSale != 'ok') {
-                return $checkProductForSale;
-            }
-
-            $activeDiscount = $product->getActiveDiscount();
-
-            $productOrder = ProductOrder::updateOrCreate([
-                'product_id' => $product->id,
-                'seller_id' => $product->creator_id,
-                'buyer_id' => $user->id,
-                'sale_id' => null,
-                'status' => 'pending',
-            ], [
-                'specifications' => $specifications ? json_encode($specifications) : null,
-                'quantity' => $quantity,
-                'discount_id' => !empty($activeDiscount) ? $activeDiscount->id : null,
-                'created_at' => time()
-            ]);
-
-            // Cart::updateOrCreate([
-            //     'creator_id' => $user->id,
-            //     'product_order_id' => $productOrder->id,
-            // ], [
-            //     'product_discount_id' => !empty($activeDiscount) ? $activeDiscount->id : null,
-            //     'created_at' => time()
-            // ]);
-
-            if(empty(session('cart_id'))){
-                 
-                  
-                 
-           $cart= Cart::Create([
-                'creator_id' => $user->id,
-                'product_order_id' => $productOrder->id,
-                'product_discount_id' => !empty($activeDiscount) ? $activeDiscount->id : null,
-                'created_at' => time(),
-                'cart_id' => NULL
-            ]);
-              session(['cart_id' => $cart->id]);
-            }else{
-                $cart = Cart::where('cart_id', session('cart_id'))->where('product_order_id', $productOrder->id)
+            $product = Product::where('id', $product_id)
+                ->where('status', 'active')
                 ->first();
-                $cart1 = Cart::where('id', session('cart_id'))->where('product_order_id', $productOrder->id)
-                ->first();
-                 if(!empty($cart1)){
-                    
-                    $toastData = [
-                        'title' => 'add to cart',
-                        'msg' => 'Product has already been added to cart',
-                        'status' => 'warning'
-                    ];
-                    return back()->with(['toast' => $toastData]);
-                           
-                 
+
+            if (!empty($product) and !empty($user)) {
+                $checkProductForSale = checkProductForSale($product, $user);
+
+                if ($checkProductForSale != 'ok') {
+                    return $checkProductForSale;
                 }
-                if(!empty($cart)){
-                    
-                    $toastData = [
-                        'title' => 'add to cart',
-                        'msg' => 'Product has already been added to cart',
-                        'status' => 'warning'
-                    ];
-                    return back()->with(['toast' => $toastData]);
-                           
-                 
+
+                $activeDiscount = $product->getActiveDiscount();
+
+                $productOrder = ProductOrder::updateOrCreate([
+                    'product_id' => $product->id,
+                    'seller_id' => $product->creator_id,
+                    'buyer_id' => $user->id,
+                    'sale_id' => null,
+                    'status' => 'pending',
+                ], [
+                    'specifications' => $specifications ? json_encode($specifications) : null,
+                    'quantity' => $quantity,
+                    'discount_id' => !empty($activeDiscount) ? $activeDiscount->id : null,
+                    'created_at' => time()
+                ]);
+
+                if(empty(session('cart_id'))){
+
+               $cart= Cart::Create([
+                    'creator_id' => $user->id,
+                    'product_order_id' => $productOrder->id,
+                    'product_discount_id' => !empty($activeDiscount) ? $activeDiscount->id : null,
+                    'created_at' => time(),
+                    'cart_id' => NULL
+                ]);
+                  session(['cart_id' => $cart->id]);
                 }else{
-            
-                        $cart= Cart::Create([
-                            'creator_id' => $user->id,
-                            'product_order_id' => $productOrder->id,
-                            'product_discount_id' => !empty($activeDiscount) ? $activeDiscount->id : null,
-                            'created_at' => time(),
-                            'cart_id' => session('cart_id')
-                        ]);
-                }
-                
-            }
-            
-            return 'ok';
-        }
+                    $cart = Cart::where('cart_id', session('cart_id'))->where('product_order_id', $productOrder->id)
+                    ->first();
+                    $cart1 = Cart::where('id', session('cart_id'))->where('product_order_id', $productOrder->id)
+                    ->first();
+                     if(!empty($cart1)){
 
-        $toastData = [
-            'title' => trans('public.request_failed'),
-            'msg' => trans('cart.course_not_found'),
-            'status' => 'error'
-        ];
-        return back()->with(['toast' => $toastData]);
+                        $toastData = [
+                            'title' => 'add to cart',
+                            'msg' => 'Product has already been added to cart',
+                            'status' => 'warning'
+                        ];
+                        return back()->with(['toast' => $toastData]);
+
+                    }
+                    if(!empty($cart)){
+
+                        $toastData = [
+                            'title' => 'add to cart',
+                            'msg' => 'Product has already been added to cart',
+                            'status' => 'warning'
+                        ];
+                        return back()->with(['toast' => $toastData]);
+
+                    }else{
+
+                            $cart= Cart::Create([
+                                'creator_id' => $user->id,
+                                'product_order_id' => $productOrder->id,
+                                'product_discount_id' => !empty($activeDiscount) ? $activeDiscount->id : null,
+                                'created_at' => time(),
+                                'cart_id' => session('cart_id')
+                            ]);
+                    }
+
+                }
+
+                return 'ok';
+            }
+
+            $toastData = [
+                'title' => trans('public.request_failed'),
+                'msg' => trans('cart.course_not_found'),
+                'status' => 'error'
+            ];
+            return back()->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('storeUserProductCart error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function storeCookieCart($data)
     {
-        $carts = Cookie::get($this->cookieKey);
+        try {
+            $carts = Cookie::get($this->cookieKey);
 
-        if (!empty($carts)) {
-            $carts = json_decode($carts, true);
-        } else {
-            $carts = [];
+            if (!empty($carts)) {
+                $carts = json_decode($carts, true);
+            } else {
+                $carts = [];
+            }
+
+            $item_id = $data['item_id'];
+            $item_name = $data['item_name'];
+
+            if (empty($data['quantity'])) {
+                $data['quantity'] = 1;
+            }
+
+            $carts[$item_name . '_' . $item_id] = $data;
+
+            Cookie::queue($this->cookieKey, json_encode($carts), 30 * 24 * 60);
+        } catch (\Exception $e) {
+            \Log::error('storeCookieCart error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $item_id = $data['item_id'];
-        $item_name = $data['item_name'];
-
-        if (empty($data['quantity'])) {
-            $data['quantity'] = 1;
-        }
-
-        $carts[$item_name . '_' . $item_id] = $data;
-
-        Cookie::queue($this->cookieKey, json_encode($carts), 30 * 24 * 60);
     }
 
     public function store(Request $request)
     {
-        $user = auth()->user();
-        
-        if(empty($user)){
-           $user = User::where('id','2550')->first(); 
-        }
+        try {
+            $user = auth()->user();
 
-        $this->validate($request, [
-            'item_id' => 'required',
-            'item_name' => 'nullable',
-        ]);
-
-        $data = $request->except('_token');
-        $item_name = $data['item_name'];
-
-        if (!empty($user)) { // store in DB
-            $result = null;
-
-            if ($item_name == 'webinar_id') {
-                $result = $this->storeUserWebinarCart($user, $data);
-            } elseif ($item_name == 'product_id') {
-                $result = $this->storeUserProductCart($user, $data);
-            } elseif ($item_name == 'bundle_id') {
-                $result = $this->storeUserBundleCart($user, $data);
-                // print_r($result);
-                // die();
+            if(empty($user)){
+               $user = User::where('id','2550')->first();
             }
 
-            if ($result != 'ok') {
-                return $result;
+            $this->validate($request, [
+                'item_id' => 'required',
+                'item_name' => 'nullable',
+            ]);
+
+            $data = $request->except('_token');
+            $item_name = $data['item_name'];
+
+            if (!empty($user)) {
+                $result = null;
+
+                if ($item_name == 'webinar_id') {
+                    $result = $this->storeUserWebinarCart($user, $data);
+                } elseif ($item_name == 'product_id') {
+                    $result = $this->storeUserProductCart($user, $data);
+                } elseif ($item_name == 'bundle_id') {
+                    $result = $this->storeUserBundleCart($user, $data);
+
+                }
+
+                if ($result != 'ok') {
+                    return $result;
+                }
+            } else {
+
             }
-        } else { // store in cookie
-            // $this->storeCookieCart($data);
-            // print_r($user);die;
+
+            session(['addtocart' => 'popup']);
+            $toastData = [
+                'title' => trans('cart.cart_add_success_title'),
+                'msg' => trans('cart.cart_add_success_msg'),
+                'status' => 'success'
+            ];
+            return back()->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        // Session::set('addtocart','popup');
-        // Session::put('addtocart', 'popup');
-        session(['addtocart' => 'popup']);
-        $toastData = [
-            'title' => trans('cart.cart_add_success_title'),
-            'msg' => trans('cart.cart_add_success_msg'),
-            'status' => 'success'
-        ];
-        return back()->with(['toast' => $toastData]);
     }
 
     public function destroy($id)
     {
-        if (auth()->check()) {
-             $user_id = auth()->id();
-        }else{
-            $user = User::where('id','2550')->first();
-             $user_id =  $user->id;
-        }
-           
+        try {
+            if (auth()->check()) {
+                 $user_id = auth()->id();
+            }else{
+                $user = User::where('id','2550')->first();
+                 $user_id =  $user->id;
+            }
 
-            $cart = Cart::where('id', $id)
-                ->where('creator_id', $user_id)
-                ->first();
+                $cart = Cart::where('id', $id)
+                    ->where('creator_id', $user_id)
+                    ->first();
 
-            if (!empty($cart)) {
-                if (!empty($cart->reserve_meeting_id)) {
-                    $reserve = ReserveMeeting::where('id', $cart->reserve_meeting_id)
-                        ->where('user_id', $user_id)
-                        ->first();
+                if (!empty($cart)) {
+                    if (!empty($cart->reserve_meeting_id)) {
+                        $reserve = ReserveMeeting::where('id', $cart->reserve_meeting_id)
+                            ->where('user_id', $user_id)
+                            ->first();
 
-                    if (!empty($reserve)) {
-                        $reserve->delete();
-                    }
-                } elseif (!empty($cart->installment_payment_id)) {
-                    $installmentPayment = $cart->installmentPayment;
+                        if (!empty($reserve)) {
+                            $reserve->delete();
+                        }
+                    } elseif (!empty($cart->installment_payment_id)) {
+                        $installmentPayment = $cart->installmentPayment;
 
-                    if (!empty($installmentPayment) and $installmentPayment->status == 'paying') {
-                        $installmentOrder = $installmentPayment->installmentOrder;
+                        if (!empty($installmentPayment) and $installmentPayment->status == 'paying') {
+                            $installmentOrder = $installmentPayment->installmentOrder;
 
-                        $installmentPayment->delete();
+                            $installmentPayment->delete();
 
-                        if (!empty($installmentOrder) and $installmentOrder->status == 'paying') {
-                            $installmentOrder->delete();
+                            if (!empty($installmentOrder) and $installmentOrder->status == 'paying') {
+                                $installmentOrder->delete();
+                            }
                         }
                     }
+
+                    $cart->delete();
                 }
 
-                $cart->delete();
-            }
-        // } else {
-        //     $carts = Cookie::get($this->cookieKey);
-
-        //     if (!empty($carts)) {
-        //         $carts = json_decode($carts, true);
-        //         $ids ='webinar_id_'.$id;
- 
-        //         if (!empty($ids)) {
-                   
-        //             unset($carts[$ids]);
-        //         }
-
-        //         Cookie::queue($this->cookieKey, json_encode($carts), 30 * 24 * 60);
-        //     }
-        // }
-
-        return response()->json([
-            'code' => 200
-        ], 200);
+            return response()->json([
+                'code' => 200
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

@@ -35,7 +35,6 @@
                                             </div>
                                         </div>
 
-
                                         <div class="form-group">
                                             <label class="input-label">{{ trans('admin/main.error_404_title') }}</label>
                                             <input type="text" name="value[error_title]" value="{{ (!empty($value) and !empty($value['error_title'])) ? $value['error_title'] : '' }}" class="form-control"/>

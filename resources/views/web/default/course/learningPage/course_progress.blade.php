@@ -143,11 +143,7 @@
 @push('scripts_bottom')
 
 <script defer>
-                    // $('#myModal21').modal();
 
-                //      setTimeout(function() {
-                //     $('#consultationModal').modal();
-                // }, 30000);
                 </script>
 
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.10.2/video.min.js"></script>
@@ -158,11 +154,10 @@
         var defaultItemType = '{{ request()->get('type') }}'
         var defaultItemId = '{{ request()->get('item') }}'
 
-        var loadFirstContent = {{ (!empty($dontAllowLoadFirstContent) and $dontAllowLoadFirstContent) ? 'false' : 'true' }}; // allow to load first content when request item is empty
+        var loadFirstContent = {{ (!empty($dontAllowLoadFirstContent) and $dontAllowLoadFirstContent) ? 'false' : 'true' }};
 
         var courseUrl = '{{ $course->getUrl() }}';
 
-        // lang
         var pleaseWaitForTheContentLang = '{{ trans('update.please_wait_for_the_content_to_load') }}';
         var downloadTheFileLang = '{{ trans('update.download_the_file') }}';
         var downloadLang = '{{ trans('home.download') }}';
@@ -212,7 +207,7 @@
     if($('#readTogglefile'+defaultItemId).length){
 
 }else{
-    //  alert($('#chapter_'+defaultItemId).length);
+
     $('.pratul').removeClass('active');
 
 	$('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 0px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 text-dark-blue">Access Denied </h2><p class="font-14 font-weight-500 text-gray">You have an overdue installment. Please pay it to access this course!</p><a href="#" class="btn btn-primary mt-15">Pay Now</a></div> </div>');
@@ -223,13 +218,13 @@ function accessdenied(){
 
 }
 
-$(function() {                       //run when the DOM is ready
+$(function() {
   $(".accessdenied").click(function() {
        $('.pratul').removeClass('active');
        $('.accessdenied').removeClass('active');
   $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 0px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 text-dark-blue">Access Denied </h2><p class="font-14 font-weight-500 text-gray">You have an overdue installment. Please pay it to access this course!</p><a href="#" class="btn btn-primary mt-15">Pay Now</a></div> </div>');
-  //use a class, since your ID gets mangled
-    $(this).addClass("active");      //add the class to the clicked element
+
+    $(this).addClass("active");
   });
 });
 </script>
@@ -289,11 +284,6 @@ $(function() {                       //run when the DOM is ready
                     console.log('Active Tab Data ID:', itemId);
                 }
 
-            //   const chapterElement = document.getElementById('chapter_');
-            //     if (chapterElement) {
-            //         const chapterId = chapterElement.id.split('_')[1]; // Splits 'chapter_1' and extracts '1'
-            //         console.log('Chapter ID:', chapterId);
-            //     }
               const chapterId = 0;
               const userId = 1244;
               const webinarId = '{{ $course->id }}';
@@ -302,8 +292,7 @@ $(function() {                       //run when the DOM is ready
 
               console.log(`Saving progress: ${watchPercentage}% watched`);
               saveCourseProgress(itemId, chapterId, webinarId, userId, duration,watchPercentage,totalVideoDuration,courseUrl);
-            //   previousPercentage = watchPercentage;
-            //   sessionStorage.setItem('previousPercentage', previousPercentage);
+
               progressSaved = true;
               getPaused = true;
               sessionStorage.setItem('progressSaved', 'true');
@@ -339,10 +328,10 @@ $(function() {                       //run when the DOM is ready
 
     function saveCourseProgress(itemId, chapterId, webinarId, userId, watchedDuration,watchPercentage,totalVideoDuration,courseUrl) {
       $.ajax({
-        url: "{{ route('store.watched.duration') }}", // Laravel route
+        url: "{{ route('store.watched.duration') }}",
         method: 'POST',
         data: {
-          _token: '{{ csrf_token() }}', // CSRF token for security
+          _token: '{{ csrf_token() }}',
           item_id: itemId,
           user_id: userId,
           webinar_id: webinarId,
@@ -367,10 +356,7 @@ $(function() {                       //run when the DOM is ready
       if (savedDuration && sessionDuration) {
         duration = parseInt(sessionDuration);
       }
-    //   const savedPercentage = sessionStorage.getItem('previousPercentage');
-    //   if (savedPercentage) {
-    //     previousPercentage = parseInt(savedPercentage);
-    //   }
+
     };
   </script>
 

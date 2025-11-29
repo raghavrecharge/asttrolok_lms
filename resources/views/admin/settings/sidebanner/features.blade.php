@@ -154,7 +154,6 @@
                     </div>
                 </div>
 
-
                 <div class="mb-5">
                     <h5>{{ trans('update.assignment_settings') }}</h5>
 
@@ -352,7 +351,6 @@
                     </div>
                 </div>
 
-
                 <div class="mb-5">
                     <h5>{{ trans('update.social_login_settings') }}</h5>
 
@@ -390,7 +388,6 @@
                         <p class="font-14">{{ trans('update.show_live_chat_widget_hint') }}</p>
                     </div>
                 </div>
-
 
                 <div class="mb-5">
                     <h5>{{ trans('update.cashback') }}</h5>
@@ -443,7 +440,6 @@
                     </div>
                 </div>
 
-
                 <div class="mb-5">
                     <h5>{{ trans('update.upload_sources') }}</h5>
 
@@ -460,7 +456,6 @@
                         <p class="text-muted font-12 mt-1">{{ trans('update.upload_sources_hint') }}</p>
                     </div>
                 </div>
-
 
                 <div class="mb-5">
                     <h5>{{ trans('update.bunny_stream_settings') }} ({{ trans('update.secure_host') }})</h5>

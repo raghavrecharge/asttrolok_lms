@@ -2,7 +2,6 @@
 
 namespace App\Models\Translation;
 
-
 use Illuminate\Database\Eloquent\Model;
 
 class InstallmentStepTranslation extends Model

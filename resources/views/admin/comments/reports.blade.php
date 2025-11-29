@@ -39,7 +39,6 @@
 
                                             <td width="150px">
 
-
                                                 <a href="{{ getAdminPanelUrl() }}/comments/{{ $page }}/{{ $report->comment_id }}/edit" class="btn-transparent  text-primary" data-toggle="tooltip" data-placement="top" title="{{ trans('admin/main.show') }}">
                                                     <i class="fa fa-eye"></i>
                                                 </a>

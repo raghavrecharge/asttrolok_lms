@@ -52,7 +52,6 @@
                         <button type="button" data-parent="cookie_settings_modal_items" data-main-row="cookieSettingsItemsMainRow" class="btn btn-success add-btn"><i class="fa fa-plus"></i> {{ trans('admin/main.add') }}</button>
                     </div>
 
-
                     @if(!empty($itemValue) and !empty($itemValue['cookie_settings_modal_items']))
                         @foreach($itemValue['cookie_settings_modal_items'] as $modalItemKey => $modalItemValue)
                             <div class="form-group list-group p-2 border rounded-lg">

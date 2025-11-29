@@ -96,7 +96,6 @@
                         </div>
                     </div>
 
-
                     <div class="col-md-3">
                         <div class="form-group">
                             <label class="input-label">{{ trans('admin/main.filters') }}</label>
@@ -107,7 +106,6 @@
                             </select>
                         </div>
                     </div>
-
 
                     <div class="col-md-3">
                         <div class="form-group">
@@ -143,7 +141,6 @@
                             </select>
                         </div>
                     </div>
-
 
                     <div class="col-md-3">
                         <div class="form-group mt-1">
@@ -268,7 +265,6 @@
 
     </div>
 
-
     <section class="card">
         <div class="card-body">
             <div class="section-title ml-0 mt-0 mb-3"><h5>{{trans('admin/main.hints')}}</h5></div>
@@ -287,14 +283,12 @@
                     </div>
                 </div>
 
-
                 <div class="col-md-4">
                     <div class="media-body">
                         <div class="text-primary mt-0 mb-1 font-weight-bold">{{trans('admin/main.students_hint_title_3')}}</div>
                         <div class="text-small font-600-bold">{{trans('admin/main.students_hint_description_3')}}</div>
                     </div>
                 </div>
-
 
             </div>
         </div>

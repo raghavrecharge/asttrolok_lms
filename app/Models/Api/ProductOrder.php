@@ -2,7 +2,6 @@
 
 namespace App\Models\Api;
 
-//use Illuminate\Database\Eloquent\Model;
 use App\Models\ProductOrder as Model;
 
 class ProductOrder extends Model

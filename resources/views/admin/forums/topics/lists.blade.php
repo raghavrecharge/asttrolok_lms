@@ -115,8 +115,8 @@
     <script>
         $(function() {
           $('.toggle-class').change(function() {
-              var status = $(this).prop('checked') == true ? 1 : 0; 
-              var user_id = $(this).data('id'); 
+              var status = $(this).prop('checked') == true ? 1 : 0;
+              var user_id = $(this).data('id');
                console.log(status);
               $.ajax({
                   type: "POST",

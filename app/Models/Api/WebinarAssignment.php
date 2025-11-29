@@ -22,7 +22,6 @@ class WebinarAssignment extends Model
         $webinarId = $request->get('webinar_id');
         $status = $request->get('status');
 
-        // $from and $to
         $query = fromAndToDateFilter($from, $to, $query, 'created_at');
 
         if (!empty($webinarId)) {
@@ -59,7 +58,6 @@ class WebinarAssignment extends Model
     {
         return $this->assignmentHistory()->where('student_id', apiAuth()->id);
     }
-
 
     public function getLastSubmissionAttribute()
     {
@@ -145,7 +143,7 @@ class WebinarAssignment extends Model
         return WebinarAssignmentHistoryMessage::whereIn('assignment_history_id', $historyIds)
             ->where('sender_id', '!=', $this->creator_id)
             ->count();
-        // return $this->instructorAssignmentHistories()->messages()->where('sender_id', '!=', $this->creator_id)->count();
+
     }
 
     public function assignmentHistory()
@@ -156,7 +154,5 @@ class WebinarAssignment extends Model
                 'status' => WebinarAssignmentHistory::$notSubmitted
             ]);
     }
-
-
 
 }

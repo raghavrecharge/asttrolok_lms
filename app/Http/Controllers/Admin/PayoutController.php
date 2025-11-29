@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Exports\PayoutExport;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting;
@@ -17,44 +20,54 @@ class PayoutController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_payouts_list');
+        try {
+            $this->authorize('admin_payouts_list');
 
-        $payoutType = $request->get('payout', 'requests'); //requests or history
+            $payoutType = $request->get('payout', 'requests');
 
-        $query = Payout::query();
-        if ($payoutType == 'requests') {
-            $query->where('status', Payout::$waiting);
-        } else {
-            $query->where('status', '!=', Payout::$waiting);
+            $query = Payout::query();
+            if ($payoutType == 'requests') {
+                $query->where('status', Payout::$waiting);
+            } else {
+                $query->where('status', '!=', Payout::$waiting);
+            }
+
+            $payouts = $this->filters($query, $request)
+                ->paginate(10);
+
+            $roles = Role::all();
+
+            $offlineBanks = OfflineBank::query()
+                ->orderBy('created_at', 'desc')
+                ->with([
+                    'specifications'
+                ])
+                ->get();
+
+            $data = [
+                'pageTitle' => ($payoutType == 'requests') ? trans('financial.payouts_requests') : trans('financial.payouts_history'),
+                'payouts' => $payouts,
+                'roles' => $roles,
+                'offlineBanks' => $offlineBanks
+            ];
+
+            $user_ids = $request->get('user_ids', []);
+
+            if (!empty($user_ids)) {
+                $data['users'] = User::select('id', 'full_name')
+                    ->whereIn('id', $user_ids)->get();
+            }
+
+            return view('admin.financial.payout.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $payouts = $this->filters($query, $request)
-            ->paginate(10);
-
-        $roles = Role::all();
-
-        $offlineBanks = OfflineBank::query()
-            ->orderBy('created_at', 'desc')
-            ->with([
-                'specifications'
-            ])
-            ->get();
-
-        $data = [
-            'pageTitle' => ($payoutType == 'requests') ? trans('financial.payouts_requests') : trans('financial.payouts_history'),
-            'payouts' => $payouts,
-            'roles' => $roles,
-            'offlineBanks' => $offlineBanks
-        ];
-
-        $user_ids = $request->get('user_ids', []);
-
-        if (!empty($user_ids)) {
-            $data['users'] = User::select('id', 'full_name')
-                ->whereIn('id', $user_ids)->get();
-        }
-
-        return view('admin.financial.payout.lists', $data);
     }
 
     private function filters($query, $request)
@@ -115,65 +128,95 @@ class PayoutController extends Controller
 
     public function reject($id)
     {
-        $this->authorize('admin_payouts_reject');
+        try {
+            $this->authorize('admin_payouts_reject');
 
-        $payout = Payout::findOrFail($id);
-        $payout->update(['status' => Payout::$reject]);
+            $payout = Payout::findOrFail($id);
+            $payout->update(['status' => Payout::$reject]);
 
-        return back();
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('reject error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function payout($id)
     {
-        $this->authorize('admin_payouts_payout');
+        try {
+            $this->authorize('admin_payouts_payout');
 
-        $payout = Payout::findOrFail($id);
-        $getFinancialSettings = getFinancialSettings();
+            $payout = Payout::findOrFail($id);
+            $getFinancialSettings = getFinancialSettings();
 
-        if ($payout->user->getPayout() < $getFinancialSettings['minimum_payout']) {
-            return back()->with('msg', trans('public.income_los_then_minimum_payout'));
+            if ($payout->user->getPayout() < $getFinancialSettings['minimum_payout']) {
+                return back()->with('msg', trans('public.income_los_then_minimum_payout'));
+            }
+
+            Accounting::create([
+                'creator_id' => auth()->user()->id,
+                'user_id' => $payout->user_id,
+                'amount' => $payout->amount,
+                'type' => Accounting::$deduction,
+                'type_account' => Accounting::$income,
+                'description' => trans('financial.payout_request'),
+                'created_at' => time(),
+            ]);
+
+            $notifyOptions = [
+                '[payout.amount]' => $payout->amount,
+                '[payout.account]' => $payout->account_bank_name
+            ];
+            sendNotification('payout_proceed', $notifyOptions, $payout->user_id);
+
+            $payout->update(['status' => Payout::$done]);
+
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('payout error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        Accounting::create([
-            'creator_id' => auth()->user()->id,
-            'user_id' => $payout->user_id,
-            'amount' => $payout->amount,
-            'type' => Accounting::$deduction,
-            'type_account' => Accounting::$income,
-            'description' => trans('financial.payout_request'),
-            'created_at' => time(),
-        ]);
-
-        $notifyOptions = [
-            '[payout.amount]' => $payout->amount,
-            '[payout.account]' => $payout->account_bank_name
-        ];
-        sendNotification('payout_proceed', $notifyOptions, $payout->user_id);
-
-        $payout->update(['status' => Payout::$done]);
-
-        return back();
     }
 
     public function exportExcel(Request $request)
     {
-        $this->authorize('admin_payouts_export_excel');
+        try {
+            $this->authorize('admin_payouts_export_excel');
 
-        $payoutType = $request->get('payout', 'requests'); //requests or history
+            $payoutType = $request->get('payout', 'requests');
 
-        $query = Payout::query();
-        if ($payoutType == 'requests') {
-            $query->where('status', Payout::$waiting);
-        } else {
-            $query->where('status', '!=', Payout::$waiting);
+            $query = Payout::query();
+            if ($payoutType == 'requests') {
+                $query->where('status', Payout::$waiting);
+            } else {
+                $query->where('status', '!=', Payout::$waiting);
+            }
+
+            $payouts = $this->filters($query, $request)->get();
+
+            $export = new PayoutExport($payouts);
+
+            $filename = ($payoutType == 'requests') ? trans('financial.payouts_requests') : trans('financial.payouts_history');
+
+            return Excel::download($export, $filename . '.xlsx');
+        } catch (\Exception $e) {
+            \Log::error('exportExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $payouts = $this->filters($query, $request)->get();
-
-        $export = new PayoutExport($payouts);
-
-        $filename = ($payoutType == 'requests') ? trans('financial.payouts_requests') : trans('financial.payouts_history');
-
-        return Excel::download($export, $filename . '.xlsx');
     }
 }

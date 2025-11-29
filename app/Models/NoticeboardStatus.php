@@ -9,5 +9,5 @@ class NoticeboardStatus extends Model
     protected $table = 'noticeboards_status';
     public $timestamps = false;
     protected $dateFormat = 'U';
-    protected $guarded = ['id'];//
+    protected $guarded = ['id'];
 }

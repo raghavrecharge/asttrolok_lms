@@ -13,7 +13,7 @@
     flex-direction: row;
     align-items: center;
 }">
-                 
+
                     {{ $rate }}</span>
         @while(--$i >= 5 - $rate)
             <i data-feather="star" width="16" height="16" class="active" style="padding-left:1px;"></i>
@@ -22,9 +22,8 @@
             <i data-feather="star" width="16" height="16" class="" style="padding-left:1px;"></i>
         @endwhile
         @if(empty($dontShowRate) or !$dontShowRate)
-           
+
         @endif
 
-        
     @endif
 </div>

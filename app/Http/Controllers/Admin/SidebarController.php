@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Bundle;
 use App\Models\Comment;
@@ -15,94 +18,204 @@ class SidebarController extends Controller
 {
     public function getCoursesBeep()
     {
-        $waitingCoursesCount = Webinar::where('type', Webinar::$course)
-            ->where('status', Webinar::$pending)
-            ->count();
+        try {
+            $waitingCoursesCount = Webinar::where('type', Webinar::$course)
+                ->where('status', Webinar::$pending)
+                ->count();
 
-        return ($waitingCoursesCount > 0);
+            return ($waitingCoursesCount > 0);
+        } catch (\Exception $e) {
+            \Log::error('getCoursesBeep error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function getBundlesBeep()
     {
-        $waitingBundlesCount = Bundle::where('status', Webinar::$pending)
-            ->count();
+        try {
+            $waitingBundlesCount = Bundle::where('status', Webinar::$pending)
+                ->count();
 
-        return ($waitingBundlesCount > 0);
+            return ($waitingBundlesCount > 0);
+        } catch (\Exception $e) {
+            \Log::error('getBundlesBeep error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function getWebinarsBeep()
     {
-        $waitingWebinarCount = Webinar::where('type', Webinar::$webinar)
-            ->where('status', Webinar::$pending)
-            ->count();
+        try {
+            $waitingWebinarCount = Webinar::where('type', Webinar::$webinar)
+                ->where('status', Webinar::$pending)
+                ->count();
 
-        return ($waitingWebinarCount > 0);
+            return ($waitingWebinarCount > 0);
+        } catch (\Exception $e) {
+            \Log::error('getWebinarsBeep error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function getTextLessonsBeep()
     {
-        $waitingTextLessonCount = Webinar::where('type', Webinar::$textLesson)
-            ->where('status', Webinar::$pending)
-            ->count();
+        try {
+            $waitingTextLessonCount = Webinar::where('type', Webinar::$textLesson)
+                ->where('status', Webinar::$pending)
+                ->count();
 
-        return ($waitingTextLessonCount > 0);
+            return ($waitingTextLessonCount > 0);
+        } catch (\Exception $e) {
+            \Log::error('getTextLessonsBeep error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function getReviewsBeep()
     {
-        $count = WebinarReview::where('status', 'pending')
-            ->count();
+        try {
+            $count = WebinarReview::where('status', 'pending')
+                ->count();
 
-        return ($count > 0);
+            return ($count > 0);
+        } catch (\Exception $e) {
+            \Log::error('getReviewsBeep error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function getClassesCommentsBeep()
     {
-        $count = Comment::whereNotNull('webinar_id')
-            ->where('status', 'pending')
-            ->count();
+        try {
+            $count = Comment::whereNotNull('webinar_id')
+                ->where('status', 'pending')
+                ->count();
 
-        return ($count > 0);
+            return ($count > 0);
+        } catch (\Exception $e) {
+            \Log::error('getClassesCommentsBeep error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function getBundleCommentsBeep()
     {
-        $count = Comment::whereNotNull('bundle_id')
-            ->where('status', 'pending')
-            ->count();
+        try {
+            $count = Comment::whereNotNull('bundle_id')
+                ->where('status', 'pending')
+                ->count();
 
-        return ($count > 0);
+            return ($count > 0);
+        } catch (\Exception $e) {
+            \Log::error('getBundleCommentsBeep error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function getBlogCommentsBeep()
     {
-        $count = Comment::whereNotNull('blog_id')
-            ->where('status', 'pending')
-            ->count();
+        try {
+            $count = Comment::whereNotNull('blog_id')
+                ->where('status', 'pending')
+                ->count();
 
-        return ($count > 0);
+            return ($count > 0);
+        } catch (\Exception $e) {
+            \Log::error('getBlogCommentsBeep error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function getProductCommentsBeep()
     {
-        $count = Comment::whereNotNull('product_id')
-            ->where('status', 'pending')
-            ->count();
+        try {
+            $count = Comment::whereNotNull('product_id')
+                ->where('status', 'pending')
+                ->count();
 
-        return ($count > 0);
+            return ($count > 0);
+        } catch (\Exception $e) {
+            \Log::error('getProductCommentsBeep error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function getPayoutRequestBeep()
     {
-        $count = Payout::where('status', Payout::$waiting)->count();
+        try {
+            $count = Payout::where('status', Payout::$waiting)->count();
 
-        return ($count > 0);
+            return ($count > 0);
+        } catch (\Exception $e) {
+            \Log::error('getPayoutRequestBeep error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function getOfflinePaymentsBeep()
     {
-        $count = OfflinePayment::where('status', OfflinePayment::$waiting)->count();
+        try {
+            $count = OfflinePayment::where('status', OfflinePayment::$waiting)->count();
 
-        return ($count > 0);
+            return ($count > 0);
+        } catch (\Exception $e) {
+            \Log::error('getOfflinePaymentsBeep error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

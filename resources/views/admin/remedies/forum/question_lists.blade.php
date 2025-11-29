@@ -19,7 +19,6 @@
 
         <div class="row">
 
-
             <div class="col-lg-4 col-md-6 col-sm-6 col-12">
                 <div class="card card-statistic-1">
                     <div class="card-icon bg-primary">
@@ -35,7 +34,6 @@
                 </div>
             </div>
 
-
             <div class="col-lg-4 col-md-6 col-sm-6 col-12">
                 <div class="card card-statistic-1">
                     <div class="card-icon bg-success">
@@ -50,7 +48,6 @@
                     </div>
                 </div>
             </div>
-
 
             <div class="col-lg-4 col-md-6 col-sm-6 col-12">
                 <div class="card card-statistic-1">
@@ -117,7 +114,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-2">
                                 <div class="form-group mt-1">
                                     <label class="input-label mb-4"> </label>
@@ -183,7 +179,6 @@
                                                     {{ trans('admin/main.no') }}
                                                 @endif
                                             </td>
-
 
                                             <td width="200" class="btn-sm">
                                                 @can('admin_course_question_forum_answers')

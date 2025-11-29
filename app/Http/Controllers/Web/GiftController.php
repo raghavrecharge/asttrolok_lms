@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Web;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Bundle;
 use App\Models\Cart;
@@ -16,118 +19,137 @@ class GiftController extends Controller
 {
     public function index(Request $request, $itemType, $itemSlug)
     {
-        $item = $this->getItem($itemType, $itemSlug);
+        try {
+            $item = $this->getItem($itemType, $itemSlug);
 
-        $giftSettings = getGiftsGeneralSettings();
+            $giftSettings = getGiftsGeneralSettings();
 
-        $settingKey = 'allow_sending_gift_for_courses';
-        $pageTitle = trans('update.send_course_as_a_gift');
-        $titleHint = trans('update.send_this_course_to_your_friends_and_let_them_enjoy_effective_learning');
+            $settingKey = 'allow_sending_gift_for_courses';
+            $pageTitle = trans('update.send_course_as_a_gift');
+            $titleHint = trans('update.send_this_course_to_your_friends_and_let_them_enjoy_effective_learning');
 
-        if ($itemType == 'bundle') {
-            $settingKey = 'allow_sending_gift_for_bundles';
+            if ($itemType == 'bundle') {
+                $settingKey = 'allow_sending_gift_for_bundles';
 
-            $pageTitle = trans('update.send_bundle_as_a_gift');
-            $titleHint = trans('update.send_this_bundle_to_your_friends_and_let_them_enjoy_effective_learning');
-        } else if ($itemType == 'product') {
-            $settingKey = 'allow_sending_gift_for_products';
+                $pageTitle = trans('update.send_bundle_as_a_gift');
+                $titleHint = trans('update.send_this_bundle_to_your_friends_and_let_them_enjoy_effective_learning');
+            } else if ($itemType == 'product') {
+                $settingKey = 'allow_sending_gift_for_products';
 
-            $pageTitle = trans('update.send_product_as_a_gift');
-            $titleHint = trans('update.send_this_product_to_your_friends_and_let_them_enjoy_effective_learning');
-        }
-
-        if (!empty($item) and !empty($giftSettings['status']) and !empty($giftSettings[$settingKey])) {
-
-            if ($itemType == 'product') {
-                $productAvailability = $item->getAvailability();
-
-                if ($productAvailability < 1) {
-                    $toastData = [
-                        'title' => trans('public.request_failed'),
-                        'msg' => trans('update.product_not_availability'),
-                        'status' => 'error'
-                    ];
-                    return back()->with(['toast' => $toastData]);
-                }
+                $pageTitle = trans('update.send_product_as_a_gift');
+                $titleHint = trans('update.send_this_product_to_your_friends_and_let_them_enjoy_effective_learning');
             }
 
-            $data = [
-                'pageTitle' => $pageTitle,
-                'titleHint' => $titleHint,
-                'itemType' => $itemType,
-                'item' => $item
-            ];
+            if (!empty($item) and !empty($giftSettings['status']) and !empty($giftSettings[$settingKey])) {
 
-            return view('web.default.gift.index', $data);
+                if ($itemType == 'product') {
+                    $productAvailability = $item->getAvailability();
+
+                    if ($productAvailability < 1) {
+                        $toastData = [
+                            'title' => trans('public.request_failed'),
+                            'msg' => trans('update.product_not_availability'),
+                            'status' => 'error'
+                        ];
+                        return back()->with(['toast' => $toastData]);
+                    }
+                }
+
+                $data = [
+                    'pageTitle' => $pageTitle,
+                    'titleHint' => $titleHint,
+                    'itemType' => $itemType,
+                    'item' => $item
+                ];
+
+                return view('web.default.gift.index', $data);
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
     }
 
     public function store(Request $request, $itemType, $itemSlug)
     {
-        $this->validate($request, [
-            'name' => 'required|string|min:3|max:255',
-            'email' => 'required|email|max:255',
-            'date' => 'nullable',
-        ]);
-        $data = $request->all();
+        try {
+            $this->validate($request, [
+                'name' => 'required|string|min:3|max:255',
+                'email' => 'required|email|max:255',
+                'date' => 'nullable',
+            ]);
+            $data = $request->all();
 
-        $item = $this->getItem($itemType, $itemSlug);
+            $item = $this->getItem($itemType, $itemSlug);
 
-        $giftSettings = getGiftsGeneralSettings();
+            $giftSettings = getGiftsGeneralSettings();
 
-        $settingKey = 'allow_sending_gift_for_courses';
+            $settingKey = 'allow_sending_gift_for_courses';
 
-        if ($itemType == 'bundle') {
-            $settingKey = 'allow_sending_gift_for_bundles';
-        } else if ($itemType == 'product') {
-            $settingKey = 'allow_sending_gift_for_products';
-        }
-
-        if (!empty($item) and !empty($giftSettings['status']) and !empty($giftSettings[$settingKey])) {
-            $userId = auth()->id();
-
-            // Free Item
-            if (empty($item->price) or $item->price < 1) {
-                return $this->handleFreeItem($item, $itemType, $data);
+            if ($itemType == 'bundle') {
+                $settingKey = 'allow_sending_gift_for_bundles';
+            } else if ($itemType == 'product') {
+                $settingKey = 'allow_sending_gift_for_products';
             }
 
-            $gift = $this->createGift($item, $itemType, $data);
-            $columnName = $this->getColumnName($itemType);
-            $columnValue = $item->id;
+            if (!empty($item) and !empty($giftSettings['status']) and !empty($giftSettings[$settingKey])) {
+                $userId = auth()->id();
 
-            if ($itemType == "product") {
-                $productOrder = ProductOrder::updateOrCreate([
-                    'product_id' => $item->id,
-                    'seller_id' => $item->creator_id,
-                    'buyer_id' => null,
-                    'sale_id' => null,
+                if (empty($item->price) or $item->price < 1) {
+                    return $this->handleFreeItem($item, $itemType, $data);
+                }
+
+                $gift = $this->createGift($item, $itemType, $data);
+                $columnName = $this->getColumnName($itemType);
+                $columnValue = $item->id;
+
+                if ($itemType == "product") {
+                    $productOrder = ProductOrder::updateOrCreate([
+                        'product_id' => $item->id,
+                        'seller_id' => $item->creator_id,
+                        'buyer_id' => null,
+                        'sale_id' => null,
+                        'gift_id' => $gift->id,
+                        'status' => 'pending',
+                    ], [
+                        'specifications' => null,
+                        'quantity' => 1,
+                        'discount_id' => null,
+                        'created_at' => time()
+                    ]);
+
+                    $columnName = "product_order_id";
+                    $columnValue = $productOrder->id;
+                }
+
+                Cart::updateOrCreate([
+                    'creator_id' => $userId,
+                    $columnName => $columnValue,
                     'gift_id' => $gift->id,
-                    'status' => 'pending',
                 ], [
-                    'specifications' => null,
-                    'quantity' => 1,
-                    'discount_id' => null,
                     'created_at' => time()
                 ]);
 
-                $columnName = "product_order_id";
-                $columnValue = $productOrder->id;
+                return redirect('/cart');
             }
 
-            Cart::updateOrCreate([
-                'creator_id' => $userId,
-                $columnName => $columnValue,
-                'gift_id' => $gift->id,
-            ], [
-                'created_at' => time()
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
-
-            return redirect('/cart');
+            
+            throw $e;
         }
-
-        abort(404);
     }
 
     private function handleFreeItem($item, $itemType, $data)

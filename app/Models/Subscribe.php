@@ -54,7 +54,6 @@ class Subscribe extends Model implements TranslatableContract
             $saleCreatedAt = $lastSubscribeSale->created_at;
         }
 
-        /* check installment */
         if (empty($subscribe)) {
             $installmentOrder = InstallmentOrder::query()->where('user_id', $userId)
                 ->whereNotNull('subscribe_id')

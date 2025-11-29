@@ -6,7 +6,6 @@ use App\Models\Category as Model;
 
 class Category extends Model
 {
-    //
 
     public function getDetailsAttribute()
     {

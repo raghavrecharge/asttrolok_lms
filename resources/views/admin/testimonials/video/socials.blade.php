@@ -88,7 +88,7 @@
                                     <i class="fa fa-edit"></i>
                                 </a>
 
-                               @include('admin.includes.delete_button',['url' => getAdminPanelUrl().'/testimonials/video/'. $key .'/delete','btnClass' => '']) 
+                               @include('admin.includes.delete_button',['url' => getAdminPanelUrl().'/testimonials/video/'. $key .'/delete','btnClass' => ''])
                             </td>
                         </tr>
                     @endforeach

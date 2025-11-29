@@ -1,6 +1,5 @@
 @extends('admin.layouts.app')
 
-
 @section('content')
     <section class="section">
         <div class="section-header">
@@ -11,7 +10,6 @@
                 <div class="breadcrumb-item">{{ trans('admin/main.special_offers') }}</div>
             </div>
         </div>
-
 
         <div class="section-body">
             <div class="card">

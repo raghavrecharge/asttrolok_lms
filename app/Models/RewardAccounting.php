@@ -71,20 +71,20 @@ class RewardAccounting extends Model
                 case Reward::BUY:
                 case Reward::ACCOUNT_CHARGE:
                 case Reward::BUY_STORE_PRODUCT:
-                    if (!empty($extra)) { // for this type $extra is amount
+                    if (!empty($extra)) {
                         $score = $reward->score * ($extra / $reward->condition);
                     }
                     break;
 
                 case Reward::CHARGE_WALLET:
-                    if (!empty($extra) and $extra > $reward->condition) { // for this type $extra is total_amount
+                    if (!empty($extra) and $extra > $reward->condition) {
                         $score = $reward->score;
                     }
                     break;
 
                 case Reward::BADGE:
                     if (!empty($extra)) {
-                        $score = $extra; // for this type $extra is $badge->score
+                        $score = $extra;
                     }
                     break;
 

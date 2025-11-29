@@ -69,7 +69,7 @@ class ReserveMeeting extends Model
         $startDate = \DateTime::createFromFormat('Y-m-d H:i', $day . ' ' . $start_time);
         $endDate = \DateTime::createFromFormat('Y-m-d H:i', $day . ' ' . $end_time);
 
-        $link = Link::create('Meeting', $startDate, $endDate); //->description('Cookies & cocktails!')
+        $link = Link::create('Meeting', $startDate, $endDate);
 
         return $link->google();
     }

@@ -20,5 +20,4 @@ class Setting extends WebSetting {
      return   self::$register_method= 'ff' ;
     }
 
-     
 }

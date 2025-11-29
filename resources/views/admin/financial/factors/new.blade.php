@@ -11,7 +11,6 @@
             </div>
         </div>
 
-
         <div class="section-body">
 
             <div class="d-flex align-items-center justify-content-between">
@@ -39,7 +38,6 @@
                                     @enderror
                                 </div>
 
-
                                 <div class="form-group">
                                     <label class="control-label">{{ trans('admin/main.amount') }}({{ $currency }})</label>
                                     <input type="text" name="amount" class="form-control @error('amount') is-invalid @enderror" placeholder="100">
@@ -50,7 +48,6 @@
                                     </div>
                                     @enderror
                                 </div>
-
 
                                 <div class="form-group">
                                     <label class="input-label d-block">{{ trans('admin/main.user') }}</label>

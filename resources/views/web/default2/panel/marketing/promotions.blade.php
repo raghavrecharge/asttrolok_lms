@@ -88,7 +88,6 @@
                 </div>
             </div>
 
-
         </section>
     @else
         @include(getTemplate() . '.includes.no-result',[
@@ -107,7 +106,6 @@
         <form action="/panel/marketing/pay-promotion" method="post">
             {{ csrf_field() }}
             <input type="hidden" name="promotion_id" value="">
-
 
             <h3 class="section-title after-line">{{ trans('panel.promote_the_webinar') }}</h3>
             <div class="mt-25 d-flex flex-column align-items-center">

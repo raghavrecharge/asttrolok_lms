@@ -305,12 +305,11 @@
 
          <script>
 $(document).ready(function() {
-    // Attach change event listener to radio buttons
+
     $('#slotsTime input[type="radio"]').change(function() {
-        // Remove 'date-active' class from all elements
+
         $('.available-times1').removeClass('date-active');
 
-        // Add 'date-active' class to the selected radio button's parent element
         $(this).closest('.available-times1').addClass('date-active');
         $('#PickTimeBody').addClass('d-none');
 
@@ -324,7 +323,6 @@ $(document).ready(function() {
 document.getElementById('paymentSubmit').addEventListener('click', function(e) {
     e.preventDefault();
 
-    // const meetingTimeId = document.querySelector('input[name="meeting_time"]:checked')?.value;
     const selectedTime = document.querySelector('input[name="time"]:checked')?.value;
 
     if (!selectedTime) {
@@ -337,7 +335,7 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
         email: document.getElementById('email').value,
         number: document.getElementById('mobile').value,
         selectedDay: document.getElementById('selectedDay').value,
-        // selectedTime: selectedTime,
+
         discount_id: {{ session('meeting_discount_id') ?? 'null' }}
     };
 

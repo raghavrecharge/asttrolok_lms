@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Http\Resources\FileResource;
 use App\Http\Resources\WebinarAssignmentResource;
@@ -14,13 +17,23 @@ class WebinarAssignmentController extends Controller
 {
     public function show($id)
     {
-        $assignmnet = WebinarAssignment::where('id', $id)
-            ->where('status', WebinarChapter::$chapterActive)->first();
-        abort_unless($assignmnet,404);
-        if ($error = $assignmnet->canViewError()) {
-            //       return $this->failure($error, 403, 403);
+        try {
+            $assignmnet = WebinarAssignment::where('id', $id)
+                ->where('status', WebinarChapter::$chapterActive)->first();
+            abort_unless($assignmnet,404);
+            if ($error = $assignmnet->canViewError()) {
+
+            }
+            $resource = new WebinarAssignmentResource($assignmnet);
+            return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), $resource);
+        } catch (\Exception $e) {
+            \Log::error('show error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-        $resource = new WebinarAssignmentResource($assignmnet);
-        return apiResponse2(1, 'retrieved', trans('api.public.retrieved'), $resource);
     }
 }

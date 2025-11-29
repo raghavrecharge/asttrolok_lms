@@ -7,7 +7,6 @@ use App\Models\Blog as Model;
 class Blog extends Model
 {
 
-
     public  function getDetailsAttribute()
     {
         return [

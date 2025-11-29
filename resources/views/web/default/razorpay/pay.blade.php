@@ -1,14 +1,13 @@
 @extends(getTemplate().'.layouts.app')
 
-
 @section('content')
     <section class="cart-banner1 position-relative text-center  slider-container1">
         <h1 class="font-30 text-white font-weight-bold">{{ trans('cart.shopping_cart') }}</h1>
     </section>
  <form action="/payments/verify/Razorpay" method="get">
-                         
+
                             <input type="hidden" name="order_id" value="1">
-            
+
                             <script   src="https://checkout.razorpay.com/v1/checkout.js"
                                     data-key="{{ env('RAZORPAY_API_KEY') }}"
                                     data-amount="{{ (int)($total * 100) }}"

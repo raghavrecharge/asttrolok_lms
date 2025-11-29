@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin\Store;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Exports\StoreOrdersExport;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting;
@@ -18,14 +21,22 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_store_products_orders');
+        try {
+            $this->authorize('admin_store_products_orders');
 
-        $query = ProductOrder::where('product_orders.status', '!=', ProductOrder::$pending)
-            ->whereNotNull('sale_id');
+            $query = ProductOrder::where('product_orders.status', '!=', ProductOrder::$pending)
+                ->whereNotNull('sale_id');
+
+            return $this->returnDataToView($request, $query);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
-      
-
-        return $this->returnDataToView($request, $query);
+            throw $e;
+        }
     }
 
     private function handleTopStats($query, $status = null): array
@@ -101,21 +112,6 @@ class OrderController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        // $orders = $query->with([
-        //     'product',
-        //     'seller' => function ($query) {
-        //         $query->select('id', 'full_name');
-        //     },
-        //     'buyer' => function ($query) {
-        //         $query->select('id', 'full_name');
-        //     },
-        //     'sale.orderAddress', // relation chaining
-        // ])
-        // ->whereHas('sale.orderAddress') // sirf wahi record jaha match mila
-        // ->orderBy('created_at', 'desc')
-        // ->paginate(10);
-
-
         $data = [
             'pageTitle' => trans('update.orders_lists'),
             'orders' => $orders,
@@ -125,8 +121,6 @@ class OrderController extends Controller
             'totalOrders' => $totalOrders,
             'inHouseOrders' => $inHouseOrders
         ];
-        // print_r($data);
-        // die();
 
         $sellerIds = $request->get('seller_ids', []);
         $customerIds = $request->get('customer_ids', []);
@@ -146,166 +140,224 @@ class OrderController extends Controller
 
     public function inHouseOrders(Request $request)
     {
-        $this->authorize('admin_store_in_house_orders');
+        try {
+            $this->authorize('admin_store_in_house_orders');
 
-        removeContentLocale();
+            removeContentLocale();
 
-        $adminRoleIds = Role::where('is_admin', true)->pluck('id')->toArray();
+            $adminRoleIds = Role::where('is_admin', true)->pluck('id')->toArray();
 
-        $query = ProductOrder::where('product_orders.status', '!=', ProductOrder::$pending)
-            ->whereHas('seller', function ($query) use ($adminRoleIds) {
-                $query->whereIn('role_id', $adminRoleIds);
-            })
-            ->whereNotNull('sale_id');
+            $query = ProductOrder::where('product_orders.status', '!=', ProductOrder::$pending)
+                ->whereHas('seller', function ($query) use ($adminRoleIds) {
+                    $query->whereIn('role_id', $adminRoleIds);
+                })
+                ->whereNotNull('sale_id');
 
-        return $this->returnDataToView($request, $query, true);
+            return $this->returnDataToView($request, $query, true);
+        } catch (\Exception $e) {
+            \Log::error('inHouseOrders error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function refund($id)
     {
-        $this->authorize('admin_store_products_orders_refund');
+        try {
+            $this->authorize('admin_store_products_orders_refund');
 
-        $productOrder = ProductOrder::where('id', $id)->first();
+            $productOrder = ProductOrder::where('id', $id)->first();
 
-        if (!empty($productOrder) and !empty($productOrder->sale)) {
-            $sale = $productOrder->sale;
+            if (!empty($productOrder) and !empty($productOrder->sale)) {
+                $sale = $productOrder->sale;
 
-            if (!empty($sale->total_amount)) {
-                Accounting::refundAccounting($sale, $productOrder->id);
+                if (!empty($sale->total_amount)) {
+                    Accounting::refundAccounting($sale, $productOrder->id);
+                }
+
+                $sale->update([
+                    'refund_at' => time()
+                ]);
+
+                $productOrder->update([
+                    'status' => ProductOrder::$canceled
+                ]);
+
+                return back();
             }
 
-            $sale->update([
-                'refund_at' => time()
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('refund error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
-
-            $productOrder->update([
-                'status' => ProductOrder::$canceled
-            ]);
-
-            return back();
+            
+            throw $e;
         }
-
-        abort(404);
     }
 
     public function invoice($id)
     {
-        $this->authorize('admin_store_products_orders_invoice');
+        try {
+            $this->authorize('admin_store_products_orders_invoice');
 
-        $productOrder = ProductOrder::where('id', $id)->first();
+            $productOrder = ProductOrder::where('id', $id)->first();
 
-        if (!empty($productOrder) and !empty($productOrder->product)) {
-            $data = [
-                'pageTitle' => trans('webinars.invoice_page_title'),
-                'order' => $productOrder,
-                'product' => $productOrder->product,
-                'sale' => $productOrder->sale,
-                'orderAddress' => $productOrder->sale->orderAddress,
-                'seller' => $productOrder->seller,
-                'buyer' => $productOrder->buyer,
-            ];
-            // echo "<pre>";
-            // print_r($productOrder->sale->orderAddress);die();
+            if (!empty($productOrder) and !empty($productOrder->product)) {
+                $data = [
+                    'pageTitle' => trans('webinars.invoice_page_title'),
+                    'order' => $productOrder,
+                    'product' => $productOrder->product,
+                    'sale' => $productOrder->sale,
+                    'orderAddress' => $productOrder->sale->orderAddress,
+                    'seller' => $productOrder->seller,
+                    'buyer' => $productOrder->buyer,
+                ];
 
-            return view('web.default.panel.store.invoice', $data);
+                return view('web.default.panel.store.invoice', $data);
+            }
+
+            abort(404);
+        } catch (\Exception $e) {
+            \Log::error('invoice error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(404);
     }
 
     public function exportExcel(Request $request)
     {
-        $this->authorize('admin_store_products_orders_export');
+        try {
+            $this->authorize('admin_store_products_orders_export');
 
-        $query = ProductOrder::where('status', '!=', ProductOrder::$pending)
-            ->whereNotNull('sale_id');
+            $query = ProductOrder::where('status', '!=', ProductOrder::$pending)
+                ->whereNotNull('sale_id');
 
-        if (!empty($request->get('in-house-orders'))) {
-            $adminRoleIds = Role::where('is_admin', true)->pluck('id')->toArray();
+            if (!empty($request->get('in-house-orders'))) {
+                $adminRoleIds = Role::where('is_admin', true)->pluck('id')->toArray();
 
-            $query->whereHas('seller', function ($query) use ($adminRoleIds) {
-                $query->whereIn('role_id', $adminRoleIds);
-            });
-        }
+                $query->whereHas('seller', function ($query) use ($adminRoleIds) {
+                    $query->whereIn('role_id', $adminRoleIds);
+                });
+            }
 
-        $query = $this->getFilters($query, $request);
+            $query = $this->getFilters($query, $request);
 
-        $orders = $query->with([
-            'product',
-            'seller' => function ($query) {
-                $query->select('id', 'full_name');
-            },
-            'buyer' => function ($query) {
-                $query->select('id', 'full_name');
-            },
-            'sale',
+            $orders = $query->with([
+                'product',
+                'seller' => function ($query) {
+                    $query->select('id', 'full_name');
+                },
+                'buyer' => function ($query) {
+                    $query->select('id', 'full_name');
+                },
+                'sale',
+
+            ])
+                ->orderBy('created_at', 'desc')
+                ->get();
+               $export = new StoreOrdersExport($orders);
+
+            return Excel::download($export, 'storeOrders.xlsx');
+        } catch (\Exception $e) {
+            \Log::error('exportExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
-        ])
-            ->orderBy('created_at', 'desc')
-            ->get();
-           $export = new StoreOrdersExport($orders);
-
-        return Excel::download($export, 'storeOrders.xlsx');
+            throw $e;
+        }
     }
 
     public function getProductOrder($saleId, $orderId)
     {
-        $this->authorize('admin_store_products_orders_tracking_code');
+        try {
+            $this->authorize('admin_store_products_orders_tracking_code');
 
-        $order = ProductOrder::where('id', $orderId)
-            ->where('sale_id', $saleId)
-            ->first();
+            $order = ProductOrder::where('id', $orderId)
+                ->where('sale_id', $saleId)
+                ->first();
 
-        if (!empty($order)) {
-            $buyer = $order->buyer;
+            if (!empty($order)) {
+                $buyer = $order->buyer;
 
-            $order->address = $buyer->getAddress(true);
+                $order->address = $buyer->getAddress(true);
+            }
+
+            return response()->json([
+                'order' => $order
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('getProductOrder error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return response()->json([
-            'order' => $order
-        ]);
     }
 
     public function setTrackingCode(Request $request, $saleId, $orderId)
     {
-        $this->authorize('admin_store_products_orders_tracking_code');
+        try {
+            $this->authorize('admin_store_products_orders_tracking_code');
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $validator = Validator::make($data, [
-            'tracking_code' => 'required'
-        ]);
-
-        if ($validator->fails()) {
-            return response([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $order = ProductOrder::where('id', $orderId)
-            ->where('sale_id', $saleId)
-            ->first();
-
-        if (!empty($order)) {
-            $order->update([
-                'tracking_code' => $data['tracking_code'],
-                'status' => ProductOrder::$shipped
+            $validator = Validator::make($data, [
+                'tracking_code' => 'required'
             ]);
 
-            $product = $order->product;
-            $seller = $order->seller;
+            if ($validator->fails()) {
+                return response([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
 
-            $notifyOptions = [
-                '[p.title]' => $product->title,
-                '[u.name]' => $seller->full_name
-            ];
-            sendNotification('product_tracking_code', $notifyOptions, $order->buyer_id);
+            $order = ProductOrder::where('id', $orderId)
+                ->where('sale_id', $saleId)
+                ->first();
+
+            if (!empty($order)) {
+                $order->update([
+                    'tracking_code' => $data['tracking_code'],
+                    'status' => ProductOrder::$shipped
+                ]);
+
+                $product = $order->product;
+                $seller = $order->seller;
+
+                $notifyOptions = [
+                    '[p.title]' => $product->title,
+                    '[u.name]' => $seller->full_name
+                ];
+                sendNotification('product_tracking_code', $notifyOptions, $order->buyer_id);
+            }
+
+            return response()->json([
+                'code' => 200
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('setTrackingCode error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return response()->json([
-            'code' => 200
-        ]);
     }
 }

@@ -22,7 +22,7 @@
                                              <select name="lang" class="form-control @error('type') is-invalid  @enderror">
                                                             <option value="EN" @if(!empty($webinar) and $webinar->lang =='EN') selected @endif>English</option>
                                                             <option value="HI"  @if(!empty($webinar) and $webinar->lang =='HI') selected @endif >Hindi</option>
-                                                         
+
                                                     </select>
         <div class="form-group mt-15 ">
             <label class="input-label d-block">{{ trans('panel.course_type') }}</label>
@@ -39,7 +39,6 @@
             </div>
             @enderror
         </div>
-
 
         @if($isOrganization)
             <div class="form-group mt-15 ">
@@ -59,7 +58,6 @@
                 @enderror
             </div>
         @endif
-
 
         <div class="form-group mt-15">
             <label class="input-label">{{ trans('public.title') }}</label>

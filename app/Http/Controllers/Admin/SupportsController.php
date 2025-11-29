@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\Support;
@@ -16,96 +19,106 @@ class SupportsController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_supports_list');
+        try {
+            $this->authorize('admin_supports_list');
 
-        $query = Support::select('*',DB::raw("case
-            when status = 'open' then 'a'
-            when status = 'replied' then 'a'
-            when status = 'supporter_replied' then 'b'
-            when status = 'close' then 'c'
-            end as status_order
-        "));
+            $query = Support::select('*',DB::raw("case
+                when status = 'open' then 'a'
+                when status = 'replied' then 'a'
+                when status = 'supporter_replied' then 'b'
+                when status = 'close' then 'c'
+                end as status_order
+            "));
 
-        if (!empty($request->get('type')) and $request->get('type') == 'course_conversations') {
-            $query->whereNotNull('webinar_id')
+            if (!empty($request->get('type')) and $request->get('type') == 'course_conversations') {
+                $query->whereNotNull('webinar_id')
+                    ->with([
+                        'webinar' => function ($qu) {
+                            $qu->with([
+                                'teacher' => function ($qu) {
+                                    $qu->select('id', 'full_name');
+                                }
+                            ]);
+                        }
+                    ]);
+            } else {
+                $query->whereNotNull('department_id');
+            }
+
+            $totalConversations = deepClone($query)->count();
+            $openConversationsCount = deepClone($query)->where('status', '!=', 'close')->count();
+            $closeConversationsCount = deepClone($query)->where('status', 'close')->count();
+            $classesWithSupport = 0;
+            $pendingReplySupports = 0;
+
+            if (!empty($request->get('type')) and $request->get('type') == 'course_conversations') {
+                $classesWithSupport = Webinar::where('support', true)
+                    ->where('status', 'active')
+                    ->count();
+            } else {
+                $pendingReplySupports = deepClone($query)->whereIn('status', ['open', 'replied'])->count();
+            }
+
+            $query = $this->handleFilters($request, $query);
+
+            $supports = $query->orderBy('status_order', 'asc')
+                ->orderBy('created_at', 'desc')
                 ->with([
-                    'webinar' => function ($qu) {
-                        $qu->with([
-                            'teacher' => function ($qu) {
-                                $qu->select('id', 'full_name');
-                            }
-                        ]);
+                    'department',
+                    'user' => function ($qu) {
+                        $qu->select('id', 'full_name', 'role_name');
                     }
-                ]);
-        } else {
-            $query->whereNotNull('department_id');
-        }
+                ])->paginate(10);
 
-        $totalConversations = deepClone($query)->count();
-        $openConversationsCount = deepClone($query)->where('status', '!=', 'close')->count();
-        $closeConversationsCount = deepClone($query)->where('status', 'close')->count();
-        $classesWithSupport = 0;
-        $pendingReplySupports = 0;
+            $departments = SupportDepartment::all();
+            $roles = Role::all();
 
-        if (!empty($request->get('type')) and $request->get('type') == 'course_conversations') {
-            $classesWithSupport = Webinar::where('support', true)
-                ->where('status', 'active')
-                ->count();
-        } else {
-            $pendingReplySupports = deepClone($query)->whereIn('status', ['open', 'replied'])->count();
-        }
+            $data = [
+                'pageTitle' => trans('admin/pages/users.supports'),
+                'supports' => $supports,
+                'totalConversations' => $totalConversations,
+                'pendingReplySupports' => $pendingReplySupports,
+                'openConversationsCount' => $openConversationsCount,
+                'closeConversationsCount' => $closeConversationsCount,
+                'classesWithSupport' => $classesWithSupport,
+                'departments' => $departments,
+                'roles' => $roles,
+            ];
 
-        $query = $this->handleFilters($request, $query);
+            if (!empty($request->get('type')) and $request->get('type') == 'course_conversations') {
+                $data['pageTitle'] = trans('admin/main.classes_conversations');
+                $teacher_ids = $request->get('teacher_ids');
+                $student_ids = $request->get('student_ids');
+                $webinar_ids = $request->get('webinar_ids');
 
-        $supports = $query->orderBy('status_order', 'asc')
-            ->orderBy('created_at', 'desc')
-            ->with([
-                'department',
-                'user' => function ($qu) {
-                    $qu->select('id', 'full_name', 'role_name');
+                if (!empty($teacher_ids)) {
+                    $data['teachers'] = User::select('id', 'full_name')
+                        ->whereIn('id', $teacher_ids)->get();
                 }
-            ])->paginate(10);
 
-        $departments = SupportDepartment::all();
-        $roles = Role::all();
+                if (!empty($student_ids)) {
+                    $data['students'] = User::select('id', 'full_name')
+                        ->whereIn('id', $student_ids)->get();
+                }
 
-        $data = [
-            'pageTitle' => trans('admin/pages/users.supports'),
-            'supports' => $supports,
-            'totalConversations' => $totalConversations,
-            'pendingReplySupports' => $pendingReplySupports,
-            'openConversationsCount' => $openConversationsCount,
-            'closeConversationsCount' => $closeConversationsCount,
-            'classesWithSupport' => $classesWithSupport,
-            'departments' => $departments,
-            'roles' => $roles,
-        ];
+                if (!empty($webinar_ids)) {
+                    $data['webinars'] = Webinar::select('id')
+                        ->whereIn('id', $webinar_ids)->get();
+                }
 
-        if (!empty($request->get('type')) and $request->get('type') == 'course_conversations') {
-            $data['pageTitle'] = trans('admin/main.classes_conversations');
-            $teacher_ids = $request->get('teacher_ids');
-            $student_ids = $request->get('student_ids');
-            $webinar_ids = $request->get('webinar_ids');
-
-            if (!empty($teacher_ids)) {
-                $data['teachers'] = User::select('id', 'full_name')
-                    ->whereIn('id', $teacher_ids)->get();
+                return view('admin.supports.course_conversations_lists', $data);
             }
 
-            if (!empty($student_ids)) {
-                $data['students'] = User::select('id', 'full_name')
-                    ->whereIn('id', $student_ids)->get();
-            }
-
-            if (!empty($webinar_ids)) {
-                $data['webinars'] = Webinar::select('id')
-                    ->whereIn('id', $webinar_ids)->get();
-            }
-
-            return view('admin.supports.course_conversations_lists', $data);
+            return view('admin.supports.lists', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return view('admin.supports.lists', $data);
     }
 
     private function handleFilters($request, $query)
@@ -193,7 +206,6 @@ class SupportsController extends Controller
             });
         }
 
-
         if (!empty($student_ids)) {
             $query->whereIn('user_id', $student_ids);
         }
@@ -203,215 +215,295 @@ class SupportsController extends Controller
 
     public function create(Request $request)
     {
-        $this->authorize('admin_support_send');
+        try {
+            $this->authorize('admin_support_send');
 
-        $user_id = $request->get('user_id');
-        $toUser = null;
-        if (!empty($user_id)) {
-            $toUser = User::find($user_id);
+            $user_id = $request->get('user_id');
+            $toUser = null;
+            if (!empty($user_id)) {
+                $toUser = User::find($user_id);
+            }
+
+            $departments = SupportDepartment::all();
+
+            $data = [
+                'pageTitle' => trans('admin/main.new_support_ticket_title'),
+                'departments' => $departments,
+                'toUser' => $toUser
+            ];
+
+            return view('admin.supports.create', $data);
+        } catch (\Exception $e) {
+            \Log::error('create error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $departments = SupportDepartment::all();
-
-        $data = [
-            'pageTitle' => trans('admin/main.new_support_ticket_title'),
-            'departments' => $departments,
-            'toUser' => $toUser
-        ];
-
-        return view('admin.supports.create', $data);
     }
 
     public function store(Request $request)
     {
-        $this->authorize('admin_support_send');
+        try {
+            $this->authorize('admin_support_send');
 
-        $this->validate($request, [
-            'title' => 'required|min:2',
-            'department_id' => 'required|exists:support_departments,id',
-            'user_id' => 'required|exists:users,id',
-            'message' => 'required',
-        ]);
+            $this->validate($request, [
+                'title' => 'required|min:2',
+                'department_id' => 'required|exists:support_departments,id',
+                'user_id' => 'required|exists:users,id',
+                'message' => 'required',
+            ]);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $support = Support::create([
-            'user_id' => $data['user_id'],
-            'department_id' => $data['department_id'],
-            'title' => $data['title'],
-            'status' => 'open',
-            'created_at' => time(),
-            'updated_at' => time(),
-        ]);
+            $support = Support::create([
+                'user_id' => $data['user_id'],
+                'department_id' => $data['department_id'],
+                'title' => $data['title'],
+                'status' => 'open',
+                'created_at' => time(),
+                'updated_at' => time(),
+            ]);
 
-        SupportConversation::create([
-            'support_id' => $support->id,
-            'supporter_id' => auth()->id(),
-            'message' => $data['message'],
-            'attach' => $data['attach'],
-            'created_at' => time(),
-        ]);
+            SupportConversation::create([
+                'support_id' => $support->id,
+                'supporter_id' => auth()->id(),
+                'message' => $data['message'],
+                'attach' => $data['attach'],
+                'created_at' => time(),
+            ]);
 
-        return redirect(getAdminPanelUrl().'/supports/' . $support->id . '/conversation');
+            return redirect(getAdminPanelUrl().'/supports/' . $support->id . '/conversation');
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function edit($id)
     {
-        $this->authorize('admin_supports_reply');
+        try {
+            $this->authorize('admin_supports_reply');
 
-        $support = Support::where('id', $id)
-            ->whereNotNull('department_id')
-            ->first();
+            $support = Support::where('id', $id)
+                ->whereNotNull('department_id')
+                ->first();
 
-        if (empty($support)) {
-            abort(404);
+            if (empty($support)) {
+                abort(404);
+            }
+
+            $departments = SupportDepartment::all();
+
+            $data = [
+                'pageTitle' => trans('admin/main.edit_support_ticket_title'),
+                'departments' => $departments,
+                'support' => $support,
+            ];
+
+            return view('admin.supports.create', $data);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $departments = SupportDepartment::all();
-
-        $data = [
-            'pageTitle' => trans('admin/main.edit_support_ticket_title'),
-            'departments' => $departments,
-            'support' => $support,
-        ];
-
-        return view('admin.supports.create', $data);
     }
 
     public function update(Request $request, $id)
     {
-        $this->authorize('admin_supports_reply');
+        try {
+            $this->authorize('admin_supports_reply');
 
-        $this->validate($request, [
-            'title' => 'required|min:2',
-            'department_id' => 'required|exists:support_departments,id',
-            'user_id' => 'required|exists:users,id',
-            'message' => 'required',
-        ]);
+            $this->validate($request, [
+                'title' => 'required|min:2',
+                'department_id' => 'required|exists:support_departments,id',
+                'user_id' => 'required|exists:users,id',
+                'message' => 'required',
+            ]);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $support = Support::where('id', $id)
-            ->whereNotNull('department_id')
-            ->first();
+            $support = Support::where('id', $id)
+                ->whereNotNull('department_id')
+                ->first();
 
-        if (empty($support)) {
-            abort(404);
+            if (empty($support)) {
+                abort(404);
+            }
+
+            $support->update([
+                'user_id' => $data['user_id'],
+                'department_id' => $data['department_id'],
+                'title' => $data['title'],
+                'status' => 'open',
+                'updated_at' => time(),
+            ]);
+
+            return redirect(getAdminPanelUrl().'/supports');
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $support->update([
-            'user_id' => $data['user_id'],
-            'department_id' => $data['department_id'],
-            'title' => $data['title'],
-            'status' => 'open',
-            'updated_at' => time(),
-        ]);
-
-        return redirect(getAdminPanelUrl().'/supports');
     }
 
     public function delete($id)
     {
-        $this->authorize('admin_supports_delete');
+        try {
+            $this->authorize('admin_supports_delete');
 
-        $support = Support::where('id', $id)
-            ->whereNotNull('department_id')
-            ->first();
+            $support = Support::where('id', $id)
+                ->whereNotNull('department_id')
+                ->first();
 
-        if (empty($support)) {
-            abort(404);
+            if (empty($support)) {
+                abort(404);
+            }
+
+            $support->delete();
+
+            return redirect(getAdminPanelUrl().'/supports');
+        } catch (\Exception $e) {
+            \Log::error('delete error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $support->delete();
-
-        return redirect(getAdminPanelUrl().'/supports');
     }
 
     public function conversationClose($id)
     {
-        $this->authorize('admin_supports_reply');
+        try {
+            $this->authorize('admin_supports_reply');
 
-        $support = Support::where('id', $id)
-            ->first();
+            $support = Support::where('id', $id)
+                ->first();
 
-        if (empty($support)) {
-            abort(404);
+            if (empty($support)) {
+                abort(404);
+            }
+
+            $support->update([
+                'status' => 'close',
+                'updated_at' => time()
+            ]);
+
+            return redirect(getAdminPanelUrl().'/supports/' . $support->id . '/conversation');
+        } catch (\Exception $e) {
+            \Log::error('conversationClose error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $support->update([
-            'status' => 'close',
-            'updated_at' => time()
-        ]);
-
-        return redirect(getAdminPanelUrl().'/supports/' . $support->id . '/conversation');
     }
 
     public function conversation($id)
     {
-        $this->authorize('admin_supports_reply');
+        try {
+            $this->authorize('admin_supports_reply');
 
-        $support = Support::where('id', $id)
-            ->where(function ($query) {
-                $query->whereNotNull('department_id')
-                    ->orWhereNotNull('webinar_id');
-            })
-            ->with(['department', 'conversations' => function ($query) {
-                $query->with(['sender' => function ($qu) {
-                    $qu->select('id', 'full_name', 'avatar');
-                }, 'supporter' => function ($qu) {
-                    $qu->select('id', 'full_name', 'avatar');
-                }]);
-                $query->orderBy('created_at', 'asc');
-            }, 'user' => function ($qu) {
-                $qu->select('id', 'full_name', 'role_name');
-            }, 'webinar' => function ($qu) {
-                $qu->with(['teacher' => function ($qu) {
-                    $qu->select('id', 'full_name');
-                }]);
-            }])->first();
+            $support = Support::where('id', $id)
+                ->where(function ($query) {
+                    $query->whereNotNull('department_id')
+                        ->orWhereNotNull('webinar_id');
+                })
+                ->with(['department', 'conversations' => function ($query) {
+                    $query->with(['sender' => function ($qu) {
+                        $qu->select('id', 'full_name', 'avatar');
+                    }, 'supporter' => function ($qu) {
+                        $qu->select('id', 'full_name', 'avatar');
+                    }]);
+                    $query->orderBy('created_at', 'asc');
+                }, 'user' => function ($qu) {
+                    $qu->select('id', 'full_name', 'role_name');
+                }, 'webinar' => function ($qu) {
+                    $qu->with(['teacher' => function ($qu) {
+                        $qu->select('id', 'full_name');
+                    }]);
+                }])->first();
 
-        if (empty($support)) {
-            abort(404);
+            if (empty($support)) {
+                abort(404);
+            }
+
+            $data = [
+                'pageTitle' => trans('admin/pages/users.support_conversation'),
+                'support' => $support
+            ];
+
+            return view('admin.supports.conversation', $data);
+        } catch (\Exception $e) {
+            \Log::error('conversation error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $data = [
-            'pageTitle' => trans('admin/pages/users.support_conversation'),
-            'support' => $support
-        ];
-
-        return view('admin.supports.conversation', $data);
     }
 
     public function storeConversation(Request $request, $id)
     {
-        $this->authorize('admin_supports_reply');
+        try {
+            $this->authorize('admin_supports_reply');
 
-        $this->validate($request, [
-            'message' => 'required|string|min:2',
-        ]);
+            $this->validate($request, [
+                'message' => 'required|string|min:2',
+            ]);
 
-        $data = $request->all();
-        $support = Support::where('id', $id)
-            //->whereNotNull('department_id')
-            ->first();
+            $data = $request->all();
+            $support = Support::where('id', $id)
 
-        if (empty($support)) {
-            abort(404);
+                ->first();
+
+            if (empty($support)) {
+                abort(404);
+            }
+
+            $support->update([
+                'status' => 'supporter_replied',
+                'updated_at' => time()
+            ]);
+
+            SupportConversation::create([
+                'support_id' => $support->id,
+                'supporter_id' => auth()->id(),
+                'message' => $data['message'],
+                'attach' => $data['attach'],
+                'created_at' => time(),
+            ]);
+
+            return redirect(getAdminPanelUrl().'/supports/' . $support->id . '/conversation');
+        } catch (\Exception $e) {
+            \Log::error('storeConversation error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $support->update([
-            'status' => 'supporter_replied',
-            'updated_at' => time()
-        ]);
-
-        SupportConversation::create([
-            'support_id' => $support->id,
-            'supporter_id' => auth()->id(),
-            'message' => $data['message'],
-            'attach' => $data['attach'],
-            'created_at' => time(),
-        ]);
-
-        return redirect(getAdminPanelUrl().'/supports/' . $support->id . '/conversation');
     }
 }

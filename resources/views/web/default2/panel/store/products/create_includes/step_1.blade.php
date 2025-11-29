@@ -18,7 +18,6 @@
             <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
         @endif
 
-
         <div class="form-group mt-15 ">
             <label class="input-label d-block">{{ trans('public.type') }}</label>
 
@@ -38,7 +37,6 @@
             </div>
             @enderror
         </div>
-
 
         <div class="form-group mt-15">
             <label class="input-label">{{ trans('public.title') }}</label>
@@ -87,7 +85,6 @@
     </div>
 </div>
 
-
 <div class="row">
     <div class="col-6">
 
@@ -102,7 +99,6 @@
         <p class="text-gray font-12">{{ trans('update.create_product_enable_ordering_hint') }}</p>
     </div>
 </div>
-
 
 @push('scripts_bottom')
     <script src="{{ config('app.js_css_url') }}/assets/vendors/summernote/summernote-bs4.min.js"></script>

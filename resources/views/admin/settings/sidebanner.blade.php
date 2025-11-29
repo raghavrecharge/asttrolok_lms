@@ -30,8 +30,6 @@
                                 <!--    <a class="nav-link @if(empty($basic)) active @endif" id="basic-tab" data-toggle="tab" href="#basic" role="tab" aria-controls="basic" aria-selected="true">{{ trans('admin/main.basic') }}</a>-->
                                 <!--</li>-->
 
-                                
-
                                 <!--<li class="nav-item">-->
                                 <!--    <a class="nav-link" id="features-tab" data-toggle="tab" href="#features" role="tab" aria-controls="features" aria-selected="true">{{ trans('update.features') }}</a>-->
                                 <!--</li>-->
@@ -50,7 +48,7 @@
                             <!--</ul>-->
 
                             <div class="tab-content" id="myTabContent2">
-                               
+
                                 @include('admin.settings.sidebanner.socials',['itemValue' => (!empty($settings) and !empty($settings['sidebanner'])) ? $settings['sidebanner']->value : ''])
                                 <!-- @include('admin.settings.sidebanner.basic',['itemValue' => (!empty($settings) and !empty($settings['general'])) ? $settings['general']->value : ''])-->
                                 <!--@include('admin.settings.sidebanner.features',['itemValue' => (!empty($settings) and !empty($settings['features'])) ? $settings['features']->value : ''])-->

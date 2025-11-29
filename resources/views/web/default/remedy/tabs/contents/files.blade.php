@@ -56,7 +56,7 @@
 <script >
 
 function download_file(fileURL, fileName) {
-// for non-IE
+
 alert(fileName);
 if (!window.ActiveXObject) {
     var save = document.createElement('a');
@@ -66,7 +66,7 @@ if (!window.ActiveXObject) {
     save.download = fileName || filename;
        if ( navigator.userAgent.toLowerCase().match(/(ipad|iphone|safari)/) && navigator.userAgent.search("Chrome") < 0) {
             document.location = save.href;
-// window event not working here
+
         }else{
             var evt = new MouseEvent('click', {
                 'view': window,
@@ -78,7 +78,6 @@ if (!window.ActiveXObject) {
         }
 }
 
-// for IE < 11
 else if ( !! window.ActiveXObject && document.execCommand)     {
     var _window = window.open(fileURL, '_blank');
     _window.document.close();
@@ -196,7 +195,7 @@ function downloadFile(url, filename) {
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
-    link.target = '_blank'; // optional
+    link.target = '_blank';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -235,13 +234,13 @@ function downloadFile(url, filename) {
 
         modal.addEventListener('hidden.bs.modal', function () {
             if(iframe){
-                iframe.src = '';  // पॉपअप बंद होते ही वीडियो रोकें
+                iframe.src = '';
             }
         });
 
         modal.addEventListener('shown.bs.modal', function () {
             if(iframe){
-                iframe.src = originalSrc;  // पॉपअप खुलते ही वीडियो फिर से शुरू करें
+                iframe.src = originalSrc;
             }
         });
     });

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Web;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use LasseRafn\InitialAvatarGenerator\InitialAvatar;
@@ -10,35 +13,45 @@ use Illuminate\Http\Request;
 class DefaultAvatarController extends Controller
 {
     protected $name;
-    protected $length = 2; // Initial Characters
-    protected $fontSize = 0.5; // Font size in percentage of size. Between 0.1 and 1.
+    protected $length = 2;
+    protected $fontSize = 0.5;
     protected $size = 64;
-    protected $background = '5e35b1'; // Hex color for the image background, without the hash (#)
-    protected $color = 'ffffff'; // Hex color for the font, without the hash (#).
+    protected $background = '5e35b1';
+    protected $color = 'ffffff';
     protected $uppercase = true;
     protected $rounded = true;
 
     public function make(Request $request)
     {
-        $this->handleInputs($request);
+        try {
+            $this->handleInputs($request);
 
-        $avatar = new InitialAvatar();
+            $avatar = new InitialAvatar();
 
-        $image = $avatar->name($this->name)
-            ->length($this->length)
-            ->fontSize($this->fontSize)
-            ->size($this->size)
-            ->background($this->background)
-            ->color($this->color)
-            ->smooth()
-            ->allowSpecialCharacters(false)
-            ->autoFont()
-            ->keepCase(!$this->uppercase)
-            ->rounded($this->rounded);
+            $image = $avatar->name($this->name)
+                ->length($this->length)
+                ->fontSize($this->fontSize)
+                ->size($this->size)
+                ->background($this->background)
+                ->color($this->color)
+                ->smooth()
+                ->allowSpecialCharacters(false)
+                ->autoFont()
+                ->keepCase(!$this->uppercase)
+                ->rounded($this->rounded);
 
-        $image = $image->generate();
+            $image = $image->generate();
 
-        return $image->response('png', 100);
+            return $image->response('png', 100);
+        } catch (\Exception $e) {
+            \Log::error('make error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function handleInputs(Request $request)

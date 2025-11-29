@@ -86,7 +86,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.start_date')}}</label>
@@ -103,7 +102,6 @@
                                     </div>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -133,7 +131,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.consultant')}}</label>
@@ -150,7 +147,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="input-label">{{trans('admin/main.reservatore')}}</label>
@@ -166,7 +162,6 @@
                                     </select>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group mt-1">
@@ -285,7 +280,6 @@
         </div>
     </section>
 
-
     <section class="card">
         <div class="card-body">
             <div class="section-title ml-0 mt-0 mb-3"><h5>{{trans('admin/main.hints')}}</h5></div>
@@ -303,7 +297,6 @@
                         <div class=" text-small font-600-bold">{{trans('admin/main.appointments_hint_description_2')}}</div>
                     </div>
                 </div>
-
 
                 <div class="col-md-4">
                     <div class="media-body">

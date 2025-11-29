@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Web;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Mixins\RegistrationBonus\RegistrationBonusAccounting;
 use App\Models\Accounting;
@@ -25,31 +28,11 @@ use App\Models\Webinar;
 use App\Models\Sale;
 class RegisterController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Register Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller handles the registration of new users as well as their
-    | validation and creation. By default this controller uses a trait to
-    | provide this functionality without requiring any additional code.
-    |
-    */
 
     use RegistersUsers;
 
-    /**
-     * Where to redirect users after registration.
-     *
-     * @var string
-     */
     protected $redirectTo = '/';
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware('guest');
@@ -57,93 +40,114 @@ class RegisterController extends Controller
 
     public function showRegistrationFormForCourse()
     {
-        $seoSettings = getSeoMetas('register');
-        $pageTitle = !empty($seoSettings['title']) ? $seoSettings['title'] : trans('site.register_page_title');
-        $pageDescription = !empty($seoSettings['description']) ? $seoSettings['description'] : trans('site.register_page_title');
-        $pageRobot = getPageRobot('register');
+        try {
+            $seoSettings = getSeoMetas('register');
+            $pageTitle = !empty($seoSettings['title']) ? $seoSettings['title'] : trans('site.register_page_title');
+            $pageDescription = !empty($seoSettings['description']) ? $seoSettings['description'] : trans('site.register_page_title');
+            $pageRobot = getPageRobot('register');
 
-        $referralSettings = getReferralSettings();
+            $referralSettings = getReferralSettings();
 
-        $referralCode = Cookie::get('referral_code');
+            $referralCode = Cookie::get('referral_code');
 
-        $data = [
-            'pageTitle' => $pageTitle,
-            'pageDescription' => $pageDescription,
-            'pageRobot' => $pageRobot,
-            'referralCode' => $referralCode,
-            'referralSettings' => $referralSettings,
-        ];
+            $data = [
+                'pageTitle' => $pageTitle,
+                'pageDescription' => $pageDescription,
+                'pageRobot' => $pageRobot,
+                'referralCode' => $referralCode,
+                'referralSettings' => $referralSettings,
+            ];
 
-$agent = new Agent();
-                    if ($agent->isMobile()){
-                        return view(getTemplate() . '.course.landingPage.register', $data);
-                }else{
-                    return view('web.default2' . '.course.landingPage.register', $data);
-                }
-        // return view(getTemplate() . '.auth.register', $data);
+            $agent = new Agent();
+                        if ($agent->isMobile()){
+                            return view(getTemplate() . '.course.landingPage.register', $data);
+                    }else{
+                        return view('web.default2' . '.course.landingPage.register', $data);
+                    }
+        } catch (\Exception $e) {
+            \Log::error('showRegistrationFormForCourse error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function showRegistrationFormForFree()
     {
-        $seoSettings = getSeoMetas('register');
-        $pageTitle = !empty($seoSettings['title']) ? $seoSettings['title'] : trans('site.register_page_title');
-        $pageDescription = !empty($seoSettings['description']) ? $seoSettings['description'] : trans('site.register_page_title');
-        $pageRobot = getPageRobot('register');
+        try {
+            $seoSettings = getSeoMetas('register');
+            $pageTitle = !empty($seoSettings['title']) ? $seoSettings['title'] : trans('site.register_page_title');
+            $pageDescription = !empty($seoSettings['description']) ? $seoSettings['description'] : trans('site.register_page_title');
+            $pageRobot = getPageRobot('register');
 
-        $referralSettings = getReferralSettings();
+            $referralSettings = getReferralSettings();
 
-        $referralCode = Cookie::get('referral_code');
+            $referralCode = Cookie::get('referral_code');
 
-        $data = [
-            'pageTitle' => $pageTitle,
-            'pageDescription' => $pageDescription,
-            'pageRobot' => $pageRobot,
-            'referralCode' => $referralCode,
-            'referralSettings' => $referralSettings,
-        ];
+            $data = [
+                'pageTitle' => $pageTitle,
+                'pageDescription' => $pageDescription,
+                'pageRobot' => $pageRobot,
+                'referralCode' => $referralCode,
+                'referralSettings' => $referralSettings,
+            ];
 
-$agent = new Agent();
-                    if ($agent->isMobile()){
-                        return view(getTemplate() . '.course.landingPage.register_free', $data);
-                }else{
-                    return view('web.default2' . '.course.landingPage.register_free', $data);
-                }
-        // return view(getTemplate() . '.auth.register', $data);
+            $agent = new Agent();
+                        if ($agent->isMobile()){
+                            return view(getTemplate() . '.course.landingPage.register_free', $data);
+                    }else{
+                        return view('web.default2' . '.course.landingPage.register_free', $data);
+                    }
+        } catch (\Exception $e) {
+            \Log::error('showRegistrationFormForFree error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
     public function showRegistrationFormForFreeEnglish()
     {
-        $seoSettings = getSeoMetas('register');
-        $pageTitle = !empty($seoSettings['title']) ? $seoSettings['title'] : trans('site.register_page_title');
-        $pageDescription = !empty($seoSettings['description']) ? $seoSettings['description'] : trans('site.register_page_title');
-        $pageRobot = getPageRobot('register');
+        try {
+            $seoSettings = getSeoMetas('register');
+            $pageTitle = !empty($seoSettings['title']) ? $seoSettings['title'] : trans('site.register_page_title');
+            $pageDescription = !empty($seoSettings['description']) ? $seoSettings['description'] : trans('site.register_page_title');
+            $pageRobot = getPageRobot('register');
 
-        $referralSettings = getReferralSettings();
+            $referralSettings = getReferralSettings();
 
-        $referralCode = Cookie::get('referral_code');
+            $referralCode = Cookie::get('referral_code');
 
-        $data = [
-            'pageTitle' => $pageTitle,
-            'pageDescription' => $pageDescription,
-            'pageRobot' => $pageRobot,
-            'referralCode' => $referralCode,
-            'referralSettings' => $referralSettings,
-        ];
+            $data = [
+                'pageTitle' => $pageTitle,
+                'pageDescription' => $pageDescription,
+                'pageRobot' => $pageRobot,
+                'referralCode' => $referralCode,
+                'referralSettings' => $referralSettings,
+            ];
 
-$agent = new Agent();
-                    if ($agent->isMobile()){
-                        return view(getTemplate() . '.course.landingPage.register_free_english', $data);
-                }else{
-                    return view('web.default2' . '.course.landingPage.register_free_english', $data);
-                }
-        // return view(getTemplate() . '.auth.register', $data);
+            $agent = new Agent();
+                        if ($agent->isMobile()){
+                            return view(getTemplate() . '.course.landingPage.register_free_english', $data);
+                    }else{
+                        return view('web.default2' . '.course.landingPage.register_free_english', $data);
+                    }
+        } catch (\Exception $e) {
+            \Log::error('showRegistrationFormForFreeEnglish error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
-    /**
-     * Get a validator for an incoming registration request.
-     *
-     * @param array $data
-     * @return \Illuminate\Contracts\Validation\Validator
-     */
     protected function validator(array $data)
     {
         $registerMethod = getGeneralSettings('register_method') ?? 'mobile';
@@ -170,15 +174,9 @@ $agent = new Agent();
         return Validator::make($data, $rules);
     }
 
-    /**
-     * Create a new user instance after a valid registration.
-     *
-     * @param array $data
-     * @return
-     */
     protected function create(array $data)
     {
-       
+
         if (!empty($data['mobile']) and !empty($data['country_code'])) {
             $data['mobile'] = ltrim($data['country_code'], '+') . ltrim($data['mobile'], '0');
         }
@@ -213,7 +211,7 @@ $agent = new Agent();
             'email' => $data['email'] ?? null,
             'full_name' => $data['full_name'],
             'country_code' => $data['country_code'],
-            // 'status' => User::$pending,
+
             'status'=>'active',
             'access_content' => $accessContent,
             'password' => Hash::make($data['password']),
@@ -235,430 +233,287 @@ $agent = new Agent();
         return $user;
     }
 
-
     public function registerForFree(Request $request, $slug)
     {
-        $this->validator($request->all())->validate();
-        $this->validate($request, [
-            'full_name' => 'required|string|max:60',
-            'country_code' => 'required|string|max:60',
-            'mobile' => 'required|string|max:10',
-            'email' => 'required|string|max:60',
-            'password' => 'required|string|max:40',
-            'password_confirmation' => 'required|string|max:40',
-        ]);
-
-        $user = $this->create($request->all());
-
-        event(new Registered($user));
-
-        // $notifyOptions = [
-        //     '[u.name]' => $user->full_name,
-        //     '[u.role]' => trans("update.role_{$user->role_name}"),
-        //     '[time.date]' => dateTimeFormat($user->created_at, 'j M Y H:i'),
-        // ];
-        // sendNotification("new_registration", $notifyOptions, 1);
-
-        $registerMethod = getGeneralSettings('register_method') ?? 'mobile';
-
-        $value = $request->get($registerMethod);
-        if ($registerMethod == 'mobile') {
-            $value = $request->get('country_code') . ltrim($request->get('mobile'), '0');
-        }
-
-        // $referralCode = $request->get('referral_code', null);
-        // if (!empty($referralCode)) {
-        //     session()->put('referralCode', $referralCode);
-        // }
-
-        // $verificationController = new VerificationController();
-        
-
-        // $checkConfirmed = $verificationController->checkConfirmed($user, $registerMethod, $value);
-        // $referralCode = $request->get('referral_code', null);
-
-        // if ($checkConfirmed['status'] == 'send') {
-
-            // if (!empty($referralCode)) {
-            //     session()->put('referralCode', $referralCode);
-            // }
-            
-          date_default_timezone_set('Asia/Kolkata');  
-            
-            // $webhookurl='https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjUwNTZmMDYzMTA0Mzc1MjZlNTUzYzUxMzEi_pc1';
-            $webhookurl='https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjUwNTY0MDYzNjA0Mzc1MjZhNTUzMDUxMzYi_pc';
-            
-            
-// Collection object
-$webhookdata = [
-  'user_id' => $user->id,
-  'user_name' => $user->full_name,
-  'user_mobile' => $user->mobile,
-  'country_code' => $request->get('country_code'),
-  'user_email' => $user->email,
-  'user_role' => $user->role_name,
-  'user_password' => $request->password,
-  'slug' => $slug,
-  'create_at' => date("Y/m/d H:i"),
-  'by' =>'register'
-];
-// Initializes a new cURL session
-$webhookcurl = curl_init($webhookurl);
-// Set the CURLOPT_RETURNTRANSFER option to true
-curl_setopt($webhookcurl, CURLOPT_RETURNTRANSFER, true);
-// Set the CURLOPT_POST option to true for POST request
-curl_setopt($webhookcurl, CURLOPT_POST, true);
-// Set the request data as JSON using json_encode function
-curl_setopt($webhookcurl, CURLOPT_POSTFIELDS,  json_encode($webhookdata));
-// Set custom headers for RapidAPI Auth and Content-Type header
-
-// Execute cURL request with all previous settings
-$webhookresponse = curl_exec($webhookcurl);
-// Close cURL session
-curl_close($webhookcurl);
-
-
-	   
-            $gohighlevel= 'https://services.leadconnectorhq.com/hooks/eAE21tVIbkFC6dUHwja9/webhook-trigger/caece889-e99d-4975-a107-341ef58c5f7f';
-        if($slug=='learn-free-astrology-course-english'){
-            $gohighlevel= 'https://services.leadconnectorhq.com/hooks/eAE21tVIbkFC6dUHwja9/webhook-trigger/ff19d522-10e4-40e8-99b9-4c61796ac9a4';
-        }
-// Collection object
-
-
-                    
-             
-$gohighlevelcurl = curl_init($gohighlevel);
-// Set the CURLOPT_RETURNTRANSFER option to true
-curl_setopt($gohighlevelcurl, CURLOPT_RETURNTRANSFER, true);
-// Set the CURLOPT_POST option to true for POST request
-curl_setopt($gohighlevelcurl, CURLOPT_POST, true);
-// Set the request data as JSON using json_encode function
-// curl_setopt($gohighlevelcurl, CURLOPT_POSTFIELDS,  json_encode($webhookdata));
-curl_setopt($gohighlevelcurl, CURLOPT_POSTFIELDS, json_encode($webhookdata));
-// Set custom headers for RapidAPI Auth and Content-Type header
-curl_setopt($gohighlevelcurl, CURLOPT_HTTPHEADER, [
-    'Content-Type: application/json', // Ensure JSON data is being sent
-    'Accept: application/json' // Accept JSON response if needed
-]);
-// Execute cURL request with all previous settings
-$gohighlevelresponse = curl_exec($gohighlevelcurl);  
-
-            // return redirect('/verification');
-      //comment ####################################################
-             $this->guard()->login($user);
-
-            $enableRegistrationBonus = false;
-            $registrationBonusAmount = null;
-            $registrationBonusSettings = getRegistrationBonusSettings();
-            if (!empty($registrationBonusSettings['status']) and !empty($registrationBonusSettings['registration_bonus_amount'])) {
-                $enableRegistrationBonus = true;
-                $registrationBonusAmount = $registrationBonusSettings['registration_bonus_amount'];
-            }
-
-
-            $user->update([
-                'status' => User::$active,
-                'enable_registration_bonus' => $enableRegistrationBonus,
-                'registration_bonus_amount' => $registrationBonusAmount,
+        try {
+            $this->validator($request->all())->validate();
+            $this->validate($request, [
+                'full_name' => 'required|string|max:60',
+                'country_code' => 'required|string|max:60',
+                'mobile' => 'required|string|max:10',
+                'email' => 'required|string|max:60',
+                'password' => 'required|string|max:40',
+                'password_confirmation' => 'required|string|max:40',
             ]);
 
-            $registerReward = RewardAccounting::calculateScore(Reward::REGISTER);
-            RewardAccounting::makeRewardAccounting($user->id, $registerReward, Reward::REGISTER, $user->id, true);
+            $user = $this->create($request->all());
 
-            if (!empty($referralCode)) {
-                Affiliate::storeReferral($user, $referralCode);
+            event(new Registered($user));
+
+            $registerMethod = getGeneralSettings('register_method') ?? 'mobile';
+
+            $value = $request->get($registerMethod);
+            if ($registerMethod == 'mobile') {
+                $value = $request->get('country_code') . ltrim($request->get('mobile'), '0');
             }
 
-            $registrationBonusAccounting = new RegistrationBonusAccounting();
-            $registrationBonusAccounting->storeRegistrationBonusInstantly($user);
-            
+              date_default_timezone_set('Asia/Kolkata');
 
-            if ($response = $this->registered($request, $user)) {
-                return $response;
+                $webhookurl='https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjUwNTY0MDYzNjA0Mzc1MjZhNTUzMDUxMzYi_pc';
+
+            $webhookdata = [
+            'user_id' => $user->id,
+            'user_name' => $user->full_name,
+            'user_mobile' => $user->mobile,
+            'country_code' => $request->get('country_code'),
+            'user_email' => $user->email,
+            'user_role' => $user->role_name,
+            'user_password' => $request->password,
+            'slug' => $slug,
+            'create_at' => date("Y/m/d H:i"),
+            'by' =>'register'
+            ];
+
+            $webhookcurl = curl_init($webhookurl);
+
+            curl_setopt($webhookcurl, CURLOPT_RETURNTRANSFER, true);
+
+            curl_setopt($webhookcurl, CURLOPT_POST, true);
+
+            curl_setopt($webhookcurl, CURLOPT_POSTFIELDS,  json_encode($webhookdata));
+
+            $webhookresponse = curl_exec($webhookcurl);
+
+            curl_close($webhookcurl);
+
+                $gohighlevel= 'https://services.leadconnectorhq.com/hooks/eAE21tVIbkFC6dUHwja9/webhook-trigger/caece889-e99d-4975-a107-341ef58c5f7f';
+            if($slug=='learn-free-astrology-course-english'){
+                $gohighlevel= 'https://services.leadconnectorhq.com/hooks/eAE21tVIbkFC6dUHwja9/webhook-trigger/ff19d522-10e4-40e8-99b9-4c61796ac9a4';
             }
-            
-            $course = Webinar::where('slug', $slug)
-                ->where('status', 'active')
-                ->first();
 
-            if (!empty($course)) {
-                $checkCourseForSale = checkCourseForSale($course, $user);
+            $gohighlevelcurl = curl_init($gohighlevel);
 
-                if ($checkCourseForSale != 'ok') {
-                    return $checkCourseForSale;
+            curl_setopt($gohighlevelcurl, CURLOPT_RETURNTRANSFER, true);
+
+            curl_setopt($gohighlevelcurl, CURLOPT_POST, true);
+
+            curl_setopt($gohighlevelcurl, CURLOPT_POSTFIELDS, json_encode($webhookdata));
+
+            curl_setopt($gohighlevelcurl, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Accept: application/json'
+            ]);
+
+            $gohighlevelresponse = curl_exec($gohighlevelcurl);
+
+                 $this->guard()->login($user);
+
+                $enableRegistrationBonus = false;
+                $registrationBonusAmount = null;
+                $registrationBonusSettings = getRegistrationBonusSettings();
+                if (!empty($registrationBonusSettings['status']) and !empty($registrationBonusSettings['registration_bonus_amount'])) {
+                    $enableRegistrationBonus = true;
+                    $registrationBonusAmount = $registrationBonusSettings['registration_bonus_amount'];
                 }
 
-                if (!empty($course->price) and $course->price > 0) {
-                    $toastData = [
-                        'title' => trans('cart.fail_purchase'),
-                        'msg' => trans('cart.course_not_free'),
-                        'status' => 'error'
-                    ];
-                    return back()->with(['toast' => $toastData]);
-                }
-
-                Sale::create([
-                    'buyer_id' => $user->id,
-                    'seller_id' => $course->creator_id,
-                    'webinar_id' => $course->id,
-                    'type' => Sale::$webinar,
-                    'payment_method' => Sale::$credit,
-                    'amount' => 0,
-                    'total_amount' => 0,
-                    'created_at' => time(),
+                $user->update([
+                    'status' => User::$active,
+                    'enable_registration_bonus' => $enableRegistrationBonus,
+                    'registration_bonus_amount' => $registrationBonusAmount,
                 ]);
-            }
-            $rdn='/course/learning/'.$slug;
-//             if ($request->has('rd')) {
-//     $rdn=$request->get('rd');
-// }
-             
-            if($rdn!=''){
-                // $rdn=$request->get('rd');
-                 return redirect($rdn);
-            }else{
-             return $request->wantsJson()
-                ? new JsonResponse([], 201)
-                : redirect($this->redirectPath());
-            }
- //comment ####################################################
-           
-                
-                
-        // } elseif ($checkConfirmed['status'] == 'verified') {
-        //     $this->guard()->login($user);
 
-        //     $enableRegistrationBonus = false;
-        //     $registrationBonusAmount = null;
-        //     $registrationBonusSettings = getRegistrationBonusSettings();
-        //     if (!empty($registrationBonusSettings['status']) and !empty($registrationBonusSettings['registration_bonus_amount'])) {
-        //         $enableRegistrationBonus = true;
-        //         $registrationBonusAmount = $registrationBonusSettings['registration_bonus_amount'];
-        //     }
+                $registerReward = RewardAccounting::calculateScore(Reward::REGISTER);
+                RewardAccounting::makeRewardAccounting($user->id, $registerReward, Reward::REGISTER, $user->id, true);
 
+                if (!empty($referralCode)) {
+                    Affiliate::storeReferral($user, $referralCode);
+                }
 
-        //     $user->update([
-        //         'status' => User::$active,
-        //         'enable_registration_bonus' => $enableRegistrationBonus,
-        //         'registration_bonus_amount' => $registrationBonusAmount,
-        //     ]);
+                $registrationBonusAccounting = new RegistrationBonusAccounting();
+                $registrationBonusAccounting->storeRegistrationBonusInstantly($user);
 
-        //     $registerReward = RewardAccounting::calculateScore(Reward::REGISTER);
-        //     RewardAccounting::makeRewardAccounting($user->id, $registerReward, Reward::REGISTER, $user->id, true);
+                if ($response = $this->registered($request, $user)) {
+                    return $response;
+                }
 
-        //     if (!empty($referralCode)) {
-        //         Affiliate::storeReferral($user, $referralCode);
-        //     }
+                $course = Webinar::where('slug', $slug)
+                    ->where('status', 'active')
+                    ->first();
 
-        //     $registrationBonusAccounting = new RegistrationBonusAccounting();
-        //     $registrationBonusAccounting->storeRegistrationBonusInstantly($user);
+                if (!empty($course)) {
+                    $checkCourseForSale = checkCourseForSale($course, $user);
+
+                    if ($checkCourseForSale != 'ok') {
+                        return $checkCourseForSale;
+                    }
+
+                    if (!empty($course->price) and $course->price > 0) {
+                        $toastData = [
+                            'title' => trans('cart.fail_purchase'),
+                            'msg' => trans('cart.course_not_free'),
+                            'status' => 'error'
+                        ];
+                        return back()->with(['toast' => $toastData]);
+                    }
+
+                    Sale::create([
+                        'buyer_id' => $user->id,
+                        'seller_id' => $course->creator_id,
+                        'webinar_id' => $course->id,
+                        'type' => Sale::$webinar,
+                        'payment_method' => Sale::$credit,
+                        'amount' => 0,
+                        'total_amount' => 0,
+                        'created_at' => time(),
+                    ]);
+                }
+                $rdn='/course/learning/'.$slug;
+
+                if($rdn!=''){
+
+                     return redirect($rdn);
+                }else{
+                 return $request->wantsJson()
+                    ? new JsonResponse([], 201)
+                    : redirect($this->redirectPath());
+                }
+        } catch (\Exception $e) {
+            \Log::error('registerForFree error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
-
-        //     if ($response = $this->registered($request, $user)) {
-        //         return $response;
-        //     }
-            
-
-        //     return $request->wantsJson()
-        //         ? new JsonResponse([], 201)
-        //         : redirect($this->redirectPath());
-        // }
+            throw $e;
+        }
     }
-
 
     public function registerForCourse(Request $request, $slug)
     {
-        $this->validator($request->all())->validate();
-        $this->validate($request, [
-            'full_name' => 'required|string|max:60',
-            'mobile' => 'required|string|max:10',
-            'email' => 'required|string|max:60',
-            'password' => 'required|string|max:40',
-            'password_confirmation' => 'required|string|max:40',
-        ]);
-
-        $user = $this->create($request->all());
-
-        event(new Registered($user));
-
-        // $notifyOptions = [
-        //     '[u.name]' => $user->full_name,
-        //     '[u.role]' => trans("update.role_{$user->role_name}"),
-        //     '[time.date]' => dateTimeFormat($user->created_at, 'j M Y H:i'),
-        // ];
-        // sendNotification("new_registration", $notifyOptions, 1);
-
-        $registerMethod = getGeneralSettings('register_method') ?? 'mobile';
-
-        $value = $request->get($registerMethod);
-        if ($registerMethod == 'mobile') {
-            $value = $request->get('country_code') . ltrim($request->get('mobile'), '0');
-        }
-
-        // $referralCode = $request->get('referral_code', null);
-        // if (!empty($referralCode)) {
-        //     session()->put('referralCode', $referralCode);
-        // }
-
-        // $verificationController = new VerificationController();
-        
-
-        // $checkConfirmed = $verificationController->checkConfirmed($user, $registerMethod, $value);
-        // $referralCode = $request->get('referral_code', null);
-
-        // if ($checkConfirmed['status'] == 'send') {
-
-            // if (!empty($referralCode)) {
-            //     session()->put('referralCode', $referralCode);
-            // }
-            
-            $webhookurl='https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjUwNTZmMDYzMTA0Mzc1MjZlNTUzYzUxMzEi_pc1';
-// Collection object
-$webhookdata = [
-  'user_id' => $user->id,
-  'user_name' => $user->full_name,
-  'user_mobile' => $user->mobile,
-  'user_email' => $user->email,
-  'user_role' => $user->role_name,
-  'create_at' => date("Y/m/d H:i")
-  
-  
-];
-// Initializes a new cURL session
-$webhookcurl = curl_init($webhookurl);
-// Set the CURLOPT_RETURNTRANSFER option to true
-curl_setopt($webhookcurl, CURLOPT_RETURNTRANSFER, true);
-// Set the CURLOPT_POST option to true for POST request
-curl_setopt($webhookcurl, CURLOPT_POST, true);
-// Set the request data as JSON using json_encode function
-curl_setopt($webhookcurl, CURLOPT_POSTFIELDS,  json_encode($webhookdata));
-// Set custom headers for RapidAPI Auth and Content-Type header
-
-// Execute cURL request with all previous settings
-$webhookresponse = curl_exec($webhookcurl);
-// Close cURL session
-curl_close($webhookcurl);
-
-            // return redirect('/verification');
-      //comment ####################################################
-             $this->guard()->login($user);
-
-            $enableRegistrationBonus = false;
-            $registrationBonusAmount = null;
-            $registrationBonusSettings = getRegistrationBonusSettings();
-            if (!empty($registrationBonusSettings['status']) and !empty($registrationBonusSettings['registration_bonus_amount'])) {
-                $enableRegistrationBonus = true;
-                $registrationBonusAmount = $registrationBonusSettings['registration_bonus_amount'];
-            }
-
-
-            $user->update([
-                'status' => User::$active,
-                'enable_registration_bonus' => $enableRegistrationBonus,
-                'registration_bonus_amount' => $registrationBonusAmount,
+        try {
+            $this->validator($request->all())->validate();
+            $this->validate($request, [
+                'full_name' => 'required|string|max:60',
+                'mobile' => 'required|string|max:10',
+                'email' => 'required|string|max:60',
+                'password' => 'required|string|max:40',
+                'password_confirmation' => 'required|string|max:40',
             ]);
 
-            $registerReward = RewardAccounting::calculateScore(Reward::REGISTER);
-            RewardAccounting::makeRewardAccounting($user->id, $registerReward, Reward::REGISTER, $user->id, true);
+            $user = $this->create($request->all());
 
-            if (!empty($referralCode)) {
-                Affiliate::storeReferral($user, $referralCode);
+            event(new Registered($user));
+
+            $registerMethod = getGeneralSettings('register_method') ?? 'mobile';
+
+            $value = $request->get($registerMethod);
+            if ($registerMethod == 'mobile') {
+                $value = $request->get('country_code') . ltrim($request->get('mobile'), '0');
             }
 
-            $registrationBonusAccounting = new RegistrationBonusAccounting();
-            $registrationBonusAccounting->storeRegistrationBonusInstantly($user);
-            
+                $webhookurl='https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjUwNTZmMDYzMTA0Mzc1MjZlNTUzYzUxMzEi_pc1';
 
-            if ($response = $this->registered($request, $user)) {
-                return $response;
-            }
-            
-            $course = Webinar::where('slug', $slug)
-                ->where('status', 'active')
-                ->first();
+            $webhookdata = [
+            'user_id' => $user->id,
+            'user_name' => $user->full_name,
+            'user_mobile' => $user->mobile,
+            'user_email' => $user->email,
+            'user_role' => $user->role_name,
+            'create_at' => date("Y/m/d H:i")
 
-            if (!empty($course)) {
-                $checkCourseForSale = checkCourseForSale($course, $user);
+            ];
 
-                if ($checkCourseForSale != 'ok') {
-                    return $checkCourseForSale;
+            $webhookcurl = curl_init($webhookurl);
+
+            curl_setopt($webhookcurl, CURLOPT_RETURNTRANSFER, true);
+
+            curl_setopt($webhookcurl, CURLOPT_POST, true);
+
+            curl_setopt($webhookcurl, CURLOPT_POSTFIELDS,  json_encode($webhookdata));
+
+            $webhookresponse = curl_exec($webhookcurl);
+
+            curl_close($webhookcurl);
+
+                 $this->guard()->login($user);
+
+                $enableRegistrationBonus = false;
+                $registrationBonusAmount = null;
+                $registrationBonusSettings = getRegistrationBonusSettings();
+                if (!empty($registrationBonusSettings['status']) and !empty($registrationBonusSettings['registration_bonus_amount'])) {
+                    $enableRegistrationBonus = true;
+                    $registrationBonusAmount = $registrationBonusSettings['registration_bonus_amount'];
                 }
 
-                if (!empty($course->price) and $course->price > 0) {
-                    $toastData = [
-                        'title' => trans('cart.fail_purchase'),
-                        'msg' => trans('cart.course_not_free'),
-                        'status' => 'error'
-                    ];
-                    return back()->with(['toast' => $toastData]);
-                }
-
-                Sale::create([
-                    'buyer_id' => $user->id,
-                    'seller_id' => $course->creator_id,
-                    'webinar_id' => $course->id,
-                    'type' => Sale::$webinar,
-                    'payment_method' => Sale::$credit,
-                    'amount' => 0,
-                    'total_amount' => 0,
-                    'created_at' => time(),
+                $user->update([
+                    'status' => User::$active,
+                    'enable_registration_bonus' => $enableRegistrationBonus,
+                    'registration_bonus_amount' => $registrationBonusAmount,
                 ]);
-            }
-            $rdn='/course/learning/'.$slug;
-//             if ($request->has('rd')) {
-//     $rdn=$request->get('rd');
-// }
-             
-            if($rdn!=''){
-                // $rdn=$request->get('rd');
-                 return redirect($rdn);
-            }else{
-             return $request->wantsJson()
-                ? new JsonResponse([], 201)
-                : redirect($this->redirectPath());
-            }
- //comment ####################################################
-           
-                
-                
-        // } elseif ($checkConfirmed['status'] == 'verified') {
-        //     $this->guard()->login($user);
 
-        //     $enableRegistrationBonus = false;
-        //     $registrationBonusAmount = null;
-        //     $registrationBonusSettings = getRegistrationBonusSettings();
-        //     if (!empty($registrationBonusSettings['status']) and !empty($registrationBonusSettings['registration_bonus_amount'])) {
-        //         $enableRegistrationBonus = true;
-        //         $registrationBonusAmount = $registrationBonusSettings['registration_bonus_amount'];
-        //     }
+                $registerReward = RewardAccounting::calculateScore(Reward::REGISTER);
+                RewardAccounting::makeRewardAccounting($user->id, $registerReward, Reward::REGISTER, $user->id, true);
 
+                if (!empty($referralCode)) {
+                    Affiliate::storeReferral($user, $referralCode);
+                }
 
-        //     $user->update([
-        //         'status' => User::$active,
-        //         'enable_registration_bonus' => $enableRegistrationBonus,
-        //         'registration_bonus_amount' => $registrationBonusAmount,
-        //     ]);
+                $registrationBonusAccounting = new RegistrationBonusAccounting();
+                $registrationBonusAccounting->storeRegistrationBonusInstantly($user);
 
-        //     $registerReward = RewardAccounting::calculateScore(Reward::REGISTER);
-        //     RewardAccounting::makeRewardAccounting($user->id, $registerReward, Reward::REGISTER, $user->id, true);
+                if ($response = $this->registered($request, $user)) {
+                    return $response;
+                }
 
-        //     if (!empty($referralCode)) {
-        //         Affiliate::storeReferral($user, $referralCode);
-        //     }
+                $course = Webinar::where('slug', $slug)
+                    ->where('status', 'active')
+                    ->first();
 
-        //     $registrationBonusAccounting = new RegistrationBonusAccounting();
-        //     $registrationBonusAccounting->storeRegistrationBonusInstantly($user);
+                if (!empty($course)) {
+                    $checkCourseForSale = checkCourseForSale($course, $user);
+
+                    if ($checkCourseForSale != 'ok') {
+                        return $checkCourseForSale;
+                    }
+
+                    if (!empty($course->price) and $course->price > 0) {
+                        $toastData = [
+                            'title' => trans('cart.fail_purchase'),
+                            'msg' => trans('cart.course_not_free'),
+                            'status' => 'error'
+                        ];
+                        return back()->with(['toast' => $toastData]);
+                    }
+
+                    Sale::create([
+                        'buyer_id' => $user->id,
+                        'seller_id' => $course->creator_id,
+                        'webinar_id' => $course->id,
+                        'type' => Sale::$webinar,
+                        'payment_method' => Sale::$credit,
+                        'amount' => 0,
+                        'total_amount' => 0,
+                        'created_at' => time(),
+                    ]);
+                }
+                $rdn='/course/learning/'.$slug;
+
+                if($rdn!=''){
+
+                     return redirect($rdn);
+                }else{
+                 return $request->wantsJson()
+                    ? new JsonResponse([], 201)
+                    : redirect($this->redirectPath());
+                }
+        } catch (\Exception $e) {
+            \Log::error('registerForCourse error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
-
-        //     if ($response = $this->registered($request, $user)) {
-        //         return $response;
-        //     }
-            
-
-        //     return $request->wantsJson()
-        //         ? new JsonResponse([], 201)
-        //         : redirect($this->redirectPath());
-        // }
+            throw $e;
+        }
     }
 }

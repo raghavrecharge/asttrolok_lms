@@ -62,7 +62,6 @@
                     <div class="text-muted text-small mt-1">{{ trans('admin/main.user_group_discount_rate_hint') }}</div>
                 </div>
 
-
                 <div class="form-group">
                     <label class="input-label d-block">{{ trans('admin/main.users') }}</label>
                     <select name="users[]" multiple="multiple" class="form-control search-user-select2"

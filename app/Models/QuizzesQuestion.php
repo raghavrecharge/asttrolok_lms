@@ -29,7 +29,6 @@ class QuizzesQuestion extends Model implements TranslatableContract
         return getTranslateAttributeValue($this, 'correct');
     }
 
-
     public function quizzesQuestionsAnswers()
     {
         return $this->hasMany('App\Models\QuizzesQuestionsAnswer', 'question_id', 'id');

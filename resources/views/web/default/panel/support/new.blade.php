@@ -124,26 +124,22 @@
         form.addEventListener("submit", function (event) {
             let isValid = true;
 
-            // Get inputs for validation
             const titleInput = form.querySelector("input[name='title']");
             const typeSelect = form.querySelector("select[name='type']");
             const messageTextarea = form.querySelector("textarea[name='message']");
 
-            // Clear previous error styles
             [titleInput, typeSelect, messageTextarea].forEach(input => input.classList.remove("is-invalid"));
 
-            // If valid, show blocker and popup
             screenBlocker.style.display = "block";
             submissionPopup.style.display = "block";
 
-            // Simulate a delay for demo purposes (remove in production)
-            event.preventDefault(); // Remove this in production
-            form.submit(); // Actually submit the form
+            event.preventDefault();
+            form.submit();
             setTimeout(() => {
 
                 screenBlocker.style.display = "none";
                 submissionPopup.style.display = "none";
-            }, 10000); // Delay for 2 seconds
+            }, 10000);
         });
     });
 </script>

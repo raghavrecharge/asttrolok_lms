@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Panel;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\QuizzesQuestion;
 use App\Models\QuizzesQuestionsAnswer;
@@ -15,160 +18,178 @@ class QuizQuestionController extends Controller
 {
     public function store(Request $request)
     {
-        $data = $request->get('ajax');
+        try {
+            $data = $request->get('ajax');
 
-        $rules = [
-            'quiz_id' => 'required|exists:quizzes,id',
-            'title' => 'required',
-            'grade' => 'required|integer',
-            'type' => 'required',
-            'image' => 'nullable|max:255',
-            'video' => 'nullable|max:255',
-        ];
+            $rules = [
+                'quiz_id' => 'required|exists:quizzes,id',
+                'title' => 'required',
+                'grade' => 'required|integer',
+                'type' => 'required',
+                'image' => 'nullable|max:255',
+                'video' => 'nullable|max:255',
+            ];
 
-        $validate = Validator::make($data, $rules);
+            $validate = Validator::make($data, $rules);
 
-        if ($validate->fails()) {
-            return response()->json([
-                'code' => 422,
-                'errors' => $validate->errors()
-            ], 422);
-        }
+            if ($validate->fails()) {
+                return response()->json([
+                    'code' => 422,
+                    'errors' => $validate->errors()
+                ], 422);
+            }
 
+            if (!empty($data['image']) and !empty($data['video'])) {
+                return response()->json([
+                    'code' => 422,
+                    'errors' => [
+                        'image' => [trans('update.quiz_question_image_validation_by_video')],
+                        'video' => [trans('update.quiz_question_image_validation_by_video')],
+                    ]
+                ], 422);
+            }
 
-        if (!empty($data['image']) and !empty($data['video'])) {
-            return response()->json([
-                'code' => 422,
-                'errors' => [
-                    'image' => [trans('update.quiz_question_image_validation_by_video')],
-                    'video' => [trans('update.quiz_question_image_validation_by_video')],
-                ]
-            ], 422);
-        }
+            $user = auth()->user();
 
+            if ($data['type'] == QuizzesQuestion::$multiple and !empty($data['answers'])) {
+                $answers = $data['answers'];
 
-        $user = auth()->user();
+                $hasCorrect = false;
+                foreach ($answers as $answer) {
+                    if (isset($answer['correct'])) {
+                        $hasCorrect = true;
+                    }
+                }
 
-        if ($data['type'] == QuizzesQuestion::$multiple and !empty($data['answers'])) {
-            $answers = $data['answers'];
-
-            $hasCorrect = false;
-            foreach ($answers as $answer) {
-                if (isset($answer['correct'])) {
-                    $hasCorrect = true;
+                if (!$hasCorrect) {
+                    return response([
+                        'code' => 422,
+                        'errors' => [
+                            'current_answer' => [trans('quiz.current_answer_required')]
+                        ],
+                    ], 422);
                 }
             }
 
-            if (!$hasCorrect) {
-                return response([
-                    'code' => 422,
-                    'errors' => [
-                        'current_answer' => [trans('quiz.current_answer_required')]
-                    ],
-                ], 422);
-            }
-        }
+            $quiz = Quiz::where('id', $data['quiz_id'])
+                ->where('creator_id', $user->id)
+                ->first();
 
-        $quiz = Quiz::where('id', $data['quiz_id'])
-            ->where('creator_id', $user->id)
-            ->first();
+            if (!empty($quiz)) {
+                $order = QuizzesQuestion::query()->where('quiz_id', $quiz->id)->count() + 1;
 
-        if (!empty($quiz)) {
-            $order = QuizzesQuestion::query()->where('quiz_id', $quiz->id)->count() + 1;
-
-            $quizQuestion = QuizzesQuestion::create([
-                'quiz_id' => $data['quiz_id'],
-                'creator_id' => $user->id,
-                'grade' => $data['grade'],
-                'type' => $data['type'],
-                'image' => $data['image'] ?? null,
-                'video' => $data['video'] ?? null,
-                'order' => $order,
-                'created_at' => time()
-            ]);
-
-            if (!empty($quizQuestion)) {
-                QuizzesQuestionTranslation::updateOrCreate([
-                    'quizzes_question_id' => $quizQuestion->id,
-                    'locale' => mb_strtolower($data['locale']),
-                ], [
-                    'title' => $data['title'],
-                    'correct' => $data['correct'] ?? null,
+                $quizQuestion = QuizzesQuestion::create([
+                    'quiz_id' => $data['quiz_id'],
+                    'creator_id' => $user->id,
+                    'grade' => $data['grade'],
+                    'type' => $data['type'],
+                    'image' => $data['image'] ?? null,
+                    'video' => $data['video'] ?? null,
+                    'order' => $order,
+                    'created_at' => time()
                 ]);
-            }
 
-            $quiz->increaseTotalMark($quizQuestion->grade);
+                if (!empty($quizQuestion)) {
+                    QuizzesQuestionTranslation::updateOrCreate([
+                        'quizzes_question_id' => $quizQuestion->id,
+                        'locale' => mb_strtolower($data['locale']),
+                    ], [
+                        'title' => $data['title'],
+                        'correct' => $data['correct'] ?? null,
+                    ]);
+                }
 
-            if ($quizQuestion->type == QuizzesQuestion::$multiple and !empty($data['answers'])) {
+                $quiz->increaseTotalMark($quizQuestion->grade);
 
-                foreach ($answers as $answer) {
-                    if (!empty($answer['title']) or !empty($answer['file'])) {
-                        $questionAnswer = QuizzesQuestionsAnswer::create([
-                            'question_id' => $quizQuestion->id,
-                            'creator_id' => $user->id,
-                            'image' => $answer['file'] ?? null,
-                            'correct' => isset($answer['correct']) ? true : false,
-                            'created_at' => time()
-                        ]);
+                if ($quizQuestion->type == QuizzesQuestion::$multiple and !empty($data['answers'])) {
 
-                        if (!empty($questionAnswer)) {
-                            QuizzesQuestionsAnswerTranslation::updateOrCreate([
-                                'quizzes_questions_answer_id' => $questionAnswer->id,
-                                'locale' => mb_strtolower($data['locale']),
-                            ], [
-                                'title' => $answer['title'],
+                    foreach ($answers as $answer) {
+                        if (!empty($answer['title']) or !empty($answer['file'])) {
+                            $questionAnswer = QuizzesQuestionsAnswer::create([
+                                'question_id' => $quizQuestion->id,
+                                'creator_id' => $user->id,
+                                'image' => $answer['file'] ?? null,
+                                'correct' => isset($answer['correct']) ? true : false,
+                                'created_at' => time()
                             ]);
+
+                            if (!empty($questionAnswer)) {
+                                QuizzesQuestionsAnswerTranslation::updateOrCreate([
+                                    'quizzes_questions_answer_id' => $questionAnswer->id,
+                                    'locale' => mb_strtolower($data['locale']),
+                                ], [
+                                    'title' => $answer['title'],
+                                ]);
+                            }
                         }
                     }
                 }
+
+                return response()->json([
+                    'code' => 200
+                ], 200);
             }
 
             return response()->json([
-                'code' => 200
-            ], 200);
+                'code' => 422
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return response()->json([
-            'code' => 422
-        ], 422);
     }
 
     public function edit(Request $request, $question_id)
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $question = QuizzesQuestion::where('id', $question_id)
-            ->where('creator_id', $user->id)
-            ->first();
+            $question = QuizzesQuestion::where('id', $question_id)
+                ->where('creator_id', $user->id)
+                ->first();
 
-        if (!empty($question)) {
-            $quiz = Quiz::find($question->quiz_id);
-            if (!empty($quiz)) {
+            if (!empty($question)) {
+                $quiz = Quiz::find($question->quiz_id);
+                if (!empty($quiz)) {
 
-                $locale = $request->get('locale', app()->getLocale());
+                    $locale = $request->get('locale', app()->getLocale());
 
-                $data = [
-                    'pageTitle' => $question->title,
-                    'quiz' => $quiz,
-                    'question_edit' => $question,
-                    'userLanguages' => getUserLanguagesLists(),
-                    'locale' => mb_strtolower($locale),
-                    'defaultLocale' => getDefaultLocale(),
-                ];
+                    $data = [
+                        'pageTitle' => $question->title,
+                        'quiz' => $quiz,
+                        'question_edit' => $question,
+                        'userLanguages' => getUserLanguagesLists(),
+                        'locale' => mb_strtolower($locale),
+                        'defaultLocale' => getDefaultLocale(),
+                    ];
 
-                if ($question->type == 'multiple') {
-                    $html = (string)\View::make(getTemplate() . '.panel.quizzes.modals.multiple_question', $data);
-                } else {
-                    $html = (string)\View::make(getTemplate() . '.panel.quizzes.modals.descriptive_question', $data);
+                    if ($question->type == 'multiple') {
+                        $html = (string)\View::make(getTemplate() . '.panel.quizzes.modals.multiple_question', $data);
+                    } else {
+                        $html = (string)\View::make(getTemplate() . '.panel.quizzes.modals.descriptive_question', $data);
+                    }
+
+                    return response()->json([
+                        'html' => $html
+                    ], 200);
                 }
-
-                return response()->json([
-                    'html' => $html
-                ], 200);
             }
-        }
 
-        return response()->json([], 422);
+            return response()->json([], 422);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function getQuestionByLocale(Request $request, $id)
@@ -213,165 +234,184 @@ class QuizQuestionController extends Controller
 
     public function update(Request $request, $id)
     {
-        $data = $request->get('ajax');
+        try {
+            $data = $request->get('ajax');
 
-        $rules = [
-            'quiz_id' => 'required|exists:quizzes,id',
-            'title' => 'required',
-            'grade' => 'required',
-            'type' => 'required',
-            'image' => 'nullable|max:255',
-            'video' => 'nullable|max:255',
-        ];
+            $rules = [
+                'quiz_id' => 'required|exists:quizzes,id',
+                'title' => 'required',
+                'grade' => 'required',
+                'type' => 'required',
+                'image' => 'nullable|max:255',
+                'video' => 'nullable|max:255',
+            ];
 
-        $validate = Validator::make($data, $rules);
+            $validate = Validator::make($data, $rules);
 
-        if ($validate->fails()) {
-            return response()->json([
-                'code' => 422,
-                'errors' => $validate->errors()
-            ], 422);
-        }
-
-        if (!empty($data['image']) and !empty($data['video'])) {
-            return response()->json([
-                'code' => 422,
-                'errors' => [
-                    'image' => [trans('update.quiz_question_image_validation_by_video')],
-                    'video' => [trans('update.quiz_question_image_validation_by_video')],
-                ]
-            ], 422);
-        }
-
-        if ($data['type'] == QuizzesQuestion::$multiple and !empty($data['answers'])) {
-            $answers = $data['answers'];
-
-            $hasCorrect = false;
-            foreach ($answers as $answer) {
-                if (isset($answer['correct'])) {
-                    $hasCorrect = true;
-                }
-            }
-
-            if (!$hasCorrect) {
-                return response([
+            if ($validate->fails()) {
+                return response()->json([
                     'code' => 422,
-                    'errors' => [
-                        'current_answer' => [trans('quiz.current_answer_required')]
-                    ],
+                    'errors' => $validate->errors()
                 ], 422);
             }
-        }
 
+            if (!empty($data['image']) and !empty($data['video'])) {
+                return response()->json([
+                    'code' => 422,
+                    'errors' => [
+                        'image' => [trans('update.quiz_question_image_validation_by_video')],
+                        'video' => [trans('update.quiz_question_image_validation_by_video')],
+                    ]
+                ], 422);
+            }
 
-        $user = auth()->user();
+            if ($data['type'] == QuizzesQuestion::$multiple and !empty($data['answers'])) {
+                $answers = $data['answers'];
 
-        $quiz = Quiz::where('id', $data['quiz_id'])
-            ->where('creator_id', $user->id)
-            ->first();
-
-        if (!empty($quiz)) {
-            $quizQuestion = QuizzesQuestion::where('id', $id)
-                ->where('creator_id', $user->id)
-                ->where('quiz_id', $quiz->id)
-                ->first();
-
-            if (!empty($quizQuestion)) {
-                $quiz_total_grade = $quiz->total_mark - $quizQuestion->grade;
-
-                $quizQuestion->update([
-                    'quiz_id' => $data['quiz_id'],
-                    'creator_id' => $user->id,
-                    'grade' => $data['grade'],
-                    'type' => $data['type'],
-                    'image' => $data['image'] ?? null,
-                    'video' => $data['video'] ?? null,
-                    'updated_at' => time()
-                ]);
-
-                QuizzesQuestionTranslation::updateOrCreate([
-                    'quizzes_question_id' => $quizQuestion->id,
-                    'locale' => mb_strtolower($data['locale']),
-                ], [
-                    'title' => $data['title'],
-                    'correct' => $data['correct'] ?? null,
-                ]);
-
-                $quiz_total_grade = ($quiz_total_grade > 0 ? $quiz_total_grade : 0) + $data['grade'];
-                $quiz->update(['total_mark' => $quiz_total_grade]);;
-
-                if ($data['type'] == QuizzesQuestion::$multiple and !empty($data['answers'])) {
-                    $answers = $data['answers'];
-
-                    if ($quizQuestion->type == QuizzesQuestion::$multiple and $answers) {
-                        $oldAnswerIds = QuizzesQuestionsAnswer::where('question_id', $quizQuestion->id)->pluck('id')->toArray();
-
-                        foreach ($answers as $key => $answer) {
-                            if (!empty($answer['title']) or !empty($answer['file'])) {
-
-                                if (count($oldAnswerIds)) {
-                                    $oldAnswerIds = array_filter($oldAnswerIds, function ($item) use ($key) {
-                                        return $item != $key;
-                                    });
-                                }
-
-                                $quizQuestionsAnswer = QuizzesQuestionsAnswer::where('id', $key)->first();
-
-                                if (!empty($quizQuestionsAnswer)) {
-                                    $quizQuestionsAnswer->update([
-                                        'question_id' => $quizQuestion->id,
-                                        'creator_id' => $user->id,
-                                        'image' => $answer['file'],
-                                        'correct' => isset($answer['correct']) ? true : false,
-                                        'created_at' => time()
-                                    ]);
-                                } else {
-                                    $quizQuestionsAnswer = QuizzesQuestionsAnswer::create([
-                                        'question_id' => $quizQuestion->id,
-                                        'creator_id' => $user->id,
-                                        'image' => $answer['file'],
-                                        'correct' => isset($answer['correct']) ? true : false,
-                                        'created_at' => time()
-                                    ]);
-                                }
-
-                                if ($quizQuestionsAnswer) {
-                                    QuizzesQuestionsAnswerTranslation::updateOrCreate([
-                                        'quizzes_questions_answer_id' => $quizQuestionsAnswer->id,
-                                        'locale' => mb_strtolower($data['locale']),
-                                    ], [
-                                        'title' => $answer['title'],
-                                    ]);
-                                }
-                            }
-                        }
-
-                        if(count($oldAnswerIds)) {
-                            QuizzesQuestionsAnswer::whereIn('id', $oldAnswerIds)->delete();
-                        }
+                $hasCorrect = false;
+                foreach ($answers as $answer) {
+                    if (isset($answer['correct'])) {
+                        $hasCorrect = true;
                     }
                 }
 
-                return response()->json([
-                    'code' => 200
-                ], 200);
+                if (!$hasCorrect) {
+                    return response([
+                        'code' => 422,
+                        'errors' => [
+                            'current_answer' => [trans('quiz.current_answer_required')]
+                        ],
+                    ], 422);
+                }
             }
-        }
 
-        return response()->json([
-            'code' => 422
-        ], 422);
+            $user = auth()->user();
+
+            $quiz = Quiz::where('id', $data['quiz_id'])
+                ->where('creator_id', $user->id)
+                ->first();
+
+            if (!empty($quiz)) {
+                $quizQuestion = QuizzesQuestion::where('id', $id)
+                    ->where('creator_id', $user->id)
+                    ->where('quiz_id', $quiz->id)
+                    ->first();
+
+                if (!empty($quizQuestion)) {
+                    $quiz_total_grade = $quiz->total_mark - $quizQuestion->grade;
+
+                    $quizQuestion->update([
+                        'quiz_id' => $data['quiz_id'],
+                        'creator_id' => $user->id,
+                        'grade' => $data['grade'],
+                        'type' => $data['type'],
+                        'image' => $data['image'] ?? null,
+                        'video' => $data['video'] ?? null,
+                        'updated_at' => time()
+                    ]);
+
+                    QuizzesQuestionTranslation::updateOrCreate([
+                        'quizzes_question_id' => $quizQuestion->id,
+                        'locale' => mb_strtolower($data['locale']),
+                    ], [
+                        'title' => $data['title'],
+                        'correct' => $data['correct'] ?? null,
+                    ]);
+
+                    $quiz_total_grade = ($quiz_total_grade > 0 ? $quiz_total_grade : 0) + $data['grade'];
+                    $quiz->update(['total_mark' => $quiz_total_grade]);;
+
+                    if ($data['type'] == QuizzesQuestion::$multiple and !empty($data['answers'])) {
+                        $answers = $data['answers'];
+
+                        if ($quizQuestion->type == QuizzesQuestion::$multiple and $answers) {
+                            $oldAnswerIds = QuizzesQuestionsAnswer::where('question_id', $quizQuestion->id)->pluck('id')->toArray();
+
+                            foreach ($answers as $key => $answer) {
+                                if (!empty($answer['title']) or !empty($answer['file'])) {
+
+                                    if (count($oldAnswerIds)) {
+                                        $oldAnswerIds = array_filter($oldAnswerIds, function ($item) use ($key) {
+                                            return $item != $key;
+                                        });
+                                    }
+
+                                    $quizQuestionsAnswer = QuizzesQuestionsAnswer::where('id', $key)->first();
+
+                                    if (!empty($quizQuestionsAnswer)) {
+                                        $quizQuestionsAnswer->update([
+                                            'question_id' => $quizQuestion->id,
+                                            'creator_id' => $user->id,
+                                            'image' => $answer['file'],
+                                            'correct' => isset($answer['correct']) ? true : false,
+                                            'created_at' => time()
+                                        ]);
+                                    } else {
+                                        $quizQuestionsAnswer = QuizzesQuestionsAnswer::create([
+                                            'question_id' => $quizQuestion->id,
+                                            'creator_id' => $user->id,
+                                            'image' => $answer['file'],
+                                            'correct' => isset($answer['correct']) ? true : false,
+                                            'created_at' => time()
+                                        ]);
+                                    }
+
+                                    if ($quizQuestionsAnswer) {
+                                        QuizzesQuestionsAnswerTranslation::updateOrCreate([
+                                            'quizzes_questions_answer_id' => $quizQuestionsAnswer->id,
+                                            'locale' => mb_strtolower($data['locale']),
+                                        ], [
+                                            'title' => $answer['title'],
+                                        ]);
+                                    }
+                                }
+                            }
+
+                            if(count($oldAnswerIds)) {
+                                QuizzesQuestionsAnswer::whereIn('id', $oldAnswerIds)->delete();
+                            }
+                        }
+                    }
+
+                    return response()->json([
+                        'code' => 200
+                    ], 200);
+                }
+            }
+
+            return response()->json([
+                'code' => 422
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function destroy(Request $request, $id)
     {
-        QuizzesQuestion::where('id', $id)
-            ->where('creator_id', auth()->user()->id)
-            ->delete();
+        try {
+            QuizzesQuestion::where('id', $id)
+                ->where('creator_id', auth()->user()->id)
+                ->delete();
 
-        return response()->json([
-            'code' => 200
-        ], 200);
+            return response()->json([
+                'code' => 200
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
 }

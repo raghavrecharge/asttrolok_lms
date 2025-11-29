@@ -3,16 +3,12 @@
 @push('styles_top')
     <style>
 .loader {
-  //border: 16px solid #f3f3f3;
-  //border-radius: 50%;
-  //border-top: 16px solid #3498db;
 
   height: 120px;
   -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
- #loader {
             position: fixed;
             left: 50%;
             top: 50%;
@@ -187,7 +183,7 @@
 
 <script>
     $(document).ready(function() {
-        // Restrict mobile number input to digits only and max 10 digits
+
         $('#customer_number').on('keypress', function(e) {
             var $this = $(this);
             var regex = /^[0-9]$/;
@@ -198,7 +194,6 @@
                 return false;
             }
 
-            // Prevent numbers starting with 0-5
             if ($this.val().length === 0 && e.charCode >= 48 && e.charCode <= 53) {
                 e.preventDefault();
                 return false;
@@ -212,19 +207,15 @@
             return false;
         });
 
-        // Payment button click handler
         $('#paymentSubmit').on('click', function(e) {
             e.preventDefault();
 
-            // Clear previous errors
             $('.error-message').text('');
 
-            // Get form values
             var name = $('#customer_name').val().trim();
             var email = $('#customer_email').val().trim();
             var mobile = $('#customer_number').val().trim();
 
-            // Validation
             var isValid = true;
 
             if (name === '') {
@@ -255,10 +246,8 @@
                 return false;
             }
 
-            // Disable button to prevent double clicks
             $(this).prop('disabled', true);
 
-            // Send webhook data
             $.ajax({
                 method: 'POST',
                 url: "{{ url('/webhook-url') }}",
@@ -271,7 +260,6 @@
                 }
             });
 
-            // Initialize Razorpay
             var options = {
                 key: "{{ env('RAZORPAY_API_KEY') }}",
                 amount: "{{ (int)(preg_replace('/[^\d.]/', '', handlePrice($total * 100))) }}",
@@ -280,11 +268,10 @@
                 description: "Payment for the course {{ $webinar->title }}",
                 image: "{{ $generalSettings['logo'] ?? '' }}",
                 handler: function(response) {
-                    // Show loader
+
                     $('#loader').show();
                     $('#paymentSubmit').prop('disabled', true);
 
-                    // GTM tracking
                     @if(auth()->check())
                         window.dataLayer = window.dataLayer || [];
                         window.dataLayer.push({
@@ -324,7 +311,6 @@
                         .catch(err => console.error('User lookup failed:', err));
                     @endif
 
-                    // Fill verification form and submit
                     $('#verify_name').val(name);
                     $('#verify_email').val(email);
                     $('#verify_number').val(mobile);
@@ -355,7 +341,6 @@
             var rzp = new Razorpay(options);
             rzp.open();
 
-            // Re-enable button after Razorpay modal opens
             setTimeout(function() {
                 $('#paymentSubmit').prop('disabled', false);
             }, 1000);

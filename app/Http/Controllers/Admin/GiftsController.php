@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Exports\GiftHistoriesExport;
 use App\Http\Controllers\Admin\traits\GiftsSettingsTrait;
 use App\Http\Controllers\Controller;
@@ -18,80 +21,99 @@ class GiftsController extends Controller
 
     public function index(Request $request)
     {
-        $this->authorize("admin_gift_history");
+        try {
+            $this->authorize("admin_gift_history");
 
-        $query = Gift::query()->where('gifts.status', '!=', 'pending')
-            ->whereHas('sale'); // refund or not refund
+            $query = Gift::query()->where('gifts.status', '!=', 'pending')
+                ->whereHas('sale');
 
-        $topStats = $this->getTopStats($query);
+            $topStats = $this->getTopStats($query);
 
+            $gifts = $this->handleFilters($request, $query)->with([
+                'sale',
+                'user' => function ($query) {
+                    $query->select('id', 'full_name', 'role_name', 'role_id', 'mobile', 'email');
+                },
+                'receipt' => function ($query) {
+                    $query->select('id', 'full_name', 'role_name', 'role_id', 'mobile', 'email');
+                },
+                'webinar' => function ($query) {
+                    $query->select('id', 'creator_id', 'teacher_id', 'category_id', 'slug', 'status');
+                },
+                'bundle' => function ($query) {
+                    $query->select('id', 'creator_id', 'teacher_id', 'category_id', 'slug', 'status');
+                },
+                'product' => function ($query) {
+                    $query->select('id', 'creator_id', 'category_id', 'slug', 'status');
+                },
+            ])->paginate(10);
 
-        $gifts = $this->handleFilters($request, $query)->with([
-            'sale',
-            'user' => function ($query) {
-                $query->select('id', 'full_name', 'role_name', 'role_id', 'mobile', 'email');
-            },
-            'receipt' => function ($query) {
-                $query->select('id', 'full_name', 'role_name', 'role_id', 'mobile', 'email');
-            },
-            'webinar' => function ($query) {
-                $query->select('id', 'creator_id', 'teacher_id', 'category_id', 'slug', 'status');
-            },
-            'bundle' => function ($query) {
-                $query->select('id', 'creator_id', 'teacher_id', 'category_id', 'slug', 'status');
-            },
-            'product' => function ($query) {
-                $query->select('id', 'creator_id', 'category_id', 'slug', 'status');
-            },
-        ])->paginate(10);
+            foreach ($gifts as $gift) {
+                $gift->receipt_status = !empty($gift->receipt);
+            }
 
-        foreach ($gifts as $gift) {
-            $gift->receipt_status = !empty($gift->receipt);
+            $data = [
+                'pageTitle' => trans('update.gifts_history'),
+                'gifts' => $gifts,
+            ];
+
+            $data = array_merge($data, $topStats);
+
+            $user_ids = $request->get('user_ids', null);
+            if (!empty($user_ids)) {
+                $data['selectedUsers'] = User::query()->whereIn('id', $user_ids)->select('id', 'full_name')->get();
+            }
+
+            return view("admin.gifts.history", $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $data = [
-            'pageTitle' => trans('update.gifts_history'),
-            'gifts' => $gifts,
-        ];
-
-        $data = array_merge($data, $topStats);
-
-        $user_ids = $request->get('user_ids', null);
-        if (!empty($user_ids)) {
-            $data['selectedUsers'] = User::query()->whereIn('id', $user_ids)->select('id', 'full_name')->get();
-        }
-
-        return view("admin.gifts.history", $data);
     }
 
     public function exportExcel(Request $request)
     {
-        $this->authorize("admin_gift_export");
+        try {
+            $this->authorize("admin_gift_export");
 
-        $query = Gift::query()->where('status', '!=', 'pending')
-            ->whereHas('sale'); // refund or not refund
+            $query = Gift::query()->where('status', '!=', 'pending')
+                ->whereHas('sale');
 
-        $gifts = $this->handleFilters($request, $query)->with([
-            'sale',
-            'user' => function ($query) {
-                $query->select('id', 'full_name', 'role_name', 'role_id', 'mobile', 'email');
-            },
-            'receipt' => function ($query) {
-                $query->select('id', 'full_name', 'role_name', 'role_id', 'mobile', 'email');
-            },
-            'webinar' => function ($query) {
-                $query->select('id', 'creator_id', 'teacher_id', 'category_id', 'slug', 'status');
-            },
-            'bundle' => function ($query) {
-                $query->select('id', 'creator_id', 'teacher_id', 'category_id', 'slug', 'status');
-            },
-            'product' => function ($query) {
-                $query->select('id', 'creator_id', 'category_id', 'slug', 'status');
-            },
-        ])->get();
+            $gifts = $this->handleFilters($request, $query)->with([
+                'sale',
+                'user' => function ($query) {
+                    $query->select('id', 'full_name', 'role_name', 'role_id', 'mobile', 'email');
+                },
+                'receipt' => function ($query) {
+                    $query->select('id', 'full_name', 'role_name', 'role_id', 'mobile', 'email');
+                },
+                'webinar' => function ($query) {
+                    $query->select('id', 'creator_id', 'teacher_id', 'category_id', 'slug', 'status');
+                },
+                'bundle' => function ($query) {
+                    $query->select('id', 'creator_id', 'teacher_id', 'category_id', 'slug', 'status');
+                },
+                'product' => function ($query) {
+                    $query->select('id', 'creator_id', 'category_id', 'slug', 'status');
+                },
+            ])->get();
 
-        $export = new GiftHistoriesExport($gifts);
-        return Excel::download($export, 'gift_history.xlsx');
+            $export = new GiftHistoriesExport($gifts);
+            return Excel::download($export, 'gift_history.xlsx');
+        } catch (\Exception $e) {
+            \Log::error('exportExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function handleFilters(Request $request, $query)
@@ -218,16 +240,15 @@ class GiftsController extends Controller
             ->select(DB::raw("sum(total_amount) as totalAmount"))
             ->first();
 
-
         $totalGiftAmount = (!empty($totalSales) and !empty($totalSales->totalAmount)) ? $totalSales->totalAmount : 0;
 
         $totalSenders = deepClone($query)
             ->select(DB::raw("count(user_id) as totalSenders"))
-            ->groupBy('user_id')->get()->count();
+            ->groupBy('user_id')->count();
 
         $totalReceipts = deepClone($query)
             ->select(DB::raw("count(email) as totalReceipts"))
-            ->groupBy('email')->get()->count();
+            ->groupBy('email')->count();
 
         return [
             'totalGifts' => $totalGifts,
@@ -239,44 +260,64 @@ class GiftsController extends Controller
 
     public function sendReminder(Request $request, $id)
     {
-        $this->authorize("admin_gift_send_reminder");
+        try {
+            $this->authorize("admin_gift_send_reminder");
 
-        $gift = Gift::query()->findOrFail($id);
+            $gift = Gift::query()->findOrFail($id);
 
-        $gift->sendReminderToRecipient();
+            $gift->sendReminderToRecipient();
 
-        $toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => trans('update.a_notification_has_been_sent_to_the_recipient_of_the_gift'),
-            'status' => 'success'
-        ];
-        return back()->with(['toast' => $toastData]);
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.a_notification_has_been_sent_to_the_recipient_of_the_gift'),
+                'status' => 'success'
+            ];
+            return back()->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('sendReminder error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function cancel(Request $request, $id)
     {
-        $this->authorize("admin_gift_cancel");
+        try {
+            $this->authorize("admin_gift_cancel");
 
-        $gift = Gift::query()->findOrFail($id);
-        $sale = $gift->sale;
+            $gift = Gift::query()->findOrFail($id);
+            $sale = $gift->sale;
 
-        if (!empty($sale)) {
-            if (!empty($sale->total_amount)) {
-                Accounting::refundAccounting($sale);
+            if (!empty($sale)) {
+                if (!empty($sale->total_amount)) {
+                    Accounting::refundAccounting($sale);
+                }
+
+                $sale->update(['refund_at' => time()]);
             }
 
-            $sale->update(['refund_at' => time()]);
+            $gift->update([
+                'status' => 'cancel'
+            ]);
+
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.the_gift_was_successfully_canceled'),
+                'status' => 'success'
+            ];
+            return back()->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('cancel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $gift->update([
-            'status' => 'cancel'
-        ]);
-
-        $toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => trans('update.the_gift_was_successfully_canceled'),
-            'status' => 'success'
-        ];
-        return back()->with(['toast' => $toastData]);
     }
 }

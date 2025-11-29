@@ -71,7 +71,6 @@
             </div>
         </div>
 
-
         <div class="col-12">
             <div class="mt-5">
                 <h5>{{ trans('admin/main.auto_badges') }}</h5>

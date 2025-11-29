@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class ForumTopic extends Model
 {
-    // use Sluggable;
 
     protected $table = 'forum_topics';
     public $timestamps = false;

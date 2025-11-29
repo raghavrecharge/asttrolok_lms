@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\CashbackRule;
 use App\Models\CashbackRuleSpecificationItem;
@@ -17,25 +20,35 @@ class CashbackRuleController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('admin_cashback_rules');
+        try {
+            $this->authorize('admin_cashback_rules');
 
-        $query = CashbackRule::query();
+            $query = CashbackRule::query();
 
-        $totalRules = deepClone($query)->count();
-        $activeRules = deepClone($query)->where('enable', true)->count();
-        $disabledRules = deepClone($query)->where('enable', false)->count();
+            $totalRules = deepClone($query)->count();
+            $activeRules = deepClone($query)->where('enable', true)->count();
+            $disabledRules = deepClone($query)->where('enable', false)->count();
 
-        $rules = $this->handleFilters($request, $query)->paginate(10);
+            $rules = $this->handleFilters($request, $query)->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('update.cashback_rules'),
-            'rules' => $rules,
-            'totalRules' => $totalRules,
-            'activeRules' => $activeRules,
-            'disabledRules' => $disabledRules,
-        ];
+            $data = [
+                'pageTitle' => trans('update.cashback_rules'),
+                'rules' => $rules,
+                'totalRules' => $totalRules,
+                'activeRules' => $activeRules,
+                'disabledRules' => $disabledRules,
+            ];
 
-        return view('admin.cashback.rules.lists.index', $data);
+            return view('admin.cashback.rules.lists.index', $data);
+        } catch (\Exception $e) {
+            \Log::error('index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function handleFilters(Request $request, $query)
@@ -63,7 +76,6 @@ class CashbackRuleController extends Controller
             $query->whereTranslationLike('title', '%' . $title . '%');
         }
 
-
         if (!empty($target_type)) {
             $query->where('target_type', $target_type);
         }
@@ -83,10 +95,10 @@ class CashbackRuleController extends Controller
                     $query->orderBy('amount', 'desc');
                     break;
                 case 'paid_amount_asc':
-                    // TODO::
+
                     break;
                 case 'paid_amount_desc':
-                    // TODO::
+
                     break;
                 case 'date_asc':
                     $query->orderBy('created_at', 'asc');
@@ -102,76 +114,94 @@ class CashbackRuleController extends Controller
         return $query;
     }
 
-
     public function create()
     {
-        $this->authorize('admin_cashback_rules');
+        try {
+            $this->authorize('admin_cashback_rules');
 
-        $userGroups = Group::query()->where('status', 'active')->get();
+            $userGroups = Group::query()->where('status', 'active')->get();
 
-        $categories = Category::where('parent_id', null)
-            ->with('subCategories')
-            ->get();
-        $subscriptionPackages = Subscribe::all();
-        $registrationPackages = RegistrationPackage::all();
+            $categories = Category::where('parent_id', null)
+                ->with('subCategories')
+                ->get();
+            $subscriptionPackages = Subscribe::all();
+            $registrationPackages = RegistrationPackage::all();
 
+            $data = [
+                'pageTitle' => trans('update.new_rule'),
+                'userGroups' => $userGroups,
+                'categories' => $categories,
+                'subscriptionPackages' => $subscriptionPackages,
+                'registrationPackages' => $registrationPackages,
+            ];
 
-        $data = [
-            'pageTitle' => trans('update.new_rule'),
-            'userGroups' => $userGroups,
-            'categories' => $categories,
-            'subscriptionPackages' => $subscriptionPackages,
-            'registrationPackages' => $registrationPackages,
-        ];
-
-        return view('admin.cashback.rules.create.index', $data);
+            return view('admin.cashback.rules.create.index', $data);
+        } catch (\Exception $e) {
+            \Log::error('create error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function store(Request $request)
     {
-        $this->authorize('admin_cashback_rules');
+        try {
+            $this->authorize('admin_cashback_rules');
 
-        $this->validate($request, [
-            'title' => 'required',
-            'target_type' => 'required',
-            'amount' => 'required|numeric',
-            'start_date' => 'required',
-            'max_amount' => 'nullable|numeric',
-            'min_amount' => 'nullable|numeric',
-        ]);
+            $this->validate($request, [
+                'title' => 'required',
+                'target_type' => 'required',
+                'amount' => 'required|numeric',
+                'start_date' => 'required',
+                'max_amount' => 'nullable|numeric',
+                'min_amount' => 'nullable|numeric',
+            ]);
 
-        $data = $request->all();
+            $data = $request->all();
 
-        $startDate = !empty($data['start_date']) ? convertTimeToUTCzone($data['start_date'], getTimezone())->getTimestamp() : null;
-        $endDate = !empty($data['end_date']) ? convertTimeToUTCzone($data['end_date'], getTimezone())->getTimestamp() : null;
+            $startDate = !empty($data['start_date']) ? convertTimeToUTCzone($data['start_date'], getTimezone())->getTimestamp() : null;
+            $endDate = !empty($data['end_date']) ? convertTimeToUTCzone($data['end_date'], getTimezone())->getTimestamp() : null;
 
-        $rule = CashbackRule::query()->create([
-            'target_type' => $data['target_type'],
-            'target' => $data['target'] ?? null,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'amount' => $data['amount'],
-            'amount_type' => $data['amount_type'],
-            'apply_cashback_per_item' => ($data['amount_type'] == 'fixed_amount' and !empty($data['apply_cashback_per_item']) and $data['apply_cashback_per_item'] == 'on'),
-            'max_amount' => ($data['amount_type'] == 'percent' and !empty($data['max_amount'])) ? $data['max_amount'] : null,
-            'min_amount' => $data['min_amount'] ?? null,
-            'enable' => (!empty($data['enable']) and $data['enable'] == 'on'),
-            'created_at' => time(),
-        ]);
+            $rule = CashbackRule::query()->create([
+                'target_type' => $data['target_type'],
+                'target' => $data['target'] ?? null,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'amount' => $data['amount'],
+                'amount_type' => $data['amount_type'],
+                'apply_cashback_per_item' => ($data['amount_type'] == 'fixed_amount' and !empty($data['apply_cashback_per_item']) and $data['apply_cashback_per_item'] == 'on'),
+                'max_amount' => ($data['amount_type'] == 'percent' and !empty($data['max_amount'])) ? $data['max_amount'] : null,
+                'min_amount' => $data['min_amount'] ?? null,
+                'enable' => (!empty($data['enable']) and $data['enable'] == 'on'),
+                'created_at' => time(),
+            ]);
 
-        if (!empty($rule)) {
-            $this->storeExtraData($rule, $data);
+            if (!empty($rule)) {
+                $this->storeExtraData($rule, $data);
 
-            $toastData = [
-                'title' => trans('public.request_success'),
-                'msg' => trans('update.new_cashback_rule_were_successfully_created'),
-                'status' => 'success'
-            ];
+                $toastData = [
+                    'title' => trans('public.request_success'),
+                    'msg' => trans('update.new_cashback_rule_were_successfully_created'),
+                    'status' => 'success'
+                ];
 
-            return redirect(getAdminPanelUrl("/cashback/rules/{$rule->id}/edit"))->with(['toast' => $toastData]);
+                return redirect(getAdminPanelUrl("/cashback/rules/{$rule->id}/edit"))->with(['toast' => $toastData]);
+            }
+
+            abort(500);
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(500);
     }
 
     private function storeExtraData($rule, $data)
@@ -213,8 +243,6 @@ class CashbackRuleController extends Controller
             }
         }
 
-
-        /* Users And User Groups */
         CashbackRuleUserGroup::query()->where('cashback_rule_id', $rule->id)->delete();
 
         if (!empty($data['group_ids'])) {
@@ -233,7 +261,6 @@ class CashbackRuleController extends Controller
                 CashbackRuleUserGroup::query()->insert($insert);
             }
         }
-
 
         if (!empty($data['users_ids'])) {
             $insert = [];
@@ -281,99 +308,128 @@ class CashbackRuleController extends Controller
         return $store;
     }
 
-
     public function edit(Request $request, $id)
     {
-        $this->authorize('admin_cashback_rules');
+        try {
+            $this->authorize('admin_cashback_rules');
 
-        $rule = CashbackRule::query()->findOrFail($id);
+            $rule = CashbackRule::query()->findOrFail($id);
 
-        $userGroups = Group::query()->where('status', 'active')->get();
+            $userGroups = Group::query()->where('status', 'active')->get();
 
-        $categories = Category::where('parent_id', null)
-            ->with('subCategories')
-            ->get();
-        $subscriptionPackages = Subscribe::all();
-        $registrationPackages = RegistrationPackage::all();
+            $categories = Category::where('parent_id', null)
+                ->with('subCategories')
+                ->get();
+            $subscriptionPackages = Subscribe::all();
+            $registrationPackages = RegistrationPackage::all();
 
-        $defaultLocal = getDefaultLocale();
-        $locale = $request->get('locale', mb_strtolower($defaultLocal));
-        storeContentLocale($locale, $rule->getTable(), $rule->id);
+            $defaultLocal = getDefaultLocale();
+            $locale = $request->get('locale', mb_strtolower($defaultLocal));
+            storeContentLocale($locale, $rule->getTable(), $rule->id);
 
-        $data = [
-            'pageTitle' => trans('update.edit_cashback_rule'),
-            'userGroups' => $userGroups,
-            'categories' => $categories,
-            'subscriptionPackages' => $subscriptionPackages,
-            'registrationPackages' => $registrationPackages,
-            'rule' => $rule,
-            'selectedLocale' => mb_strtolower($locale)
-        ];
+            $data = [
+                'pageTitle' => trans('update.edit_cashback_rule'),
+                'userGroups' => $userGroups,
+                'categories' => $categories,
+                'subscriptionPackages' => $subscriptionPackages,
+                'registrationPackages' => $registrationPackages,
+                'rule' => $rule,
+                'selectedLocale' => mb_strtolower($locale)
+            ];
 
-        return view('admin.cashback.rules.create.index', $data);
+            return view('admin.cashback.rules.create.index', $data);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $this->authorize('admin_cashback_rules');
+        try {
+            $this->authorize('admin_cashback_rules');
 
-        $this->validate($request, [
-            'title' => 'required',
-            'target_type' => 'required',
-            'amount' => 'required|numeric',
-            'start_date' => 'required',
-            'max_amount' => 'nullable|numeric',
-            'min_amount' => 'nullable|numeric',
-        ]);
+            $this->validate($request, [
+                'title' => 'required',
+                'target_type' => 'required',
+                'amount' => 'required|numeric',
+                'start_date' => 'required',
+                'max_amount' => 'nullable|numeric',
+                'min_amount' => 'nullable|numeric',
+            ]);
 
-        $rule = CashbackRule::query()->findOrFail($id);
-        $data = $request->all();
+            $rule = CashbackRule::query()->findOrFail($id);
+            $data = $request->all();
 
-        $startDate = !empty($data['start_date']) ? convertTimeToUTCzone($data['start_date'], getTimezone())->getTimestamp() : null;
-        $endDate = !empty($data['end_date']) ? convertTimeToUTCzone($data['end_date'], getTimezone())->getTimestamp() : null;
+            $startDate = !empty($data['start_date']) ? convertTimeToUTCzone($data['start_date'], getTimezone())->getTimestamp() : null;
+            $endDate = !empty($data['end_date']) ? convertTimeToUTCzone($data['end_date'], getTimezone())->getTimestamp() : null;
 
-        $rule->update([
-            'target_type' => $data['target_type'],
-            'target' => $data['target'] ?? null,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'amount' => $data['amount'],
-            'amount_type' => $data['amount_type'],
-            'apply_cashback_per_item' => ($data['amount_type'] == 'fixed_amount' and !empty($data['apply_cashback_per_item']) and $data['apply_cashback_per_item'] == 'on'),
-            'max_amount' => ($data['amount_type'] == 'percent' and !empty($data['max_amount'])) ? $data['max_amount'] : null,
-            'min_amount' => $data['min_amount'] ?? null,
-            'enable' => (!empty($data['enable']) and $data['enable'] == 'on'),
-        ]);
+            $rule->update([
+                'target_type' => $data['target_type'],
+                'target' => $data['target'] ?? null,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'amount' => $data['amount'],
+                'amount_type' => $data['amount_type'],
+                'apply_cashback_per_item' => ($data['amount_type'] == 'fixed_amount' and !empty($data['apply_cashback_per_item']) and $data['apply_cashback_per_item'] == 'on'),
+                'max_amount' => ($data['amount_type'] == 'percent' and !empty($data['max_amount'])) ? $data['max_amount'] : null,
+                'min_amount' => $data['min_amount'] ?? null,
+                'enable' => (!empty($data['enable']) and $data['enable'] == 'on'),
+            ]);
 
-        if (!empty($rule)) {
-            $this->storeExtraData($rule, $data);
+            if (!empty($rule)) {
+                $this->storeExtraData($rule, $data);
 
-            $toastData = [
-                'title' => trans('public.request_success'),
-                'msg' => trans('update.cashback_rule_were_successfully_updated'),
-                'status' => 'success'
-            ];
+                $toastData = [
+                    'title' => trans('public.request_success'),
+                    'msg' => trans('update.cashback_rule_were_successfully_updated'),
+                    'status' => 'success'
+                ];
 
-            return redirect(getAdminPanelUrl("/cashback/rules/{$rule->id}/edit"))->with(['toast' => $toastData]);
+                return redirect(getAdminPanelUrl("/cashback/rules/{$rule->id}/edit"))->with(['toast' => $toastData]);
+            }
+
+            abort(500);
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        abort(500);
     }
 
     public function delete($id)
     {
-        $this->authorize('admin_cashback_rules');
+        try {
+            $this->authorize('admin_cashback_rules');
 
-        $rule = CashbackRule::query()->findOrFail($id);
+            $rule = CashbackRule::query()->findOrFail($id);
 
-        $rule->delete();
+            $rule->delete();
 
-        $toastData = [
-            'title' => trans('public.request_success'),
-            'msg' => trans('update.cashback_rule_were_successfully_deleted'),
-            'status' => 'success'
-        ];
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.cashback_rule_were_successfully_deleted'),
+                'status' => 'success'
+            ];
 
-        return redirect(getAdminPanelUrl("/cashback/rules"))->with(['toast' => $toastData]);
+            return redirect(getAdminPanelUrl("/cashback/rules"))->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('delete error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

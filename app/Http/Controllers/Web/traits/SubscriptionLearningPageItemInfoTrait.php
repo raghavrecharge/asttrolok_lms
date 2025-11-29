@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Web\traits;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Models\File;
 use App\Models\Quiz;
 use App\Models\QuizzesResult;
@@ -17,32 +20,42 @@ trait SubscriptionLearningPageItemInfoTrait
 {
     public function getItemInfo(Request $request)
     {
-        $data = $request->all();
+        try {
+            $data = $request->all();
 
-        $validator = Validator::make($data, [
-            'type' => 'required|in:file,session,text_lesson,quiz',
-            'id' => 'required|numeric',
-        ]);
+            $validator = Validator::make($data, [
+                'type' => 'required|in:file,session,text_lesson,quiz',
+                'id' => 'required|numeric',
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
+            if ($validator->fails()) {
+                return response()->json([
+                    'code' => 422,
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
 
-        $type = $data['type'];
-        $id = $data['id'];
+            $type = $data['type'];
+            $id = $data['id'];
 
-        switch ($type) {
-            case 'file':
-                return $this->getFileInfo($id);
-            case 'text_lesson':
-                return $this->getTextLessonInfo($id);
-            case 'session':
-                return $this->getSessionInfo($id);
-            case 'quiz':
-                return $this->getQuizInfo($id);
+            switch ($type) {
+                case 'file':
+                    return $this->getFileInfo($id);
+                case 'text_lesson':
+                    return $this->getTextLessonInfo($id);
+                case 'session':
+                    return $this->getSessionInfo($id);
+                case 'quiz':
+                    return $this->getQuizInfo($id);
+            }
+        } catch (\Exception $e) {
+            \Log::error('getItemInfo error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
     }
 
@@ -54,12 +67,12 @@ $directAccessnew=false;
  $directAccess = WebinarAccessControl ::where('webinar_id', $course->id)
             ->where('user_id', $user->id)
             ->first();
-        //  print($installmentLimitation_limit);
+
          if($directAccess){
-             
+
              if(strtotime($directAccess->expire) > time()){
                      $directAccessnew=true;
-                
+
              }
          }
         return (!empty($course) and (($course->checkUserHasBought($user) or !empty($course->getInstallmentOrder())) or $directAccessnew ));
@@ -74,7 +87,7 @@ $directAccessnew=false;
 
         $checkSequenceContent = !empty($file) ? $file->checkSequenceContent() : null;
         $sequenceContentHasError = (!empty($checkSequenceContent) and (!empty($checkSequenceContent['all_passed_items_error']) or !empty($checkSequenceContent['access_after_day_error'])));
-// print_r($file);
+
         if (!empty($file) ) {
 
             $filePath = url($file->file);
@@ -83,7 +96,6 @@ $directAccessnew=false;
                 $filePath = $file->file;
             }
 
-            // for translate send on array of data
             $data = [
                 'file' => [
                     'id' => $file->id,
@@ -114,7 +126,7 @@ $directAccessnew=false;
         if (!empty($session) and $this->checkCourseAccess($session->webinar_id) and !$sequenceContentHasError) {
 
             $isFinished = $session->isFinished();
-            // for translate send on array of data
+
             $data = [
                 'session' => [
                     'id' => $session->id,
@@ -179,7 +191,6 @@ $directAccessnew=false;
         $quiz = Quiz::where('id', $id)
             ->where('status', WebinarChapter::$chapterActive)
             ->first();
-            
 
         if (!empty($quiz)) {
             $quiz = $this->checkQuizResult($quiz);
@@ -189,7 +200,7 @@ $directAccessnew=false;
             $expireTimeMessage = null;
 
             if (!empty($quiz->expiry_days)) {
-                
+
                 $sale = $quiz->webinar->getSaleItem($user);
 
                 $hasExpired = true;
@@ -197,7 +208,7 @@ $directAccessnew=false;
                 $time = time();
 
                 if (!empty($sale)) {
-                    // print_r('pratul');die();
+
                     $purchaseDate = $sale->created_at;
                     $gift = $sale->gift;
 
@@ -209,9 +220,9 @@ $directAccessnew=false;
 
                     $hasExpired = ($expireTime < $time);
                 }else{
-                    
+
                     $sale1 = $quiz->webinar->getSaleItem1($user);
-                    
+
                     if (!empty($sale1)) {
                     $purchaseDate = $sale1->created_at;
                     $gift = $sale1->gift;
@@ -219,7 +230,7 @@ $directAccessnew=false;
                     if (!empty($gift) and !empty($gift->date)) {
                         $purchaseDate = $gift->date;
                     }
-// print_r($quiz->expiry_days);die();
+
                     $expireTime = strtotime("+{$quiz->expiry_days} days", $purchaseDate);
 
                     $hasExpired = ($expireTime < $time);
@@ -233,8 +244,6 @@ $directAccessnew=false;
                 }
             }
 
-
-            // for translate send on array of data
             $data = [
                 'quiz' => [
                     'id' => $quiz->id,
@@ -291,7 +300,6 @@ $directAccessnew=false;
                 }
             }
 
-            // for translate send on array of data
             $data = [
                 'textLesson' => [
                     'id' => $textLesson->id,

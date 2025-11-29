@@ -1,6 +1,5 @@
 @extends('admin.layouts.app')
 
-
 @section('content')
     <section class="section">
         <div class="section-header">
@@ -42,7 +41,6 @@
                                         @else
                                             <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
                                         @endif
-
 
                                         <div class="form-group">
                                             <label>{{ trans('admin/main.title') }}</label>

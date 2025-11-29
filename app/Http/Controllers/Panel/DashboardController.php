@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Http\Controllers\Panel;
+
+use Illuminate\Support\Facades\Log;
+use Exception;
 use App\Http\Controllers\Controller;
 use App\Mixins\RegistrationPackage\UserPackage;
 use App\Mixins\Installment\InstallmentAccounting;
@@ -24,7 +27,6 @@ use App\Models\Setting;
 use App\Models\WebinarPartPayment;
 use App\Models\Subscription;
 
-
 use App\Models\Quiz;
 use App\Models\Role;
 use App\Models\Session;
@@ -43,700 +45,637 @@ use Intervention\Image\Facades\Image;
 use App\Models\SupportConversation;
 use App\Models\SupportDepartment;
 
-
 use App\Models\Bundle;
-
-
 
 class DashboardController extends Controller
 {
     public function dashboard(Request $request, $id = null)
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
- $subscriptionAccess = DB::table('subscription_access')
-        ->where('user_id', $user->id)
-        ->select('subscription_id', 'access_till_date')
-        ->get();
+            $subscriptionAccess = DB::table('subscription_access')
+            ->where('user_id', $user->id)
+            ->select('subscription_id', 'access_till_date')
+            ->get();
 
-        $nextBadge = $user->getBadges(true, true);
+            $nextBadge = $user->getBadges(true, true);
 
-        $data = [
-            'pageTitle' => trans('panel.dashboard'),
-            'nextBadge' => $nextBadge
-        ];
+            $data = [
+                'pageTitle' => trans('panel.dashboard'),
+                'nextBadge' => $nextBadge
+            ];
 
-        if (!$user->isUser()) { 
-            
+            if (!$user->isUser()) {
 
-            
-//############################################courses##############################################################
-            
-            
-            $meetingIds = Meeting::where('creator_id', $user->id)->pluck('id')->toArray();
-            $pendingAppointments = ReserveMeeting::whereIn('meeting_id', $meetingIds)
-                ->whereHas('sale')
-                ->where('status', ReserveMeeting::$pending)
-                ->count();
+                $meetingIds = Meeting::where('creator_id', $user->id)->pluck('id')->toArray();
+                $pendingAppointments = ReserveMeeting::whereIn('meeting_id', $meetingIds)
+                    ->whereHas('sale')
+                    ->where('status', ReserveMeeting::$pending)
+                    ->count();
 
-            $userWebinarsIds = $user->webinars->pluck('id')->toArray();
-            $supports = Support::whereIn('webinar_id', $userWebinarsIds)->where('status', 'open')->get();
+                $userWebinarsIds = $user->webinars->pluck('id')->toArray();
+                $supports = Support::whereIn('webinar_id', $userWebinarsIds)->where('status', 'open')->get();
 
-            $comments = Comment::whereIn('webinar_id', $userWebinarsIds)
+                $comments = Comment::whereIn('webinar_id', $userWebinarsIds)
+                    ->where('status', 'active')
+                    ->whereNull('viewed_at')
+                    ->get();
+
+                $time = time();
+                $firstDayMonth = strtotime(date('Y-m-01', $time));
+                $lastDayMonth = strtotime(date('Y-m-t', $time));
+
+                $monthlySales = Sale::where('seller_id', $user->id)
+                    ->whereNull('refund_at')
+                    ->whereBetween('created_at', [$firstDayMonth, $lastDayMonth])
+                    ->get();
+
+                $data['pendingAppointments'] = $pendingAppointments;
+                $data['supportsCount'] = count($supports);
+                $data['commentsCount'] = count($comments);
+                $data['monthlySalesCount'] = count($monthlySales) ? $monthlySales->sum('total_amount') : 0;
+                $data['monthlyChart'] = $this->getMonthlySalesOrPurchase($user);
+
+            } else {
+                $webinarsIds = $user->getPurchasedCoursesIds();
+
+                $webinars = Webinar::whereIn('id', $webinarsIds)
+                    ->where('status', 'active')
+                    ->get();
+
+                $reserveMeetings = ReserveMeeting::where('user_id', $user->id)
+                    ->whereHas('sale', function ($query) {
+                        $query->whereNull('refund_at');
+                    })
+                    ->where('status', ReserveMeeting::$open)
+                    ->get();
+
+                $supports = Support::where('user_id', $user->id)
+
+                    ->where('status', 'open')
+                    ->get();
+
+                $comments = Comment::where('user_id', $user->id)
+                    ->whereNotNull('webinar_id')
+                    ->where('status', 'active')
+                    ->get();
+
+            $giftsIds = Gift::query()->where('email', $user->email)
                 ->where('status', 'active')
-                ->whereNull('viewed_at')
-                ->get();
+                ->whereNull('product_id')
+                ->where(function ($query) {
+                    $query->whereNull('date');
+                    $query->orWhere('date', '<', time());
+                })
+                ->whereHas('sale')
+                ->pluck('id')
+                ->toArray();
+
+            $query = Sale::query()
+                ->where(function ($query) use ($user, $giftsIds) {
+                    $query->where('sales.buyer_id', $user->id);
+                    $query->orWhereIn('sales.gift_id', $giftsIds);
+                })
+                ->whereNull('sales.refund_at')
+                ->where('access_to_purchased_item', true)
+                ->where(function ($query) {
+                    $query->where(function ($query) {
+                        $query->whereNotNull('sales.webinar_id')
+                            ->where('sales.type', 'webinar')
+                            ->whereHas('webinar', function ($query) {
+                                $query->where('status', 'active');
+                            });
+                    });
+                    $query->orWhere(function ($query) {
+                        $query->whereNotNull('sales.bundle_id')
+                            ->where('sales.type', 'bundle')
+                            ->whereHas('bundle', function ($query) {
+                                $query->where('status', 'active');
+                            });
+                    });
+                    $query->orWhere(function ($query) {
+                        $query->whereNotNull('sales.subscription_id')
+                            ->where('sales.type', 'subscription')
+                            ->whereHas('subscription', function ($query) {
+                                $query->where('status', 'active');
+                            });
+                    });
+                    $query->orWhere(function ($query) {
+                        $query->whereNotNull('gift_id');
+                        $query->whereHas('gift');
+                    });
+                });
+
+            $sales = deepClone($query)
+                ->with([
+                    'webinar' => function ($query) {
+                        $query->with([
+                            'files',
+                            'reviews' => function ($query) {
+                                $query->where('status', 'active');
+                            },
+                            'category',
+                            'teacher' => function ($query) {
+                                $query->select('id', 'full_name');
+                            },
+                        ]);
+                        $query->withCount([
+                            'sales' => function ($query) {
+                                $query->whereNull('refund_at');
+                            }
+                        ]);
+                    },
+                    'bundle' => function ($query) {
+                        $query->with([
+                            'reviews' => function ($query) {
+                                $query->where('status', 'active');
+                            },
+                            'category',
+                            'teacher' => function ($query) {
+                                $query->select('id', 'full_name');
+                            },
+                        ]);
+                    },
+                    'subscription',
+                ])
+                ->orderBy('created_at', 'desc')
+                ->paginate(15);
 
             $time = time();
-            $firstDayMonth = strtotime(date('Y-m-01', $time));// First day of the month.
-            $lastDayMonth = strtotime(date('Y-m-t', $time));// Last day of the month.
 
-            $monthlySales = Sale::where('seller_id', $user->id)
-                ->whereNull('refund_at')
-                ->whereBetween('created_at', [$firstDayMonth, $lastDayMonth])
+            $giftDurations = 0;
+            $giftUpcoming = 0;
+            $giftPurchasedCount = 0;
+
+            foreach ($sales as $sale) {
+                if (!empty($sale->gift_id)) {
+                    $gift = $sale->gift;
+
+                    $sale->webinar_id = $gift->webinar_id;
+                    $sale->bundle_id = $gift->bundle_id;
+
+                    $sale->webinar = !empty($gift->webinar_id) ? $gift->webinar : null;
+                    $sale->bundle = !empty($gift->bundle_id) ? $gift->bundle : null;
+
+                    $sale->gift_recipient = !empty($gift->receipt) ? $gift->receipt->full_name : $gift->name;
+                    $sale->gift_sender = $sale->buyer->full_name;
+                    $sale->gift_date = $gift->date;;
+
+                    $giftPurchasedCount += 1;
+
+                    if (!empty($sale->webinar)) {
+                        $giftDurations += $sale->webinar->duration;
+
+                        if ($sale->webinar->start_date > $time) {
+                            $giftUpcoming += 1;
+                        }
+                    }
+
+                    if (!empty($sale->bundle)) {
+                        $bundleWebinars = $sale->bundle->bundleWebinars;
+
+                        foreach ($bundleWebinars as $bundleWebinar) {
+                            $giftDurations += $bundleWebinar->webinar->duration;
+                        }
+                    }
+                }
+            }
+
+            $purchasedCount = deepClone($query)
+                ->where(function ($query) {
+                    $query->whereHas('webinar');
+                    $query->orWhereHas('bundle');
+                })
+                ->count();
+
+            $webinarsHours = deepClone($query)->join('webinars', 'webinars.id', 'sales.webinar_id')
+                ->select(DB::raw('sum(webinars.duration) as duration'))
+                ->sum('duration');
+            $bundlesHours = deepClone($query)->join('bundle_webinars', 'bundle_webinars.bundle_id', 'sales.bundle_id')
+                ->join('webinars', 'webinars.id', 'bundle_webinars.webinar_id')
+                ->select(DB::raw('sum(webinars.duration) as duration'))
+                ->sum('duration');
+
+            $hours = $webinarsHours + $bundlesHours + $giftDurations;
+
+            $upComing = deepClone($query)->join('webinars', 'webinars.id', 'sales.webinar_id')
+                ->where('webinars.start_date', '>', $time)
+                ->count();
+
+            $user = auth()->user();
+            $reserveMeetingsQuery1 = ReserveMeeting::where('user_id', $user->id)
+                ->whereNotNull('reserved_at')
+                ->whereHas('sale', function ($query) {
+                    $query->whereNull('refund_at');
+                });
+
+            $openReserveCount = deepClone($reserveMeetingsQuery1)->where('status', \App\models\ReserveMeeting::$open)->count();
+            $totalReserveCount = deepClone($reserveMeetingsQuery1)->count();
+
+            $meetingIds1 = deepClone($reserveMeetingsQuery1)->pluck('meeting_id')->toArray();
+            $teacherIds = Meeting::whereIn('id', array_unique($meetingIds1))
+                ->pluck('creator_id')
+                ->toArray();
+            $instructors = User::select('id', 'full_name')
+                ->whereIn('id', array_unique($teacherIds))
                 ->get();
 
-            $data['pendingAppointments'] = $pendingAppointments;
-            $data['supportsCount'] = count($supports);
-            $data['commentsCount'] = count($comments);
-            $data['monthlySalesCount'] = count($monthlySales) ? $monthlySales->sum('total_amount') : 0;
-            $data['monthlyChart'] = $this->getMonthlySalesOrPurchase($user);
-            
-        } else {
-            $webinarsIds = $user->getPurchasedCoursesIds();
+            $reserveMeetingsQuery1 = $this->filters($reserveMeetingsQuery1, $request);
+            $reserveMeetingsQuery1 = $reserveMeetingsQuery1->with([
+                'meetingTime',
+                'meeting' => function ($query) {
+                    $query->with([
+                        'creator' => function ($query) {
+                            $query->select('id', 'full_name', 'avatar', 'avatar_settings', 'email');
+                        }
+                    ]);
+                },
+                'user' => function ($query) {
+                    $query->select('id', 'full_name', 'avatar', 'avatar_settings', 'email');
+                },
+                'sale'
+            ]);
 
-            $webinars = Webinar::whereIn('id', $webinarsIds)
-                ->where('status', 'active')
-                ->get();
+            $reserveMeetings1 = $reserveMeetingsQuery1
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
 
-            $reserveMeetings = ReserveMeeting::where('user_id', $user->id)
+            $activeMeetingTimeIds = ReserveMeeting::where('user_id', $user->id)
+                ->where('status', ReserveMeeting::$open)
                 ->whereHas('sale', function ($query) {
                     $query->whereNull('refund_at');
                 })
-                ->where('status', ReserveMeeting::$open)
-                ->get();
+                ->pluck('meeting_time_id');
 
-            $supports = Support::where('user_id', $user->id)
-                // ->whereNotNull('webinar_id')
-                ->where('status', 'open')
-                ->get();
+            $activeMeetingTimes = MeetingTime::whereIn('id', $activeMeetingTimeIds)->get();
 
-            $comments = Comment::where('user_id', $user->id)
-                ->whereNotNull('webinar_id')
-                ->where('status', 'active')
-                ->get();
+            $activeHoursCount = 0;
+            foreach ($activeMeetingTimes as $time) {
+                $explodetime = explode('-', $time->time);
+                $activeHoursCount += strtotime($explodetime[1]) - strtotime($explodetime[0]);
+            }
 
-        $giftsIds = Gift::query()->where('email', $user->email)
-            ->where('status', 'active')
-            ->whereNull('product_id')
-            ->where(function ($query) {
-                $query->whereNull('date');
-                $query->orWhere('date', '<', time());
-            })
-            ->whereHas('sale')
-            ->pluck('id')
-            ->toArray();
+            $userAuth = auth()->user();
+            $accountings = Accounting::where('user_id', $userAuth->id)
+                ->where('system', false)
+                ->where('tax', false)
+                ->with([
+                    'webinar',
+                    'promotion',
+                    'subscribe',
+                    'meetingTime' => function ($query) {
+                        $query->with(['meeting' => function ($query) {
+                            $query->with(['creator' => function ($query) {
+                                $query->select('id', 'full_name');
+                            }]);
+                        }]);
+                    }
+                ])
+                ->orderBy('created_at', 'desc')
+                ->orderBy('id', 'desc')
+                ->paginate(10);
 
-        $query = Sale::query()
-            ->where(function ($query) use ($user, $giftsIds) {
-                $query->where('sales.buyer_id', $user->id);
-                $query->orWhereIn('sales.gift_id', $giftsIds);
-            })
-            ->whereNull('sales.refund_at')
-            ->where('access_to_purchased_item', true)
-            ->where(function ($query) {
-                $query->where(function ($query) {
-                    $query->whereNotNull('sales.webinar_id')
-                        ->where('sales.type', 'webinar')
-                        ->whereHas('webinar', function ($query) {
-                            $query->where('status', 'active');
-                        });
+                $data['accountings'] = $accountings;
+
+                $data['commission'] = getFinancialSettings('commission') ?? 0;
+
+                $sales1 = Sale::where(['buyer_id'=> $userAuth->id, 'status'=> null])->get();
+
+                $amount_paid=[];
+                foreach($sales1 as $sales2){
+                    if($sales2->webinar_id){
+                        $webinars1 = Webinar:: where('id', $sales2->webinar_id)
+                ->first();
+                $amount_paid[] = [
+                    $sales2->total_amount,
+                    $sales2->created_at,
+                    $webinars1->title ?? 'No Title'
+                ];
+
+                    }elseif($sales2->installment_payment_id){
+                        $InstallmentOrderPayment = InstallmentOrderPayment::where('id', $sales2->installment_payment_id)
+                    ->first();
+                    if($InstallmentOrderPayment){
+
+                        $InstallmentOrder = InstallmentOrder::where('id', $InstallmentOrderPayment->installment_order_id )
+                ->first();
+                if($InstallmentOrder){
+                        $webinars1 = Webinar:: where('id', $InstallmentOrder->webinar_id)
+                ->first();
+
+                $amount_paid[] = [
+            $sales2->total_amount,
+            $sales2->created_at,
+            $webinars1->title ?? null
+            ];
+
+                }
+                    }
+                    }elseif($sales2->bundle){
+
+                        $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Bundle Course' ];
+                    }elseif($sales2->subscription_id){
+                        $Subscription = Subscription::where('id', $sales2->subscription_id)->first();
+
+                        $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $Subscription->title ];
+                    }elseif($sales2->product_order_id){
+
+                        $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'product' ];
+                    }elseif($sales2->meeting_id){
+
+                        $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Meeting' ];
+                    }
+                }
+
+                $WebinarPartPayment =  WebinarPartPayment :: where('user_id',$userAuth->id)->get();
+
+                foreach ($WebinarPartPayment as $WebinarPartPayment1){
+                    $webinars1 = Webinar:: where('id', $WebinarPartPayment1->webinar_id)
+                ->first();
+                $amount_paid[] = [
+            $WebinarPartPayment1->amount,
+            strtotime($WebinarPartPayment1->created_at),
+            $webinars1?->title ?? null
+            ];
+
+                }
+                usort($amount_paid, function($a, $b) {
+                    return $b[1] <=> $a[1];
                 });
-                $query->orWhere(function ($query) {
-                    $query->whereNotNull('sales.bundle_id')
-                        ->where('sales.type', 'bundle')
-                        ->whereHas('bundle', function ($query) {
-                            $query->where('status', 'active');
-                        });
-                });
-                $query->orWhere(function ($query) {
-                    $query->whereNotNull('sales.subscription_id')
-                        ->where('sales.type', 'subscription')
-                        ->whereHas('subscription', function ($query) {
-                            $query->where('status', 'active');
-                        });
-                });
-                $query->orWhere(function ($query) {
-                    $query->whereNotNull('gift_id');
-                    $query->whereHas('gift');
-                });
-            });
+                $data['amount_paid'] = $amount_paid;
 
+            $user = auth()->user();
 
-        $sales = deepClone($query)
-            ->with([
-                'webinar' => function ($query) {
+            $query = InstallmentOrder::query()
+                ->where('user_id', $user->id)
+                ->where('status', '!=', 'paying');
+
+            $openInstallmentsCount = deepClone($query)->where('status', 'open')->count();
+            $pendingVerificationCount = deepClone($query)->where('status', 'pending_verification')->count();
+            $finishedInstallmentsCount = $this->getFinishedInstallments($user);
+
+            $orders = $query->with([
+                'installment' => function ($query) {
                     $query->with([
-                        'files',
-                        'reviews' => function ($query) {
-                            $query->where('status', 'active');
-                        },
-                        'category',
-                        'teacher' => function ($query) {
-                            $query->select('id', 'full_name');
-                        },
-                    ]);
-                    $query->withCount([
-                        'sales' => function ($query) {
-                            $query->whereNull('refund_at');
+                        'steps' => function ($query) {
+                            $query->orderBy('deadline', 'asc');
                         }
                     ]);
-                },
-                'bundle' => function ($query) {
-                    $query->with([
-                        'reviews' => function ($query) {
-                            $query->where('status', 'active');
-                        },
-                        'category',
-                        'teacher' => function ($query) {
-                            $query->select('id', 'full_name');
-                        },
+                    $query->withCount([
+                        'steps'
                     ]);
-                },
-                'subscription',
-            ])
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
-
-        $time = time();
-        // echo '<pre>';
-        // print_r($sales);
-        // die();
-
-        $giftDurations = 0;
-        $giftUpcoming = 0;
-        $giftPurchasedCount = 0;
-
-        foreach ($sales as $sale) {
-            if (!empty($sale->gift_id)) {
-                $gift = $sale->gift;
-
-                $sale->webinar_id = $gift->webinar_id;
-                $sale->bundle_id = $gift->bundle_id;
-
-                $sale->webinar = !empty($gift->webinar_id) ? $gift->webinar : null;
-                $sale->bundle = !empty($gift->bundle_id) ? $gift->bundle : null;
-
-                $sale->gift_recipient = !empty($gift->receipt) ? $gift->receipt->full_name : $gift->name;
-                $sale->gift_sender = $sale->buyer->full_name;
-                $sale->gift_date = $gift->date;;
-
-                $giftPurchasedCount += 1;
-
-                if (!empty($sale->webinar)) {
-                    $giftDurations += $sale->webinar->duration;
-
-                    if ($sale->webinar->start_date > $time) {
-                        $giftUpcoming += 1;
-                    }
                 }
+            ])->orderBy('created_at', 'desc')
+                ->paginate(10);
 
-                if (!empty($sale->bundle)) {
-                    $bundleWebinars = $sale->bundle->bundleWebinars;
+            foreach ($orders as $order) {
+                $getRemainedInstallments = $this->getRemainedInstallments($order);
 
-                    foreach ($bundleWebinars as $bundleWebinar) {
-                        $giftDurations += $bundleWebinar->webinar->duration;
-                    }
+                $order->remained_installments_count = $getRemainedInstallments['total'];
+                $order->remained_installments_amount = $getRemainedInstallments['amount'];
+
+                $order->upcoming_installment = $this->getUpcomingInstallment($order);
+
+                $hasOverdue = $order->checkOrderHasOverdue();
+                $order->has_overdue = $hasOverdue;
+                $order->overdue_count = 0;
+                $order->overdue_amount = 0;
+
+                if ($hasOverdue) {
+                    $getOrderOverdueCountAndAmount = $order->getOrderOverdueCountAndAmount();
+                    $order->overdue_count = $getOrderOverdueCountAndAmount['count'];
+                    $order->overdue_amount = $getOrderOverdueCountAndAmount['amount'];
                 }
+            $data['payments'] =  $order->payments;
+            $data['installment'] = $order->installment;
             }
-        }
 
-        $purchasedCount = deepClone($query)
-            ->where(function ($query) {
-                $query->whereHas('webinar');
-                $query->orWhereHas('bundle');
-            })
-            ->count();
+            $overdueInstallmentsCount = $this->getOverdueInstallments($user);
 
-        $webinarsHours = deepClone($query)->join('webinars', 'webinars.id', 'sales.webinar_id')
-            ->select(DB::raw('sum(webinars.duration) as duration'))
-            ->sum('duration');
-        $bundlesHours = deepClone($query)->join('bundle_webinars', 'bundle_webinars.bundle_id', 'sales.bundle_id')
-            ->join('webinars', 'webinars.id', 'bundle_webinars.webinar_id')
-            ->select(DB::raw('sum(webinars.duration) as duration'))
-            ->sum('duration');
+            $data['openInstallmentsCount'] = $openInstallmentsCount;
+             $data['pendingVerificationCount'] = $pendingVerificationCount;
+              $data['finishedInstallmentsCount'] = $finishedInstallmentsCount;
+               $data['overdueInstallmentsCount'] = $overdueInstallmentsCount;
+               $data['orders'] = $orders;
 
-        $hours = $webinarsHours + $bundlesHours + $giftDurations;
+            $user = auth()->user();
 
-        $upComing = deepClone($query)->join('webinars', 'webinars.id', 'sales.webinar_id')
-            ->where('webinars.start_date', '>', $time)
-            ->count();
+            $userWebinarsIds = $user->webinars->pluck('id')->toArray();
 
+            $purchasedWebinarsIds = $user->getPurchasedCoursesIds();
+            $webinarIds = array_merge($purchasedWebinarsIds, $userWebinarsIds);
 
-//#################################################### MEETING ####################################################
-
-
-$user = auth()->user();
-        $reserveMeetingsQuery1 = ReserveMeeting::where('user_id', $user->id)
-            ->whereNotNull('reserved_at')
-            ->whereHas('sale', function ($query) {
-                $query->whereNull('refund_at');
-            });
-
-        $openReserveCount = deepClone($reserveMeetingsQuery1)->where('status', \App\models\ReserveMeeting::$open)->count();
-        $totalReserveCount = deepClone($reserveMeetingsQuery1)->count();
-
-        $meetingIds1 = deepClone($reserveMeetingsQuery1)->pluck('meeting_id')->toArray();
-        $teacherIds = Meeting::whereIn('id', array_unique($meetingIds1))
-            ->pluck('creator_id')
-            ->toArray();
-        $instructors = User::select('id', 'full_name')
-            ->whereIn('id', array_unique($teacherIds))
-            ->get();
-
-
-        $reserveMeetingsQuery1 = $this->filters($reserveMeetingsQuery1, $request);
-        $reserveMeetingsQuery1 = $reserveMeetingsQuery1->with([
-            'meetingTime',
-            'meeting' => function ($query) {
-                $query->with([
-                    'creator' => function ($query) {
-                        $query->select('id', 'full_name', 'avatar', 'avatar_settings', 'email');
-                    }
-                ]);
-            },
-            'user' => function ($query) {
-                $query->select('id', 'full_name', 'avatar', 'avatar_settings', 'email');
-            },
-            'sale'
-        ]);
-
-        $reserveMeetings1 = $reserveMeetingsQuery1
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        $activeMeetingTimeIds = ReserveMeeting::where('user_id', $user->id)
-            ->where('status', ReserveMeeting::$open)
-            ->whereHas('sale', function ($query) {
-                $query->whereNull('refund_at');
-            })
-            ->pluck('meeting_time_id');
-
-        $activeMeetingTimes = MeetingTime::whereIn('id', $activeMeetingTimeIds)->get();
-
-        $activeHoursCount = 0;
-        foreach ($activeMeetingTimes as $time) {
-            $explodetime = explode('-', $time->time);
-            $activeHoursCount += strtotime($explodetime[1]) - strtotime($explodetime[0]);
-        }
-
-//######################################## Finance ######################################################
- $userAuth = auth()->user();
-  $accountings = Accounting::where('user_id', $userAuth->id)
-            ->where('system', false)
-            ->where('tax', false)
-            ->with([
-                'webinar',
-                'promotion',
-                'subscribe',
-                'meetingTime' => function ($query) {
-                    $query->with(['meeting' => function ($query) {
-                        $query->with(['creator' => function ($query) {
-                            $query->select('id', 'full_name');
-                        }]);
-                    }]);
-                }
-            ])
-            ->orderBy('created_at', 'desc')
-            ->orderBy('id', 'desc')
-            ->paginate(10);
-
-
-          
-            $data['accountings'] = $accountings;
-            // $data['accountings1'] = $accountings;
-            $data['commission'] = getFinancialSettings('commission') ?? 0;
-            
-            
-            $sales1 = Sale::where(['buyer_id'=> $userAuth->id, 'status'=> null])->get();
-            // echo "<pre>";
-            // print_r($sales1);
-            $amount_paid=[];
-            foreach($sales1 as $sales2){
-                if($sales2->webinar_id){
-                    $webinars1 = Webinar:: where('id', $sales2->webinar_id)
-            ->first();
-            $amount_paid[] = [
-                $sales2->total_amount,
-                $sales2->created_at,
-                $webinars1->title ?? 'No Title'
-            ];
-                                // $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $webinars1?->title ];
-                }elseif($sales2->installment_payment_id){
-                    $InstallmentOrderPayment = InstallmentOrderPayment::where('id', $sales2->installment_payment_id)
-                ->first();
-                if($InstallmentOrderPayment){
-                
-                    $InstallmentOrder = InstallmentOrder::where('id', $InstallmentOrderPayment->installment_order_id )
-            ->first();
-            if($InstallmentOrder){
-                    $webinars1 = Webinar:: where('id', $InstallmentOrder->webinar_id)
-            ->first();
-            
-            $amount_paid[] = [
-    $sales2->total_amount,
-    $sales2->created_at,
-    $webinars1->title ?? null
-];
-
-                    // $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $webinars1->title ];
-                    // print_r($webinars1);
-            // die();
-            }
-                }
-                }elseif($sales2->bundle){
-            //         $webinars1 = Webinar:: where('id', $sales2->webinar_id)
-            // ->frist();
-            // print_r($sales2);die();
-                    $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Bundle Course' ];
-                }elseif($sales2->subscription_id){
-                    $Subscription = Subscription::where('id', $sales2->subscription_id)->first();
-            // print_r($sales2);die();
-                    $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $Subscription->title ];
-                }elseif($sales2->product_order_id){
-                    // $Subscription = Subscription::where('id', $sales2->subscription_id)->first();
-            // print_r($sales2);die();
-                    $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'product' ];
-                }elseif($sales2->meeting_id){
-            //         $webinars1 = Webinar:: where('id', $sales2->webinar_id)
-            // ->frist();
-                    $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Meeting' ];
-                }
-            }
-            
-            $WebinarPartPayment =  WebinarPartPayment :: where('user_id',$userAuth->id)->get();
-                    
-            foreach ($WebinarPartPayment as $WebinarPartPayment1){
-                $webinars1 = Webinar:: where('id', $WebinarPartPayment1->webinar_id)
-            ->first();
-            $amount_paid[] = [
-    $WebinarPartPayment1->amount,
-    strtotime($WebinarPartPayment1->created_at),
-    $webinars1?->title ?? null
-];
-                // $amount_paid[]=[ $WebinarPartPayment1->amount , strtotime($WebinarPartPayment1->created_at) , $webinars1->title];
-            }
-            usort($amount_paid, function($a, $b) {
-                return $b[1] <=> $a[1];
-            });
-            $data['amount_paid'] = $amount_paid;
-       
-
-//######################################### Installments ##########################################################
-$user = auth()->user();
-
-        $query = InstallmentOrder::query()
-            ->where('user_id', $user->id)
-            ->where('status', '!=', 'paying');
-
-        $openInstallmentsCount = deepClone($query)->where('status', 'open')->count();
-        $pendingVerificationCount = deepClone($query)->where('status', 'pending_verification')->count();
-        $finishedInstallmentsCount = $this->getFinishedInstallments($user);
-
-
-        $orders = $query->with([
-            'installment' => function ($query) {
-                $query->with([
-                    'steps' => function ($query) {
-                        $query->orderBy('deadline', 'asc');
-                    }
-                ]);
-                $query->withCount([
-                    'steps'
-                ]);
-            }
-        ])->orderBy('created_at', 'desc')
-            ->paginate(10);
-// print_r($orders);
-        foreach ($orders as $order) {
-            $getRemainedInstallments = $this->getRemainedInstallments($order);
-
-            $order->remained_installments_count = $getRemainedInstallments['total'];
-            $order->remained_installments_amount = $getRemainedInstallments['amount'];
-
-            $order->upcoming_installment = $this->getUpcomingInstallment($order);
-
-
-            // is overdue
-            $hasOverdue = $order->checkOrderHasOverdue();
-            $order->has_overdue = $hasOverdue;
-            $order->overdue_count = 0;
-            $order->overdue_amount = 0;
-
-            if ($hasOverdue) {
-                $getOrderOverdueCountAndAmount = $order->getOrderOverdueCountAndAmount();
-                $order->overdue_count = $getOrderOverdueCountAndAmount['count'];
-                $order->overdue_amount = $getOrderOverdueCountAndAmount['amount'];
-            }
-$data['payments'] =  $order->payments;
-$data['installment'] = $order->installment;
-        }
-
-        $overdueInstallmentsCount = $this->getOverdueInstallments($user);
-        
-
-        $data['openInstallmentsCount'] = $openInstallmentsCount;
-         $data['pendingVerificationCount'] = $pendingVerificationCount;
-          $data['finishedInstallmentsCount'] = $finishedInstallmentsCount;
-           $data['overdueInstallmentsCount'] = $overdueInstallmentsCount;
-           $data['orders'] = $orders;
-        //   print_r($orders);
-//########################################## support ############################################################
- $user = auth()->user();
-
-        $userWebinarsIds = $user->webinars->pluck('id')->toArray();
-        // print_r($userWebinarsIds );die;
-        $purchasedWebinarsIds = $user->getPurchasedCoursesIds();
-        $webinarIds = array_merge($purchasedWebinarsIds, $userWebinarsIds);
-
-
-        $query = Support::whereNull('department_id')
-            ->where(function ($query) use ($user, $userWebinarsIds) {
-                $query->where('user_id', $user->id)
-                    ->orWhereIn('webinar_id', $userWebinarsIds);
-            });
-
-        $supportsCount = deepClone($query)->count();
-        $openSupportsCount = deepClone($query)->where('status', '!=', 'close')->count();
-        $closeSupportsCount = deepClone($query)->where('status', 'close')->count();
-
-        $query = $this->filters1($query, $request, $userWebinarsIds);
-
-        $supports = $query->orderBy('created_at', 'desc')
-            ->orderBy('status', 'asc')
-            ->with([
-                'user' => function ($query) {
-                    $query->select('id', 'full_name', 'avatar', 'avatar_settings', 'role_name');
-                },
-                'webinar' => function ($query) {
-                    $query->with(['teacher' => function ($query) {
-                        $query->select('id', 'full_name', 'avatar');
-                    }]);
-                },
-                'conversations' => function ($query) {
-                    $query->orderBy('created_at', 'desc')
-                        ->first();
-                }
-            ])->get();
-
-        $webinars = Webinar::select('id')
-            ->whereIn('id', array_unique($webinarIds))
-            ->where('status', 'active')
-            ->get();
-
-        $teacherIds = $webinars->pluck('teacher_id')->toArray();
-
-        $teachers = User::select('id', 'full_name')
-            ->where('id', '!=', $user->id)
-            ->whereIn('id', array_unique($teacherIds))
-            ->where('status', 'active')
-            ->get();
-
-        $studentsIds = Sale::whereIn('webinar_id', $userWebinarsIds)
-            ->whereNull('refund_at')
-            ->pluck('buyer_id')
-            ->toArray();
-
-        $students = [];
-        if (!$user->isUser()) {
-            $students = User::select('id', 'full_name')
-                ->whereIn('id', array_unique($studentsIds))
-                ->where('status', 'active')
-                ->get();
-        }
-
-       
-            $data['supports'] = $supports;
-            // $data['supportsCount'] = $supportsCount;
-            $data['openSupportsCount'] = $openSupportsCount;
-            $data['closeSupportsCount'] = $closeSupportsCount;
-            $data['purchasedWebinarsIds'] = $purchasedWebinarsIds;
-            $data['students'] = $students;
-            $data['teachers'] = $teachers;
-            $data['webinars'] = $webinars;
-        
-
-        if (!empty($id) and is_numeric($id)) {
-            $selectSupport = Support::where('id', $id)
+            $query = Support::whereNull('department_id')
                 ->where(function ($query) use ($user, $userWebinarsIds) {
                     $query->where('user_id', $user->id)
                         ->orWhereIn('webinar_id', $userWebinarsIds);
-                })
+                });
+
+            $supportsCount = deepClone($query)->count();
+            $openSupportsCount = deepClone($query)->where('status', '!=', 'close')->count();
+            $closeSupportsCount = deepClone($query)->where('status', 'close')->count();
+
+            $query = $this->filters1($query, $request, $userWebinarsIds);
+
+            $supports = $query->orderBy('created_at', 'desc')
+                ->orderBy('status', 'asc')
                 ->with([
-                    'department',
-                    'conversations' => function ($query) {
-                        $query->with([
-                            'sender' => function ($qu) {
-                                $qu->select('id', 'full_name', 'avatar', 'role_name');
-                            },
-                            'supporter' => function ($qu) {
-                                $qu->select('id', 'full_name', 'avatar', 'role_name');
-                            }
-                        ]);
-                        $query->orderBy('created_at', 'asc');
+                    'user' => function ($query) {
+                        $query->select('id', 'full_name', 'avatar', 'avatar_settings', 'role_name');
                     },
                     'webinar' => function ($query) {
                         $query->with(['teacher' => function ($query) {
-                            $query->select('id', 'full_name', 'avatar', 'role_name');
-                        }
-                        ]);
-                    }])->first();
-
-            if (empty($selectSupport)) {
-                return back();
-            }
-
-            $data['selectSupport'] = $selectSupport;
-        }
-
-        $query1 = Support::whereNotNull('department_id')
-            ->where('user_id', $user->id);
-
-        $supportsCount1 = deepClone($query1)->count();
-        $openSupportsCount1 = deepClone($query1)->where('status', 'open')->count();
-        $closeSupportsCount1 = deepClone($query1)->where('status', 'close')->count();
-//########################################## also like #############################################################
-
-//  $featureWebinars  = Webinar::select('*')
-//             ->where('status', 'active')
-//             ->orderBy('updated_at', 'desc')
-//             ->get();
- 
-//  $featureWebinars =  Webinar::where('webinars.status', 'active')
-//             ->where('private', false);
-
-     $featureWebinars = Webinar::where('status', 'active')
-                ->get();  
-       
- 
-//  FeatureWebinar::whereIn('page', ['home', 'home_categories'])
-//                 ->where('status', 'publish')
-//                 ->whereHas('webinar', function ($query) {
-//                     $query->where('status', Webinar::$active);
-//                 })
-//                 ->with([
-//                     'webinar' => function ($query) {
-//                         $query->with([
-//                             'teacher' => function ($qu) {
-//                                 $qu->select('id', 'full_name', 'avatar');
-//                             },
-//                             'reviews' => function ($query) {
-//                                 $query->where('status', 'active');
-//                             },
-//                             'tickets',
-//                             'feature'
-//                         ]);
-//                     }
-//                 ])
-//                 ->orderBy('updated_at', 'desc')
-//                 ->get();
-
-
-
-//########################################## END ###################################################################
-            // $data['supportsCount'] = $supportsCount1;
-            $data['openSupportsCount1'] = $openSupportsCount1;
-            $data['closeSupportsCount1'] = $closeSupportsCount1;
-            $data['webinarsCount'] = count($webinars)+$openInstallmentsCount;
-            $data['supportsCount'] = count($supports);
-            $data['commentsCount'] = count($comments);
-            $data['reserveMeetingsCount'] = count($reserveMeetings);
-            $data['monthlyChart'] = $this->getMonthlySalesOrPurchase($user);
-            $data['sales'] = $sales;
-            $data['hours'] = $hours;
-              $data['instructors'] = $instructors;
-            $data['reserveMeetings'] = $reserveMeetings1;
-            $data['openReserveCount'] = $openReserveCount;
-            $data['totalReserveCount'] = $totalReserveCount;
-            $data['activeHoursCount'] = round($activeHoursCount / 3600, 2);
-            $data['featureWebinars']=$featureWebinars;
-            $data['subscriptionAccess'] = $subscriptionAccess;
-        }
-        
-        // if($user->id ==14916){
-            // echo "<pre>";
-            // print_r( $data['sales']);
-            // die("mayank");
-        // }
-        $sidebanner = Setting::getsidebanner();
-
-        $data['sidebanner'] = $sidebanner;
-        $data['giftModal'] = $this->showGiftModal($user);
-
-            if($user->role_name=='user'){
-                // echo $user->role_name;
-                 return view(getTemplate() . '.panel.dashboard.index', $data);
-            }else{
-                // echo $user->role_name;
-                 return view(getTemplate() . '.panel.dashboard.index2', $data);
-            }
-       
-    }
-    
-    public function bundledata($id = null) {
-    $bundle = Bundle::where('id', $id)
-        ->with([
-            'teacher',
-            'bundleWebinars' => function ($query) {
-                $query->with([
-                    'webinar' => function ($query) {
-                        $query->where('status', Webinar::$active);
+                            $query->select('id', 'full_name', 'avatar');
+                        }]);
                     },
-                    'product' => function ($query) {
-                        $query->where('status', Webinar::$active);
+                    'conversations' => function ($query) {
+                        $query->orderBy('created_at', 'desc')
+                            ->first();
                     }
-                ]);
-            },
-        ])
-        ->withCount([
-            'sales' => function ($query) {
-                $query->whereNull('refund_at');
+                ])->get();
+
+            $webinars = Webinar::select('id')
+                ->whereIn('id', array_unique($webinarIds))
+                ->where('status', 'active')
+                ->get();
+
+            $teacherIds = $webinars->pluck('teacher_id')->toArray();
+
+            $teachers = User::select('id', 'full_name')
+                ->where('id', '!=', $user->id)
+                ->whereIn('id', array_unique($teacherIds))
+                ->where('status', 'active')
+                ->get();
+
+            $studentsIds = Sale::whereIn('webinar_id', $userWebinarsIds)
+                ->whereNull('refund_at')
+                ->pluck('buyer_id')
+                ->toArray();
+
+            $students = [];
+            if (!$user->isUser()) {
+                $students = User::select('id', 'full_name')
+                    ->whereIn('id', array_unique($studentsIds))
+                    ->where('status', 'active')
+                    ->get();
             }
-        ])
-        ->where('status', 'active')
-        ->first();
 
-    $userConsultants = User::where('status', Webinar::$active)
-        ->where('role_id', 4)
-        ->where('consultant', 1)
-        ->whereHas('meeting', function ($q) {
-            $q->where('disabled', 0)
-            ->whereHas('meetingTimes');
-        })
-        ->get();
+                $data['supports'] = $supports;
 
-    $instructor = $bundle->teacher;  
-    $canReserve = true; // your logic
+                $data['openSupportsCount'] = $openSupportsCount;
+                $data['closeSupportsCount'] = $closeSupportsCount;
+                $data['purchasedWebinarsIds'] = $purchasedWebinarsIds;
+                $data['students'] = $students;
+                $data['teachers'] = $teachers;
+                $data['webinars'] = $webinars;
 
-    $bundleWebinarId = null;
-    if (!empty($bundle->bundleWebinars) && count($bundle->bundleWebinars) > 0) {
-        $bundleWebinarId = $bundle->bundleWebinars->first()->id;
+            if (!empty($id) and is_numeric($id)) {
+                $selectSupport = Support::where('id', $id)
+                    ->where(function ($query) use ($user, $userWebinarsIds) {
+                        $query->where('user_id', $user->id)
+                            ->orWhereIn('webinar_id', $userWebinarsIds);
+                    })
+                    ->with([
+                        'department',
+                        'conversations' => function ($query) {
+                            $query->with([
+                                'sender' => function ($qu) {
+                                    $qu->select('id', 'full_name', 'avatar', 'role_name');
+                                },
+                                'supporter' => function ($qu) {
+                                    $qu->select('id', 'full_name', 'avatar', 'role_name');
+                                }
+                            ]);
+                            $query->orderBy('created_at', 'asc');
+                        },
+                        'webinar' => function ($query) {
+                            $query->with(['teacher' => function ($query) {
+                                $query->select('id', 'full_name', 'avatar', 'role_name');
+                            }
+                            ]);
+                        }])->first();
+
+                if (empty($selectSupport)) {
+                    return back();
+                }
+
+                $data['selectSupport'] = $selectSupport;
+            }
+
+            $query1 = Support::whereNotNull('department_id')
+                ->where('user_id', $user->id);
+
+            $supportsCount1 = deepClone($query1)->count();
+            $openSupportsCount1 = deepClone($query1)->where('status', 'open')->count();
+            $closeSupportsCount1 = deepClone($query1)->where('status', 'close')->count();
+
+            $featureWebinars = Webinar::where('status', 'active')
+                    ->get();
+
+                $data['openSupportsCount1'] = $openSupportsCount1;
+                $data['closeSupportsCount1'] = $closeSupportsCount1;
+                $data['webinarsCount'] = count($webinars)+$openInstallmentsCount;
+                $data['supportsCount'] = count($supports);
+                $data['commentsCount'] = count($comments);
+                $data['reserveMeetingsCount'] = count($reserveMeetings);
+                $data['monthlyChart'] = $this->getMonthlySalesOrPurchase($user);
+                $data['sales'] = $sales;
+                $data['hours'] = $hours;
+                  $data['instructors'] = $instructors;
+                $data['reserveMeetings'] = $reserveMeetings1;
+                $data['openReserveCount'] = $openReserveCount;
+                $data['totalReserveCount'] = $totalReserveCount;
+                $data['activeHoursCount'] = round($activeHoursCount / 3600, 2);
+                $data['featureWebinars']=$featureWebinars;
+                $data['subscriptionAccess'] = $subscriptionAccess;
+            }
+
+            $sidebanner = Setting::getsidebanner();
+
+            $data['sidebanner'] = $sidebanner;
+            $data['giftModal'] = $this->showGiftModal($user);
+
+                if($user->role_name=='user'){
+
+                     return view(getTemplate() . '.panel.dashboard.index', $data);
+                }else{
+
+                     return view(getTemplate() . '.panel.dashboard.index2', $data);
+                }
+        } catch (\Exception $e) {
+            \Log::error('dashboard error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
-    $data = [
-        'bundle' => $bundle,
-        'userConsultants' => $userConsultants,
-        'instructor' => $instructor,
-        'canReserve' => $canReserve,
-        'bundle_id' => $bundle->id,
-        'bundle_webinar_id' => $bundleWebinarId,
-    ];
+    public function bundledata($id = null) {
+        try {
+            $bundle = Bundle::where('id', $id)
+            ->with([
+                'teacher',
+                'bundleWebinars' => function ($query) {
+                    $query->with([
+                        'webinar' => function ($query) {
+                            $query->where('status', Webinar::$active);
+                        },
+                        'product' => function ($query) {
+                            $query->where('status', Webinar::$active);
+                        }
+                    ]);
+                },
+            ])
+            ->withCount([
+                'sales' => function ($query) {
+                    $query->whereNull('refund_at');
+                }
+            ])
+            ->where('status', 'active')
+            ->first();
 
-    return view(getTemplate() . '.panel.dashboard.bundle', $data);
-}
+            $userConsultants = User::where('status', Webinar::$active)
+            ->where('role_id', 4)
+            ->where('consultant', 1)
+            ->whereHas('meeting', function ($q) {
+                $q->where('disabled', 0)
+                ->whereHas('meetingTimes');
+            })
+            ->get();
 
-  
-    
+            $instructor = $bundle->teacher;
+            $canReserve = true;
+
+            $bundleWebinarId = null;
+            if (!empty($bundle->bundleWebinars) && count($bundle->bundleWebinars) > 0) {
+            $bundleWebinarId = $bundle->bundleWebinars->first()->id;
+            }
+
+            $data = [
+            'bundle' => $bundle,
+            'userConsultants' => $userConsultants,
+            'instructor' => $instructor,
+            'canReserve' => $canReserve,
+            'bundle_id' => $bundle->id,
+            'bundle_webinar_id' => $bundleWebinarId,
+            ];
+
+            return view(getTemplate() . '.panel.dashboard.bundle', $data);
+        } catch (\Exception $e) {
+            \Log::error('bundledata error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
     private function filters1($query, $request, $userWebinarsIds = [])
     {
         $from = $request->get('from');
@@ -781,7 +720,6 @@ $data['installment'] = $order->installment;
             $query->where('status', $status);
         }
 
-
         if (!empty($department) and $department != 'all') {
             $query->where('department_id', $department);
         }
@@ -789,53 +727,60 @@ $data['installment'] = $order->installment;
         return $query;
     }
 
-    
     public function filters($query, $request)
     {
-        $from = $request->get('from');
-        $to = $request->get('to');
-        $day = $request->get('day');
-        $instructor_id = $request->get('instructor_id');
-        $student_id = $request->get('student_id');
-        $status = $request->get('status');
-        $openMeetings = $request->get('open_meetings');
+        try {
+            $from = $request->get('from');
+            $to = $request->get('to');
+            $day = $request->get('day');
+            $instructor_id = $request->get('instructor_id');
+            $student_id = $request->get('student_id');
+            $status = $request->get('status');
+            $openMeetings = $request->get('open_meetings');
 
-        // $from and $to
-        $query = fromAndToDateFilter($from, $to, $query, 'created_at');
+            $query = fromAndToDateFilter($from, $to, $query, 'created_at');
 
-        if (!empty($day) and $day != 'all') {
-            $meetingTimeIds = $query->pluck('meeting_time_id');
-            $meetingTimeIds = MeetingTime::whereIn('id', $meetingTimeIds)
-                ->where('day_label', $day)
-                ->pluck('id');
+            if (!empty($day) and $day != 'all') {
+                $meetingTimeIds = $query->pluck('meeting_time_id');
+                $meetingTimeIds = MeetingTime::whereIn('id', $meetingTimeIds)
+                    ->where('day_label', $day)
+                    ->pluck('id');
 
-            $query->whereIn('meeting_time_id', $meetingTimeIds);
+                $query->whereIn('meeting_time_id', $meetingTimeIds);
+            }
+
+            if (!empty($instructor_id) and $instructor_id != 'all') {
+
+                $meetingsIds = Meeting::where('creator_id', $instructor_id)
+                    ->where('disabled', false)
+                    ->pluck('id')
+                    ->toArray();
+
+                $query->whereIn('meeting_id', $meetingsIds);
+            }
+
+            if (!empty($student_id) and $student_id != 'all') {
+                $query->where('user_id', $student_id);
+            }
+
+            if (!empty($status) and $status != 'All') {
+                $query->where('status', strtolower($status));
+            }
+
+            if (!empty($openMeetings) and $openMeetings == 'on') {
+                $query->where('status', 'open');
+            }
+
+            return $query;
+        } catch (\Exception $e) {
+            \Log::error('filters error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        if (!empty($instructor_id) and $instructor_id != 'all') {
-
-            $meetingsIds = Meeting::where('creator_id', $instructor_id)
-                ->where('disabled', false)
-                ->pluck('id')
-                ->toArray();
-
-            $query->whereIn('meeting_id', $meetingsIds);
-        }
-
-        if (!empty($student_id) and $student_id != 'all') {
-            $query->where('user_id', $student_id);
-        }
-
-
-        if (!empty($status) and $status != 'All') {
-            $query->where('status', strtolower($status));
-        }
-
-        if (!empty($openMeetings) and $openMeetings == 'on') {
-            $query->where('status', 'open');
-        }
-
-        return $query;
     }
 
     private function getRemainedInstallments($order)
@@ -973,9 +918,6 @@ $data['installment'] = $order->installment;
         return $count;
     }
 
-    
-    
-    
     private function showGiftModal($user)
     {
         $gift = Gift::query()->where('email', $user->email)
@@ -1008,169 +950,207 @@ $data['installment'] = $order->installment;
 
     public function create()
     {
-        $departments = SupportDepartment::all();
-        $user = auth()->user();
+        try {
+            $departments = SupportDepartment::all();
+            $user = auth()->user();
 
-        $webinarIds = $user->getPurchasedCoursesIds();
+            $webinarIds = $user->getPurchasedCoursesIds();
 
-        $webinars = Webinar::select('id', 'creator_id')
-            ->whereIn('id', $webinarIds)
-            ->where('support', true)
-            ->with(['creator' => function ($query) {
-                $query->select('id', 'full_name');
-            }])->get();
+            $webinars = Webinar::select('id', 'creator_id')
+                ->whereIn('id', $webinarIds)
+                ->where('support', true)
+                ->with(['creator' => function ($query) {
+                    $query->select('id', 'full_name');
+                }])->get();
 
+            $data = [
+                'pageTitle' => trans('panel.send_new_support'),
+                'departments' => $departments,
+                'webinars' => $webinars
+            ];
 
-        $data = [
-            'pageTitle' => trans('panel.send_new_support'),
-            'departments' => $departments,
-            'webinars' => $webinars
-        ];
-
-        return view(getTemplate() . '.panel.support.new', $data);
+            return view(getTemplate() . '.panel.support.new', $data);
+        } catch (\Exception $e) {
+            \Log::error('create error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function store(Request $request)
     {
-        $user = auth()->user();
+        try {
+            $user = auth()->user();
 
-        $this->validate($request, [
-            'title' => 'required|min:2',
-            'type' => 'required',
-            'department_id' => 'required_if:type,platform_support|exists:support_departments,id',
-            'webinar_id' => 'required_if:type,course_support|exists:webinars,id',
-            'message' => 'required|min:2',
-            'attach' => 'nullable|string',
-        ]);
+            $this->validate($request, [
+                'title' => 'required|min:2',
+                'type' => 'required',
+                'department_id' => 'required_if:type,platform_support|exists:support_departments,id',
+                'webinar_id' => 'required_if:type,course_support|exists:webinars,id',
+                'message' => 'required|min:2',
+                'attach' => 'nullable|string',
+            ]);
 
-        $data = $request->all();
-        unset($data['type']);
+            $data = $request->all();
+            unset($data['type']);
 
-        $support = Support::create([
-            'user_id' => $user->id,
-            'department_id' => !empty($data['department_id']) ? $data['department_id'] : null,
-            'webinar_id' => !empty($data['webinar_id']) ? $data['webinar_id'] : null,
-            'title' => $data['title'],
-            'status' => 'open',
-            'created_at' => time(),
-            'updated_at' => time(),
-        ]);
+            $support = Support::create([
+                'user_id' => $user->id,
+                'department_id' => !empty($data['department_id']) ? $data['department_id'] : null,
+                'webinar_id' => !empty($data['webinar_id']) ? $data['webinar_id'] : null,
+                'title' => $data['title'],
+                'status' => 'open',
+                'created_at' => time(),
+                'updated_at' => time(),
+            ]);
 
-        SupportConversation::create([
-            'support_id' => $support->id,
-            'sender_id' => $user->id,
-            'message' => $data['message'],
-            'attach' => $data['attach'],
-            'created_at' => time(),
-        ]);
+            SupportConversation::create([
+                'support_id' => $support->id,
+                'sender_id' => $user->id,
+                'message' => $data['message'],
+                'attach' => $data['attach'],
+                'created_at' => time(),
+            ]);
 
-        if (!empty($data['webinar_id'])) {
-            $webinar = Webinar::findOrFail($data['webinar_id']);
+            if (!empty($data['webinar_id'])) {
+                $webinar = Webinar::findOrFail($data['webinar_id']);
 
-            $notifyOptions = [
-                '[c.title]' => $webinar->title,
-                '[u.name]' => $user->full_name
-            ];
-            sendNotification('support_message', $notifyOptions, $webinar->teacher_id);
+                $notifyOptions = [
+                    '[c.title]' => $webinar->title,
+                    '[u.name]' => $user->full_name
+                ];
+                sendNotification('support_message', $notifyOptions, $webinar->teacher_id);
+            }
+
+            if (!empty($data['department_id'])) {
+                $notifyOptions = [
+                    '[s.t.title]' => $support->title,
+                ];
+                sendNotification('support_message_admin', $notifyOptions, 1);
+            }
+
+            $url = '/panel/support';
+
+            if (!empty($data['department_id'])) {
+                $url = '/panel/support/tickets';
+            }
+
+            return redirect($url);
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        if (!empty($data['department_id'])) {
-            $notifyOptions = [
-                '[s.t.title]' => $support->title,
-            ];
-            sendNotification('support_message_admin', $notifyOptions, 1); // for admin
-        }
-
-        $url = '/panel/support';
-
-        if (!empty($data['department_id'])) {
-            $url = '/panel/support/tickets';
-        }
-
-        return redirect($url);
     }
 
     public function storeConversations(Request $request, $id)
     {
-        $this->validate($request, [
-            'message' => 'required|string|min:2',
-        ]);
+        try {
+            $this->validate($request, [
+                'message' => 'required|string|min:2',
+            ]);
 
-        $data = $request->all();
-        $user = auth()->user();
+            $data = $request->all();
+            $user = auth()->user();
 
-        $userWebinarsIds = $user->webinars->pluck('id')->toArray();
+            $userWebinarsIds = $user->webinars->pluck('id')->toArray();
 
-        $support = Support::where('id', $id)
-            ->where(function ($query) use ($user, $userWebinarsIds) {
-                $query->where('user_id', $user->id)
-                    ->orWhereIn('webinar_id', $userWebinarsIds);
-            })->first();
+            $support = Support::where('id', $id)
+                ->where(function ($query) use ($user, $userWebinarsIds) {
+                    $query->where('user_id', $user->id)
+                        ->orWhereIn('webinar_id', $userWebinarsIds);
+                })->first();
 
-        if (empty($support)) {
-            abort(404);
+            if (empty($support)) {
+                abort(404);
+            }
+
+            $support->update([
+                'status' => ($support->user_id == $user->id) ? 'open' : 'replied',
+                'updated_at' => time()
+            ]);
+
+            SupportConversation::create([
+                'support_id' => $support->id,
+                'sender_id' => $user->id,
+                'message' => $data['message'],
+                'attach' => $data['attach'],
+                'created_at' => time(),
+            ]);
+
+            if (!empty($support->webinar_id)) {
+                $webinar = Webinar::findOrFail($support->webinar_id);
+
+                $notifyOptions = [
+                    '[c.title]' => $webinar->title,
+                ];
+                sendNotification('support_message_replied', $notifyOptions, ($support->user_id == $user->id) ? $webinar->teacher_id : $user->id);
+            }
+
+            if (!empty($support->department_id)) {
+                $notifyOptions = [
+                    '[s.t.title]' => $support->title,
+                ];
+                sendNotification('support_message_replied_admin', $notifyOptions, 1);
+            }
+
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('storeConversations error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $support->update([
-            'status' => ($support->user_id == $user->id) ? 'open' : 'replied',
-            'updated_at' => time()
-        ]);
-
-        SupportConversation::create([
-            'support_id' => $support->id,
-            'sender_id' => $user->id,
-            'message' => $data['message'],
-            'attach' => $data['attach'],
-            'created_at' => time(),
-        ]);
-
-        if (!empty($support->webinar_id)) {
-            $webinar = Webinar::findOrFail($support->webinar_id);
-
-            $notifyOptions = [
-                '[c.title]' => $webinar->title,
-            ];
-            sendNotification('support_message_replied', $notifyOptions, ($support->user_id == $user->id) ? $webinar->teacher_id : $user->id);
-        }
-
-        if (!empty($support->department_id)) {
-            $notifyOptions = [
-                '[s.t.title]' => $support->title,
-            ];
-            sendNotification('support_message_replied_admin', $notifyOptions, 1); // for admin
-        }
-
-        return back();
     }
 
     public function close($id)
     {
-        $user = auth()->user();
-        $userWebinarsIds = $user->webinars->pluck('id')->toArray();
+        try {
+            $user = auth()->user();
+            $userWebinarsIds = $user->webinars->pluck('id')->toArray();
 
-        $support = Support::where('id', $id)
-            ->where(function ($query) use ($user, $userWebinarsIds) {
-                $query->where('user_id', $user->id)
-                    ->orWhereIn('webinar_id', $userWebinarsIds);
-            })->first();
+            $support = Support::where('id', $id)
+                ->where(function ($query) use ($user, $userWebinarsIds) {
+                    $query->where('user_id', $user->id)
+                        ->orWhereIn('webinar_id', $userWebinarsIds);
+                })->first();
 
-        if (empty($support)) {
-            abort(404);
+            if (empty($support)) {
+                abort(404);
+            }
+
+            $support->update([
+                'status' => 'close',
+                'updated_at' => time()
+            ]);
+
+            return back();
+        } catch (\Exception $e) {
+            \Log::error('close error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        $support->update([
-            'status' => 'close',
-            'updated_at' => time()
-        ]);
-
-        return back();
     }
     private function getMonthlySalesOrPurchase($user)
     {
         $months = [];
         $data = [];
 
-        // all 12 months
         for ($month = 1; $month <= 12; $month++) {
             $date = Carbon::create(date('Y'), $month);
 

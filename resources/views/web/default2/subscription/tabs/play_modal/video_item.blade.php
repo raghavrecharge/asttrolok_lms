@@ -15,7 +15,6 @@
                 <i data-feather="play-circle" width="20" height="20" class="text-gray"></i>
             @endif
 
-
             <div class="flex-grow-1 mx-15">
                 <h3 class="font-16 text-dark">{{ $video->title }}</h3>
             </div>

@@ -13,7 +13,6 @@
 
         <div class="section-body">
 
-
             <div class="card">
                 <div class="card-header">
                     @can('admin_waitlists_exports')

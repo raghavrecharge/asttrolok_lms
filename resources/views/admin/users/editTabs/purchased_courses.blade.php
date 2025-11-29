@@ -28,10 +28,7 @@
                         </select>
                         <div class="invalid-feedback"></div>
                     </div>
-                 
-                   
-                   
-                    
+
                     <div class="form-group accessc">
                       <div class="control-label">Course Access Type</div>
                       <div class="custom-switches-stacked mt-2">
@@ -45,23 +42,19 @@
                           <span class="custom-switch-indicator"></span>
                           <span class="custom-switch-description">Installment</span>
                         </label>
-                        
+
                       </div>
                     </div>
                     <div class="form-group accessc1">
                       <div class="control-label">Please Select Instalment</div>
                       <div class="custom-switches-stacked mt-2 instaltitle">
-                        
-                       
-                        
+
                       </div>
                     </div>
                     <div class="form-group accessc2">
                       <div class="control-label">Please Select Instalment steps</div>
                       <div class="custom-switches-stacked mt-2 instaltitlestep">
-                        
-                       
-                        
+
                       </div>
                     </div>
 
@@ -70,54 +63,37 @@
                         <button type="button" class="js-save-manual-add btn btn-primary">{{ trans('admin/main.submit') }}</button>
                     </div>
                 </form>
-                
+
                 @php
                 $salewebid = '';
                 $saleinstaid = '';
                 @endphp
                    @foreach($sales as $sale)
-                    
-                 
-                    @php 
-                    // print_r($sale->installment_payment_id );
+
+                    @php
+
                     if($sale->webinar_id){
                     $salewebid .= '~'.$sale->webinar_id ;
                     }
-                    
-                    
+
                     @endphp
                     @endforeach
-                   
-                   
-                   
-                   
-                   
-                  
-                   
-                    
-                    
-                    
-                
+
             </div>
             <script>
             var webid=0;
-            // sales= '{{json_encode($sales)}}';
-                   
-            //     //   for (sale in sales){
-            //         //   console.log(sales[sale]);
-            //           console.log(sales);
-            //     //   }
+
                 function access_course(vlu){
                     if(vlu.value){
                         $('.accessc').css("display", "block");
                    webid=vlu.value;
-                   
+
                    webid2='{{$salewebid}}';
                    webid3=webid2.split("~");
                    if(webid3.includes(webid)){
                        $('.full'). prop("checked" , true);
                    }
-                   
+
                    instaid2='{{$percent_webinar_id}}';
                    instaid3=instaid2.split("~");
                    if(instaid3.includes(vlu.value)){
@@ -125,21 +101,20 @@
                        installmentget();
                    }
                    console.log(instaid3);
-                   
+
                     }else{
-                       $(".accessc").css("display", "none"); 
-                       $(".accessc1").css("display", "none"); 
-                       $(".accessc2").css("display", "none"); 
+                       $(".accessc").css("display", "none");
+                       $(".accessc1").css("display", "none");
+                       $(".accessc2").css("display", "none");
                     }
                 }
                   function fuul_access_course(){
-                    $(".accessc2").css("display", "none"); 
-                       $(".accessc1").css("display", "none"); 
-                    
+                    $(".accessc2").css("display", "none");
+                       $(".accessc1").css("display", "none");
+
                 }
                 function installmentget(){
-                    
-                   
+
                  $.ajax({
                 url: '/course/learning1/'+webid,
                 type: 'get',
@@ -147,23 +122,19 @@
                 timeout: 30000,
                 data:{ uid: '{{ $user->id }}' },
                 success: function (data) {
-                    // ale?rt(data);
+
                     $('.accessc1').css("display", "block");
-                     $('.instaltitle').html(data); 
+                     $('.instaltitle').html(data);
                     $('input[name="installmenttitles"]:checked').each(function() {
-                        // alert(this.value);
+
    installmentgetstep(this);
 });
-                    
-                      
-                    
-                    
+
                 }
             });
                 }
                   function installmentgetstep(id){
-                    // alert(webid);
-                   
+
                  $.ajax({
                 url: '/course/learning2/'+webid,
                 type: 'get',
@@ -171,17 +142,14 @@
                 timeout: 30000,
                 data:{ uid: '{{ $user->id }}',instid:id.value },
                 success: function (data) {
-                    //  alert(data);
+
                    $('.accessc2').css("display", "block");
                     $('.instaltitlestep').html(data);
-                    
-                         
-                    
+
                 }
             });
                 }
-                  
-                
+
             </script>
         @endcan
 
@@ -267,18 +235,16 @@
                         $count=0;
                         $string1=[];
                         @endphp
-                        
+
                         @if(!empty($installmentClasses))
                             @foreach($installmentClasses as $installmentClasse1)
-                            
-                            
 
                                 @php
                                 $webid1=$installmentClasse1->installment->installmentorder->webinar->id;
                                 if(!in_array($webid1, $string1)){
                                 array_push($string1,$webid1);
-                                @endphp 
-                                    
+                                @endphp
+
                                     <tr>
                                     <td width="25%">
                                         <a href="{{ !empty($installmentClasse1->installment->installmentorder->webinar) ? $installmentClasse1->installment->installmentorder->webinar->getUrl() : '#1' }}" target="_blank" class="">{{ !empty($installmentClasse1->installment->installmentorder->webinar) ? $installmentClasse1->installment->installmentorder->webinar->title : trans('update.deleted_item') }}</a>
@@ -305,7 +271,7 @@
                                     </td>
 
                                     <td class="text-center">{{ dateTimeFormat($installmentClasse1->installment->installmentorder->created_at,'j M Y | H:i') }}</td>
-                                    
+
                                     <td width="200" class="text-right">
                                         <div class="btn-group dropdown table-actions ">
                                             <button type="button" class="btn-transparent dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
@@ -319,90 +285,62 @@
                                                 $count11=0;
                                                 $instalcount=count($installmentClasses);
                                                     foreach($installmentClasses as $installmentClasse2){
-                                
+
                                                         $webid2=$installmentClasse2->installment->installmentorder->webinar->id;
                                                         if($webid1==$webid2){
-                                                        
-                                                        $installmentClasses3 = [$webid2 => $installmentClasse2->installment];  
+
+                                                        $installmentClasses3 = [$webid2 => $installmentClasse2->installment];
                                                         $count++;
                                                         $count11++;
-                                                        
+
                                                 @endphp
-                                                      
-                                                      
+
                                                 <a href="/admin/users/{{ $user->id }}/editinsta/{{$installmentClasses3[$webid2]->id}}" id="instalmentdelete{{$installmentClasses3[$webid2]->id}}" class="d-flex align-items-center text-dark text-decoration-none btn-transparent btn-sm text-primary mt-1 ">
-                                                    <span class="ml-2">&#8377; {{$installmentClasses3[$webid2]->amount}} Installment</span> 
+                                                    <span class="ml-2">&#8377; {{$installmentClasses3[$webid2]->amount}} Installment</span>
                                                     <i class="fa fa-times ml-2"></i>
                                                 </a>
-                                               
-                                               
-                                                
+
                                                  <script>
                                                  var oldid=oldvar;
-                                                
+
                                                  var newid={{$installmentClasses3[$webid2]->id}}
                                                  oldurl='#';
                                                  newurl="/admin/users/{{ $user->id }}/editinsta/{{$installmentClasses3[$webid2]->id}}";
-                                                
-                                                 
-                                                //  var httpUrl = $("#instalmentdelete"+oldid).attr("href"); // Get current url
+
                                                  console.log("#instalmentdelete"+oldid);
-            // var httpsUrl = httpUrl.replace("http://", "https://"); // Create new url
-            // $(this).attr("href", httpsUrl);
-            
+
                                                            $("#instalmentdelete"+oldid).attr("href", oldurl);
                                                            $("#instalmentdelete"+newid).attr("href", newurl);
                                                            oldvar= {{$installmentClasses3[$webid2]->id}}
                                                        </script>
-                                          
+
                                                 @php
-                                
-                                                        // print_r($installmentClasses3[$webid2]->amount);
-                                    
+
                                                         }
                                                     }
                                                 @endphp
-                        
-                                                                 
-                                                    
+
                                             </div>
                                         </div>
                                     </td>
-                                    
-                                    
+
                                     <!--<td class="text-right" onclick="viewfile()">-->
-                                       
-                                            
+
                                     <!--            <button>Edit Access</button>   -->
-                                        
+
                                     <!--</td>-->
 
                                 </tr>
-                                    
+
                                 @php
-                                    
-                                   
-                                        
-                                    
-                                    //print_r($webid1);
-                                    
-                           
+
                                 }
-                                   
+
                                @endphp
-                               
-                               
-                               
-                               
-                               
-                                
+
                             @endforeach
                             @php
-                                    
-                                    
-                                  // for($installmentClasses as $installmentClasse2)
-                                   
-                                   //print_r($installmentClasses3[$installmentClasse1->installment->installmentorder->webinar->id]->id);
+
                                @endphp
                         @endif
                     </table>
@@ -410,7 +348,6 @@
                 </div>
             </div>
         </div>
-
 
         <div class="col-12">
             <div class="mt-5">
@@ -486,23 +423,21 @@
     }
 
     progress::-webkit-progress-value {
-        background-color: #007bff; /* Blue color for progress */
+        background-color: #007bff;
         border-radius: 4px;
     }
 
     progress::-moz-progress-bar {
-        background-color: #007bff; /* Blue color for Firefox */
+        background-color: #007bff;
         border-radius: 4px;
     }
 </style>
 
 <script>
     function showProgressBar() {
-        // Logic to update the progress bar dynamically can go here
+
     }
 </script>
-
-
 
         <div class="col-12">
             <div class="mt-5">
@@ -528,7 +463,7 @@
                                         <a href="{{ !empty($purchasedClass->webinar) ? $purchasedClass->webinar->getUrl() : '#1' }}" target="_blank" class="">{{ !empty($purchasedClass->webinar) ? $purchasedClass->webinar->title : trans('update.deleted_item') }}</a>
                                     </td>
                                       <td>
-                                          
+
                                         @php
                                             $Progress = 0;
                                             $totalVideos =0;
@@ -541,24 +476,24 @@
                                                 $totalVideos +=$totalItem;
                                               }
                                           }
-                                          
+
                                           $watchedVideos = \App\Models\CourseProgress::where('webinar_id', (int) $purchasedClass->webinar->id)
-                                            ->where('user_id',(int) $user->id)  
+                                            ->where('user_id',(int) $user->id)
                                             ->sum('watch_percentage');
-                                         
+
                                         @endphp
-                                        
+
                                         @if($totalVideos)
                                             @php
                                                 $Progress = (int) ($watchedVideos/ $totalVideos);
-                                                
+
                                             @endphp
                                         @endif
                                   <a href="{{ url("/admin/users/{$user->id}/{$purchasedClass->webinar->slug}/courseprogress") }}" target="_blank" class="">
                                        <div class="mt-20">
                                         <label for="videoProgress" class="font-16 text-gray">Progress</label>
                                         <progress id="videoProgress" value="{{ $Progress }}" max="100" class="progress-bar"></progress>
-                                        <span id="progressValue" class="font-15 text-gray">{{ $Progress }}%</span> 
+                                        <span id="progressValue" class="font-15 text-gray">{{ $Progress }}%</span>
                                     </div>
                                     </a>
                                     </td>
@@ -587,7 +522,7 @@
                                     <td class="text-center">{{ dateTimeFormat($purchasedClass->created_at,'j M Y | H:i') }}</td>
 
                                     <td class="text-right">
-                                        
+
                                         @can('admin_enrollment_block_access')
                                             @include('admin.includes.delete_button',[
                                                     'url' => getAdminPanelUrl().'/enrollments/'. $purchasedClass->id .'/block-access',
@@ -609,37 +544,31 @@
 
 <script>
 function viewfile(){
-    
-    // var viewfile2 = document.getElementById("pre1");
-    
-    // console.log(viewfile2.src);
-    // viewfile2.src = src1;
+
     $('#textpop1').modal();
-    // console.log(viewfile2.src);
-  
+
 }
 </script>
 <style>
 @media screen and (max-width: 992px) {
-  #pre1 {
+
       width: -webkit-fill-available;
     height: 283px;
-  
+
   }
   .pdf {
       display:none !important;
   }
 }
 @media screen and (min-width: 991px) {
-  #pre1 {
-      width:-webkit-fill-available; 
+
+      width:-webkit-fill-available;
       height:450px;
   }
-  #mob1 {
-      
+
       display:none !important;
   }
-  
+
 }
-    
+
 </style>

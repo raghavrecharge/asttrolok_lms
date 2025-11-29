@@ -42,7 +42,6 @@
                             </div>
                         </div>
 
-
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label class="input-label">{{ trans('admin/main.student') }}</label>

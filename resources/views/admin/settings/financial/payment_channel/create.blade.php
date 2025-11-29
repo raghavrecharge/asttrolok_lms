@@ -1,7 +1,5 @@
 @extends('admin.layouts.app')
 
-
-
 @section('content')
     <section class="section">
         <div class="section-header">
@@ -95,7 +93,6 @@
                                         @else
                                             <input type="hidden" name="currencies[]" value="{{ getDefaultCurrency() }}">
                                         @endif
-
 
                                         <div class="form-group custom-switches-stacked">
                                             <label class="custom-switch pl-0">

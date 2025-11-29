@@ -6,16 +6,12 @@
 @endpush
 <style>
     .loader {
-      //border: 16px solid #f3f3f3;
-      //border-radius: 50%;
-      //border-top: 16px solid #3498db;
 
       height: 80px;
       -webkit-animation: spin 2s linear infinite;
       animation: spin 2s linear infinite;
     }
 
-    #loader {
     position: fixed;
     left: 50%;
     top: 50%;
@@ -181,7 +177,6 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
         discount_id: {{ session('discountCouponId') ?? 0 }}
     };
 
-    // Call unified payment handler
     initiatePayment('subscription', {{ $subscription->id }}, userDetails);
 });
 </script>

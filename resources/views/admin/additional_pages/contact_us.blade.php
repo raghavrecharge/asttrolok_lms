@@ -47,7 +47,6 @@
                                             </div>
                                         </div>
 
-
                                         <div class="form-group">
                                             <label class="input-label">{{ trans('admin/main.map_zoom') }}</label>
                                             <input type="text" name="value[map_zoom]" value="{{ (!empty($value) and !empty($value['map_zoom'])) ? $value['map_zoom'] : '' }}" class="form-control" placeholder="{{ trans('admin/main.map_zoom') }}"/>

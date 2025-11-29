@@ -50,7 +50,6 @@
                                             </div>
                                         </div>
 
-
                                         <div class="form-group">
                                             <label class="input-label d-block">{{ trans('update.topics') }}</label>
                                             <select name="topic_ids[]" multiple="multiple" class="form-control search-forum-topic-select2 @error('topic_id') is-invalid @enderror" data-placeholder="{{ trans('update.search_topic') }}">

@@ -13,12 +13,11 @@ public function webinar()
     {
         return $this->belongsTo('App\Models\Webinar', 'webinar_id', 'id');
     }
-    
+
     public function installment()
     {
         return $this->belongsTo('App\Models\InstallmentOrderPayment', 'installment_id', 'id');
     }
-    
 
     public function buyer()
     {
@@ -79,13 +78,5 @@ public function webinar()
     {
         return null;
     }
-    // public function webinar()
-    // {
-    //     return $this->belongsTo('App\Models\Webinar', 'webinar_id', 'id');
-    // }
 
-    // public function user()
-    // {
-    //     return $this->belongsTo('App\User', 'user_id', 'id');
-    // }
 }

@@ -64,7 +64,6 @@
                         <button type="button" data-parent="mobile_app_buttons" data-main-row="mobileAppMainRow" class="btn btn-success add-btn"><i class="fa fa-plus"></i> {{ trans('admin/main.add') }}</button>
                     </div>
 
-
                     @if(!empty($itemValue) and !empty($itemValue['mobile_app_buttons']))
                         @foreach($itemValue['mobile_app_buttons'] as $mobileAppButtonsKey => $mobileAppButtonsValue)
                             <div class="form-group p-2 border rounded-lg">

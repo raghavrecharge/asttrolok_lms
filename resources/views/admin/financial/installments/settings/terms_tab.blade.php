@@ -8,7 +8,6 @@
     }
 @endphp
 
-
 <form action="{{ getAdminPanelUrl('/financial/installments/settings') }}" method="post">
     {{ csrf_field() }}
     <input type="hidden" name="page" value="general">

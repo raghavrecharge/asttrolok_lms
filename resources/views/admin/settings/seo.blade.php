@@ -1,6 +1,5 @@
 @extends('admin.layouts.app')
 
-
 @section('content')
     <section class="section">
         <div class="section-header">
@@ -95,8 +94,6 @@
                                                         </div>
                                                         @enderror
                                                     </div>
-                                                    
-                                                    
 
                                                     <div class="form-group custom-switches-stacked">
                                                         <label class="custom-switch pl-0 d-flex align-items-center">

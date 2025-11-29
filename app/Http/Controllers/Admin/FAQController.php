@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 use App\Http\Controllers\Controller;
 use App\Models\Bundle;
 use App\Models\Faq;
@@ -14,49 +17,59 @@ class FAQController extends Controller
 {
     public function store(Request $request)
     {
-        $this->authorize('admin_webinars_edit');
+        try {
+            $this->authorize('admin_webinars_edit');
 
-        $this->validate($request, [
-            'title' => 'required|max:255',
-            'answer' => 'required',
-        ]);
-
-        $data = $request->all();
-
-        $creator = $this->getCreator($data);
-
-        if (!empty($creator)) {
-            $columnName = !empty($data['webinar_id']) ? 'webinar_id' : (!empty($data['bundle_id']) ? 'bundle_id' : 'upcoming_course_id');
-            $columnValue = !empty($data['webinar_id']) ? $data['webinar_id'] : (!empty($data['bundle_id']) ? $data['bundle_id'] : $data['upcoming_course_id']);
-
-            $order = Faq::query()->where('creator_id', $creator->id)
-                    ->where($columnName, $columnValue)
-                    ->count() + 1;
-
-            $faq = Faq::create([
-                'creator_id' => $creator->id,
-                'webinar_id' => !empty($data['webinar_id']) ? $data['webinar_id'] : null,
-                'bundle_id' => !empty($data['bundle_id']) ? $data['bundle_id'] : null,
-                'upcoming_course_id' => !empty($data['upcoming_course_id']) ? $data['upcoming_course_id'] : null,
-                'order' => $order,
-                'created_at' => time()
+            $this->validate($request, [
+                'title' => 'required|max:255',
+                'answer' => 'required',
             ]);
 
-            if (!empty($faq)) {
-                FaqTranslation::updateOrCreate([
-                    'faq_id' => $faq->id,
-                    'locale' => mb_strtolower($data['locale']),
-                ], [
-                    'title' => $data['title'],
-                    'answer' => $data['answer'],
+            $data = $request->all();
+
+            $creator = $this->getCreator($data);
+
+            if (!empty($creator)) {
+                $columnName = !empty($data['webinar_id']) ? 'webinar_id' : (!empty($data['bundle_id']) ? 'bundle_id' : 'upcoming_course_id');
+                $columnValue = !empty($data['webinar_id']) ? $data['webinar_id'] : (!empty($data['bundle_id']) ? $data['bundle_id'] : $data['upcoming_course_id']);
+
+                $order = Faq::query()->where('creator_id', $creator->id)
+                        ->where($columnName, $columnValue)
+                        ->count() + 1;
+
+                $faq = Faq::create([
+                    'creator_id' => $creator->id,
+                    'webinar_id' => !empty($data['webinar_id']) ? $data['webinar_id'] : null,
+                    'bundle_id' => !empty($data['bundle_id']) ? $data['bundle_id'] : null,
+                    'upcoming_course_id' => !empty($data['upcoming_course_id']) ? $data['upcoming_course_id'] : null,
+                    'order' => $order,
+                    'created_at' => time()
                 ]);
+
+                if (!empty($faq)) {
+                    FaqTranslation::updateOrCreate([
+                        'faq_id' => $faq->id,
+                        'locale' => mb_strtolower($data['locale']),
+                    ], [
+                        'title' => $data['title'],
+                        'answer' => $data['answer'],
+                    ]);
+                }
+
             }
 
+            return response()->json([
+                'code' => 200,
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return response()->json([
-            'code' => 200,
-        ], 200);
     }
 
     private function getCreator($data)
@@ -82,85 +95,125 @@ class FAQController extends Controller
 
     public function description(Request $request, $id)
     {
-        $this->authorize('admin_webinars_edit');
+        try {
+            $this->authorize('admin_webinars_edit');
 
-        removeContentLocale();
+            removeContentLocale();
 
-        $faq = Faq::where('id', $id)
-            ->first();
+            $faq = Faq::where('id', $id)
+                ->first();
 
-        if (!empty($faq)) {
-            return response()->json([
-                'faq' => $faq
-            ], 200);
+            if (!empty($faq)) {
+                return response()->json([
+                    'faq' => $faq
+                ], 200);
+            }
+
+            return response()->json([], 422);
+        } catch (\Exception $e) {
+            \Log::error('description error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return response()->json([], 422);
     }
 
     public function edit(Request $request, $id)
     {
-        $this->authorize('admin_webinars_edit');
+        try {
+            $this->authorize('admin_webinars_edit');
 
-        $faq = Faq::find($id);
+            $faq = Faq::find($id);
 
-        if (!empty($faq)) {
-            $locale = $request->get('locale', app()->getLocale());
-            if (empty($locale)) {
-                $locale = app()->getLocale();
+            if (!empty($faq)) {
+                $locale = $request->get('locale', app()->getLocale());
+                if (empty($locale)) {
+                    $locale = app()->getLocale();
+                }
+                storeContentLocale($locale, $faq->getTable(), $faq->id);
+
+                $faq->title = $faq->getTitleAttribute();
+                $faq->answer = $faq->getAnswerAttribute();
+                $faq->locale = mb_strtoupper($locale);
+
+                return response()->json([
+                    'faq' => $faq
+                ], 200);
             }
-            storeContentLocale($locale, $faq->getTable(), $faq->id);
 
-            $faq->title = $faq->getTitleAttribute();
-            $faq->answer = $faq->getAnswerAttribute();
-            $faq->locale = mb_strtoupper($locale);
-
-            return response()->json([
-                'faq' => $faq
-            ], 200);
+            return response()->json([], 422);
+        } catch (\Exception $e) {
+            \Log::error('edit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
         }
-
-        return response()->json([], 422);
     }
 
     public function update(Request $request, $id)
     {
-        $this->authorize('admin_webinars_edit');
+        try {
+            $this->authorize('admin_webinars_edit');
 
-        $this->validate($request, [
-            'title' => 'required|max:64',
-            'answer' => 'required',
-        ]);
-
-        $data = $request->all();
-
-        $faq = Faq::find($id);
-
-        if ($faq) {
-            $faq->update([
-                'updated_at' => time()
+            $this->validate($request, [
+                'title' => 'required|max:64',
+                'answer' => 'required',
             ]);
 
-            FaqTranslation::updateOrCreate([
-                'faq_id' => $faq->id,
-                'locale' => mb_strtolower($data['locale']),
-            ], [
-                'title' => $data['title'],
-                'answer' => $data['answer'],
+            $data = $request->all();
+
+            $faq = Faq::find($id);
+
+            if ($faq) {
+                $faq->update([
+                    'updated_at' => time()
+                ]);
+
+                FaqTranslation::updateOrCreate([
+                    'faq_id' => $faq->id,
+                    'locale' => mb_strtolower($data['locale']),
+                ], [
+                    'title' => $data['title'],
+                    'answer' => $data['answer'],
+                ]);
+            }
+
+            return response()->json([
+                'code' => 200,
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('update error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
+            
+            throw $e;
         }
-
-        return response()->json([
-            'code' => 200,
-        ], 200);
     }
 
     public function destroy(Request $request, $id)
     {
-        $this->authorize('admin_webinars_edit');
+        try {
+            $this->authorize('admin_webinars_edit');
 
-        Faq::find($id)->delete();
+            Faq::find($id)->delete();
 
-        return redirect()->back();
+            return redirect()->back();
+        } catch (\Exception $e) {
+            \Log::error('destroy error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

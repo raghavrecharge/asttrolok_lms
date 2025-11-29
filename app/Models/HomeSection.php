@@ -65,5 +65,5 @@ class HomeSection extends Model
     static $upcoming_courses = 'upcoming_courses';
      static $hindi_classes = 'hindi_classes';
        static $english_classes = 'english_classes';
-    
+
 }

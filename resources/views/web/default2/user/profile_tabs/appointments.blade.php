@@ -21,9 +21,7 @@
 }
 
 .loader {
-  //border: 16px solid #f3f3f3;
-  //border-radius: 50%;
-  //border-top: 16px solid #3498db;
+
   width: 120px;
   height: 120px;
   -webkit-animation: spin 2s linear infinite;
@@ -143,50 +141,7 @@
         </div>
 
 <script>
-    // // JavaScript to handle slider functionality
-    // const sliderItems = document.querySelectorAll('.slider-item');
-    // const numItemsToShow = 7;
-    // let currentIndex = 0;
 
-    // // Function to show current slide
-    // function showSlide(startIndex) {
-    //     // Hide all slides
-    //     sliderItems.forEach(item => item.style.display = 'none');
-    //     // Show slides based on startIndex and numItemsToShow
-    //     for (let i = startIndex; i < Math.min(startIndex + numItemsToShow, sliderItems.length); i++) {
-    //         sliderItems[i].style.display = 'block';
-    //     }
-    // }
-
-    // // Show initial slides
-    // showSlide(currentIndex);
-
-    // // Function to go to next slides
-    // function nextSlides() {
-    //     currentIndex = Math.min(currentIndex + numItemsToShow, sliderItems.length - numItemsToShow);
-    //     showSlide(currentIndex);
-    // }
-
-    // // Function to go to previous slides
-    // function prevSlides() {
-    //     currentIndex = Math.max(currentIndex - numItemsToShow, 0);
-    //     showSlide(currentIndex);
-    // }
-
-    // // Function to handle click on slider items
-    // function handleSliderItemClick(event) {
-    //     // Remove "date-active" class from all slider items
-    //     sliderItems.forEach(item => item.classList.remove('date-active'));
-    //     // Add "date-active" class to the clicked slider item
-    //     event.target.classList.add('date-active');
-    // }
-
-    // // Event listeners for next and preview buttons
-    // document.querySelector('.next-button').addEventListener('click', nextSlides);
-    // document.querySelector('.preview-button').addEventListener('click', prevSlides);
-
-    // // Event listener for slider item click
-    // sliderItems.forEach(item => item.addEventListener('click', handleSliderItemClick));
 </script>
 
     </div>
@@ -389,12 +344,11 @@
         <script src="{{ config('app.js_css_url') }}/assets/vendors/wrunner-html-range-slider-with-2-handles/js/wrunner-jquery.js"></script>
         <script>
 $(document).ready(function() {
-    // Attach change event listener to radio buttons
+
     $('#slotsTime input[type="radio"]').change(function() {
-        // Remove 'date-active' class from all elements
+
         $('.available-times1').removeClass('date-active');
 
-        // Add 'date-active' class to the selected radio button's parent element
         $(this).closest('.available-times1').addClass('date-active');
         $('#PickTimeBody').addClass('d-none');
 
@@ -408,7 +362,6 @@ $(document).ready(function() {
 document.getElementById('paymentSubmit').addEventListener('click', function(e) {
     e.preventDefault();
 
-    // const meetingTimeId = document.querySelector('input[name="meeting_time"]:checked')?.value;
     const selectedTime = document.querySelector('input[name="time"]:checked')?.value;
 
     if (!selectedTime) {
@@ -421,7 +374,7 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
         email: document.getElementById('email').value,
         number: document.getElementById('mobile').value,
         selectedDay: document.getElementById('selectedDay').value,
-        // selectedTime: selectedTime,
+
         discount_id: {{ session('meeting_discount_id') ?? 'null' }}
     };
 

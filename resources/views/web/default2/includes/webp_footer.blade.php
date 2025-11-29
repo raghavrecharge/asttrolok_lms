@@ -97,7 +97,7 @@
                             <div class="align-items-center justify-content-between mt-15">
                                 <div class="footer-social">
                                     <a href="https://www.instagram.com/asttrolok"> <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/default_images/social/social-icons/Instagram1.webp" alt="Instagram" class="mr-15"></a>
-                <a href="//api.whatsapp.com/send?phone=919174822333&amp;text= "><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/default_images/social/social-icons/Whatsapp1.webp" alt="Whatsapp" class="mr-15"></a>
+                <a href="
                 <a href="https://twitter.com/asttrolok"> <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/default_images/social/social-icons/Twitter1.webp" alt="Twitter" class="mr-15"> </a>
                 <a href="https://www.facebook.com/asttrolok"><img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}/webp/store/1/default_images/social/social-icons/FB1.webp" alt="Facebook" class="mr-15"></a>
 
@@ -249,8 +249,5 @@
 </footer>
 
 <script defer>
-    //     jivo_api.open = function() {
-        //     return false;
-        // };
 
     </script>

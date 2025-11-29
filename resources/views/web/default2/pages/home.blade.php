@@ -1212,7 +1212,7 @@ $count_homesection=0;
                 </div>
             </section>
             @endif
-             <?php //print_r($remedies);?>
+             <?php
             @if($homeSection->name == \App\Models\HomeSection::$remedies and !empty($remedies) and !$remedies->isEmpty())
 
            <div class="container">
@@ -1340,9 +1340,7 @@ $count_homesection=0;
 
     @push('scripts_bottom')
     <script>
-        //      setTimeout(function() {
-            //     $('#home_popup').modal();
-            // }, 5000);
+
         </script>
     <script defer src="{{ $jsUrl }}/assets2/default/vendors/swiper/swiper-bundle.min.js" ></script>
     <script defer  src="{{ $jsUrl }}/assets2/default/vendors/owl-carousel2/owl.carousel.min.js"></script>
@@ -1362,7 +1360,7 @@ $count_homesection=0;
             document.getElementById('popup').style.display = 'block';
         }
         function closePopup() {
-            // Hide the popup
+
             document.getElementById('popup').style.display = 'none';
         }
         </script>

@@ -14,7 +14,6 @@ use Astrotomic\Translatable\Translatable;
 class Webinar extends Model implements TranslatableContract
 {
     use Translatable;
-    // use Sluggable;
 
     protected $table = 'webinars';
     public $timestamps = false;
@@ -97,7 +96,6 @@ class Webinar extends Model implements TranslatableContract
     {
         return $this->hasMany('App\Models\Ticket', 'webinar_id', 'id');
     }
-
 
     public function chapters()
     {
@@ -202,11 +200,10 @@ class Webinar extends Model implements TranslatableContract
                 ->where('status', 'active')
                 ->get();
 
-            if (!empty($reviews) and $reviews->count() > 0) {
+            if (!empty($reviews) and $reviews->exists()) {
                 $rate = number_format($reviews->avg('rates'), 2);
             }
         }
-
 
         if ($rate > 5) {
             $rate = 5;
@@ -215,11 +212,6 @@ class Webinar extends Model implements TranslatableContract
         return $rate > 0 ? number_format($rate, 2) : 0;
     }
 
-    /**
-     * Return the sluggable configuration array for this model.
-     *
-     * @return array
-     */
     public function sluggable(): array
     {
         return [
@@ -332,8 +324,6 @@ class Webinar extends Model implements TranslatableContract
 
     public function checkHasExpiredAccessDays($purchaseDate, $giftId = null)
     {
-        // true => has access
-        // false => not access (expired)
 
         if (!empty($giftId)) {
             $gift = Gift::query()->where('id', $giftId)
@@ -395,13 +385,13 @@ class Webinar extends Model implements TranslatableContract
 
         if (!empty($user)) {
             $sale = $this->getSaleItem($user);
-// print_r($sale);die();
+
             if (!empty($sale)) {
                 $hasBought = true;
-// print_r(Sale::$subscribe);die();
+
                 if ($sale->payment_method == Sale::$subscribe) {
                     $subscribe = $sale->getUsedSubscribe($sale->buyer_id, $sale->webinar_id);
-// $hasBought = true;
+
                     if (!empty($subscribe)) {
                         $subscribeSaleCreatedAt = null;
 
@@ -415,13 +405,6 @@ class Webinar extends Model implements TranslatableContract
                             if (!empty($installmentOrder)) {
                                 $subscribeSaleCreatedAt = $installmentOrder->created_at;
 
-                                // if ($installmentOrder->checkOrderHasOverdue()) {
-                                //     $overdueIntervalDays = getInstallmentsSettings('overdue_interval_days');
-
-                                //     if (empty($overdueIntervalDays) or $installmentOrder->overdueDaysPast() > $overdueIntervalDays) {
-                                //         $hasBought = false;
-                                //     }
-                                // }
                             }
                         } else {
                             $subscribeSale = Sale::where('buyer_id', $user->id)
@@ -482,24 +465,15 @@ class Webinar extends Model implements TranslatableContract
                 }
             }
 
-            /* Check Installment */
             if (!$hasBought) {
                 $installmentOrder = $this->getInstallmentOrder();
 
                 if (!empty($installmentOrder)) {
                     $hasBought = true;
 
-                    // if ($installmentOrder->checkOrderHasOverdue()) {
-                    //     $overdueIntervalDays = getInstallmentsSettings('overdue_interval_days');
-
-                    //     if (empty($overdueIntervalDays) or $installmentOrder->overdueDaysPast() > $overdueIntervalDays) {
-                    //         $hasBought = false;
-                    //     }
-                    // }
                 }
             }
 
-            /* Check Gift */
             if (!$hasBought) {
                 $gift = Gift::query()->where('email', $user->email)
                     ->where('status', 'active')
@@ -756,18 +730,10 @@ class Webinar extends Model implements TranslatableContract
         return $this->thumbnail;
     }
 
-    // public function getUrl()
-    // {
-    //     $originalString = $this->slug;
-    //     // $modifiedString = str_replace(' ', '-', $originalString);
-    //     $modifiedString = strtolower($originalString);
-    //     return url('/course/' . $modifiedString);
-    // }
     public function getUrl()
     {
         $slug = strtolower($this->slug);
 
-        // Base URL from env
         $baseUrl = config('app.manual_base_url');
 
         return $baseUrl . '/course/' . $slug;
@@ -867,7 +833,7 @@ class Webinar extends Model implements TranslatableContract
 
         $date = \DateTime::createFromFormat('j M Y H:i', dateTimeFormat($this->start_date, 'j M Y H:i', false));
 
-        $link = Link::create($this->title, $date, $date); //->description('Cookies & cocktails!')
+        $link = Link::create($this->title, $date, $date);
 
         return $link->google();
     }
@@ -911,7 +877,7 @@ class Webinar extends Model implements TranslatableContract
     public function isProgressing()
     {
         $lastSession = $this->lastSession();
-        //$nextSession = $this->nextSession();
+
         $isProgressing = false;
 
         if ($this->start_date <= time() or (!empty($lastSession) and $lastSession->date > time())) {
@@ -937,7 +903,7 @@ class Webinar extends Model implements TranslatableContract
     {
         $downloadable = $this->downloadable;
 
-        if ($this->files->count() > 0) {
+        if ($this->files->exists()) {
             $downloadableFiles = $this->files->where('downloadable', true)->count();
 
             if ($downloadableFiles > 0) {
@@ -988,7 +954,6 @@ class Webinar extends Model implements TranslatableContract
             ->pluck('buyer_id')
             ->toArray();
 
-        // get users by installments
         $installmentOrders = InstallmentOrder::query()
             ->where('webinar_id', $this->id)
             ->where('status', 'open')
@@ -1013,7 +978,6 @@ class Webinar extends Model implements TranslatableContract
             }
         }
 
-        // get users by gifts
         $gifts = Gift::query()
             ->where('status', 'active')
             ->where('webinar_id', $this->id)
@@ -1032,7 +996,6 @@ class Webinar extends Model implements TranslatableContract
             }
         }
 
-        // get users by bundle
         $bundleWebinar = BundleWebinar::where('webinar_id', $this->id)
             ->with([
                 'bundle'
@@ -1066,7 +1029,7 @@ class Webinar extends Model implements TranslatableContract
                  try {
     $vboutService = new VboutService();
         $listId = '143038';
-        
+
         $contactData = [
             'email' => $students->email,
             'fields' => [
@@ -1080,7 +1043,7 @@ class Webinar extends Model implements TranslatableContract
 } catch (\Exception $e) {
 
 }
-                // sendNotification("new_quiz", $notifyOptions, $studentId);
+
             }
         }
 

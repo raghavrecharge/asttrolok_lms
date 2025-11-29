@@ -11,7 +11,6 @@ class ForumFeaturedTopic extends Model
     protected $dateFormat = 'U';
     protected $guarded = ['id'];
 
-
     public function topic()
     {
         return $this->belongsTo('App\Models\ForumTopic', 'topic_id', 'id');

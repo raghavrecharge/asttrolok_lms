@@ -17,7 +17,6 @@
 
         <div class="section-body">
 
-
             <div class="row">
                 <div class="col-12 col-md-12">
                     <div class="card">
@@ -108,8 +107,6 @@
                         <div class=" text-small font-600-bold">{{trans('admin/main.aff_sales_commission_desc')}}</div>
                     </div>
                 </div>
-
-
 
             </div>
         </div>

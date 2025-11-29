@@ -89,7 +89,6 @@
             </div>
         </div>
 
-
         <div class="col-12">
             <div class="mt-5">
                 <h5 class="section-title after-line">{{ trans('update.manual_disabled_products') }}</h5>
@@ -150,7 +149,6 @@
                 </div>
             </div>
         </div>
-
 
         <div class="col-12">
             <div class="mt-5">

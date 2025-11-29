@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin\traits;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 use App\Exports\InstallmentVerifiedUsersExport;
 use App\Models\Accounting;
@@ -18,53 +20,73 @@ trait InstallmentVerificationRequestsTrait
 {
     public function verificationRequests()
     {
-        $this->authorize('admin_installments_verification_requests');
+        try {
+            $this->authorize('admin_installments_verification_requests');
 
-        $orders = InstallmentOrder::query()->select('*', DB::raw("case
-            when status = 'pending_verification' then 'a'
-            when status = 'open' then 'b'
-            when status = 'rejected' then 'c'
-            when status = 'canceled' then 'd'
-            when status = 'refunded' then 'e'
-            end as status_order
-        "))
-            ->orderBy('status_order', 'asc')
-            ->whereHas('installment', function ($query) {
-                $query->where('verification', true);
-            })
-            ->with([
-                'installment' => function ($query) {
-                    $query->with(['steps']);
-                    $query->withCount([
-                        'steps'
-                    ]);
-                }
-            ])
-            ->paginate(10);
+            $orders = InstallmentOrder::query()->select('*', DB::raw("case
+                when status = 'pending_verification' then 'a'
+                when status = 'open' then 'b'
+                when status = 'rejected' then 'c'
+                when status = 'canceled' then 'd'
+                when status = 'refunded' then 'e'
+                end as status_order
+            "))
+                ->orderBy('status_order', 'asc')
+                ->whereHas('installment', function ($query) {
+                    $query->where('verification', true);
+                })
+                ->with([
+                    'installment' => function ($query) {
+                        $query->with(['steps']);
+                        $query->withCount([
+                            'steps'
+                        ]);
+                    }
+                ])
+                ->paginate(10);
 
-        $data = [
-            'pageTitle' => trans('update.verification_requests'),
-            'orders' => $orders
-        ];
+            $data = [
+                'pageTitle' => trans('update.verification_requests'),
+                'orders' => $orders
+            ];
 
-        return view('admin.financial.installments.verification_requests', $data);
+            return view('admin.financial.installments.verification_requests', $data);
+        } catch (\Exception $e) {
+            \Log::error('verificationRequests error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     public function verifiedUsers()
     {
-        $this->authorize('admin_installments_verified_users');
+        try {
+            $this->authorize('admin_installments_verified_users');
 
-        $users = User::query()->where('installment_approval', true)
-            ->paginate(10);
+            $users = User::query()->where('installment_approval', true)
+                ->paginate(10);
 
-        $users = $this->handleVerifiedUsers($users);
+            $users = $this->handleVerifiedUsers($users);
 
-        $data = [
-            'pageTitle' => trans('update.verified_users'),
-            'users' => $users
-        ];
+            $data = [
+                'pageTitle' => trans('update.verified_users'),
+                'users' => $users
+            ];
 
-        return view('admin.financial.installments.verified_users', $data);
+            return view('admin.financial.installments.verified_users', $data);
+        } catch (\Exception $e) {
+            \Log::error('verifiedUsers error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 
     private function handleVerifiedUsers($users)
@@ -117,14 +139,24 @@ trait InstallmentVerificationRequestsTrait
 
     public function verifiedUsersExportExcel(Request $request)
     {
-        $this->authorize('admin_installments_verified_users');
+        try {
+            $this->authorize('admin_installments_verified_users');
 
-        $users = User::query()->where('installment_approval', true)
-            ->get();
+            $users = User::query()->where('installment_approval', true)
+                ->get();
 
-        $users = $this->handleVerifiedUsers($users);
+            $users = $this->handleVerifiedUsers($users);
 
-        $export = new InstallmentVerifiedUsersExport($users);
-        return Excel::download($export, 'verifiedUsers.xlsx');
+            $export = new InstallmentVerifiedUsersExport($users);
+            return Excel::download($export, 'verifiedUsers.xlsx');
+        } catch (\Exception $e) {
+            \Log::error('verifiedUsersExportExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
     }
 }

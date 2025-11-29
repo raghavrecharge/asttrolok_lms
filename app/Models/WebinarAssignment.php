@@ -29,7 +29,6 @@ class WebinarAssignment extends Model implements TranslatableContract
         return getTranslateAttributeValue($this, 'description');
     }
 
-
     public function webinar()
     {
         return $this->belongsTo('App\Models\Webinar', 'webinar_id', 'id');
@@ -64,7 +63,7 @@ class WebinarAssignment extends Model implements TranslatableContract
 
     public function getDeadlineTimestamp($user = null)
     {
-        $deadline = null; // default can access
+        $deadline = null;
 
         if (empty($user)) {
             $user = auth()->user();

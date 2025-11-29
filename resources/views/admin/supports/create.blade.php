@@ -62,7 +62,6 @@
                                             </select>
                                         </div>
 
-
                                         <div class="form-group mt-15">
                                             <label class="input-label">{{ trans('admin/main.description') }}</label>
                                             <textarea name="message" rows="6" class="form-control @error('message')  is-invalid @enderror">{!! !empty($support) ? $support->message : old('message')  !!}</textarea>

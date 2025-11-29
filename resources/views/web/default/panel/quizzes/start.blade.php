@@ -63,7 +63,6 @@
                         </div>
                     </div>
 
-
                 </div>
             </div>
         </section>
@@ -140,9 +139,9 @@
                     </fieldset>
                 @endforeach
  <div class="d-flex align-items-center mt-30" style="min-height:30px;">
-     
+
       </div>
-     
+
             </form>
         </section>
 

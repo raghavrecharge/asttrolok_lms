@@ -1,6 +1,5 @@
 @extends('admin.layouts.app')
 
-
 @section('content')
     <section class="section">
         <div class="section-header">
@@ -70,7 +69,7 @@
 
                                             <div class="text-muted text-small mt-1">{{ trans('update.admin_store_setting_tax_hint') }}</div>
                                         </div>
-                                        
+
                                         <div class="form-group">
                                             <label>{{ trans('admin/main.tax') }} (International)</label>
                                             <input type="number" name="value[store_tax_international]" value="{{ (!empty($itemValue) and !empty($itemValue['store_tax_international'])) ? $itemValue['store_tax_international'] : old('store_tax_international') }}" class="form-control text-center  @error('store_tax_international') is-invalid @enderror"/>

@@ -201,7 +201,6 @@
                                         <input type="hidden" class="js-delivery_quality" value="{{ $review->delivery_quality }}">
                                         <input type="hidden" class="js-seller_quality" value="{{ $review->seller_quality }}">
 
-
                                         <button type="button" class="js-show-product-review-details btn-transparent text-primary mr-1" data-toggle="tooltip" data-placement="top" title="Rate Detail">
                                             <i class="fa fa-star" aria-hidden="true"></i>
                                         </button>

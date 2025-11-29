@@ -12,7 +12,6 @@
                 <input type="hidden" name="page" value="financial">
                 <input type="hidden" name="name" value="referral">
 
-
                 <div class="form-group custom-switches-stacked">
                     <label class="custom-switch pl-0 d-flex align-items-center">
                         <input type="hidden" name="value[status]" value="0">
@@ -32,7 +31,6 @@
                     </label>
                     <div class="text-muted text-small mt-1">{{ trans('admin/main.active_referral_new_users_hint') }}</div>
                 </div>
-
 
                 <div class="form-group">
                     <label>{{ trans('admin/main.affiliate_user_commission') }}</label>
@@ -86,7 +84,6 @@
                     </div>
                     <div class="text-muted text-small mt-1">{{ trans('admin/main.affiliate_user_amount_hint') }}</div>
                 </div>
-
 
                 <div class="form-group">
                     <label>{{ trans('admin/main.referred_user_amount') }}</label>
