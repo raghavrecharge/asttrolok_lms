@@ -432,7 +432,7 @@ public function content(Request $request, $id)
             if ($isPrivate && $hasBought) $isPrivate = false;
             if ($isPrivate) return back();
 
-            $isFavorite = $user ? Favorite::where('webinar_id', $course->id)->where('user_id', $user->id)->exists() : false;
+            $isFavorite = $user ? Favorite::where('webinar_id', $course->id)->where('user_id', $user->id)->isNotEmpty() : false;
 
             $advertisingBanners = AdvertisingBanner::where('published', true)
             ->whereIn('position', ['course', 'course_sidebar'])->get();
@@ -1350,10 +1350,10 @@ public function course($slug, $justReturnData = false)
 
                     'rate' => $webinar->getRate(),
                     'rate_type' => [
-                        'content_quality' => $webinar->reviews->exists() ? round($webinar->reviews->avg('content_quality'), 1) : 0,
-                        'instructor_skills' => $webinar->reviews->exists() ? round($webinar->reviews->avg('instructor_skills'), 1) : 0,
-                        'purchase_worth' => $webinar->reviews->exists() ? round($webinar->reviews->avg('purchase_worth'), 1) : 0,
-                        'support_quality' => $webinar->reviews->exists() ? round($webinar->reviews->avg('support_quality'), 1) : 0,
+                        'content_quality' => $webinar->reviews->isNotEmpty() ? round($webinar->reviews->avg('content_quality'), 1) : 0,
+                        'instructor_skills' => $webinar->reviews->isNotEmpty() ? round($webinar->reviews->avg('instructor_skills'), 1) : 0,
+                        'purchase_worth' => $webinar->reviews->isNotEmpty() ? round($webinar->reviews->avg('purchase_worth'), 1) : 0,
+                        'support_quality' => $webinar->reviews->isNotEmpty() ? round($webinar->reviews->avg('support_quality'), 1) : 0,
 
                     ],
                     'reviews_count' => $webinar->reviews->count(),
@@ -1412,7 +1412,7 @@ public function course($slug, $justReturnData = false)
                     'description' => $webinar->description,
                     'isDownloadable' => $webinar->isDownloadable(),
                     'support' => $webinar->support ? true : false,
-                    'certificate' => ($webinar->quizzes->where('certificate', 1)->exists()) ? true : false,
+                    'certificate' => ($webinar->quizzes->where('certificate', 1)->isNotEmpty()) ? true : false,
                     'quizzes_count' => $webinar->quizzes->where('status', \App\models\Quiz::ACTIVE)->count(),
                     'is_favorite' => $is_favorite,
                     'students_count' => $webinar->sales->count(),

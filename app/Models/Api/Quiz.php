@@ -195,7 +195,7 @@ class Quiz extends Model
     public function getLatestStudentsAttribute()
     {
 
-        /
+        
 
          return $this->quizResults()
     ->with('user')
@@ -226,7 +226,7 @@ class Quiz extends Model
         if (!$user_quiz_result->count()) {
             return 'not_participated';
         }
-        if ($user_quiz_result->where('status', 'passed')->exists()) {
+        if ($user_quiz_result->where('status', 'passed')->isNotEmpty()) {
             return 'passed';
         }
         if ($user_quiz_result->first()->status == 'waiting') {

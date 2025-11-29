@@ -200,7 +200,7 @@ class Webinar extends Model implements TranslatableContract
                 ->where('status', 'active')
                 ->get();
 
-            if (!empty($reviews) and $reviews->exists()) {
+            if (!empty($reviews) and $reviews->isNotEmpty()) {
                 $rate = number_format($reviews->avg('rates'), 2);
             }
         }
@@ -903,7 +903,7 @@ class Webinar extends Model implements TranslatableContract
     {
         $downloadable = $this->downloadable;
 
-        if ($this->files->exists()) {
+        if ($this->files->isNotEmpty()) {
             $downloadableFiles = $this->files->where('downloadable', true)->count();
 
             if ($downloadableFiles > 0) {

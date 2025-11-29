@@ -102,10 +102,10 @@ class Webinar extends Model
             'students_count' => $this->sales->count(),
             'rate' => $this->getRate(),
             'rate_type' => [
-                'content_quality' => $this->reviews->exists() ? round($this->reviews->avg('content_quality'), 1) : 0,
-                'instructor_skills' => $this->reviews->exists() ? round($this->reviews->avg('instructor_skills'), 1) : 0,
-                'purchase_worth' => $this->reviews->exists() ? round($this->reviews->avg('purchase_worth'), 1) : 0,
-                'support_quality' => $this->reviews->exists() ? round($this->reviews->avg('support_quality'), 1) : 0,
+                'content_quality' => $this->reviews->isNotEmpty() ? round($this->reviews->avg('content_quality'), 1) : 0,
+                'instructor_skills' => $this->reviews->isNotEmpty() ? round($this->reviews->avg('instructor_skills'), 1) : 0,
+                'purchase_worth' => $this->reviews->isNotEmpty() ? round($this->reviews->avg('purchase_worth'), 1) : 0,
+                'support_quality' => $this->reviews->isNotEmpty() ? round($this->reviews->avg('support_quality'), 1) : 0,
 
             ],
             'created_at' => $this->created_at,

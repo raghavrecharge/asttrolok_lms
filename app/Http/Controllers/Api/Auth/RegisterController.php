@@ -194,7 +194,7 @@ class RegisterController extends Controller
                 return response()->json(['success'=>false,'message'=>"Validation error",'error' => $validator->errors()], 400);
             }
 
-            $userCase = User::whereRaw("RIGHT(mobile, 10) = ?", [$data['mobile']])->exists();
+            $userCase = User::whereRaw("RIGHT(mobile, 10) = ?", [$data['mobile']])->isNotEmpty();
 
             if ($userCase) {
               return apiResponse2(0, 'already_registered', 'The mobile has already been taken.');
