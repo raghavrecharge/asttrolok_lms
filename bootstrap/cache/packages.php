@@ -89,13 +89,6 @@
       0 => 'Laravel\\Sail\\SailServiceProvider',
     ),
   ),
-  'laravel/telescope' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Laravel\\Telescope\\TelescopeServiceProvider',
-    ),
-  ),
   'laravel/tinker' => 
   array (
     'providers' => 

@@ -447,6 +447,14 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
             Route::post('/{id}/update', 'FAQController@update');
             Route::get('/{id}/delete', 'FAQController@destroy');
         });
+       Route::group(['prefix' => 'subscription-faqs'], function () {
+    Route::post('/store', 'SubscriptionFaqController@store');
+    Route::post('/{id}/description', 'SubscriptionFaqController@description');
+    Route::post('/{id}/edit', 'SubscriptionFaqController@edit');
+    Route::post('/{id}/update', 'SubscriptionFaqController@update');
+    Route::get('/{id}/delete', 'SubscriptionFaqController@destroy');
+    Route::post('/order-items', 'SubscriptionFaqController@orderItems');
+});
 
         Route::group(['prefix' => 'webinar-extra-description'], function () {
             Route::post('/store', 'WebinarExtraDescriptionController@store');

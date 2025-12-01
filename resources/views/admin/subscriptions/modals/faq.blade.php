@@ -1,14 +1,21 @@
-<!-- Modal -->
-<div class="d-none" id="webinarFaqModal">
+<!-- Subscription FAQ Modal -->
+<div class="d-none" id="subscriptionFaqModal">
     <h3 class="section-title after-line font-20 text-dark-blue mb-25">{{ trans('public.add_faq') }}</h3>
 
     <div class="js-faq-form" data-action="{{ getAdminPanelUrl() }}/faqs/store">
-        <input type="hidden" name="bundle_id" value="{{  !empty($bundle) ? $bundle->id :''  }}">
+        <!-- IMPORTANT: Subscription ID Field -->
+        <input type="hidden" name="subscription_id" value="{{ !empty($subscription) ? $subscription->id : '' }}" class="js-ajax-subscription_id">
+        
+        <!-- Webinar ID (optional, agar subscription page se call ho raha hai toh empty rahega) -->
+        <input type="hidden" name="webinar_id" value="{{ !empty($webinar) ? $webinar->id : '' }}">
+        
+        <!-- Bundle ID (optional) -->
+        <input type="hidden" name="bundle_id" value="{{ !empty($bundle) ? $bundle->id : '' }}">
 
         @if(!empty(getGeneralSettings('content_translate')))
             <div class="form-group">
                 <label class="input-label">{{ trans('auth.language') }}</label>
-                <select name="locale" class="form-control ">
+                <select name="locale" class="form-control js-ajax-locale">
                     @foreach($userLanguages as $lang => $language)
                         <option value="{{ $lang }}" @if(mb_strtolower(request()->get('locale', app()->getLocale())) == mb_strtolower($lang)) selected @endif>{{ $language }}</option>
                     @endforeach

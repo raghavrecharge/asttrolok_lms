@@ -65,6 +65,7 @@
                                                 <input type="hidden" name="locale" value="{{ getDefaultLocale() }}">
                                             @endif
 
+
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.title') }}</label>
                                                 <input type="text" name="title" value="{{ !empty($subscription) ? $subscription->title : old('title') }}" class="form-control @error('title')  is-invalid @enderror" placeholder=""/>
@@ -107,8 +108,10 @@
                                                 </div>
                                             @endif
 
+
                                             <div class="form-group mt-15 ">
                                                 <label class="input-label d-block">{{ trans('admin/main.select_a_instructor') }}</label>
+
 
                                                 <select name="teacher_id" data-search-option="just_teacher_role" class="form-control search-user-select2"
                                                         data-placeholder="{{ trans('public.select_a_teacher') }}"
@@ -126,6 +129,7 @@
                                                 </div>
                                                 @enderror
                                             </div>
+
 
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.seo_description') }}</label>
@@ -160,6 +164,7 @@
                                                 </div>
                                             </div>
 
+
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.cover_image') }}</label>
                                                 <div class="input-group">
@@ -184,6 +189,7 @@
 
                                             <div class="form-group mt-25">
                                                 <label class="input-label">{{ trans('public.demo_video') }} ({{ trans('public.optional') }})</label>
+
 
                                                 <div class="">
                                                     <label class="input-label font-12">{{ trans('public.source') }}</label>
@@ -283,6 +289,7 @@
                                                 <label class="input-label d-block">{{ trans('public.tags') }}</label>
                                                 <input type="text" name="tags" data-max-tag="5" value="{{ !empty($subscription) ? implode(',',$subscriptionTags) : '' }}" class="form-control inputtags" placeholder="{{ trans('public.type_tag_name_and_press_enter') }} ({{ trans('admin/main.max') }} : 5)"/>
                                             </div>
+
 
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.category') }}</label>
@@ -442,7 +449,7 @@
                                             </div>
                                         </div>
                                     </section>
-
+                                    
                                      @include('admin.subscriptions.create_includes.contents')
                                     {{--<section class="mt-40">
                                         <div class="d-flex justify-content-between align-items-center">
@@ -553,7 +560,8 @@
                                             </div>
                                         </div>
                                     </section> --}}
-
+                                    
+                                    
                                    {{-- <section class="mt-30">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <h2 class="section-title after-line">{{ trans('public.faq') }}</h2>
@@ -603,7 +611,54 @@
                                         </div>
                                     </section>--}}
                                 @endif
+  <section class="mt-30">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h2 class="section-title after-line">{{ trans('public.faq') }}</h2>
+                                            <button id="subscriptionAddFAQ" type="button" class="btn btn-primary btn-sm mt-3">{{ trans('public.add_faq') }}</button>
+                                        </div>
 
+                                        <div class="row mt-10">
+                                            <div class="col-12">
+                                                @if(!empty($faqs) and !$faqs->isEmpty())
+                                                    <div class="table-responsive">
+                                                        <table class="table table-striped text-center font-14">
+
+                                                            <tr>
+                                                                <th>{{ trans('public.title') }}</th>
+                                                                <th>{{ trans('public.answer') }}</th>
+                                                                <th></th>
+                                                            </tr>
+
+                                                            @foreach($faqs as $faq)
+                                                                <tr>
+                                                                    <th>{{ $faq->title }}</th>
+                                                                    <td>
+                                                                        <button type="button" class="js-get-faq-description btn btn-sm btn-gray200">{{ trans('public.view') }}</button>
+                                                                        <input type="hidden" value="{{ $faq->answer }}"/>
+                                                                    </td>
+
+                                                                    <td class="text-right">
+                                                                        <button type="button" data-faq-id="{{ $faq->id }}" data-webinar-id="{{ !empty($webinar) ? $webinar->id : '' }}" class="edit-faq btn-transparent text-primary mt-1" data-toggle="tooltip" data-placement="top" title="{{ trans('admin/main.edit') }}">
+                                                                            <i class="fa fa-edit"></i>
+                                                                        </button>
+
+                                                                        @include('admin.includes.delete_button',['url' => getAdminPanelUrl().'/faqs/'. $faq->id .'/delete', 'btnClass' => ' mt-1'])
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
+
+                                                        </table>
+                                                    </div>
+                                                @else
+                                                    @include('admin.includes.no-result',[
+                                                        'file_name' => 'faq.png',
+                                                        'title' => trans('public.faq_no_result'),
+                                                        'hint' => trans('public.faq_no_result_hint'),
+                                                    ])
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </section>
                                 <section class="mt-3">
                                     <h2 class="section-title after-line">{{ trans('public.message_to_reviewer') }}</h2>
                                     <div class="row">
@@ -634,6 +689,7 @@
                                     </div>
                                 </div>
                             </form>
+
 
                             @include('admin.subscriptions.modals.subscription-webinar')
                             @include('admin.subscriptions.modals.ticket')

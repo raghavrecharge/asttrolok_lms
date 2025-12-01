@@ -8,6 +8,7 @@ use Exception;
 use App\Http\Controllers\Controller;
 use App\Models\Bundle;
 use App\Models\Faq;
+use App\Models\Subscription;
 use App\Models\Translation\FaqTranslation;
 use App\Models\UpcomingCourse;
 use App\Models\Webinar;
@@ -78,16 +79,16 @@ class FAQController extends Controller
 
         if (!empty($data['webinar_id'])) {
             $webinar = Webinar::findOrFail($data['webinar_id']);
-
             $creator = $webinar->creator;
         } elseif (!empty($data['bundle_id'])) {
             $bundle = Bundle::findOrFail($data['bundle_id']);
-
             $creator = $bundle->creator;
         } elseif (!empty($data['upcoming_course_id'])) {
             $upcomingCourse = UpcomingCourse::findOrFail($data['upcoming_course_id']);
-
             $creator = $upcomingCourse->creator;
+        } elseif (!empty($data['subscription_id'])) {
+            $subscription = Subscription::findOrFail($data['subscription_id']);
+            $creator = $subscription->creator;
         }
 
         return $creator;
