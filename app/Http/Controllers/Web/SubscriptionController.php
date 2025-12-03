@@ -24,6 +24,7 @@ use App\Models\TextLesson;
 use App\Models\CourseLearning;
 use App\Models\WebinarChapter;
 use App\Models\WebinarReport;
+use App\Models\SubscriptionExtraDetails;
 use App\Models\Webinar;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
@@ -58,6 +59,7 @@ class SubscriptionController extends Controller
 
                     'filterOptions',
                     'category',
+                    'extraDetails',
                     'teacher',
 
                 ])

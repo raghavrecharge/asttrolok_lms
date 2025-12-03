@@ -22,6 +22,7 @@ use App\Models\TextLesson;
 use App\Models\CourseLearning;
 use App\Models\WebinarChapter;
 use App\Models\WebinarReport;
+use App\Models\WebinarExtraDetail;
 use App\Models\Webinar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -93,6 +94,7 @@ class WebinarController extends Controller
                             ->with(['quizResults', 'quizQuestions']);
                     },
                     'tags',
+                     'extraDetails',
                     'prerequisites' => function ($query) {
                         $query->with(['prerequisiteWebinar' => function ($query) {
                             $query->with(['teacher' => function ($qu) {

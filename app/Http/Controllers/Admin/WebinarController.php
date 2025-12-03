@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
-
+use App\Models\WebinarExtraDetail;
 use App\Exports\WebinarsExport;
 use App\Http\Controllers\Admin\traits\WebinarChangeCreator;
 use App\Http\Controllers\Controller;
@@ -37,6 +37,7 @@ use App\User;
 use App\Models\Webinar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\WebinarExtraDetails;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\StudentsExport;
@@ -514,6 +515,7 @@ class WebinarController extends Controller
                     'tickets',
                     'sessions',
                     'files',
+                     'extraDetails',
                     'faqs',
                     'category' => function ($query) {
                         $query->with(['filters' => function ($query) {
@@ -812,6 +814,8 @@ class WebinarController extends Controller
             if ($changedCreator) {
                 $this->webinarChangedCreator($webinar);
             }
+            
+             $this->saveExtraDetails($request, $webinar->id);
 
             removeContentLocale();
             Log::channel('activity')->info('Course updated', [

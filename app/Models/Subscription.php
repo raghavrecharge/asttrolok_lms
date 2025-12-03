@@ -589,4 +589,8 @@ public function getProgress($isLearningPage = false)
 {
     return $this->hasMany(SubscriptionWebinarChapterItems::class, 'subscription_id');
 }
+ public function extraDetails()
+{
+    return $this->hasOne(WebinarExtraDetail::class, 'webinar_id');
+}
 }

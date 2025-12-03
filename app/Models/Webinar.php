@@ -1065,4 +1065,8 @@ class Webinar extends Model implements TranslatableContract
             }
         }
     }
+ public function extraDetails()
+{
+    return $this->hasOne(WebinarExtraDetails::class, 'webinar_id');
+}
 }

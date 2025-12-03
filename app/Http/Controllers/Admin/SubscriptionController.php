@@ -27,6 +27,7 @@ use App\Models\Translation\SubscriptionTranslation;
 use App\Models\Webinar;
 use App\Models\WebinarChapter;
 use App\Models\Product;
+use App\Models\SubscriptionExtraDetails;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -371,6 +372,7 @@ class SubscriptionController extends Controller
                 ->with([
                     'tickets',
                     'faqs',
+                    'extraDetails',
                     'category' => function ($query) {
                         $query->with(['filters' => function ($query) {
                             $query->with('options');
@@ -642,7 +644,7 @@ class SubscriptionController extends Controller
             } elseif ($reject) {
                 sendNotification('subscription_rejected', $notifyOptions, $subscription->teacher_id);
             }
-
+ $this->saveExtraDetails($request, $webinar->id);
             removeContentLocale();
 
             return back();
@@ -1207,5 +1209,55 @@ public function orderItems(Request $request)
             throw $e;
         }
     }
+    // Add this method at the end of WebinarController class
+private function saveExtraDetails(Request $request, $subscriptionId)
+{
+    try {
+        SubscriptionExtraDetails::updateOrCreate(
+            ['subscription_id' => $subscriptionId],
+            [
+                'plan_type' => $request->plan_type,
+                'plan_badge' => $request->plan_badge,
+                'plan_price' => $request->plan_price,
+                'price_suffix' => $request->price_suffix,
+                'plan_duration' => $request->plan_duration,
+                'plan_option' => $request->plan_option,
+                'plan_cancel_text' => $request->plan_cancel_text,
+                'comparison_text' => $request->comparison_text,
+                'plan_icon' => $request->plan_icon,
+                'is_featured' => $request->is_featured,
+                'heading_main' => $request->heading_main,
+                'heading_sub' => $request->heading_sub,
+                'heading_extra' => $request->heading_extra,
+                'additional_description' => $request->additional_description,
+                'extra_description' => $request->extra_description,
+                'subtitle' => $request->subtitle,
+                'subdescription' => $request->subdescription,
+                'material_text' => $request->material_text ? json_encode(array_filter($request->material_text)) : null,
+                'material_icon' => $request->material_icon,
+                'learn_text' => $request->learn_text ? json_encode(array_filter($request->learn_text)) : null,
+                'price_icon' => $request->price_icon,
+                'plan_movie' => $request->plan_movie,
+                'learn_title' => $request->learn_title,
+                'learn_description' => $request->learn_description,
+                'learn_icon' => $request->learn_icon,
+                'bonus_heading' => $request->bonus_heading,
+                'bonus_icon' => $request->bonus_icon,
+                'ad_title' => $request->ad_title,
+                'ad_subtitle' => $request->ad_subtitle,
+                'ad_description' => $request->ad_description,
+                'ad_img' => $request->ad_img,
+                'certification_time' => $request->certification_time ? json_encode(array_filter($request->certification_time)) : null,
+                'certification_fomus' => $request->certification_fomus ? json_encode(array_filter($request->certification_fomus)) : null,
+                'certification_outcome' => $request->certification_outcome ? json_encode(array_filter($request->certification_outcome)) : null,
+                'rate_title' => $request->rate_title,
+                'rate_options' => $request->rate_options ? json_encode(array_filter($request->rate_options)) : null,
+                'rate_icon' => $request->rate_icon,
+            ]
+        );
+    } catch (\Exception $e) {
+        \Log::error('saveExtraDetails error: ' . $e->getMessage());
+    }
+}
 
 }

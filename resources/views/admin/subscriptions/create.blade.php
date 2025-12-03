@@ -274,7 +274,657 @@
                                                 </div>
                                                 @enderror
                                             </div>
+       <!-- Extra Details -->
+                                <!-- Add this section after the "Extra Details" comment in your form -->
+<!-- Replace the repeated price fields with these new fields -->
 
+<div class="form-group mt-15">
+    <label class="input-label">Plan Type</label>
+    <input type="text" name="plan_type" value="{{ !empty($subscription) ? $subscription->plan_type : old('plan_type') }}" class="form-control @error('plan_type') is-invalid @enderror" placeholder="e.g., Basic, Premium, Enterprise"/>
+    @error('plan_type')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Plan Badge</label>
+    <input type="text" name="plan_badge" value="{{ !empty($subscription) ? $subscription->plan_badge : old('plan_badge') }}" class="form-control @error('plan_badge') is-invalid @enderror" placeholder="e.g., Most Popular, Best Value"/>
+    @error('plan_badge')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Plan Price ({{ $currency }})</label>
+    <input type="text" name="plan_price" value="{{ !empty($subscription) ? $subscription->plan_price : old('plan_price') }}" class="form-control @error('plan_price') is-invalid @enderror" placeholder="{{ trans('public.0_for_free') }}"/>
+    @error('plan_price')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Price Suffix</label>
+    <input type="text" name="price_suffix" value="{{ !empty($subscription) ? $subscription->price_suffix : old('price_suffix') }}" class="form-control @error('price_suffix') is-invalid @enderror" placeholder="e.g., /month, /year"/>
+    @error('price_suffix')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Plan Duration</label>
+    <input type="text" name="plan_duration" value="{{ !empty($subscription) ? $subscription->plan_duration : old('plan_duration') }}" class="form-control @error('plan_duration') is-invalid @enderror" placeholder="e.g., 30 days, 6 months"/>
+    @error('plan_duration')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Plan Option</label>
+    <input type="text" name="plan_option" value="{{ !empty($subscription) ? $subscription->plan_option : old('plan_option') }}" class="form-control @error('plan_option') is-invalid @enderror" placeholder="Plan option text"/>
+    @error('plan_option')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Plan Cancel Text</label>
+    <input type="text" name="plan_cancel_text" value="{{ !empty($subscription) ? $subscription->plan_cancel_text : old('plan_cancel_text') }}" class="form-control @error('plan_cancel_text') is-invalid @enderror" placeholder="e.g., Cancel anytime"/>
+    @error('plan_cancel_text')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Comparison Text</label>
+    <textarea name="comparison_text" rows="3" class="form-control @error('comparison_text') is-invalid @enderror" placeholder="Plan comparison details">{{ !empty($subscription) ? $subscription->comparison_text : old('comparison_text') }}</textarea>
+    @error('comparison_text')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Plan Icon</label>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button type="button" class="input-group-text admin-file-manager" data-input="plan_icon" data-preview="holder">
+                <i class="fa fa-upload"></i>
+            </button>
+        </div>
+        <input type="text" name="plan_icon" id="plan_icon" value="{{ !empty($subscription) ? $subscription->plan_icon : old('plan_icon') }}" class="form-control @error('plan_icon') is-invalid @enderror"/>
+        <div class="input-group-append">
+            <button type="button" class="input-group-text admin-file-view" data-input="plan_icon">
+                <i class="fa fa-eye"></i>
+            </button>
+        </div>
+        @error('plan_icon')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Is Featured Icon</label>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button type="button" class="input-group-text admin-file-manager" data-input="is_featured" data-preview="holder">
+                <i class="fa fa-upload"></i>
+            </button>
+        </div>
+        <input type="text" name="is_featured" id="is_featured" value="{{ !empty($subscription) ? $subscription->is_featured : old('is_featured') }}" class="form-control @error('is_featured') is-invalid @enderror"/>
+        <div class="input-group-append">
+            <button type="button" class="input-group-text admin-file-view" data-input="is_featured">
+                <i class="fa fa-eye"></i>
+            </button>
+        </div>
+        @error('is_featured')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Heading Main</label>
+    <input type="text" name="heading_main" value="{{ !empty($subscription) ? $subscription->heading_main : old('heading_main') }}" class="form-control @error('heading_main') is-invalid @enderror" placeholder="Main heading"/>
+    @error('heading_main')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Heading Sub</label>
+    <input type="text" name="heading_sub" value="{{ !empty($subscription) ? $subscription->heading_sub : old('heading_sub') }}" class="form-control @error('heading_sub') is-invalid @enderror" placeholder="Sub heading"/>
+    @error('heading_sub')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Heading Extra</label>
+    <input type="text" name="heading_extra" value="{{ !empty($subscription) ? $subscription->heading_extra : old('heading_extra') }}" class="form-control @error('heading_extra') is-invalid @enderror" placeholder="Extra heading"/>
+    @error('heading_extra')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Additional Description</label>
+    <textarea name="additional_description" rows="4" class="form-control @error('additional_description') is-invalid @enderror" placeholder="Additional description">{{ !empty($subscription) ? $subscription->additional_description : old('additional_description') }}</textarea>
+    @error('additional_description')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Extra Description</label>
+    <textarea name="extra_description" rows="4" class="form-control @error('extra_description') is-invalid @enderror" placeholder="Extra description">{{ !empty($subscription) ? $subscription->extra_description : old('extra_description') }}</textarea>
+    @error('extra_description')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Subtitle</label>
+    <input type="text" name="subtitle" value="{{ !empty($subscription) ? $subscription->subtitle : old('subtitle') }}" class="form-control @error('subtitle') is-invalid @enderror" placeholder="Subtitle"/>
+    @error('subtitle')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Subdescription</label>
+    <textarea name="subdescription" rows="3" class="form-control @error('subdescription') is-invalid @enderror" placeholder="Subdescription">{{ !empty($subscription) ? $subscription->subdescription : old('subdescription') }}</textarea>
+    @error('subdescription')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label d-block">Material Text (4 Items)</label>
+    
+    <div class="row">
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="material_text[]" value="{{ !empty($subscription) && !empty($subscription->material_text) ? (is_array(json_decode($subscription->material_text, true)) ? json_decode($subscription->material_text, true)[0] ?? '' : '') : (old('material_text.0') ?? '') }}" class="form-control @error('material_text.0') is-invalid @enderror" placeholder="Material Item 1"/>
+            @error('material_text.0')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="material_text[]" value="{{ !empty($subscription) && !empty($subscription->material_text) ? (is_array(json_decode($subscription->material_text, true)) ? json_decode($subscription->material_text, true)[1] ?? '' : '') : (old('material_text.1') ?? '') }}" class="form-control @error('material_text.1') is-invalid @enderror" placeholder="Material Item 2"/>
+            @error('material_text.1')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="material_text[]" value="{{ !empty($subscription) && !empty($subscription->material_text) ? (is_array(json_decode($subscription->material_text, true)) ? json_decode($subscription->material_text, true)[2] ?? '' : '') : (old('material_text.2') ?? '') }}" class="form-control @error('material_text.2') is-invalid @enderror" placeholder="Material Item 3"/>
+            @error('material_text.2')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="material_text[]" value="{{ !empty($subscription) && !empty($subscription->material_text) ? (is_array(json_decode($subscription->material_text, true)) ? json_decode($subscription->material_text, true)[3] ?? '' : '') : (old('material_text.3') ?? '') }}" class="form-control @error('material_text.3') is-invalid @enderror" placeholder="Material Item 4"/>
+            @error('material_text.3')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+    </div>
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Material Icon</label>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button type="button" class="input-group-text admin-file-manager" data-input="material_icon" data-preview="holder">
+                <i class="fa fa-upload"></i>
+            </button>
+        </div>
+        <input type="text" name="material_icon" id="material_icon" value="{{ !empty($subscription) ? $subscription->material_icon : old('material_icon') }}" class="form-control @error('material_icon') is-invalid @enderror"/>
+        <div class="input-group-append">
+            <button type="button" class="input-group-text admin-file-view" data-input="material_icon">
+                <i class="fa fa-eye"></i>
+            </button>
+        </div>
+        @error('material_icon')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button type="button" class="input-group-text admin-file-manager" data-input="material_icon" data-preview="holder">
+                <i class="fa fa-upload"></i>
+            </button>
+        </div>
+        <input type="text" name="material_icon" id="material_icon" value="{{ !empty($subscription) ? $subscription->material_icon : old('material_icon') }}" class="form-control @error('material_icon') is-invalid @enderror"/>
+        <div class="input-group-append">
+            <button type="button" class="input-group-text admin-file-view" data-input="material_icon">
+                <i class="fa fa-eye"></i>
+            </button>
+        </div>
+        @error('material_icon')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button type="button" class="input-group-text admin-file-manager" data-input="material_icon" data-preview="holder">
+                <i class="fa fa-upload"></i>
+            </button>
+        </div>
+        <input type="text" name="material_icon" id="material_icon" value="{{ !empty($subscription) ? $subscription->material_icon : old('material_icon') }}" class="form-control @error('material_icon') is-invalid @enderror"/>
+        <div class="input-group-append">
+            <button type="button" class="input-group-text admin-file-view" data-input="material_icon">
+                <i class="fa fa-eye"></i>
+            </button>
+        </div>
+        @error('material_icon')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button type="button" class="input-group-text admin-file-manager" data-input="material_icon" data-preview="holder">
+                <i class="fa fa-upload"></i>
+            </button>
+        </div>
+        <input type="text" name="material_icon" id="material_icon" value="{{ !empty($subscription) ? $subscription->material_icon : old('material_icon') }}" class="form-control @error('material_icon') is-invalid @enderror"/>
+        <div class="input-group-append">
+            <button type="button" class="input-group-text admin-file-view" data-input="material_icon">
+                <i class="fa fa-eye"></i>
+            </button>
+        </div>
+        @error('material_icon')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label d-block">Learn Text (4 Items)</label>
+    
+    <div class="row">
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="learn_text[]" value="{{ !empty($subscription) && !empty($subscription->learn_text) ? (is_array(json_decode($subscription->learn_text, true)) ? json_decode($subscription->learn_text, true)[0] ?? '' : '') : (old('learn_text.0') ?? '') }}" class="form-control @error('learn_text.0') is-invalid @enderror" placeholder="Learn Text 1"/>
+            @error('learn_text.0')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="learn_text[]" value="{{ !empty($subscription) && !empty($subscription->learn_text) ? (is_array(json_decode($subscription->learn_text, true)) ? json_decode($subscription->learn_text, true)[1] ?? '' : '') : (old('learn_text.1') ?? '') }}" class="form-control @error('learn_text.1') is-invalid @enderror" placeholder="Learn Text 2"/>
+            @error('learn_text.1')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="learn_text[]" value="{{ !empty($subscription) && !empty($subscription->learn_text) ? (is_array(json_decode($subscription->learn_text, true)) ? json_decode($subscription->learn_text, true)[2] ?? '' : '') : (old('learn_text.2') ?? '') }}" class="form-control @error('learn_text.2') is-invalid @enderror" placeholder="Learn Text 3"/>
+            @error('learn_text.2')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="learn_text[]" value="{{ !empty($subscription) && !empty($subscription->learn_text) ? (is_array(json_decode($subscription->learn_text, true)) ? json_decode($subscription->learn_text, true)[3] ?? '' : '') : (old('learn_text.3') ?? '') }}" class="form-control @error('learn_text.3') is-invalid @enderror" placeholder="Learn Text 4"/>
+            @error('learn_text.3')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+    </div>
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Price Icon</label>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button type="button" class="input-group-text admin-file-manager" data-input="price_icon" data-preview="holder">
+                <i class="fa fa-upload"></i>
+            </button>
+        </div>
+        <input type="text" name="price_icon" id="price_icon" value="{{ !empty($subscription) ? $subscription->price_icon : old('price_icon') }}" class="form-control @error('price_icon') is-invalid @enderror"/>
+        <div class="input-group-append">
+            <button type="button" class="input-group-text admin-file-view" data-input="price_icon">
+                <i class="fa fa-eye"></i>
+            </button>
+        </div>
+        @error('price_icon')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Plan Movie/Video URL</label>
+    <input type="text" name="plan_movie" value="{{ !empty($subscription) ? $subscription->plan_movie : old('plan_movie') }}" class="form-control @error('plan_movie') is-invalid @enderror" placeholder="Enter video URL"/>
+    @error('plan_movie')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Learn Title</label>
+    <input type="text" name="learn_title" value="{{ !empty($subscription) ? $subscription->learn_title : old('learn_title') }}" class="form-control @error('learn_title') is-invalid @enderror" placeholder="What you'll learn title"/>
+    @error('learn_title')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Learn Description</label>
+    <textarea name="learn_description" rows="3" class="form-control @error('learn_description') is-invalid @enderror" placeholder="What you'll learn description">{{ !empty($subscription) ? $subscription->learn_description : old('learn_description') }}</textarea>
+    @error('learn_description')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Learn Text</label>
+    <textarea name="learn_text" rows="4" class="form-control @error('learn_text') is-invalid @enderror" placeholder="Learning points (one per line)">{{ !empty($subscription) ? $subscription->learn_text : old('learn_text') }}</textarea>
+    @error('learn_text')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Learn Icon</label>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button type="button" class="input-group-text admin-file-manager" data-input="learn_icon" data-preview="holder">
+                <i class="fa fa-upload"></i>
+            </button>
+        </div>
+        <input type="text" name="learn_icon" id="learn_icon" value="{{ !empty($subscription) ? $subscription->learn_icon : old('learn_icon') }}" class="form-control @error('learn_icon') is-invalid @enderror"/>
+        <div class="input-group-append">
+            <button type="button" class="input-group-text admin-file-view" data-input="learn_icon">
+                <i class="fa fa-eye"></i>
+            </button>
+        </div>
+        @error('learn_icon')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button type="button" class="input-group-text admin-file-manager" data-input="learn_icon" data-preview="holder">
+                <i class="fa fa-upload"></i>
+            </button>
+        </div>
+        <input type="text" name="learn_icon" id="learn_icon" value="{{ !empty($subscription) ? $subscription->learn_icon : old('learn_icon') }}" class="form-control @error('learn_icon') is-invalid @enderror"/>
+        <div class="input-group-append">
+            <button type="button" class="input-group-text admin-file-view" data-input="learn_icon">
+                <i class="fa fa-eye"></i>
+            </button>
+        </div>
+        @error('learn_icon')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button type="button" class="input-group-text admin-file-manager" data-input="learn_icon" data-preview="holder">
+                <i class="fa fa-upload"></i>
+            </button>
+        </div>
+        <input type="text" name="learn_icon" id="learn_icon" value="{{ !empty($subscription) ? $subscription->learn_icon : old('learn_icon') }}" class="form-control @error('learn_icon') is-invalid @enderror"/>
+        <div class="input-group-append">
+            <button type="button" class="input-group-text admin-file-view" data-input="learn_icon">
+                <i class="fa fa-eye"></i>
+            </button>
+        </div>
+        @error('learn_icon')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button type="button" class="input-group-text admin-file-manager" data-input="learn_icon" data-preview="holder">
+                <i class="fa fa-upload"></i>
+            </button>
+        </div>
+        <input type="text" name="learn_icon" id="learn_icon" value="{{ !empty($subscription) ? $subscription->learn_icon : old('learn_icon') }}" class="form-control @error('learn_icon') is-invalid @enderror"/>
+        <div class="input-group-append">
+            <button type="button" class="input-group-text admin-file-view" data-input="learn_icon">
+                <i class="fa fa-eye"></i>
+            </button>
+        </div>
+        @error('learn_icon')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Bonus Heading</label>
+    <input type="text" name="bonus_heading" value="{{ !empty($subscription) ? $subscription->bonus_heading : old('bonus_heading') }}" class="form-control @error('bonus_heading') is-invalid @enderror" placeholder="Bonus section heading"/>
+    @error('bonus_heading')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Bonus Icon</label>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button type="button" class="input-group-text admin-file-manager" data-input="bonus_icon" data-preview="holder">
+                <i class="fa fa-upload"></i>
+            </button>
+        </div>
+        <input type="text" name="bonus_icon" id="bonus_icon" value="{{ !empty($subscription) ? $subscription->bonus_icon : old('bonus_icon') }}" class="form-control @error('bonus_icon') is-invalid @enderror"/>
+        <div class="input-group-append">
+            <button type="button" class="input-group-text admin-file-view" data-input="bonus_icon">
+                <i class="fa fa-eye"></i>
+            </button>
+        </div>
+        @error('bonus_icon')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Ad Title</label>
+    <input type="text" name="ad_title" value="{{ !empty($subscription) ? $subscription->ad_title : old('ad_title') }}" class="form-control @error('ad_title') is-invalid @enderror" placeholder="Advertisement title"/>
+    @error('ad_title')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Ad Subtitle</label>
+    <input type="text" name="ad_subtitle" value="{{ !empty($subscription) ? $subscription->ad_subtitle : old('ad_subtitle') }}" class="form-control @error('ad_subtitle') is-invalid @enderror" placeholder="Advertisement subtitle"/>
+    @error('ad_subtitle')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Ad Description</label>
+    <textarea name="ad_description" rows="3" class="form-control @error('ad_description') is-invalid @enderror" placeholder="Advertisement description">{{ !empty($subscription) ? $subscription->ad_description : old('ad_description') }}</textarea>
+    @error('ad_description')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Ad Image</label>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button type="button" class="input-group-text admin-file-manager" data-input="ad_img" data-preview="holder">
+                <i class="fa fa-upload"></i>
+            </button>
+        </div>
+        <input type="text" name="ad_img" id="ad_img" value="{{ !empty($subscription) ? $subscription->ad_img : old('ad_img') }}" class="form-control @error('ad_img') is-invalid @enderror"/>
+        <div class="input-group-append">
+            <button type="button" class="input-group-text admin-file-view" data-input="ad_img">
+                <i class="fa fa-eye"></i>
+            </button>
+        </div>
+        @error('ad_img')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label d-block">certification Time (3 Items)</label>
+    
+    <div class="row">
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="certification_time[]" value="{{ !empty($subscription) && !empty($subscription->certification_time) ? (is_array(json_decode($subscription->certification_time, true)) ? json_decode($subscription->certification_time, true)[0] ?? '' : '') : (old('certification_time.0') ?? '') }}" class="form-control @error('certification_time.0') is-invalid @enderror" placeholder="Certification Time"/>
+            @error('certification_time.0')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="certification_time[]" value="{{ !empty($subscription) && !empty($subscription->certification_time) ? (is_array(json_decode($subscription->certification_time, true)) ? json_decode($subscription->certification_time, true)[1] ?? '' : '') : (old('certification_time.1') ?? '') }}" class="form-control @error('certification_time.1') is-invalid @enderror" placeholder="Certification time"/>
+            @error('certification_time.1')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="certification_time[]" value="{{ !empty($subscription) && !empty($subscription->certification_time) ? (is_array(json_decode($subscription->certification_time, true)) ? json_decode($subscription->certification_time, true)[2] ?? '' : '') : (old('certification_time.2') ?? '') }}" class="form-control @error('certification_time.2') is-invalid @enderror" placeholder="Certification time"/>
+            @error('certification_time.2')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+    </div>
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label d-block">certification Focus (3 Items)</label>
+    
+    <div class="row">
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="certification_fomus[]" value="{{ !empty($subscription) && !empty($subscription->certification_fomus) ? (is_array(json_decode($subscription->certification_fomus, true)) ? json_decode($subscription->certification_fomus, true)[0] ?? '' : '') : (old('certification_fomus.0') ?? '') }}" class="form-control @error('certification_fomus.0') is-invalid @enderror" placeholder="Certification fomus 1"/>
+            @error('certification_fomus.0')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="certification_fomus[]" value="{{ !empty($subscription) && !empty($subscription->certification_fomus) ? (is_array(json_decode($subscription->certification_fomus, true)) ? json_decode($subscription->certification_fomus, true)[1] ?? '' : '') : (old('certification_fomus.1') ?? '') }}" class="form-control @error('certification_fomus.1') is-invalid @enderror" placeholder="Certification fomus 2"/>
+            @error('certification_fomus.1')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="certification_fomus[]" value="{{ !empty($subscription) && !empty($subscription->certification_fomus) ? (is_array(json_decode($subscription->certification_fomus, true)) ? json_decode($subscription->certification_fomus, true)[2] ?? '' : '') : (old('certification_fomus.2') ?? '') }}" class="form-control @error('certification_fomus.2') is-invalid @enderror" placeholder="Certification fomus 3"/>
+            @error('certification_fomus.2')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+    </div>
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label d-block">certification Outcome (3 Items)</label>
+    
+    <div class="row">
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="certification_outcome[]" value="{{ !empty($subscription) && !empty($subscription->certification_outcome) ? (is_array(json_decode($subscription->certification_outcome, true)) ? json_decode($subscription->certification_outcome, true)[0] ?? '' : '') : (old('certification_outcome.0') ?? '') }}" class="form-control @error('certification_outcome.0') is-invalid @enderror" placeholder="Certification outcome 1"/>
+            @error('certification_outcome.0')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="certification_outcome[]" value="{{ !empty($subscription) && !empty($subscription->certification_outcome) ? (is_array(json_decode($subscription->certification_outcome, true)) ? json_decode($subscription->certification_outcome, true)[1] ?? '' : '') : (old('certification_outcome.1') ?? '') }}" class="form-control @error('certification_outcome.1') is-invalid @enderror" placeholder="Certification outcome 2"/>
+            @error('certification_outcome.1')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="certification_outcome[]" value="{{ !empty($subscription) && !empty($subscription->certification_outcome) ? (is_array(json_decode($subscription->certification_outcome, true)) ? json_decode($subscription->certification_outcome, true)[2] ?? '' : '') : (old('certification_outcome.2') ?? '') }}" class="form-control @error('certification_outcome.2') is-invalid @enderror" placeholder="Certification outcome 3"/>
+            @error('certification_outcome.2')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+    </div>
+</div>
+
+
+<div class="form-group mt-15">
+    <label class="input-label">Rate Title</label>
+    <input type="text" name="rate_title" value="{{ !empty($subscription) ? $subscription->rate_title : old('rate_title') }}" class="form-control @error('rate_title') is-invalid @enderror" placeholder="Rating section title"/>
+    @error('rate_title')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+
+<div class="form-group mt-15">
+    <label class="input-label d-block">Rate Option(3 Items)</label>
+    
+    <div class="row">
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="rate_options[]" value="{{ !empty($subscription) && !empty($subscription->rate_options) ? (is_array(json_decode($subscription->rate_options, true)) ? json_decode($subscription->rate_options, true)[0] ?? '' : '') : (old('rate_options.0') ?? '') }}" class="form-control @error('rate_options.0') is-invalid @enderror" placeholder="Rate Option 1"/>
+            @error('rate_options.0')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="rate_options[]" value="{{ !empty($subscription) && !empty($subscription->rate_options) ? (is_array(json_decode($subscription->rate_options, true)) ? json_decode($subscription->rate_options, true)[1] ?? '' : '') : (old('rate_options.1') ?? '') }}" class="form-control @error('rate_options.1') is-invalid @enderror" placeholder="Rate Option 2"/>
+            @error('rate_options.1')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="rate_options[]" value="{{ !empty($subscription) && !empty($subscription->rate_options) ? (is_array(json_decode($subscription->rate_options, true)) ? json_decode($subscription->rate_options, true)[2] ?? '' : '') : (old('rate_options.2') ?? '') }}" class="form-control @error('rate_options.2') is-invalid @enderror" placeholder="Rate Option 3"/>
+            @error('rate_options.2')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+           <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="rate_options[]" value="{{ !empty($subscription) && !empty($subscription->rate_options) ? (is_array(json_decode($subscription->rate_options, true)) ? json_decode($subscription->rate_options, true)[1] ?? '' : '') : (old('rate_options.1') ?? '') }}" class="form-control @error('rate_options.1') is-invalid @enderror" placeholder="Rate Option 4"/>
+            @error('rate_options.1')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+        <div class="col-12 col-md-6 mb-3">
+            <input type="text" name="rate_options[]" value="{{ !empty($subscription) && !empty($subscription->rate_options) ? (is_array(json_decode($subscription->rate_options, true)) ? json_decode($subscription->rate_options, true)[2] ?? '' : '') : (old('rate_options.2') ?? '') }}" class="form-control @error('rate_options.2') is-invalid @enderror" placeholder="Rate Option 5"/>
+            @error('rate_options.2')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        
+    </div>
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Rate Icon</label>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button type="button" class="input-group-text admin-file-manager" data-input="rate_icon" data-preview="holder">
+                <i class="fa fa-upload"></i>
+            </button>
+        </div>
+        <input type="text" name="rate_icon" id="rate_icon" value="{{ !empty($subscription) ? $subscription->rate_icon : old('rate_icon') }}" class="form-control @error('rate_icon') is-invalid @enderror"/>
+        <div class="input-group-append">
+            <button type="button" class="input-group-text admin-file-view" data-input="rate_icon">
+                <i class="fa fa-eye"></i>
+            </button>
+        </div>
+        @error('rate_icon')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+</div>
+
+
+
+                                        </div>
+                                    </div>
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.price') }} ({{ $currency }})</label>
                                                 <input type="text" name="price" value="{{ !empty($subscription) ? $subscription->price : old('price') }}" class="form-control @error('price')  is-invalid @enderror" placeholder="{{ trans('public.0_for_free') }}"/>
@@ -638,7 +1288,7 @@
                                                                     </td>
 
                                                                     <td class="text-right">
-                                                                        <button type="button" data-faq-id="{{ $faq->id }}" data-webinar-id="{{ !empty($webinar) ? $webinar->id : '' }}" class="edit-faq btn-transparent text-primary mt-1" data-toggle="tooltip" data-placement="top" title="{{ trans('admin/main.edit') }}">
+                                                                        <button type="button" data-faq-id="{{ $faq->id }}" data-webinar-id="{{ !empty($subscription) ? $subscription->id : '' }}" class="edit-faq btn-transparent text-primary mt-1" data-toggle="tooltip" data-placement="top" title="{{ trans('admin/main.edit') }}">
                                                                             <i class="fa fa-edit"></i>
                                                                         </button>
 
