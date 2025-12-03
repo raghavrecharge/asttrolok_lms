@@ -312,19 +312,13 @@
 
 <div class="form-group mt-15">
     <label class="input-label">Plan Duration</label>
-    <input type="text" name="plan_duration" value="{{ !empty($subscription) ? $subscription->plan_duration : old('plan_duration') }}" class="form-control @error('plan_duration') is-invalid @enderror" placeholder="e.g., 30 days, 6 months"/>
-    @error('plan_duration')
+    <input type="text" name="plan_duration_option value="{{ !empty($subscription) ? $subscription->plan_duration_option : old('plan_duration_option') }}" class="form-control @error('plan_duration_option') is-invalid @enderror" placeholder="e.g., 30 days, 6 months"/>
+    @error('plan_duration_option')
     <div class="invalid-feedback">{{ $message }}</div>
     @enderror
 </div>
 
-<div class="form-group mt-15">
-    <label class="input-label">Plan Option</label>
-    <input type="text" name="plan_option" value="{{ !empty($subscription) ? $subscription->plan_option : old('plan_option') }}" class="form-control @error('plan_option') is-invalid @enderror" placeholder="Plan option text"/>
-    @error('plan_option')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
+
 
 <div class="form-group mt-15">
     <label class="input-label">Plan Cancel Text</label>
@@ -799,22 +793,22 @@
     
     <div class="row">
         <div class="col-12 col-md-6 mb-3">
-            <input type="text" name="certification_fomus[]" value="{{ !empty($subscription) && !empty($subscription->certification_fomus) ? (is_array(json_decode($subscription->certification_fomus, true)) ? json_decode($subscription->certification_fomus, true)[0] ?? '' : '') : (old('certification_fomus.0') ?? '') }}" class="form-control @error('certification_fomus.0') is-invalid @enderror" placeholder="Certification fomus 1"/>
-            @error('certification_fomus.0')
+            <input type="text" name="certification_focus[]" value="{{ !empty($subscription) && !empty($subscription->certification_focus) ? (is_array(json_decode($subscription->certification_focus, true)) ? json_decode($subscription->certification_focus, true)[0] ?? '' : '') : (old('certification_focus.0') ?? '') }}" class="form-control @error('certification_focus.0') is-invalid @enderror" placeholder="Certification fomus 1"/>
+            @error('certification_focus.0')
             <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
         
         <div class="col-12 col-md-6 mb-3">
-            <input type="text" name="certification_fomus[]" value="{{ !empty($subscription) && !empty($subscription->certification_fomus) ? (is_array(json_decode($subscription->certification_fomus, true)) ? json_decode($subscription->certification_fomus, true)[1] ?? '' : '') : (old('certification_fomus.1') ?? '') }}" class="form-control @error('certification_fomus.1') is-invalid @enderror" placeholder="Certification fomus 2"/>
-            @error('certification_fomus.1')
+            <input type="text" name="certification_focus[]" value="{{ !empty($subscription) && !empty($subscription->certification_focus) ? (is_array(json_decode($subscription->certification_focus, true)) ? json_decode($subscription->certification_focus, true)[1] ?? '' : '') : (old('certification_focus.1') ?? '') }}" class="form-control @error('certification_focus.1') is-invalid @enderror" placeholder="Certification fomus 2"/>
+            @error('certification_focus.1')
             <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
         
         <div class="col-12 col-md-6 mb-3">
-            <input type="text" name="certification_fomus[]" value="{{ !empty($subscription) && !empty($subscription->certification_fomus) ? (is_array(json_decode($subscription->certification_fomus, true)) ? json_decode($subscription->certification_fomus, true)[2] ?? '' : '') : (old('certification_fomus.2') ?? '') }}" class="form-control @error('certification_fomus.2') is-invalid @enderror" placeholder="Certification fomus 3"/>
-            @error('certification_fomus.2')
+            <input type="text" name="certification_focus[]" value="{{ !empty($subscription) && !empty($subscription->certification_focus) ? (is_array(json_decode($subscription->certification_focus, true)) ? json_decode($subscription->certification_focus, true)[2] ?? '' : '') : (old('certification_focus.2') ?? '') }}" class="form-control @error('certification_focus.2') is-invalid @enderror" placeholder="Certification fomus 3"/>
+            @error('certification_focus.2')
             <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
