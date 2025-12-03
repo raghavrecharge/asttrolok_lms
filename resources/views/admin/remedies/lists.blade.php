@@ -254,7 +254,7 @@
                                     </tr>
 
                                     @foreach($remedies as $remedy)
-                                    <?php
+                                    
                                         <tr class="text-center">
                                              <td>{{ $remedy->id }}</td>
                                             <td width="18%" class="text-left">

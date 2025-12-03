@@ -815,7 +815,7 @@ class WebinarController extends Controller
                 $this->webinarChangedCreator($webinar);
             }
             
-             $this->saveExtraDetails($request, $webinar->id);
+            
 
             removeContentLocale();
             Log::channel('activity')->info('Course updated', [

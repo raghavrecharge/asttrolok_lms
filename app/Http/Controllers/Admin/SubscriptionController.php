@@ -644,7 +644,7 @@ class SubscriptionController extends Controller
             } elseif ($reject) {
                 sendNotification('subscription_rejected', $notifyOptions, $subscription->teacher_id);
             }
- $this->saveExtraDetails($request, $webinar->id);
+
             removeContentLocale();
 
             return back();
