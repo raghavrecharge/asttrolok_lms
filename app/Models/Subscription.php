@@ -9,6 +9,8 @@ use Astrotomic\Translatable\Contracts\Translatable as TranslatableContract;
 use Astrotomic\Translatable\Translatable;
 use Cviebrock\EloquentSluggable\Services\SlugService;
 use Illuminate\Support\Facades\DB;
+use App\Models\WebinarExtraDetails;
+
 use Jorenvh\Share\ShareFacade;
 
 class Subscription extends Model implements TranslatableContract
@@ -591,6 +593,6 @@ public function getProgress($isLearningPage = false)
 }
  public function extraDetails()
 {
-    return $this->hasOne(WebinarExtraDetail::class, 'webinar_id');
+    return $this->hasOne(WebinarExtraDetails::class, 'webinar_id');
 }
 }

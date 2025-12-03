@@ -22,7 +22,7 @@ use App\Models\TextLesson;
 use App\Models\CourseLearning;
 use App\Models\WebinarChapter;
 use App\Models\WebinarReport;
-use App\Models\WebinarExtraDetail;
+use App\Models\WebinarExtraDetails;
 use App\Models\Webinar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

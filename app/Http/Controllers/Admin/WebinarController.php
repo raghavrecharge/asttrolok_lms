@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
-use App\Models\WebinarExtraDetail;
 use App\Exports\WebinarsExport;
 use App\Http\Controllers\Admin\traits\WebinarChangeCreator;
 use App\Http\Controllers\Controller;
