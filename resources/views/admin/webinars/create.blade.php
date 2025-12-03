@@ -581,20 +581,13 @@
 </div>
 
 <div class="form-group mt-15">
-    <label class="input-label">Plan Duration</label>
-    <input type="text" name="plan_duration" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->plan_duration : old('plan_duration') }}" class="form-control @error('plan_duration') is-invalid @enderror" placeholder="e.g., 30 days, 6 months"/>
+    <label class="input-label">Plan Duration Option</label>
+    <input type="text" name="plan_duration_option" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->plan_duration_option : old('plan_duration_option') }}" class="form-control @error('plan_duration_option') is-invalid @enderror" placeholder="e.g., 30 days, 6 months"/>
     @error('plan_duration')
     <div class="invalid-feedback">{{ $message }}</div>
     @enderror
 </div>
 
-<div class="form-group mt-15">
-    <label class="input-label">Plan Option</label>
-    <input type="text" name="plan_option" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->plan_option : old('plan_option') }}" class="form-control @error('plan_option') is-invalid @enderror" placeholder="Plan option text"/>
-    @error('plan_option')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
 
 <div class="form-group mt-15">
     <label class="input-label">Plan Cancel Text</label>
@@ -924,11 +917,11 @@
     <div class="row">
         @for($i = 0; $i < 3; $i++)
         <div class="col-12 col-md-6 mb-3">
-            <input type="text" name="certification_fomus[]" 
-                value="{{ !empty($webinar->extraDetails) && !empty($webinar->extraDetails->certification_fomus) && isset($webinar->extraDetails->certification_fomus[$i]) ? $webinar->extraDetails->certification_fomus[$i] : old('certification_fomus.'.$i) }}" 
-                class="form-control @error('certification_fomus.'.$i) is-invalid @enderror" 
+            <input type="text" name="certification_focus[]" 
+                value="{{ !empty($webinar->extraDetails) && !empty($webinar->extraDetails->certification_focus) && isset($webinar->extraDetails->certification_focus[$i]) ? $webinar->extraDetails->certification_focus[$i] : old('certification_focus.'.$i) }}" 
+                class="form-control @error('certification_focus.'.$i) is-invalid @enderror" 
                 placeholder="Certification Focus {{ $i + 1 }}"/>
-            @error('certification_fomus.'.$i)
+            @error('certification_focus.'.$i)
             <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>

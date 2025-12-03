@@ -781,7 +781,18 @@ class WebinarController extends Controller
                 'order' => $data['order'] ?? $webinar->order,
                 'course_rate' => $data['course_rate'] ?? $webinar->course_rate,
             ]);
-
+ $extraDetailsData = $request->only([
+        'plan_type', 'plan_badge', 'plan_price', 'price_suffix', 'plan_duration_option', 
+        'plan_cancel_text', 'comparison_text', 'plan_icon', 'is_featured', 'heading_main', 'heading_sub',
+        'heading_extra', 'additional_description', 'extra_description', 'subtitle', 'subdescription',
+        'material_text', 'material_icon', 'learn_text', 'price_icon', 'plan_movie', 'learn_title', 'learn_description',
+        'learn_icon', 'bonus_heading', 'bonus_icon', 'ad_title', 'ad_subtitle', 'ad_description', 'ad_img',
+        'certification_time', 'certification_focus', 'certification_outcome', 'rate_title', 'rate_options', 'rate_icon'
+    ]);
+     $webinar->extraDetails()->updateOrCreate(
+        ['webinar_id' => $webinar->id],
+        $extraDetailsData
+    );
             if ($webinar) {
                 WebinarTranslation::updateOrCreate([
                     'webinar_id' => $webinar->id,

@@ -14,8 +14,8 @@ class WebinarExtraDetails extends Model
         'plan_badge',
         'plan_price',
         'price_suffix',
-        'plan_duration',
-        'plan_option',
+        'plan_duration_option',
+        
         'plan_cancel_text',
         'comparison_text',
         'plan_icon',
@@ -42,7 +42,7 @@ class WebinarExtraDetails extends Model
         'ad_description',
         'ad_img',
         'certification_time',
-        'certification_fomus',
+        'certification_focus',
         'certification_outcome',
         'rate_title',
         'rate_options',
@@ -53,7 +53,7 @@ class WebinarExtraDetails extends Model
         'material_text' => 'array',
         'learn_text' => 'array',
         'certification_time' => 'array',
-        'certification_fomus' => 'array',
+        'certification_focus' => 'array',
         'certification_outcome' => 'array',
         'rate_options' => 'array',
     ];
