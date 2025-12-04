@@ -632,8 +632,8 @@ class SubscriptionController extends Controller
     ]);
 
     // Update or create extra details
-    $webinar->extraDetails()->updateOrCreate(
-        ['webinar_id' => $webinar->id],
+    $subscription->extraDetails()->updateOrCreate(
+        ['subscription_id' => $subscription->id],
         $extraDetailsData
     );
 
