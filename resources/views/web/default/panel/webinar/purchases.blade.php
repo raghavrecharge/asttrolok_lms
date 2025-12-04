@@ -496,14 +496,19 @@
                 @endif
             @endforeach
              </div>
+      
         @else
-            @include(getTemplate() . '.includes.no-result',[
-            'file_name' => 'student.png',
-            'title' => trans('panel.no_result_purchases') ,
-            'hint' => trans('panel.no_result_purchases_hint') ,
-            'btn' => ['url' => '{{ config('app.manual_base_url') }}/classes?sort=newest','text' => trans('panel.start_learning')]
-        ])
-        @endif
+    @include(getTemplate() . '.includes.no-result', [
+        "file_name" => "student.png",
+        "title" => trans("panel.no_result_purchases"),
+        "hint" => trans("panel.no_result_purchases_hint"),
+        "btn" => [
+            "url" => config("app.manual_base_url") . "/classes?sort=newest",
+            "text" => trans("panel.start_learning")
+        ]
+    ])
+@endif
+
     </section>
 
     <div class="my-30">
