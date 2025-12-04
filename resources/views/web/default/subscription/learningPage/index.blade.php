@@ -268,11 +268,11 @@
 
     $('.pratul').removeClass('active');
 
-	$('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 mt-20 text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
+	$('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 mt-20 text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{ config('app.manual_base_url') }}{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
 }
 function accessdenied(){
      $('.pratul').removeClass('active');
-  $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 mt-20  text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
+  $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 mt-20  text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{ config('app.manual_base_url') }}{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
 
 }
 
@@ -280,7 +280,7 @@ $(function() {
   $(".accessdenied").click(function() {
        $('.pratul').removeClass('active');
        $('.accessdenied').removeClass('active');
-  $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20  mt-20  text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
+  $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20  mt-20  text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{ config('app.manual_base_url') }}{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
 
     $(this).addClass("active");
   });
