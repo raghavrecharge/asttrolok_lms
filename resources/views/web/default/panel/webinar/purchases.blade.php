@@ -501,7 +501,7 @@
             'file_name' => 'student.png',
             'title' => trans('panel.no_result_purchases') ,
             'hint' => trans('panel.no_result_purchases_hint') ,
-            'btn' => ['url' => '/classes?sort=newest','text' => trans('panel.start_learning')]
+            'btn' => ['url' => '{{ config('app.manual_base_url') }}/classes?sort=newest','text' => trans('panel.start_learning')]
         ])
         @endif
     </section>

@@ -6,7 +6,7 @@
     <div class="d-flex align-items-lg-center flex-column flex-lg-row flex-grow-1">
 
         <div class="learning-page-logo-card d-flex align-items-center justify-content-between justify-content-lg-start">
-            <a class="navbar-brand d-flex align-items-center justify-content-center mr-0" href="/">
+            <a class="navbar-brand d-flex align-items-center justify-content-center mr-0" href="{{ config('app.manual_base_url') }}">
                 @if(!empty($generalSettings['logo']))
                     <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $generalSettings['logo'] }}" class="img-cover" alt="site logo">
                 @endif
