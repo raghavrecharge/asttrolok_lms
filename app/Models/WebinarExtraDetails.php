@@ -15,7 +15,6 @@ class WebinarExtraDetails extends Model
         'plan_price',
         'price_suffix',
         'plan_duration_option',
-        
         'plan_cancel_text',
         'comparison_text',
         'plan_icon',

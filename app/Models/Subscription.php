@@ -11,6 +11,7 @@ use Cviebrock\EloquentSluggable\Services\SlugService;
 use Illuminate\Support\Facades\DB;
 use App\Models\WebinarExtraDetails;
 
+
 use Jorenvh\Share\ShareFacade;
 
 class Subscription extends Model implements TranslatableContract
@@ -595,4 +596,5 @@ public function getProgress($isLearningPage = false)
 {
     return $this->hasOne(WebinarExtraDetails::class, 'webinar_id');
 }
+
 }
