@@ -32,7 +32,7 @@
         <span class="navbar-toggler-icon"></span>
     </button>
         </div>
-     <a class="navbar-brand navbar-order d-flex align-items-center justify-content-center mr-0 " href="https://marketing.asttrolok.com">
+     <a class="navbar-brand navbar-order d-flex align-items-center justify-content-center mr-0 " href="{{ config('app.manual_base_url') }}">
                                     <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/asttroloklogo-min_converted.webp" class="img-cover" alt="site logo">
                             </a>
 <div class="top-navbar">
@@ -157,11 +157,11 @@
                             </div>
 
                                                         <li class="nav-item ">
-                                <a class="nav-link" href="https://marketing.asttrolok.com/">Home</a>
+                                <a class="nav-link" href="{{ config('app.manual_base_url') }}/">Home</a>
                             </li>
 
                                                         <li class="nav-item ">
-                                <a class="nav-link" href="https://marketing.asttrolok.com/consult-with-astrologers">Consult with Astrologer's</a>
+                                <a class="nav-link" href="{{ config('app.manual_base_url') }}/consult-with-astrologers">Consult with Astrologer's</a>
                             </li>
 
                                                     <li class="nav-item ">
@@ -174,7 +174,7 @@
                                         <ul class="cat-dropdown-menu">
                                                                                                                                                                                                                                 <li>
 
-                                                    <a href="https://marketing.asttrolok.com/categories/astrology">
+                                                    <a href="{{ config('app.manual_base_url') }}/categories/astrology">
                                                         <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
                                                             <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse 1.webp" class="cat-dropdown-menu-icon mr-10" alt="Astrology icon">
                                                             Astrology
@@ -185,7 +185,7 @@
                                                                                                     </li>
                                                                                                                                                                                         <li>
 
-                                                    <a href="https://marketing.asttrolok.com/categories/ayurveda">
+                                                    <a href="{{ config('app.manual_base_url') }}/categories/ayurveda">
                                                         <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
                                                             <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%204.webp" class="cat-dropdown-menu-icon mr-10" alt="Ayurveda icon">
                                                             Ayurveda
@@ -196,7 +196,7 @@
                                                                                                     </li>
                                                                                                                                                                                         <li>
 
-                                                    <a href="https://marketing.asttrolok.com/categories/numerology">
+                                                    <a href="{{ config('app.manual_base_url') }}/categories/numerology">
                                                         <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
                                                             <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse 3.webp" class="cat-dropdown-menu-icon mr-10" alt="Numerology icon">
                                                             Numerology
@@ -207,7 +207,7 @@
                                                                                                     </li>
                                                                                                                                                                                         <li>
 
-                                                    <a href="https://marketing.asttrolok.com/categories/palmistry">
+                                                    <a href="{{ config('app.manual_base_url') }}/categories/palmistry">
                                                         <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
                                                             <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse 2.webp" class="cat-dropdown-menu-icon mr-10" alt="Palmistry icon">
                                                             Palmistry
@@ -218,7 +218,7 @@
                                                                                                     </li>
                                                                                                                                                                                         <li>
 
-                                                    <a href="https://marketing.asttrolok.com/categories/vastu">
+                                                    <a href="{{ config('app.manual_base_url') }}/categories/vastu">
                                                         <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
                                                             <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse 5.webp" class="cat-dropdown-menu-icon mr-10" alt="Vastu icon">
                                                             Vastu
@@ -228,7 +228,7 @@
 
                                                                                                     </li>
                                                                                                                                         <li style="float:right;">
-                                                <a href="https://marketing.asttrolok.com/classes">
+                                                <a href="{{ config('app.manual_base_url') }}/classes">
                                                         <div class="d-flex align-items-center" style="    font-size: 12px;font-weight: 600;text-align:center;color: #171347;">
 
                                                             View All
@@ -243,11 +243,11 @@
                         </li>
 
                                                         <li class="nav-item ">
-                                <a class="nav-link" href="https://marketing.asttrolok.com/blog">Blog</a>
+                                <a class="nav-link" href="{{ config('app.manual_base_url') }}/blog">Blog</a>
                             </li>
 
                                                         <li class="nav-item ">
-                                <a class="nav-link" href="https://marketing.asttrolok.com/contact">Contact Us</a>
+                                <a class="nav-link" href="{{ config('app.manual_base_url') }}/contact">Contact Us</a>
                             </li>
 
                         <div class="navmobile">

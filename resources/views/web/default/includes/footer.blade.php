@@ -20,7 +20,7 @@
 
  <div class="mainfooter border-top" >
       <nav class="mobile-nav text-center">
-        <a href="https://marketing.asttrolok.com/" class="bloc-icon {{ Request::path() == '/' ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
+        <a href="{{ config('app.manual_base_url') }}/" class="bloc-icon {{ Request::path() == '/' ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
 
              @if(Request::path() == '/')
              <svg width="29" height="28" viewBox="0 0 61 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -36,7 +36,7 @@
 
              <br><span class="font-12">Home</span>
          </a>
-         <a href="https://marketing.asttrolok.com/classes?sort=newest" class="bloc-icon {{ (Request::path() == 'classes' or (isset($course)? $course->type == 'course': false )) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
+         <a href="{{ config('app.manual_base_url') }}/classes?sort=newest" class="bloc-icon {{ (Request::path() == 'classes' or (isset($course)? $course->type == 'course': false )) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
 
                 @if((Request::path() == 'classes' or (isset($course)? $course->type == 'course': false )))
                              <svg width="28" height="28" viewBox="0 0 66 67" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -56,7 +56,7 @@
                 @endif
              <br><span class="font-12">Courses</span>
          </a>
-         <a href="https://marketing.asttrolok.com/consult-with-astrologers" class="bloc-icon {{ (Request::path() == 'consult-with-astrologers' or isset($meeting)) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
+         <a href="{{ config('app.manual_base_url') }}/consult-with-astrologers" class="bloc-icon {{ (Request::path() == 'consult-with-astrologers' or isset($meeting)) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
 
                 @if(Request::path() == 'consult-with-astrologers' or isset($meeting))
                             <svg width="29" height="28" viewBox="0 0 68 56" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -79,7 +79,7 @@
                 <br><span class="font-12">Consultation</span>
          </a>
 
-         <a href="https://marketing.asttrolok.com/blog" class="bloc-icon {{ (Request::path() == 'blog' or (isset($course)? $course->type == 'remedy': false )) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
+         <a href="{{ config('app.manual_base_url') }}/blog" class="bloc-icon {{ (Request::path() == 'blog' or (isset($course)? $course->type == 'remedy': false )) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
 
                  @if((Request::path() == 'blog' or (isset($course)? $course->type == 'remedy': false )))
                           <svg width="29" height="28" viewBox="0 0 63 62" fill="none" xmlns="http://www.w3.org/2000/svg">
