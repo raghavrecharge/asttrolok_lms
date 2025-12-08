@@ -81,15 +81,28 @@ public function inststep(Request $request, $slug){
 
              if($Access){
 
-                 if($Access->access_till_date > time()){
+                //  if($Access->access_till_date > time()){
 
-                     if($Access->access_content_count > 0){
-                         $access_content_count =$Access->access_content_count + $subscription ->free_video_count;;
-                     }
-                     $data["duedate"]=$Access->access_till_date;
-                 }else{
-                     $access_content_count=0;
+                //      if($Access->access_content_count > 0){
+                //          $access_content_count =$Access->access_content_count + $subscription ->free_video_count;;
+                //      }
+                //      $data["duedate"]=$Access->access_till_date;
+                //  }else{
+                //      $access_content_count=0;
+                //  }
+                
+                if($Access->access_till_date > time()){
+                 if($Access->access_content_count > 0){
+                     $access_content_count = $Access->access_content_count + $subscription ->free_video_count;
                  }
+                 if($subscription ->free_video_count){
+                     $access_content_count = $access_content_count + $subscription ->free_video_count;
+                 }
+                 $data["duedate"]=$Access->access_till_date;
+             }else{
+                 $access_content_count=0;
+             }
+             
              }
              if($user->id == 1){
              $access_content_count =$cchapt;
