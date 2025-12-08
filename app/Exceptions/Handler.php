@@ -7,6 +7,7 @@ use Throwable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Session\TokenMismatchException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -56,11 +57,40 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
-        if ($request->is('api/*')) {
+        // Handle CSRF Token Mismatch (419 Error)
+        if ($exception instanceof TokenMismatchException) {
+            return $this->handleTokenMismatch($request, $exception);
+        }
 
+        if ($request->is('api/*')) {
             return $this->renderApi($request, $exception);
         }
+
         return parent::render($request, $exception);
+    }
+
+    /**
+     * Handle Token Mismatch Exception (419 Error)
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Throwable  $exception
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    protected function handleTokenMismatch($request, $exception)
+    {
+        // If AJAX/JSON request
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'status' => 419,
+                'message' => 'Session expired. Please refresh and try again.',
+                'redirect' => url('/')
+            ], 419);
+        }
+
+        // For normal requests, redirect to home page
+        return redirect('/')
+            ->with('error', 'Your session has expired. Please try again.');
     }
 
     public function renderApi($request, Throwable $e)
@@ -75,11 +105,18 @@ class Handler extends ExceptionHandler
             $status = Response::HTTP_FORBIDDEN;
             $e = new AuthorizationException('HTTP_FORBIDDEN', $status);
         } elseif ($e instanceof \Dotenv\Exception\ValidationException && $e->getResponse()) {
-
             $status = Response::HTTP_BAD_REQUEST;
             $e = new \Dotenv\Exception\ValidationException('HTTP_BAD_REQUEST', $status, $e);
         } elseif ($e instanceof ValidationException && $e->getResponse()) {
             return $e->getResponse();
+        } elseif ($e instanceof TokenMismatchException) {
+            // API me CSRF error
+            $status = 419;
+            return response()->json([
+                'success' => false,
+                'status' => $status,
+                'message' => 'CSRF token mismatch. Session expired.'
+            ], $status);
         } else {
             if (env('APP_DEBUG')) {
                 return parent::render($request, $e);
@@ -94,5 +131,4 @@ class Handler extends ExceptionHandler
             'message' => $e->getMessage()
         ], $status);
     }
-
 }
