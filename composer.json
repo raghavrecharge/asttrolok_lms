@@ -24,6 +24,7 @@
         "mews/purifier": "^3.4",
         "php-open-source-saver/jwt-auth": "^2.8",
         "predis/predis": "^3.2",
+        "razorpay/razorpay": "^2.9",
         "spatie/calendar-links": "^1.11",
         "ssheduardo/redsys-laravel": "^1.4",
         "stevebauman/location": "^7.6",

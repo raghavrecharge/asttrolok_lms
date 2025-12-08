@@ -93,7 +93,7 @@ public function inststep(Request $request, $slug){
                 
                 if($Access->access_till_date > time()){
                  if($Access->access_content_count > 0){
-                     $access_content_count = $Access->access_content_count + $subscription ->free_video_count;
+                     $access_content_count = $Access->access_content_count;
                  }
                  if($subscription ->free_video_count){
                      $access_content_count = $access_content_count + $subscription ->free_video_count;
