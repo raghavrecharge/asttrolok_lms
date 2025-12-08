@@ -20,6 +20,7 @@ storage/*.key
 .env
 absolute-water-387410-3c083ae6a069.json
 absolute-water-387410-1ea261a9eede.json
+gc.json
 Homestead.yaml
 Homestead.json
 /.vagrant
