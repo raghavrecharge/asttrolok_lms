@@ -87,7 +87,7 @@ return [
             'base_url' => 'https://storage.googleapis.com/astrolok',
             'storage_path' => 'https://storage.googleapis.com/astrolok',
             'root' => 'https://storage.googleapis.com/astrolok',
-            'key_file' => base_path('absolute-water-387410-3c083ae6a069.json'),
+            'key_file' => base_path('gc.json'),
             'project_id' => env('GOOGLE_CLOUD_PROJECT_ID', 'absolute-water-387410'),
             'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET', 'astrolok'),
             'path_prefix' =>'webp/store',
@@ -165,7 +165,7 @@ return [
         
         'gcs' => [
             'driver' => 'gcs',
-            'key_file' => base_path('absolute-water-387410-1ea261a9eede.json'),
+            'key_file' => base_path('gc.json'),
             'project_id' => env('GOOGLE_CLOUD_PROJECT_ID', 'absolute-water-387410'),
             'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET', 'astrolok'),
             'path_prefix' => 'webp/store/',
