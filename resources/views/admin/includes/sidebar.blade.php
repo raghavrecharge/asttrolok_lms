@@ -80,12 +80,12 @@
                         @endcan()
                           @can('admin_webinars_create')
                             <li class="{{ url('/directaccess', false) ? 'active' : '' }}">
-                                <a class="nav-link" href="{{ url('/directaccess') }}"> Extend(Direct) Access</a>
+                                <a class="nav-link" href="{{ config('app.manual_base_url') }}/directaccess"> Extend(Direct) Access</a>
                             </li>
                         @endcan()
                         @can('admin_webinars_create')
                             <li class="{{ url('/fullaccess', false) ? 'active' : '' }}">
-                                <a class="nav-link" href="{{ url('/fullaccess') }}">Course Access by Amount</a>
+                                <a class="nav-link" href="{{ config('app.manual_base_url') }}/fullaccess">Course Access by Amount</a>
                             </li>
                         @endcan()
 
