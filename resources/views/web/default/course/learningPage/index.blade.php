@@ -282,7 +282,7 @@
 function accessdenied(){
      $('.pratul').removeClass('active');
   $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 0px 0;"><div class="course-private-content-icon m-auto"><img  src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 text-dark-blue">Access Denied </h2><p class="font-14 font-weight-500 text-gray">You have an overdue installment. Please pay it to access this course!</p><a href="{{$install_url}}" class="btn btn-primary mt-15">Pay Now</a></div> </div>');
-
+  $('.learning-page-tabs').removeClass('show');
 }
 
 $(function() {
@@ -292,6 +292,7 @@ $(function() {
   $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 0px 0;"><div class="course-private-content-icon m-auto"><img  src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 text-dark-blue">Access Denied </h2><p class="font-14 font-weight-500 text-gray">You have an overdue installment. Please pay it to access this course!</p><a href="{{$install_url}}" class="btn btn-primary mt-15">Pay Now</a></div> </div>');
 
     $(this).addClass("active");
+    $('.learning-page-tabs').removeClass('show');
   });
 });
 </script>
