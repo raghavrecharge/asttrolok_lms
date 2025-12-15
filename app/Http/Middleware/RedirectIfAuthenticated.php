@@ -20,6 +20,11 @@ class RedirectIfAuthenticated
     {
        
         if (Auth::guard($guard)->check()) {
+
+            if ($user->role->name === 'admin' && $user->role->is_admin === 1) {
+                \Log::info('Redirecting admin to admin panel', ['user_id' => $user->id]);
+            return redirect('/admin');
+        }
             return redirect(RouteServiceProvider::HOME);
         }
 
