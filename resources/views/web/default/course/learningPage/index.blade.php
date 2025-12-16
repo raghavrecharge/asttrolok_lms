@@ -224,6 +224,7 @@
         var loadFirstContent = {{ (!empty($dontAllowLoadFirstContent) and $dontAllowLoadFirstContent) ? 'false' : 'true' }};
 
         var courseUrl = '{{ $course->getUrl() }}';
+        var courseUrldownloadpdf = '{{ $course->getUrldownloadpdf() }}';
 
         var pleaseWaitForTheContentLang = '{{ trans('update.please_wait_for_the_content_to_load') }}';
         var downloadTheFileLang = '{{ trans('update.download_the_file') }}';
@@ -265,7 +266,8 @@
     <script  src="/vendor/laravel-filemanager/js/stand-alone-button.js"></script>
 
     <script  src="{{ config('app.js_css_url') }}/assets/default/js/parts/video_player_helpers.min.js"></script>
-    <script   src="{{ config('app.js_css_url') }}/assets/learning_page/scripts.min.js"></script>
+    <!-- <script   src="{{ config('app.js_css_url') }}/assets/learning_page/scripts.min.js"></script> -->
+    <script   src="https://cdn.asttrolok.com/public/scripts.min.js"></script>
 <script  >
     $('.learning-content-iframe iframe').attr('allowFullScreen', '');
 </script>

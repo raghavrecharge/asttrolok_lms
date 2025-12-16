@@ -69,7 +69,7 @@
         @endcan
 
         <li class="dropdown"><a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
-                <img alt="image" src="{{ $authUser->getAvatar() }}" class="rounded-circle mr-1">
+                <img alt="image" src="https://storage.googleapis.com/astrolok/webp/store/1/astrologer_mobile/Alok Sir.webp" class="rounded-circle mr-1">
                 <div class="d-sm-none d-lg-inline-block">{{ $authUser->full_name }}</div>
             </a>
             <div class="dropdown-menu dropdown-menu-right">

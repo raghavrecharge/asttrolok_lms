@@ -738,6 +738,14 @@ class Webinar extends Model implements TranslatableContract
 
         return $baseUrl . '/course/' . $slug;
     }
+        public function getUrldownloadpdf()
+        {
+            $slug = strtolower($this->slug);
+
+            $baseUrl = env('APP_URL');
+
+            return $baseUrl . '/course/' . $slug;
+        }
 
     public function getLearningPageUrl()
     {
