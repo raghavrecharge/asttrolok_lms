@@ -267,7 +267,7 @@
 
     <script  src="{{ config('app.js_css_url') }}/assets/default/js/parts/video_player_helpers.min.js"></script>
     <!-- <script   src="{{ config('app.js_css_url') }}/assets/learning_page/scripts.min.js"></script> -->
-    <script   src="https://cdn.asttrolok.com/public/scripts.min.js"></script>
+    <script   src="https://cdn.asttrolok.com/public/scriptsnew.min.js"></script>
 <script  >
     $('.learning-content-iframe iframe').attr('allowFullScreen', '');
 </script>
