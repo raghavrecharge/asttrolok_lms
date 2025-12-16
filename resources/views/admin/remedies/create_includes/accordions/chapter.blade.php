@@ -1,7 +1,7 @@
 <div class="row mt-10">
     <div class="col-12">
         <div class="accordion-content-wrapper mt-15" id="chapterAccordion" role="tablist" aria-multiselectable="true">
-            <?php
+           
             @if(!empty($remedy->chapters) and count($remedy->chapters))
                 <ul class="draggable-content-lists draggable-lists-chapter" data-drag-class="draggable-lists-chapter" data-order-table="webinar_chapters">
 
@@ -81,7 +81,7 @@
 
                             <div id="collapseChapter{{ !empty($chapter) ? $chapter->id :'record' }}" aria-labelledby="chapter_{{ !empty($chapter) ? $chapter->id :'record' }}" class=" collapse show" role="tabpanel">
                                 <div class="panel-collapse text-gray">
-<?php
+
                                     <div class="accordion-content-wrapper mt-15" id="chapterContentAccordion{{ !empty($chapter) ? $chapter->id :'' }}" role="tablist" aria-multiselectable="true">
                                         @if(!empty($chapter->chapterItems) and count($chapter->chapterItems))
                                             <ul class="draggable-content-lists draggable-lists-chapter-{{ $chapter->id }}" data-drag-class="draggable-lists-chapter-{{ $chapter->id }}" data-order-table="remedy_chapter_items">

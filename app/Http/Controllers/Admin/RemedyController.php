@@ -837,9 +837,9 @@ class RemedyController extends Controller
                     'sessions' => function ($query) {
                         $query->where('status', 'active');
                     },
-                    'assignments' => function ($query) {
-                        $query->where('status', 'active');
-                    },
+                    // 'assignments' => function ($query) {
+                    //     $query->where('status', 'active');
+                    // },
                     'quizzes' => function ($query) {
                         $query->where('status', 'active');
                     },

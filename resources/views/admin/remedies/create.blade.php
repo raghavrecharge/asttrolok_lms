@@ -18,7 +18,6 @@
         }
     </style>
 @endpush
-<?php
 @section('content')
     <section class="section">
         <div class="section-header">

@@ -53,7 +53,16 @@ Route::get('/emergencyDatabaseUpdate', function () {
 });
 
 Route::group(['namespace' => 'Auth', 'middleware' => ['check_mobile_app', 'share', 'check_maintenance']], function () {
-    Route::get('/', 'LoginController@showLoginForm');
+    Route::get('/', function () {
+    if (Auth::guard('web')->check()) {
+        $user = Auth::guard('web')->user();
+        return $user->isAdmin() ? redirect('/admin') : redirect('/panel');
+    }
+    if (Auth::guard('web')->check()) {
+        return redirect('/admin');
+    }
+    return redirect('/login');
+});
     Route::get('/login', 'LoginController@showLoginForm');
     Route::post('/login', 'LoginController@login');
     Route::get('/logout', 'LoginController@logout');
