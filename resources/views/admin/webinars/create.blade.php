@@ -547,84 +547,46 @@
                                             </div>
                                          <!-- Extra Details -->
 <!-- Add this section after the "Extra Details" comment in your form -->
-
 <div class="form-group mt-15">
-    <label class="input-label">Plan Type</label>
-    <input type="text" name="plan_type" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->plan_type : old('plan_type') }}" class="form-control @error('plan_type') is-invalid @enderror" placeholder="e.g., Basic, Premium, Enterprise"/>
-    @error('plan_type')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
+    <label class="input-label d-block" style="font-weight: 700;font-size:20px">Main Content</label>
+            <div class="form-group mt-15">
+                <label class="input-label">Subtitle</label>
+                <input type="text" name="subtitle" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->subtitle : old('subtitle') }}" class="form-control @error('subtitle') is-invalid @enderror"/>
+                @error('subtitle')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+            <div class="form-group mt-15">
+                <label class="input-label">Heading Main</label>
+                <input type="text" name="heading_main" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->heading_main : old('heading_main') }}" class="form-control @error('heading_main') is-invalid @enderror"/>
+                @error('heading_main')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+            <div class="form-group mt-15">
+                <label class="input-label">Heading Sub</label>
+                <input type="text" name="heading_sub" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->heading_sub : old('heading_sub') }}" class="form-control @error('heading_sub') is-invalid @enderror"/>
+                @error('heading_sub')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="form-group mt-15">
+                <label class="input-label">Subdescription</label>
+                <textarea name="subdescription" rows="3" class="form-control @error('subdescription') is-invalid @enderror">{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->subdescription : old('subdescription') }}</textarea>
+                @error('subdescription')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="form-group mt-15">
+                <label class="input-label">Additional Description</label>
+                <textarea name="additional_description" rows="4" class="form-control @error('additional_description') is-invalid @enderror">{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->additional_description : old('additional_description') }}</textarea>
+                @error('additional_description')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
 </div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Plan Badge</label>
-    <input type="text" name="plan_badge" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->plan_badge : old('plan_badge') }}" class="form-control @error('plan_badge') is-invalid @enderror" placeholder="e.g., Most Popular, Best Value"/>
-    @error('plan_badge')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Plan Price ({{ $currency ?? 'USD' }})</label>
-    <input type="text" name="plan_price" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->plan_price : old('plan_price') }}" class="form-control @error('plan_price') is-invalid @enderror" placeholder="{{ trans('public.0_for_free') }}"/>
-    @error('plan_price')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Price Suffix</label>
-    <input type="text" name="price_suffix" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->price_suffix : old('price_suffix') }}" class="form-control @error('price_suffix') is-invalid @enderror" placeholder="e.g., /month, /year"/>
-    @error('price_suffix')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Plan Duration Option</label>
-    <input type="text" name="plan_duration_option" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->plan_duration_option : old('plan_duration_option') }}" class="form-control @error('plan_duration_option') is-invalid @enderror" placeholder="e.g., 30 days, 6 months"/>
-    @error('plan_duration')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-
-<div class="form-group mt-15">
-    <label class="input-label">Plan Cancel Text</label>
-    <input type="text" name="plan_cancel_text" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->plan_cancel_text : old('plan_cancel_text') }}" class="form-control @error('plan_cancel_text') is-invalid @enderror" placeholder="e.g., Cancel anytime"/>
-    @error('plan_cancel_text')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Comparison Text</label>
-    <textarea name="comparison_text" rows="3" class="form-control @error('comparison_text') is-invalid @enderror" placeholder="Plan comparison details">{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->comparison_text : old('comparison_text') }}</textarea>
-    @error('comparison_text')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Plan Icon</label>
-    <div class="input-group">
-        <div class="input-group-prepend">
-            <button type="button" class="input-group-text admin-file-manager" data-input="plan_icon" data-preview="holder">
-                <i class="fa fa-upload"></i>
-            </button>
-        </div>
-        <input type="text" name="plan_icon" id="plan_icon" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->plan_icon : old('plan_icon') }}" class="form-control @error('plan_icon') is-invalid @enderror"/>
-        <div class="input-group-append">
-            <button type="button" class="input-group-text admin-file-view" data-input="plan_icon">
-                <i class="fa fa-eye"></i>
-            </button>
-        </div>
-        @error('plan_icon')
-        <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div>
-</div>
-
 <div class="form-group mt-15">
     <label class="input-label">Is Featured Icon</label>
     <div class="input-group">
@@ -644,150 +606,200 @@
         @enderror
     </div>
 </div>
-
 <div class="form-group mt-15">
-    <label class="input-label">Heading Main</label>
-    <input type="text" name="heading_main" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->heading_main : old('heading_main') }}" class="form-control @error('heading_main') is-invalid @enderror" placeholder="Main heading"/>
-    @error('heading_main')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Heading Sub</label>
-    <input type="text" name="heading_sub" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->heading_sub : old('heading_sub') }}" class="form-control @error('heading_sub') is-invalid @enderror" placeholder="Sub heading"/>
-    @error('heading_sub')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Heading Extra</label>
-    <input type="text" name="heading_extra" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->heading_extra : old('heading_extra') }}" class="form-control @error('heading_extra') is-invalid @enderror" placeholder="Extra heading"/>
-    @error('heading_extra')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Additional Description</label>
-    <textarea name="additional_description" rows="4" class="form-control @error('additional_description') is-invalid @enderror" placeholder="Additional description">{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->additional_description : old('additional_description') }}</textarea>
-    @error('additional_description')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Extra Description</label>
-    <textarea name="extra_description" rows="4" class="form-control @error('extra_description') is-invalid @enderror" placeholder="Extra description">{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->extra_description : old('extra_description') }}</textarea>
-    @error('extra_description')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Subtitle</label>
-    <input type="text" name="subtitle" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->subtitle : old('subtitle') }}" class="form-control @error('subtitle') is-invalid @enderror" placeholder="Subtitle"/>
-    @error('subtitle')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Subdescription</label>
-    <textarea name="subdescription" rows="3" class="form-control @error('subdescription') is-invalid @enderror" placeholder="Subdescription">{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->subdescription : old('subdescription') }}</textarea>
-    @error('subdescription')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label d-block">Material Text (4 Items)</label>
-    
-    <div class="row">
-        @for($i = 0; $i < 4; $i++)
-        <div class="col-12 col-md-6 mb-3">
-            <input type="text" name="material_text[]" 
-                value="{{ !empty($webinar->extraDetails) && !empty($webinar->extraDetails->material_text) && isset($webinar->extraDetails->material_text[$i]) ? $webinar->extraDetails->material_text[$i] : old('material_text.'.$i) }}" 
-                class="form-control @error('material_text.'.$i) is-invalid @enderror" 
-                placeholder="Material Item {{ $i + 1 }}"/>
+    <label class="input-label d-block"style="font-weight: 700;font-size:20px">Material Items</label>
+   
+    @php
+        // Decode JSON data to array for material_icon
+        $materialIcons = [];
+        if (!empty($webinar->extraDetails) && !empty($webinar->extraDetails->material_icon)) {
+            $materialIcons = is_array($webinar->extraDetails->material_icon)
+                ? $webinar->extraDetails->material_icon
+                : json_decode($webinar->extraDetails->material_icon, true);
+        }
+    @endphp
+   
+    @for($i = 0; $i < 4; $i++)
+    <div class="row mb-3">
+        <!-- Material Icon Field -->
+        <div class="col-12 col-md-6">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <button type="button" class="input-group-text admin-file-manager" data-input="material_icon_{{ $i }}" data-preview="holder">
+                        <i class="fa fa-upload"></i>
+                    </button>
+                </div>
+                <input type="text" name="material_icon[]" id="material_icon_{{ $i }}"
+                       value="{{ $materialIcons[$i] ?? old('material_icon.'.$i, '') }}"
+                       class="form-control @error('material_icon.'.$i) is-invalid @enderror"/>
+                <div class="input-group-append">
+                    <button type="button" class="input-group-text admin-file-view" data-input="material_icon_{{ $i }}">
+                        <i class="fa fa-eye"></i>
+                    </button>
+                </div>
+                @error('material_icon.'.$i)
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+        </div>
+       
+        <!-- Material Text Field -->
+        <div class="col-12 col-md-6">
+            <input type="text" name="material_text[]"
+                value="{{ !empty($webinar->extraDetails) && !empty($webinar->extraDetails->material_text) && isset($webinar->extraDetails->material_text[$i]) ? $webinar->extraDetails->material_text[$i] : old('material_text.'.$i) }}"
+                class="form-control @error('material_text.'.$i) is-invalid @enderror"/>
             @error('material_text.'.$i)
             <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
-        @endfor
     </div>
+    @endfor
 </div>
-
+<!-- comparision plan  -->
 <div class="form-group mt-15">
-    <label class="input-label">Material Icon</label>
-    <div class="input-group mb-2">
-        <div class="input-group-prepend">
-            <button type="button" class="input-group-text admin-file-manager" data-input="material_icon" data-preview="holder">
-                <i class="fa fa-upload"></i>
-            </button>
-        </div>
-        <input type="text" name="material_icon" id="material_icon" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->material_icon : old('material_icon') }}" class="form-control @error('material_icon') is-invalid @enderror"/>
-        <div class="input-group-append">
-            <button type="button" class="input-group-text admin-file-view" data-input="material_icon">
-                <i class="fa fa-eye"></i>
-            </button>
-        </div>
-        @error('material_icon')
-        <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div>
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label d-block">Learn Text (4 Items)</label>
-    
-    <div class="row">
-        @for($i = 0; $i < 4; $i++)
-        <div class="col-12 col-md-6 mb-3">
-            <input type="text" name="learn_text[]" 
-                value="{{ !empty($webinar->extraDetails) && !empty($webinar->extraDetails->learn_text) && isset($webinar->extraDetails->learn_text[$i]) ? $webinar->extraDetails->learn_text[$i] : old('learn_text.'.$i) }}" 
-                class="form-control @error('learn_text.'.$i) is-invalid @enderror" 
-                placeholder="Learn Text {{ $i + 1 }}"/>
-            @error('learn_text.'.$i)
+     <label class="input-label d-block" style="font-weight: 700;font-size:20px">Comparision Plan</label>
+     <div class="row">
+ 
+    <div class="col-12 col-md-4 mb-3">
+        <div class="form-group">
+            <label class="input-label">Plan Duration </label>
+            <input type="text" name="plan_duration" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->plan_duration : old('plan_duration') }}" class="form-control @error('plan_duration') is-invalid @enderror"/>
+            @error('plan_duration')
             <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
-        @endfor
     </div>
-</div>
+   
+ 
+    <div class="col-12 col-md-4 mb-3">
+        <div class="form-group">
+            <label class="input-label">Plan Type</label>
+            <input type="text" name="plan_type" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->plan_type : old('plan_type') }}" class="form-control @error('plan_type') is-invalid @enderror" />
+            @error('plan_type')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+    </div>
+      <div class="col-12 col-md-4 mb-3">
+        <div class="form-group">
+            <label class="input-label">Plan Price</label>
+            <input type="text" name="plan_price" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->plan_price : old('plan_price') }}" class="form-control @error('plan_price') is-invalid @enderror"/>
+            @error('plan_price')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+    </div>
+   
+    <div class="col-12 col-md-4 mb-3">
+        <div class="form-group">
+            <label class="input-label">Plan Cancel Text</label>
+            <input type="text" name="plan_cancel_text" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->plan_cancel_text : old('plan_cancel_text') }}" class="form-control @error('plan_cancel_text') is-invalid @enderror" />
+            @error('plan_cancel_text')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+    </div>
+  </div>
+   
+  <div class="row">
+    <div class="col-12 col-md-4">
+        <div class="form-group mt-15">
+            <label class="input-label">Plan Movie/Video URL</label>
+            <input type="text"
+                   name="plan_movie"
+                   value="{{ old('plan_movie', $webinar->extraDetails->plan_movie ?? '') }}"
+                   class="form-control @error('plan_movie') is-invalid @enderror"/>
+            @error('plan_movie')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+    </div>
 
-<div class="form-group mt-15">
-    <label class="input-label">Price Icon</label>
+    <div class="col-12 col-md-4">
+        <div class="form-group mt-15">
+            <label class="input-label">Plan Duration Option</label>
+            <input type="text"
+                   name="plan_duration_option"
+                   value="{{ old('plan_duration_option', $webinar->extraDetails->plan_duration_option ?? '') }}"
+                   class="form-control @error('plan_duration_option') is-invalid @enderror"/>
+            @error('plan_duration_option')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+    </div>
+        <div class="col-12 col-md-4">
+            <div class="form-group mt-15">
+                <label class="input-label">Price Suffix</label>
+                <input type="text"
+                    name="price_suffix"
+                    value="{{ old('price_suffix', $webinar->extraDetails->price_suffix ?? '') }}"
+                    class="form-control @error('price_suffix') is-invalid @enderror"/>
+                @error('price_suffix')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+             
+        </div>
+        <div class="col-12 col-md-4 mb-3">
+        <div class="form-group">
+            <label class="input-label">Plan Badge</label>
+            <input type="text" name="plan_badge" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->plan_badge : old('plan_badge') }}" class="form-control @error('plan_badge') is-invalid @enderror"/>
+            @error('plan_badge')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+    </div>
+    </div>
+    <div class="form-group mt-15">
+        <label class="input-label">Plan Icon</label>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <button type="button" class="input-group-text admin-file-manager" data-input="plan_icon" data-preview="holder">
+                    <i class="fa fa-upload"></i>
+                </button>
+            </div>
+            <input type="text" name="plan_icon" id="plan_icon" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->plan_icon : old('plan_icon') }}" class="form-control @error('plan_icon') is-invalid @enderror"/>
+            <div class="input-group-append">
+                <button type="button" class="input-group-text admin-file-view" data-input="plan_icon">
+                    <i class="fa fa-eye"></i>
+                </button>
+            </div>
+            @error('plan_icon')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+    </div>
     <div class="input-group">
-        <div class="input-group-prepend">
-            <button type="button" class="input-group-text admin-file-manager" data-input="price_icon" data-preview="holder">
-                <i class="fa fa-upload"></i>
-            </button>
+            <div class="input-group-prepend">
+                <button type="button" class="input-group-text admin-file-manager" data-input="price_icon" data-preview="holder">
+                    <i class="fa fa-upload"></i>
+                </button>
+            </div>
+            <input type="text" name="price_icon" id="price_icon" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->price_icon : old('price_icon') }}" class="form-control @error('price_icon') is-invalid @enderror"/>
+            <div class="input-group-append">
+                <button type="button" class="input-group-text admin-file-view" data-input="price_icon">
+                    <i class="fa fa-eye"></i>
+                </button>
+            </div>
+            @error('price_icon')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
-        <input type="text" name="price_icon" id="price_icon" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->price_icon : old('price_icon') }}" class="form-control @error('price_icon') is-invalid @enderror"/>
-        <div class="input-group-append">
-            <button type="button" class="input-group-text admin-file-view" data-input="price_icon">
-                <i class="fa fa-eye"></i>
-            </button>
-        </div>
-        @error('price_icon')
+    <div class="form-group mt-15">
+        <label class="input-label">Comparison Text</label>
+        <textarea name="comparison_text" rows="3" class="form-control @error('comparison_text') is-invalid @enderror">{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->comparison_text : old('comparison_text') }}</textarea>
+        @error('comparison_text')
         <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
 </div>
 
-<div class="form-group mt-15">
-    <label class="input-label">Plan Movie/Video URL</label>
-    <input type="text" name="plan_movie" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->plan_movie : old('plan_movie') }}" class="form-control @error('plan_movie') is-invalid @enderror" placeholder="Enter video URL"/>
-    @error('plan_movie')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
+<!-- what will you get -->
+<div class="form-group mt-25 mb-10">
+    <label class="input-label d-block" style="font-weight: 700;font-size:20px">What will you learn</label>
+    <div class="form-group mt-15">
     <label class="input-label">Learn Title</label>
-    <input type="text" name="learn_title" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->learn_title : old('learn_title') }}" class="form-control @error('learn_title') is-invalid @enderror" placeholder="What you'll learn title"/>
+    <input type="text" name="learn_title" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->learn_title : old('learn_title') }}" class="form-control @error('learn_title') is-invalid @enderror"/>
     @error('learn_title')
     <div class="invalid-feedback">{{ $message }}</div>
     @enderror
@@ -795,203 +807,251 @@
 
 <div class="form-group mt-15">
     <label class="input-label">Learn Description</label>
-    <textarea name="learn_description" rows="3" class="form-control @error('learn_description') is-invalid @enderror" placeholder="What you'll learn description">{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->learn_description : old('learn_description') }}</textarea>
+    <textarea name="learn_description" rows="3" class="form-control @error('learn_description') is-invalid @enderror">{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->learn_description : old('learn_description') }}</textarea>
     @error('learn_description')
     <div class="invalid-feedback">{{ $message }}</div>
     @enderror
 </div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Learn Icon</label>
-    <div class="input-group mb-2">
-        <div class="input-group-prepend">
-            <button type="button" class="input-group-text admin-file-manager" data-input="learn_icon" data-preview="holder">
-                <i class="fa fa-upload"></i>
-            </button>
+    @php
+        // Decode JSON data to array
+        $learnIcons = [];
+        if (!empty($webinar->extraDetails) && !empty($webinar->extraDetails->learn_icon)) {
+            $learnIcons = is_array($webinar->extraDetails->learn_icon)
+                ? $webinar->extraDetails->learn_icon
+                : json_decode($webinar->extraDetails->learn_icon, true);
+        }
+    @endphp
+   
+    @for($i = 0; $i < 4; $i++)
+    <div class="row mb-3">
+        <!-- Learn Icon Field -->
+        <div class="col-12 col-md-6">
+           
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <button type="button" class="input-group-text admin-file-manager" data-input="learn_icon_{{ $i }}" data-preview="holder">
+                        <i class="fa fa-upload"></i>
+                    </button>
+                </div>
+                <input type="text" name="learn_icon[]" id="learn_icon_{{ $i }}"
+                       value="{{ $learnIcons[$i] ?? old('learn_icon.'.$i, '') }}"
+                       class="form-control @error('learn_icon.'.$i) is-invalid @enderror"/>
+                <div class="input-group-append">
+                    <button type="button" class="input-group-text admin-file-view" data-input="learn_icon_{{ $i }}">
+                        <i class="fa fa-eye"></i>
+                    </button>
+                </div>
+                @error('learn_icon.'.$i)
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
         </div>
-        <input type="text" name="learn_icon" id="learn_icon" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->learn_icon : old('learn_icon') }}" class="form-control @error('learn_icon') is-invalid @enderror"/>
-        <div class="input-group-append">
-            <button type="button" class="input-group-text admin-file-view" data-input="learn_icon">
-                <i class="fa fa-eye"></i>
-            </button>
+       
+        <!-- Learn Text Field -->
+        <div class="col-12 col-md-6">
+           
+            <input type="text" name="learn_text[]"
+                value="{{ !empty($webinar->extraDetails) && !empty($webinar->extraDetails->learn_text) && isset($webinar->extraDetails->learn_text[$i]) ? $webinar->extraDetails->learn_text[$i] : old('learn_text.'.$i) }}"
+                class="form-control @error('learn_text.'.$i) is-invalid @enderror"/>
+            @error('learn_text.'.$i)
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
-        @error('learn_icon')
-        <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
     </div>
+    @endfor
 </div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Bonus Heading</label>
-    <input type="text" name="bonus_heading" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->bonus_heading : old('bonus_heading') }}" class="form-control @error('bonus_heading') is-invalid @enderror" placeholder="Bonus section heading"/>
-    @error('bonus_heading')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Bonus Icon</label>
-    <div class="input-group">
-        <div class="input-group-prepend">
-            <button type="button" class="input-group-text admin-file-manager" data-input="bonus_icon" data-preview="holder">
-                <i class="fa fa-upload"></i>
-            </button>
+<!-- Bonus -->
+ <div class="form-group mt-15">
+     <label class="input-label d-block" style="font-weight: 700;font-size:20px">Bonus</label>
+        <div class="form-group mt-15">
+            <label class="input-label">Bonus Heading</label>
+            <input type="text" name="bonus_heading" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->bonus_heading : old('bonus_heading') }}" class="form-control @error('bonus_heading') is-invalid @enderror"/>
+            @error('bonus_heading')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
-        <input type="text" name="bonus_icon" id="bonus_icon" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->bonus_icon : old('bonus_icon') }}" class="form-control @error('bonus_icon') is-invalid @enderror"/>
-        <div class="input-group-append">
-            <button type="button" class="input-group-text admin-file-view" data-input="bonus_icon">
-                <i class="fa fa-eye"></i>
-            </button>
+
+        <div class="form-group mt-15">
+            <label class="input-label">Bonus Icon</label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <button type="button" class="input-group-text admin-file-manager" data-input="bonus_icon" data-preview="holder">
+                        <i class="fa fa-upload"></i>
+                    </button>
+                </div>
+                <input type="text" name="bonus_icon" id="bonus_icon" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->bonus_icon : old('bonus_icon') }}" class="form-control @error('bonus_icon') is-invalid @enderror"/>
+                <div class="input-group-append">
+                    <button type="button" class="input-group-text admin-file-view" data-input="bonus_icon">
+                        <i class="fa fa-eye"></i>
+                    </button>
+                </div>
+                @error('bonus_icon')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
         </div>
-        @error('bonus_icon')
-        <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div>
-</div>
+ </div>
 
+ 
+<!-- Roadmap -->
 <div class="form-group mt-15">
-    <label class="input-label">Ad Title</label>
-    <input type="text" name="ad_title" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->ad_title : old('ad_title') }}" class="form-control @error('ad_title') is-invalid @enderror" placeholder="Advertisement title"/>
-    @error('ad_title')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Ad Subtitle</label>
-    <input type="text" name="ad_subtitle" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->ad_subtitle : old('ad_subtitle') }}" class="form-control @error('ad_subtitle') is-invalid @enderror" placeholder="Advertisement subtitle"/>
-    @error('ad_subtitle')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Ad Description</label>
-    <textarea name="ad_description" rows="3" class="form-control @error('ad_description') is-invalid @enderror" placeholder="Advertisement description">{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->ad_description : old('ad_description') }}</textarea>
-    @error('ad_description')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label">Ad Image</label>
-    <div class="input-group">
-        <div class="input-group-prepend">
-            <button type="button" class="input-group-text admin-file-manager" data-input="ad_img" data-preview="holder">
-                <i class="fa fa-upload"></i>
-            </button>
-        </div>
-        <input type="text" name="ad_img" id="ad_img" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->ad_img : old('ad_img') }}" class="form-control @error('ad_img') is-invalid @enderror"/>
-        <div class="input-group-append">
-            <button type="button" class="input-group-text admin-file-view" data-input="ad_img">
-                <i class="fa fa-eye"></i>
-            </button>
-        </div>
-        @error('ad_img')
-        <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div>
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label d-block">Certification Time (3 Items)</label>
-    
-    <div class="row">
-        @for($i = 0; $i < 3; $i++)
-        <div class="col-12 col-md-6 mb-3">
-            <input type="text" name="certification_time[]" 
-                value="{{ !empty($webinar->extraDetails) && !empty($webinar->extraDetails->certification_time) && isset($webinar->extraDetails->certification_time[$i]) ? $webinar->extraDetails->certification_time[$i] : old('certification_time.'.$i) }}" 
-                class="form-control @error('certification_time.'.$i) is-invalid @enderror" 
-                placeholder="Certification Time {{ $i + 1 }}"/>
+    <label class="input-label d-block" style="font-weight: 700;font-size:20px">Your 6-Month Roadmap to Certification</label>
+   
+    @php
+        // Decode JSON data to arrays with better error handling
+        $certificationTime = [];
+        if (!empty($webinar->extraDetails) && !empty($webinar->extraDetails->certification_time)) {
+            if (is_string($webinar->extraDetails->certification_time)) {
+                $decoded = json_decode($webinar->extraDetails->certification_time, true);
+                $certificationTime = is_array($decoded) ? $decoded : [];
+            } elseif (is_array($webinar->extraDetails->certification_time)) {
+                $certificationTime = $webinar->extraDetails->certification_time;
+            }
+        }
+       
+        $certificationFocus = [];
+        if (!empty($webinar->extraDetails) && !empty($webinar->extraDetails->certification_focus)) {
+            if (is_string($webinar->extraDetails->certification_focus)) {
+                $decoded = json_decode($webinar->extraDetails->certification_focus, true);
+                $certificationFocus = is_array($decoded) ? $decoded : [];
+            } elseif (is_array($webinar->extraDetails->certification_focus)) {
+                $certificationFocus = $webinar->extraDetails->certification_focus;
+            }
+        }
+       
+        $certificationOutcome = [];
+        if (!empty($webinar->extraDetails) && !empty($webinar->extraDetails->certification_outcome)) {
+            if (is_string($webinar->extraDetails->certification_outcome)) {
+                $decoded = json_decode($webinar->extraDetails->certification_outcome, true);
+                $certificationOutcome = is_array($decoded) ? $decoded : [];
+            } elseif (is_array($webinar->extraDetails->certification_outcome)) {
+                $certificationOutcome = $webinar->extraDetails->certification_outcome;
+            }
+        }
+    @endphp
+   
+    @for($i = 0; $i < 3; $i++)
+    <div class="row mb-3">
+        <!-- Certification Time -->
+        <div class="col-12 col-md-4">
+            <input type="text" name="certification_time[]"
+                value="{{ isset($certificationTime[$i]) ? $certificationTime[$i] : (old('certification_time.'.$i) ?? '') }}"
+                class="form-control @error('certification_time.'.$i) is-invalid @enderror"/>
             @error('certification_time.'.$i)
             <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
-        @endfor
-    </div>
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label d-block">Certification Focus (3 Items)</label>
-    
-    <div class="row">
-        @for($i = 0; $i < 3; $i++)
-        <div class="col-12 col-md-6 mb-3">
-            <input type="text" name="certification_focus[]" 
-                value="{{ !empty($webinar->extraDetails) && !empty($webinar->extraDetails->certification_focus) && isset($webinar->extraDetails->certification_focus[$i]) ? $webinar->extraDetails->certification_focus[$i] : old('certification_focus.'.$i) }}" 
-                class="form-control @error('certification_focus.'.$i) is-invalid @enderror" 
-                placeholder="Certification Focus {{ $i + 1 }}"/>
+       
+        <!-- Certification Focus -->
+        <div class="col-12 col-md-4">
+            <input type="text" name="certification_focus[]"
+                value="{{ isset($certificationFocus[$i]) ? $certificationFocus[$i] : (old('certification_focus.'.$i) ?? '') }}"
+                class="form-control @error('certification_focus.'.$i) is-invalid @enderror"/>
             @error('certification_focus.'.$i)
             <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
-        @endfor
-    </div>
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label d-block">Certification Outcome (3 Items)</label>
-    
-    <div class="row">
-        @for($i = 0; $i < 3; $i++)
-        <div class="col-12 col-md-6 mb-3">
-            <input type="text" name="certification_outcome[]" 
-                value="{{ !empty($webinar->extraDetails) && !empty($webinar->extraDetails->certification_outcome) && isset($webinar->extraDetails->certification_outcome[$i]) ? $webinar->extraDetails->certification_outcome[$i] : old('certification_outcome.'.$i) }}" 
-                class="form-control @error('certification_outcome.'.$i) is-invalid @enderror" 
-                placeholder="Certification Outcome {{ $i + 1 }}"/>
+       
+        <!-- Certification Outcome -->
+        <div class="col-12 col-md-4">
+            <input type="text" name="certification_outcome[]"
+                value="{{ isset($certificationOutcome[$i]) ? $certificationOutcome[$i] : (old('certification_outcome.'.$i) ?? '') }}"
+                class="form-control @error('certification_outcome.'.$i) is-invalid @enderror"/>
             @error('certification_outcome.'.$i)
             <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
-        @endfor
     </div>
+    @endfor
 </div>
+<!-- Rating -->
+
 
 <div class="form-group mt-15">
-    <label class="input-label">Rate Title</label>
-    <input type="text" name="rate_title" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->rate_title : old('rate_title') }}" class="form-control @error('rate_title') is-invalid @enderror" placeholder="Rating section title"/>
+    <label class="input-label d-block"style="font-weight: 700;font-size:20px">Rating Options & Icons (5 Items)</label>
+    <div class="form-group mt-15">
+    <label class="input-label">Rating Title</label>
+    <input type="text" name="rate_title" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->rate_title : old('rate_title') }}" class="form-control @error('rate_title') is-invalid @enderror"/>
     @error('rate_title')
     <div class="invalid-feedback">{{ $message }}</div>
     @enderror
-</div>
-
-<div class="form-group mt-15">
-    <label class="input-label d-block">Rate Options (5 Items)</label>
-    
-    <div class="row">
-        @for($i = 0; $i < 5; $i++)
-        <div class="col-12 col-md-6 mb-3">
-            <input type="text" name="rate_options[]" 
-                value="{{ !empty($webinar->extraDetails) && !empty($webinar->extraDetails->rate_options) && isset($webinar->extraDetails->rate_options[$i]) ? $webinar->extraDetails->rate_options[$i] : old('rate_options.'.$i) }}" 
-                class="form-control @error('rate_options.'.$i) is-invalid @enderror" 
-                placeholder="Rate Option {{ $i + 1 }}"/>
+    </div>
+    @php
+        // Decode JSON data to array
+        $rateIcons = [];
+        if (!empty($webinar->extraDetails) && !empty($webinar->extraDetails->rate_icon)) {
+            $rateIcons = is_array($webinar->extraDetails->rate_icon)
+                ? $webinar->extraDetails->rate_icon
+                : json_decode($webinar->extraDetails->rate_icon, true);
+        }
+    @endphp
+   
+    @for($i = 0; $i < 5; $i++)
+    <div class="row mb-3">
+        <!-- Rate Option Field -->
+        <div class="col-12 col-md-6">
+         
+            <input type="text" name="rate_options[]"
+                value="{{ !empty($webinar->extraDetails) && !empty($webinar->extraDetails->rate_options) && isset($webinar->extraDetails->rate_options[$i]) ? $webinar->extraDetails->rate_options[$i] : old('rate_options.'.$i) }}"
+                class="form-control @error('rate_options.'.$i) is-invalid @enderror"/>
             @error('rate_options.'.$i)
             <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
-        @endfor
+       
+        <!-- Rate Icon Field -->
+        <div class="col-12 col-md-6">
+           
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <button type="button" class="input-group-text admin-file-manager" data-input="rate_icon_{{ $i }}" data-preview="holder">
+                        <i class="fa fa-upload"></i>
+                    </button>
+                </div>
+                <input type="text" name="rate_icon[]" id="rate_icon_{{ $i }}"
+                       value="{{ $rateIcons[$i] ?? old('rate_icon.'.$i, '') }}"
+                       class="form-control @error('rate_icon.'.$i) is-invalid @enderror"/>
+                <div class="input-group-append">
+                    <button type="button" class="input-group-text admin-file-view" data-input="rate_icon_{{ $i }}">
+                        <i class="fa fa-eye"></i>
+                    </button>
+                </div>
+                @error('rate_icon.'.$i)
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+        </div>
     </div>
+    @endfor
+</div>
+<!-- Advertisement -->
+  <div class="form-group mt-15">
+     <label class="input-label d-block" style="font-weight: 700;font-size:20px">Advertisement</label>
+       <div class="form-group mt-15">
+                <label class="input-label">Ad Subtitle</label>
+                <input type="text" name="ad_subtitle" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->ad_subtitle : old('ad_subtitle') }}" class="form-control @error('ad_subtitle') is-invalid @enderror"/>
+                @error('ad_subtitle')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+            <div class="form-group mt-15">
+                <label class="input-label">Ad Title</label>
+                <input type="text" name="ad_title" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->ad_title : old('ad_title') }}" class="form-control @error('ad_title') is-invalid @enderror"/>
+                @error('ad_title')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+            <div class="form-group mt-15">
+                <label class="input-label">Ad Description</label>
+                <textarea name="ad_description" rows="3" class="form-control @error('ad_description') is-invalid @enderror">{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->ad_description : old('ad_description') }}</textarea>
+                @error('ad_description')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+  </div>
 </div>
 
-<div class="form-group mt-15">
-    <label class="input-label">Rate Icon</label>
-    <div class="input-group">
-        <div class="input-group-prepend">
-            <button type="button" class="input-group-text admin-file-manager" data-input="rate_icon" data-preview="holder">
-                <i class="fa fa-upload"></i>
-            </button>
-        </div>
-        <input type="text" name="rate_icon" id="rate_icon" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->rate_icon : old('rate_icon') }}" class="form-control @error('rate_icon') is-invalid @enderror"/>
-        <div class="input-group-append">
-            <button type="button" class="input-group-text admin-file-view" data-input="rate_icon">
-                <i class="fa fa-eye"></i>
-            </button>
-        </div>
-        @error('rate_icon')
-        <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div>
-</div>
+<!-- extra Details -->
 
                                     <div class="form-group mt-15 {{ (!empty($webinarCategoryFilters) and count($webinarCategoryFilters)) ? '' : 'd-none' }}" id="categoriesFiltersContainer">
                                         <span class="input-label d-block">{{ trans('public.category_filters') }}</span>
@@ -1128,56 +1188,135 @@
                                             </div>
                                         </div>
                                     </section>
+<!-- FAQ Section -->
+<section class="mt-30">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2 class="section-title after-line">{{ trans('public.faq') }}</h2>
+        <button id="webinarAddFAQ" type="button" class="btn btn-primary btn-sm mt-3">
+            {{ trans('public.add_faq') }}
+        </button>
+    </div>
 
-                                    <section class="mt-30">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h2 class="section-title after-line">{{ trans('public.faq') }}</h2>
-                                            <button id="webinarAddFAQ" type="button" class="btn btn-primary btn-sm mt-3">{{ trans('public.add_faq') }}</button>
-                                        </div>
+    <div class="row mt-10">
+        <div class="col-12">
+            @php
+                $faqs = !empty($webinar) ? $webinar->faqs()->where('type', 'faq')->get() : collect();
+            @endphp
+           
+            @if(!empty($faqs) and !$faqs->isEmpty())
+                <div class="table-responsive">
+                    <table class="table table-striped text-center font-14">
+                        <tr>
+                            <th>{{ trans('public.title') }}</th>
+                            <th>{{ trans('public.answer') }}</th>
+                            <th></th>
+                        </tr>
 
-                                        <div class="row mt-10">
-                                            <div class="col-12">
-                                                @if(!empty($faqs) and !$faqs->isEmpty())
-                                                    <div class="table-responsive">
-                                                        <table class="table table-striped text-center font-14">
+                        @foreach($faqs as $faq)
+                            <tr>
+                                <th>{{ $faq->title }}</th>
+                                <td>
+                                    <button type="button" class="js-get-faq-description btn btn-sm btn-gray200">
+                                        {{ trans('public.view') }}
+                                    </button>
+                                    <input type="hidden" value="{{ $faq->answer }}"/>
+                                </td>
 
-                                                            <tr>
-                                                                <th>{{ trans('public.title') }}</th>
-                                                                <th>{{ trans('public.answer') }}</th>
-                                                                <th></th>
-                                                            </tr>
+                                <td class="text-right">
+                                    <button type="button"
+                                            data-faq-id="{{ $faq->id }}"
+                                            data-webinar-id="{{ !empty($webinar) ? $webinar->id : '' }}"
+                                            class="edit-faq btn-transparent text-primary mt-1"
+                                            data-toggle="tooltip"
+                                            data-placement="top"
+                                            title="{{ trans('admin/main.edit') }}">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
 
-                                                            @foreach($faqs as $faq)
-                                                                <tr>
-                                                                    <th>{{ $faq->title }}</th>
-                                                                    <td>
-                                                                        <button type="button" class="js-get-faq-description btn btn-sm btn-gray200">{{ trans('public.view') }}</button>
-                                                                        <input type="hidden" value="{{ $faq->answer }}"/>
-                                                                    </td>
+                                    @include('admin.includes.delete_button',[
+                                        'url' => getAdminPanelUrl().'/faqs/'. $faq->id .'/delete',
+                                        'btnClass' => ' mt-1'
+                                    ])
+                                </td>
+                            </tr>
+                        @endforeach
+                    </table>
+                </div>
+            @else
+                @include('admin.includes.no-result',[
+                    'file_name' => 'faq.png',
+                    'title' => trans('public.faq_no_result'),
+                    'hint' => trans('public.faq_no_result_hint'),
+                ])
+            @endif
+        </div>
+    </div>
+</section>
 
-                                                                    <td class="text-right">
-                                                                        <button type="button" data-faq-id="{{ $faq->id }}" data-webinar-id="{{ !empty($webinar) ? $webinar->id : '' }}" class="edit-faq btn-transparent text-primary mt-1" data-toggle="tooltip" data-placement="top" title="{{ trans('admin/main.edit') }}">
-                                                                            <i class="fa fa-edit"></i>
-                                                                        </button>
+<!-- Why Choose Us Section -->
+<section class="mt-30">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2 class="section-title after-line">Why Choose Us</h2>
+        <button id="webinarAddWhyChooseUs" type="button" class="btn btn-primary btn-sm mt-3">
+           Add Why Choose Us
+        </button>
+    </div>
 
-                                                                        @include('admin.includes.delete_button',['url' => getAdminPanelUrl().'/faqs/'. $faq->id .'/delete', 'btnClass' => ' mt-1'])
-                                                                    </td>
-                                                                </tr>
-                                                            @endforeach
+    <div class="row mt-10">
+        <div class="col-12">
+            @php
+                $whyChooseUsList = !empty($webinar) ? $webinar->faqs()->where('type', 'why_choose_us')->get() : collect();
+            @endphp
 
-                                                        </table>
-                                                    </div>
-                                                @else
-                                                    @include('admin.includes.no-result',[
-                                                        'file_name' => 'faq.png',
-                                                        'title' => trans('public.faq_no_result'),
-                                                        'hint' => trans('public.faq_no_result_hint'),
-                                                    ])
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </section>
+            @if(!empty($whyChooseUsList) and !$whyChooseUsList->isEmpty())
+                <div class="table-responsive">
+                    <table class="table table-striped text-center font-14">
+                        <tr>
+                            <th>{{ trans('public.title') }}</th>
+                            <th>{{ trans('public.answer') }}</th>
+                            <th></th>
+                        </tr>
 
+                        @foreach($whyChooseUsList as $whyChooseItem)
+                            <tr>
+                                <th>{{ $whyChooseItem->title }}</th>
+                                <td>
+                                    <button type="button" class="js-get-faq-description btn btn-sm btn-gray200">
+                                        {{ trans('public.view') }}
+                                    </button>
+                                    <input type="hidden" value="{{ $whyChooseItem->answer }}"/>
+                                </td>
+
+                                <td class="text-right">
+                                    <button type="button"
+                                            data-faq-id="{{ $whyChooseItem->id }}"
+                                            data-webinar-id="{{ !empty($webinar) ? $webinar->id : '' }}"
+                                            class="edit-why-choose-us btn-transparent text-primary mt-1"
+                                            data-toggle="tooltip"
+                                            data-placement="top"
+                                            title="{{ trans('admin/main.edit') }}">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+
+                                    @include('admin.includes.delete_button',[
+                                        'url' => getAdminPanelUrl().'/faqs/'. $whyChooseItem->id .'/delete',
+                                        'btnClass' => ' mt-1'
+                                    ])
+                                </td>
+                            </tr>
+                        @endforeach
+                    </table>
+                </div>
+            @else
+                @include('admin.includes.no-result',[
+                    'file_name' => 'faq.png',
+                    'title' => trans('public.why_choose_us_no_result'),
+                    'hint' => trans('public.why_choose_us_no_result_hint'),
+                ])
+            @endif
+        </div>
+    </div>
+</section>
                                     @foreach(\App\Models\WebinarExtraDescription::$types as $webinarExtraDescriptionType)
                                         <section class="mt-30">
                                             <div class="d-flex justify-content-between align-items-center">
