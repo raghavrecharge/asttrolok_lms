@@ -109,6 +109,16 @@
     font-size: 10.992px !important;
 }
 }
+.pay-now-container {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    z-index: 999;
+    background: #fff; /* Optional: background color for better visibility */
+    padding: 10px 0;
+}
+
    </style>
 @endpush
 

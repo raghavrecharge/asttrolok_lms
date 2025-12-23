@@ -25,6 +25,19 @@ if (!function_exists('validateParam')) {
         return $customRequest->validateParam($request_input, $rules, $somethingElseIsInvalid);
     }
 }
+if (!function_exists('fetchNavbarLinks')) {
+    function fetchNavbarLinks()
+    {
+        return DB::table('navbar_links')
+            ->select('title', 'link')
+            ->where('active', 1)
+            ->orderBy('position')
+            ->get()
+            ->unique('title')
+            ->values()
+            ->toArray();
+    }
+}
 function formatSizeUnits($bytes)
 {
     if ($bytes >= 1073741824) {

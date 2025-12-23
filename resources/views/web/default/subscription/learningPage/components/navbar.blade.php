@@ -23,10 +23,9 @@
             <a href="{{ $subscription->getUrl() }}" class="learning-page-navbar-title">
                 <span class="font-weight-bold">{{ $subscription->title }}</span>
             </a>
-
         </div>
+       
     </div>
-
     <div class="d-flex align-items-center mt-5 mt-md-0">
 
         @if(!empty($subscription->noticeboards_count) and $subscription->noticeboards_count > 0)

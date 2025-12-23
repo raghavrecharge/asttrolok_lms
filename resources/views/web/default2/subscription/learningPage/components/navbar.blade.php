@@ -23,7 +23,6 @@
             <a href="{{ $course->getUrl() }}" class="learning-page-navbar-title">
                 <span class="font-weight-bold">{{ $course->title }}</span>
             </a>
-
             <div class="d-flex align-items-center">
                 <div class="progress course-progress d-flex align-items-center flex-grow-1 bg-white border border-gray200 rounded-sm shadow-none mt-5">
                     <span class="progress-bar rounded-sm bg-warning" style="width: {{ $percent }}%"></span>

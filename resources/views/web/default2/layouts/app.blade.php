@@ -10,7 +10,11 @@
 
     @include('web.default2.includes.metas')
     <title>{{ $pageTitle ?? '' }}{{ !empty($generalSettings['site_name']) ? (' | '.$generalSettings['site_name']) : '' }}</title>
+  <link rel="stylesheet" href="https://asttrolok.in/public/marketing/assets2/default/css/app.css">
+<link rel="stylesheet" href="https://asttrolok.in/asttroloknew/assets/design_1/css/app.min.css">
+<link rel="stylesheet" href="https://asttrolok.in/public/marketing/asttroloknew/assets/design_1/css/parts/theme/headers/header_1.min.css">
 
+                        
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/css/app.css" onload="this.rel='stylesheet'">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/vendors/sweetalert2/dist/sweetalert2.min.css" onload="this.rel='stylesheet'">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/vendors/toast/jquery.toast.min.css" onload="this.rel='stylesheet'">
@@ -25,6 +29,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+          
+
 
     @if($isRtl)
         <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/css/rtl-app.css" onload="this.rel='stylesheet'">

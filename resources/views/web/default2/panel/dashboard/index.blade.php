@@ -378,7 +378,7 @@ height: 100%;
                                                 <span class="stat-value">{{ dateTimeFormat($sale->created_at,'j M Y') }}</span>
                                             </div>
                                         @endif
-                                        <a href="{{ $item->getLearningPageUrl() }}" target="_blank" class="btn btn-sm btn-primary my-10 w-100 mt-2 ">{{ trans('update.learning_page') }}</a>
+                                        <a href="{{ $item->getLearningPageUrl() }}"  class="btn btn-sm btn-primary my-10 w-100 mt-2 ">{{ trans('update.learning_page') }}</a>
 
                                     </div>
                                 </div>

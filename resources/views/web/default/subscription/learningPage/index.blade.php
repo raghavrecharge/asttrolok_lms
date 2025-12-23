@@ -109,6 +109,16 @@
     font-size: 10.992px !important;
 }
 }
+.pay-now-container {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    z-index: 999;
+    background: #fff; /* Optional: background color for better visibility */
+    padding: 10px 0;
+}
+
    </style>
 @endpush
 
@@ -194,6 +204,13 @@
             </div>
         </div>
     </div>
+
+@if(isset($subscription) && $subscription)
+    <div class="pay-now-container">
+        <a href="{{ config('app.manual_base_url') }}{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px; padding: 20px 10px;">Pay Now</a>
+    </div>
+@endif
+
 
     @include('web.default2.subscription.consultation_popup')
 @endsection

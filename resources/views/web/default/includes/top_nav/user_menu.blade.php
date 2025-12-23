@@ -1,10 +1,20 @@
+<style>
+    .navbar-auth-user-dropdown .custom-dropdown-body{
+        top:10px !important;
+    }
+    .custom-dropdown-body {
+    z-index: 1050 !important; /* Bootstrap ke fixed navbar se upar */
+}
+</style>
+
+
 @if(!isset($_GET['ad']))
 @if(!empty($authUser))
 
     <div class="custom-dropdown navbar-auth-user-dropdown position-relative ml-50">
         <div class="custom-dropdown-toggle d-flex align-items-center navbar-user cursor-pointer">
             <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $authUser->getAvatar() }}" class="rounded-circle" alt="{{ $authUser->full_name }}">
-            <span class="font-16 user-name ml-10 text-dark-blue font-14">{{ $authUser->full_name }}</span>
+            <span class="font-16 user-name ml-10 text-dark-blue font-14" style="color:white !important;">{{ $authUser->full_name }}</span>
         </div>
 
         <div class="custom-dropdown-body pb-10">

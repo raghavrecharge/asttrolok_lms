@@ -17,179 +17,376 @@
             $navBtnText = $navbarButton->title;
         }
     }
+
+    // Fetch dynamic navbar links
+    $dynamicNavLinks =  fetchNavbarLinks();
+
+    // Fetch dynamic categories for dropdown
+    $dynamicCategories = $categories ?? fetchNavbarCategories();
+
+    // Items to exclude from navbar (case-insensitive)
+    $excludeItems = ['astrology', 'ayurveda', 'numerology'];
 @endphp
-<div id="navbarVacuum"></div>
-<nav id="navbar" class="navbar navbar-expand-lg navbar-light">
+<style>
+    .xs-categories-toggle:hover > .cat-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    top: 15px;
+    transform: translateY(15px);
+}
+</style>
 
-      <div class="container">
+<style>
+    body {
+      background-color: #f8f9fa;
+    }
 
-             <div class="d-flex align-items-center justify-content-between w-100">
-<div class="navdesk">
-            <a class="navbar-brand navbar-order d-flex align-items-center justify-content-center mr-0 ml-auto" href="{{ config('app.manual_base_url') }}/">
-                                    <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/asttroloklogo-min_converted.webp" class="img-cover" alt="site logo">
+    .navbar {
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .nav-link, .dropdown-toggle {
+      color: #171347 !important;
+      font-weight: 400;
+      cursor: pointer;
+    }
+
+    .cat-dropdown-menu {
+      list-style: none;
+      margin: 0;
+      padding: 8px 0;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      min-width: 220px;
+      z-index: 999;
+    }
+
+    .cat-dropdown-menu li {
+      padding: 5px 15px;
+    }
+
+    .cat-dropdown-menu li:hover {
+      background-color: #f0f0f0;
+    }
+
+    .cat-dropdown-menu a {
+      text-decoration: none;
+      color: #171347;
+      font-weight: 500;
+    }
+
+    .cat-dropdown-menu-icon {
+      width: 24px;
+      height: 24px;
+      margin-right: 10px;
+    }
+
+    .xs-categories-toggle:hover .cat-dropdown-menu,
+    .cat-dropdown-menu:hover {
+      display: block;
+    }
+
+    .xs-categories-toggle {
+      position: relative;
+    }
+   .col-6.col-lg-5.mt-12.mt-lg-0 {
+    margin-left: 50px !important;
+}
+.nav-item .nav-link,
+.xs-categories-toggle > .nav-link,
+.cat-dropdown-menu li a div {
+    white-space: nowrap !important;
+}
+
+    @media (max-width: 768px) {
+      .cat-dropdown-menu {
+        position: static;
+        display: none;
+        box-shadow: none;
+      }
+      .cat-dropdown-menu.show {
+        display: block;
+      }
+    }
+
+.theme-header-1__main {
+    position: relative;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    background-color: transparent !important;
+    overflow: visible;
+
+}
+
+.item-sticky.sticky {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    background-color: #fff;
+    z-index: 9999;
+}
+
+</style>
+
+<div  class="theme-header-1__main ">
+    <div class="container h-100 position-relative">
+
+        <div class="position-relative z-index-2 bg-white rounded-24 w-100 h-100 p-16 item-sticky">
+            <div class="row align-items-center h-100">
+
+                <div class="col-6 col-lg-2">
+                    <a href="/" class="theme-header-1__logo text-left d-block">
+                        <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/asttroloklogo-min_converted.webp" class="img-fluid light-only" alt="logo">
+                        <!-- <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/asttroloklogo-min_converted.webp" class="img-fluid dark-only" alt="logo"> -->
+                    </a>
+                </div>
+
+                <div class="col-6 col-lg-5 mt-12 mt-lg-0">
+                    <div class="d-flex justify-content-center align-items-center gap-16 gap-lg-32">
+
+                        @if(!empty($dynamicNavLinks) && count($dynamicNavLinks) > 0)
+
+                            @foreach($dynamicNavLinks as $navLink)
+                                @php
+                                    // Handle both object and array format
+                                    $linkTitle = is_object($navLink) ? $navLink->title : ($navLink['title'] ?? '');
+                                    $linkUrl = is_object($navLink) ? $navLink->link : ($navLink['link'] ?? '#');
+
+                                    // Skip excluded items
+                                    if (in_array(strtolower($linkTitle), $excludeItems)) {
+                                        continue;
+                                    }
+                                @endphp
+
+                                @if(strtolower($linkTitle) == 'courses')
+
+                                    <li class="nav-item xs-categories-toggle position-relative">
+                                        <span class="dropdown-toggle nav-link">{{ $linkTitle }}</span>
+
+                                        <ul class="cat-dropdown-menu">
+                                            @if(!empty($dynamicCategories) && count($dynamicCategories) > 0)
+                                                @foreach($dynamicCategories as $category)
+                                                    @php
+                                                        $catTitle = is_object($category) ? $category->title : ($category['title'] ?? '');
+                                                        $catSlug = is_object($category) ? $category->slug : ($category['slug'] ?? '');
+                                                        $catIcon = is_object($category) ? $category->icon : ($category['icon'] ?? '');
+                                                    @endphp
+
+                                                    @if($catTitle != "Uncategories")
+                                                        <li>
+                                                            <a href="/categories/{{ $catSlug }}">
+                                                                <div class="d-flex align-items-center">
+                                                                    <img src="{{ !empty($catIcon) ? config('app.img_dynamic_url') . $catIcon : 'https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%201.webp' }}"
+                                                                         class="cat-dropdown-menu-icon"
+                                                                         alt="{{ $catTitle }}">
+                                                                    {{ $catTitle }}
+                                                                </div>
+                                                            </a>
+                                                        </li>
+                                                    @endif
+                                                @endforeach
+                                            @else
+
+                                                <li>
+                                                    <a href="/categories/astrology">
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%201.webp" class="cat-dropdown-menu-icon" alt="">
+                                                            Astrology
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="/categories/ayurveda">
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%204.webp" class="cat-dropdown-menu-icon" alt="">
+                                                            Ayurveda
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="/categories/numerology">
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%204.webp" class="cat-dropdown-menu-icon" alt="">
+                                                            Numerology
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="/categories/palmistry">
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%202.webp" class="cat-dropdown-menu-icon" alt="">
+                                                            Palmistry
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="/categories/veda">
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%205.webp" class="cat-dropdown-menu-icon" alt="">
+                                                            Veda
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                            @endif
+
+                                            <li>
+                                                <a href="/classes">
+                                                    <div class="d-flex align-items-center" style="font-size:13px;font-weight:600;">
+                                                        View All
+                                                    </div>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                @else
+
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ $linkUrl }}">{{ $linkTitle }}</a>
+                                    </li>
+                                @endif
+                            @endforeach
+                        @else
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="/">Home</a>
+                            </li>
+                             <li class="nav-item xs-categories-toggle position-relative">
+                                <span class="dropdown-toggle nav-link">Courses</span>
+
+                                <ul class="cat-dropdown-menu">
+                                    <li>
+                                        <a href="/categories/astrology">
+                                            <div class="d-flex align-items-center">
+                                                <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%201.webp" class="cat-dropdown-menu-icon" alt="">
+                                                Astrology
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/categories/ayurveda">
+                                            <div class="d-flex align-items-center">
+                                                <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%204.webp" class="cat-dropdown-menu-icon" alt="">
+                                                Ayurveda
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/categories/numerology">
+                                            <div class="d-flex align-items-center">
+                                                <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%204.webp" class="cat-dropdown-menu-icon" alt="">
+                                                Numerology
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/categories/palmistry">
+                                            <div class="d-flex align-items-center">
+                                                <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%202.webp" class="cat-dropdown-menu-icon" alt="">
+                                                Palmistry
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/categories/vastu">
+                                            <div class="d-flex align-items-center">
+                                                <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%205.webp" class="cat-dropdown-menu-icon" alt="">
+                                                Veda
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/categories">
+                                            <div class="d-flex align-items-center" style="font-size:13px;font-weight:600;">
+                                                View All
+                                            </div>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/consult-with-astrologers">Consultation</a>
+                            </li>
+                             <li class="nav-item">
+                                <a class="nav-link" href="/remedies">Remedies</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/blog">Blog</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/contact">Contact</a>
+                            </li>
+                        @endif
+
+                        @if(!empty($navbarPages) and count($navbarPages))
+                            <div class="navmobile">
+                                <li class="nav-item">
+                                    @if(!empty($navBtnUrl))
+                                        <a href="{{ $navBtnUrl }}" class="">
+                                            {{ $navBtnText }}
+                                        </a>
+                                    @endif
+                                </li>
+
+                                @if(!empty($authUser))
+                                    <li class="navbar-auth-user-dropdown-item">
+                                        <a href="/logout" class="d-flex align-items-center w-500 py-10 text-danger font-14 bg-transparent">
+                                            <img src="{{ config('app.js_css_url') }}/assets/default/img/icons/user_menu/logout.svg" class="icons">
+                                            <span class="ml-5">{{ trans('auth.logout') }}</span>
+                                        </a>
+                                    </li>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="col-6 col-lg-3 mt-12 mt-lg-0 d-flex align-items-center justify-content-end mr-0">
+
+                    <div class="nav-icons-or-start-live navbar-order navbar-order1">
+                        @if(!empty($navBtnUrl))
+                            <a href="{{ $navBtnUrl }}" class="d-none d-lg-flex btn btn-sm btn-success nav-start-a-live-btn" style="background-color: #32A128;">
+                                {{ $navBtnText }}
                             </a>
 
-            <button class="navbar-toggler navbar-order" type="button" id="navbarToggle">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-             </div>
+                            <a href="{{ $navBtnUrl }}" class="d-flex d-lg-none text-primary nav-start-a-live-btn font-14">
+                                {{ $navBtnText }}
+                            </a>
+                        @endif
 
-            <div class="mx-lg-30 d-none d-lg-flex flex-grow-1 navbar-toggle-content " id="navbarContent">
-                <div class="navbar-toggle-header text-right d-lg-none">
-                    <button class="btn-transparent" id="navbarClose">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-                </div>
+                        <div class="d-none nav-notify-cart-dropdown top-navbar ">
+                            @include(getTemplate().'.includes.shopping-cart-dropdwon')
 
-                <ul class="navbar-nav mr-auto d-flex align-items-center">
+                            <div class="border-left mx-15"></div>
 
-                                                                                            <li class="nav-item ">
-                                    <a class="nav-link" href="{{ config('app.manual_base_url') }}/">Home</a>
-                                </li>
-
-                                                                                            <li class="nav-item ">
-                                    <a class="nav-link" href="{{ config('app.manual_base_url') }}/consult-with-astrologers">Consult with Astrologer's</a>
-                                </li>
-
-                                                            <li class="nav-item ">
-                                <div class="menu-category ">
-                                    <ul>
-                                        <li class="cursor-pointer user-select-none d-flex xs-categories-toggle ">
-                                            <span class="dropdown-toggle nav-item nav-link">Courses</span>
-
-                                            <ul class="cat-dropdown-menu">
-                                                                                                                                                                                                                                                    <li>
-                                                        <a href="{{ config('app.manual_base_url') }}/categories/astrology">
-                                                            <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
-                                                                <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse 1.webp" class="cat-dropdown-menu-icon mr-10" alt="Astrology icon">
-                                                                Astrology
-                                                            </div>
-
-                                                                                                                    </a>
-
-                                                                                                                                                                            </li>
-                                                                                                                                                                                                        <li>
-                                                        <a href="{{ config('app.manual_base_url') }}/categories/ayurveda">
-                                                            <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
-                                                                <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%204.webp" class="cat-dropdown-menu-icon mr-10" alt="Ayurveda icon">
-                                                                Ayurveda
-                                                            </div>
-
-                                                                                                                    </a>
-
-                                                                                                            </li>
-                                                                                                                                                                                                        <li>
-                                                        <a href="{{ config('app.manual_base_url') }}/categories/numerology">
-                                                            <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
-                                                                <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse 3.webp" class="cat-dropdown-menu-icon mr-10" alt="Numerology icon">
-                                                                Numerology
-                                                            </div>
-
-                                                                                                                    </a>
-
-                                                                                                            </li>
-                                                                                                                                                                                                        <li>
-                                                        <a href="{{ config('app.manual_base_url') }}/categories/palmistry">
-                                                            <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
-                                                                <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse 2.webp" class="cat-dropdown-menu-icon mr-10" alt="Palmistry icon">
-                                                                Palmistry
-                                                            </div>
-
-                                                                                                                    </a>
-
-                                                                                                            </li>
-                                                                                                                                                                                                        <li>
-                                                        <a href="{{ config('app.manual_base_url') }}/categories/vastu">
-                                                            <div class="d-flex align-items-center" style="    font-size: 14px;font-weight: 600;text-align:center;color: #171347;">
-                                                                <img loading="lazy" decoding="async" src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse 5.webp" class="cat-dropdown-menu-icon mr-10" alt="Vastu icon">
-                                                                Vastu
-                                                            </div>
-
-                                                                                                                    </a>
-
-                                                                                                            </li>
-                                                                                                                                                    <li style="float:right;">
-                                                    <a href="{{ config('app.manual_base_url') }}/classes">
-                                                            <div class="d-flex align-items-center" style="    font-size: 12px;font-weight: 600;text-align:center;color: #171347;">
-                                                                View All
-                                                            </div>
-
-                                                        </a>
-                                                </li>
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-
-                                                                                            <li class="nav-item ">
-                                    <a class="nav-link" href="{{ config('app.manual_base_url') }}/blog">Blog</a>
-                                </li>
-
-                                                                                            <li class="nav-item ">
-                                    <a class="nav-link" href="{{ config('app.manual_base_url') }}/contact">Contact Us</a>
-                                </li>
-
-                                    </ul>
-            </div>
-
-            <div class="d-flex px-10 homehide" style="float:right !important;"><a href="tel:09174822333" class="btn btn-primary" style="    padding-right: 14px;padding-left: 14px;border-radius: 30px;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone text-white"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></a></div>
-                        <div class="nav-icons-or-start-live navbar-order navbar-order1">
-
-                <div class="d-none nav-notify-cart-dropdown top-navbar ">
-                    <div class="dropdown">
-    <button type="button" disabled="" class="btn btn-transparent dropdown-toggle" id="navbarShopingCart" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart mr-10"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-
-            </button>
-
-    <div class="dropdown-menu" aria-labelledby="navbarShopingCart">
-        <div class="d-md-none border-bottom mb-20 pb-10 text-right">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x close-dropdown"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </div>
-        <div class="h-100">
-            <div class="navbar-shopping-cart h-100" data-simplebar="init"><div class="simplebar-wrapper" style="margin: 0px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" style="height: auto; overflow: hidden;"><div class="simplebar-content" style="padding: 0px;">
-                                    <div class="d-flex align-items-center text-center py-50">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart mr-10"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                        <span class="">Your cart is empty</span>
+                            @include(getTemplate().'.includes.notification-dropdown')
+                        </div>
                     </div>
-                            </div></div></div></div><div class="simplebar-placeholder" style="width: 0px; height: 0px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: hidden;"><div class="simplebar-scrollbar" style="height: 0px; display: none;"></div></div></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mainNavbar = document.querySelector('.theme-header-1__main');
+    const topNavbar = document.querySelector('.theme-header-1__top-navbar'); // Top navbar
 
-                    <div class="border-left mx-15"></div>
+    let topNavHeight = topNavbar ? topNavbar.offsetHeight : 0;
 
-                    <div class="dropdown">
-    <button type="button" class="btn btn-transparent dropdown-toggle" disabled="" id="navbarNotification" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bell mr-10"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-
-            </button>
-
-    <div class="dropdown-menu pt-20" aria-labelledby="navbarNotification">
-        <div class="d-flex flex-column h-100">
-            <div class="mb-auto navbar-notification-card" data-simplebar="init"><div class="simplebar-wrapper" style="margin: 0px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" style="height: auto; overflow: hidden;"><div class="simplebar-content" style="padding: 0px;">
-                <div class="d-md-none border-bottom mb-20 pb-10 text-right">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x close-dropdown"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </div>
-
-                                    <div class="d-flex align-items-center text-center py-50">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bell mr-10"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                        <span class="">Empty notifications</span>
-                    </div>
-
-            </div></div></div></div><div class="simplebar-placeholder" style="width: 0px; height: 0px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: hidden;"><div class="simplebar-scrollbar" style="height: 0px; display: none;"></div></div></div>
-
-                    </div>
-    </div>
-</div>
-                </div>
-
-            </div>
-                    </div>
-    </div>
-</nav>
-
-@push('scripts_bottom')
-    <script defer src="{{ config('app.js_css_url') }}/assets/default/js/parts/navbar.min.js"></script>
-@endpush
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > topNavHeight) {
+            mainNavbar.classList.add('sticky');
+        } else {
+            mainNavbar.classList.remove('sticky');
+        }
+    });
+});
+</script>
