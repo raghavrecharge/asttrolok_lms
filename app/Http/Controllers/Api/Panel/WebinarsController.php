@@ -52,6 +52,10 @@ use App\Models\InstallmentStep;
 use App\Models\WebinarPartPayment;
 use App\Models\Meeting;
 use App\Models\ReserveMeeting;
+use App\Http\Controllers\Web\SubscriptionController;
+use App\Models\SubscriptionAccess;
+use App\Models\Subscription;
+
 
 class WebinarsController extends Controller
 {
@@ -514,6 +518,126 @@ class WebinarsController extends Controller
             ]);
             
             throw $e;
+        }
+    }
+
+    public function SubscriptionData()
+    {
+        try {
+           $subscriptions = Subscription::select('id', 'slug', 'price', 'thumbnail', 'image_cover','status')
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+            // API Response
+            return response()->json([
+                'success' => true,
+                'data' => $subscriptions,
+                'message' => 'Subscription details retrieved successfully'
+            ], 200);
+
+        } catch (\Exception $e) {
+            \Log::error('API index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching subscription details',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+    public function SubscriptionDataSummary()
+    {
+        try {
+           $slug ="asttrolok-pathshala";
+            $subscriptionController = new SubscriptionController();
+            $data = $subscriptionController->subscription($slug, true);
+
+           
+
+            $subscription = $data['subscription'];
+            $user = apiAuth();
+            
+            $subscription_prices = $subscription->price;
+            $cchapt = count($data['chapterItems']);
+
+            $Access = SubscriptionAccess::where('user_id', $user->id)
+                ->first();
+
+            $access_content_count = 0;
+
+            if ($Access) {
+                if ($Access->access_till_date > time()) {
+                    if ($Access->access_content_count > 0) {
+                        $access_content_count = $Access->access_content_count;
+                    }
+                    if ($subscription->free_video_count) {
+                        $access_content_count = $access_content_count + $subscription->free_video_count;
+                    }
+                    $data["duedate"] = $Access->access_till_date;
+                } else {
+                    $access_content_count = 0;
+                }
+            }
+
+            if ($user->id == 1) {
+                $access_content_count = $cchapt;
+            }
+
+            $data['limit'] = $access_content_count;
+            $data['install_url'] = '/subscriptions/direct-payment/' . $subscription->slug;
+
+            
+            // API Response
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'subscription' => [
+                        'id' => $subscription->id,
+                        'slug' => $subscription->slug,
+                        'price' => $subscription_prices,
+                        'free_video_count' => $subscription->free_video_count,
+                        'thumbnail' => $subscription->thumbnail,
+                        'image_cover' => $subscription->image_cover,
+                        'access_days' => $subscription->access_days,
+                        'message_for_reviewer' => $subscription->message_for_reviewer,
+                        'status' => $subscription->status,
+                        'created_at' => $subscription->created_at,
+                        'locale' => $subscription->locale,
+                        
+                    ],
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->full_name ?? $user->name,
+                    ],
+                    'access' => [
+                        'limit' => $access_content_count,
+                        'due_date' => $data['duedate'] ?? null,
+                        'has_bought' => $data['hasBought'],
+                    ],
+                    'chapters' => $data['chapterItems'] ?? [],
+                    'chapter_count' => $cchapt,
+                    
+                ],
+                'message' => 'Subscription details retrieved successfully'
+            ], 200);
+
+        } catch (\Exception $e) {
+            \Log::error('API index error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching subscription details',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
         }
     }
 

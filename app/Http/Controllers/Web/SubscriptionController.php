@@ -49,6 +49,9 @@ class SubscriptionController extends Controller
             if (auth()->check()) {
                 $user = auth()->user();
             }
+            if (empty($user)) {
+                $user = apiAuth();
+            }
 
             $subscription = Subscription::where('slug', $slug)
                 ->with([

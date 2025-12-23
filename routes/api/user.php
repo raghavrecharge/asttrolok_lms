@@ -30,6 +30,8 @@ Route::group(['middleware' => ['api.auth']], function () {
     });
     Route::get('/webinars/purchases', ['uses' => 'WebinarsController@indexPurchases']);
     Route::get('/webinars/summary', ['uses' => 'WebinarsController@PurchaseCourseSummary']);
+    Route::get('/subscription', ['uses' => 'WebinarsController@SubscriptionData']);
+    Route::get('/subscription/summary', ['uses' => 'WebinarsController@SubscriptionDataSummary']);
     Route::get('/webinars/organization', ['uses' => 'WebinarsController@indexOrganizations']);
     Route::group(['prefix' => '/reviews'], function () {
         Route::get('/', ['uses' => 'WebinarReviewController@list']);
