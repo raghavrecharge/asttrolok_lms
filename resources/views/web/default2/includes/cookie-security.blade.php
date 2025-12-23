@@ -1,7 +1,15 @@
 @php
     $cookieSecuritySettings = getCookieSettings();
 @endphp
-
+<style>
+.cookie-security-dialog {
+    position: fixed !important;
+    left: 280px !important;
+    bottom: 24px !important;
+    width: 480px !important;
+    z-index: 99999 !important;
+}
+</style>
 @if(!empty($cookieSecuritySettings['cookie_settings_modal_message']) and !empty(strip_tags($cookieSecuritySettings['cookie_settings_modal_message'])))
     <div class="cookie-security-dialog p-20 bg-gray rounded-lg">
         <h3 class="font-14 font-weight-bold text-white">{{ trans('update.your_privacy') }}</h3>

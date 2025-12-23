@@ -1,101 +1,135 @@
-@if(!empty($authUser))
+<!DOCTYPE html>
+<html lang="{{ app()->getLocale() }}">
+@php
+    $rtlLanguages = !empty($generalSettings['rtl_languages']) ? $generalSettings['rtl_languages'] : [];
 
-    <div class="custom-dropdown navbar-auth-user-dropdown position-relative ml-50">
-        <div class="custom-dropdown-toggle d-flex align-items-center navbar-user cursor-pointer">
-            <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $authUser->getAvatar() }}" class="rounded-circle" alt="{{ $authUser->full_name }}">
-            <span class="font-16 user-name ml-10 text-dark-blue font-14">{{ $authUser->full_name }}</span>
+    $isRtl = ((in_array(mb_strtoupper(app()->getLocale()), $rtlLanguages)) or (!empty($generalSettings['rtl_layout']) and $generalSettings['rtl_layout'] == 1));
+@endphp
+<head>
+    @include(getTemplate().'.includes.metas')
+    <title>{{ $pageTitle ?? '' }}{{ !empty($generalSettings['site_name']) ? (' | '.$generalSettings['site_name']) : '' }}</title>
+
+    <link href="{{ config('app.js_css_url') }}/assets/default/css/font.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/sweetalert2/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/toast/jquery.toast.min.css">
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/simplebar/simplebar.css">
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/app.css">
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/panel.css">
+
+    @if($isRtl)
+        <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/rtl-app.css">
+    @endif
+
+    @stack('styles_top')
+    @stack('scripts_top')
+
+    <style>
+        {!! !empty(getCustomCssAndJs('css')) ? getCustomCssAndJs('css') : '' !!}
+
+        {!! getThemeFontsSettings() !!}
+
+        {!! getThemeColorsSettings() !!}
+    </style>
+
+    @if(!empty($generalSettings['preloading']) and $generalSettings['preloading'] == '1')
+        @include('admin.includes.preloading')
+    @endif
+
+</head>
+<body class="@if($isRtl) rtl @endif">
+
+@php
+    $isPanel = true;
+@endphp
+
+<div id="panel_app">
+  @include('web.default2.includes.top_nav2')
+    @include('web.default2'.'.includes.navbar')
+       @if($authUser->isUser())
+<div class="container">
+    <div class="d-flex justify-content-end">
+
+         @include(getTemplate(). '.panel.includes.sidebar1')
+        @else
+        <div class="container-fluid">
+    <div class="d-flex justify-content-end">
+         @include(getTemplate(). '.panel.includes.sidebar')
+
+            @endif
+
+<div class="panel-content">
+        <div class="content">
+            @yield('content')
         </div>
-
-        <div class="custom-dropdown-body pb-10">
-
-            <div class="dropdown-user-avatar d-flex align-items-center p-15 m-15 mb-10 rounded-sm border">
-                <div class="size-40 rounded-circle position-relative">
-                    <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $authUser->getAvatar() }}" class="img-cover rounded-circle" alt="{{ $authUser->full_name }}">
-                </div>
-
-                <div class="ml-5">
-                    <div class="font-14 font-weight-bold text-secondary">{{ $authUser->full_name }}</div>
-                    <span class="mt-5 text-gray font-12">{{ $authUser->role->caption }}</span>
-                </div>
-            </div>
-
-            <ul class="my-8">
-                @if($authUser->isAdmin())
-                    <li class="navbar-auth-user-dropdown-item">
-                        <a href="{{ getAdminPanelUrl() }}" class="d-flex align-items-center w-100 px-15 py-10 text-gray font-14 bg-transparent">
-                            <img loading="lazy" decoding="async"  src="{{ config('app.js_css_url') }}/assets/default/img/icons/user_menu/dashboard.svg" class="icons">
-                            <span class="ml-5">{{ trans('panel.dashboard') }}</span>
-                        </a>
-                    </li>
-
-                    <li class="navbar-auth-user-dropdown-item">
-                        <a href="{{ getAdminPanelUrl("/settings") }}" class="d-flex align-items-center w-100 px-15 py-10 text-gray font-14 bg-transparent">
-                            <img loading="lazy" decoding="async"  src="{{ config('app.js_css_url') }}/assets/default/img/icons/user_menu/settings.svg" class="icons">
-                            <span class="ml-5">{{ trans('panel.settings') }}</span>
-                        </a>
-                    </li>
-                @else
-                    <li class="navbar-auth-user-dropdown-item">
-                        <a href="/panel" class="d-flex align-items-center w-100 px-15 py-10 text-gray font-14 bg-transparent">
-                            <img loading="lazy" decoding="async"  src="{{ config('app.js_css_url') }}/assets/default/img/icons/user_menu/dashboard.svg" class="icons">
-                            <span class="ml-5">{{ trans('panel.dashboard') }}</span>
-                        </a>
-                    </li>
-
-                    <li class="navbar-auth-user-dropdown-item">
-                        <a href="{{ ($authUser->isUser()) ? '/panel/webinars/purchases' : '/panel/webinars' }}" class="d-flex align-items-center w-100 px-15 py-10 text-gray font-14 bg-transparent">
-                            <img loading="lazy" decoding="async"  src="{{ config('app.js_css_url') }}/assets/default/img/icons/user_menu/my_courses.svg" class="icons">
-                            <span class="ml-5">{{ trans('update.my_courses') }}</span>
-                        </a>
-                    </li>
-
-                    @if(!$authUser->isUser())
-                        <li class="navbar-auth-user-dropdown-item">
-                            <a href="/panel/financial/sales" class="d-flex align-items-center w-100 px-15 py-10 text-gray font-14 bg-transparent">
-                                <img loading="lazy" decoding="async"  src="{{ config('app.js_css_url') }}/assets/default/img/icons/user_menu/sales_history.svg" class="icons">
-                                <span class="ml-5">{{ trans('financial.sales_history') }}</span>
-                            </a>
-                        </li>
-                    @endif
-
-                    <li class="navbar-auth-user-dropdown-item">
-                        <a href="/panel/support" class="d-flex align-items-center w-100 px-15 py-10 text-gray font-14 bg-transparent">
-                            <img loading="lazy" decoding="async"  src="{{ config('app.js_css_url') }}/assets/default/img/icons/user_menu/support.svg" class="icons">
-                            <span class="ml-5">{{ trans('panel.support') }}</span>
-                        </a>
-                    </li>
-
-                    @if(!$authUser->isUser())
-                        <li class="navbar-auth-user-dropdown-item">
-                            <a href="{{ $authUser->getProfileUrl() }}" class="d-flex align-items-center w-100 px-15 py-10 text-gray font-14 bg-transparent">
-                                <img loading="lazy" decoding="async"  src="{{ config('app.js_css_url') }}/assets/default/img/icons/user_menu/profile.svg" class="icons">
-                                <span class="ml-5">{{ trans('public.profile') }}</span>
-                            </a>
-                        </li>
-                    @endif
-
-                    <li class="navbar-auth-user-dropdown-item">
-                        <a href="/panel/setting" class="d-flex align-items-center w-100 px-15 py-10 text-gray font-14 bg-transparent">
-                            <img loading="lazy" decoding="async"  src="{{ config('app.js_css_url') }}/assets/default/img/icons/user_menu/settings.svg" class="icons">
-                            <span class="ml-5">{{ trans('panel.settings') }}</span>
-                        </a>
-                    </li>
-                @endif
-
-                <li class="navbar-auth-user-dropdown-item">
-                    <a href="/logout" class="d-flex align-items-center w-100 px-15 py-10 text-danger font-14 bg-transparent">
-                        <img loading="lazy" decoding="async"  src="{{ config('app.js_css_url') }}/assets/default/img/icons/user_menu/logout.svg" class="icons">
-                        <span class="ml-5">{{ trans('auth.logout') }}</span>
-                    </a>
-                </li>
-
-            </ul>
-
         </div>
     </div>
-@else
-    <div class="d-flex align-items-center ml-md-50">
-        <a href="/login" class="py-5 px-10 mr-10 text-dark-blue font-14" style="font-weight: 800;">{{ trans('auth.login') }}</a>
-        <a href="/register" class="py-5 px-10 text-dark-blue font-14" style="font-weight: 800;">{{ trans('auth.register') }}</a>
+
+    @include('web.default.includes.advertise_modal.index')
     </div>
+</div>
+
+<script   src="{{ config('app.js_css_url') }}/assets/default/js/app.js"></script>
+<script   src="{{ config('app.js_css_url') }}/assets/default/vendors/moment.min.js"></script>
+<script   src="{{ config('app.js_css_url') }}/assets/default/vendors/feather-icons/dist/feather.min.js"></script>
+<script   src="/vendor/laravel-filemanager/js/stand-alone-button.js"></script>
+<script   src="{{ config('app.js_css_url') }}/assets/default/vendors/sweetalert2/dist/sweetalert2.min.js"></script>
+<script   src="{{ config('app.js_css_url') }}/assets/default/vendors/toast/jquery.toast.min.js"></script>
+<script   type="text/javascript" src="{{ config('app.js_css_url') }}/assets/default/vendors/simplebar/simplebar.min.js"></script>
+
+<script  >
+    var deleteAlertTitle = '{{ trans('public.are_you_sure') }}';
+    var deleteAlertHint = '{{ trans('public.deleteAlertHint') }}';
+    var deleteAlertConfirm = '{{ trans('public.deleteAlertConfirm') }}';
+    var deleteAlertCancel = '{{ trans('public.cancel') }}';
+    var deleteAlertSuccess = '{{ trans('public.success') }}';
+    var deleteAlertFail = '{{ trans('public.fail') }}';
+    var deleteAlertFailHint = '{{ trans('public.deleteAlertFailHint') }}';
+    var deleteAlertSuccessHint = '{{ trans('public.deleteAlertSuccessHint') }}';
+    var forbiddenRequestToastTitleLang = '{{ trans('public.forbidden_request_toast_lang') }}';
+    var forbiddenRequestToastMsgLang = '{{ trans('public.forbidden_request_toast_msg_lang') }}';
+</script>
+
+@if(session()->has('toast'))
+    <script  >
+        (function () {
+            "use strict";
+
+            $.toast({
+                heading: '{{ session()->get('toast')['title'] ?? '' }}',
+                text: '{{ session()->get('toast')['msg'] ?? '' }}',
+                bgColor: '@if(session()->get('toast')['status'] == 'success') #43d477 @else #f63c3c @endif',
+                textColor: 'white',
+                hideAfter: 10000,
+                position: 'bottom-right',
+                icon: '{{ session()->get('toast')['status'] }}'
+            });
+        })(jQuery)
+    </script>
 @endif
+
+@stack('styles_bottom')
+@stack('scripts_bottom')
+
+<script   src="{{ config('app.js_css_url') }}/assets/default/js/parts/main.min.js"></script>
+<script   src="{{ config('app.js_css_url') }}/assets/default/js/panel/public.min.js"></script>
+
+@stack('scripts_bottom2')
+
+<script  >
+
+    @if(session()->has('registration_package_limited'))
+    (function () {
+        "use strict";
+
+        handleLimitedAccountModal('{!! session()->get('registration_package_limited') !!}')
+    })(jQuery)
+
+    {{ session()->forget('registration_package_limited') }}
+    @endif
+
+    {!! !empty(getCustomCssAndJs('js')) ? getCustomCssAndJs('js') : '' !!}
+</script>
+
+</body>
+</html>

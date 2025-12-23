@@ -10,11 +10,15 @@
     <title>{{ $pageTitle ?? '' }}{{ !empty($generalSettings['site_name']) ? (' | '.$generalSettings['site_name']) : '' }}</title>
 
     <link href="{{ config('app.js_css_url') }}/assets/default/css/font.css" rel="stylesheet">
-
+ <link rel="stylesheet" href="https://asttrolok.in/public/marketing/assets2/default/css/app.css">
+<link rel="stylesheet" href="https://asttrolok.in/asttroloknew/assets/design_1/css/app.min.css">
+<link rel="stylesheet" href="https://asttrolok.in/public/marketing/asttroloknew/assets/design_1/css/parts/theme/headers/header_1.min.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/sweetalert2/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/toast/jquery.toast.min.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/simplebar/simplebar.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/app.css">
+        <link rel="stylesheet" href="/assets/default/css/app.css">
+
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/panel.css">
 
     @if($isRtl)
@@ -25,11 +29,33 @@
     @stack('scripts_top')
 
     <style>
+        .xs-panel-nav {
+    position: fixed;
+    top: 0px !important;
+    right:2px !important;
+        }
         {!! !empty(getCustomCssAndJs('css')) ? getCustomCssAndJs('css') : '' !!}
 
         {!! getThemeFontsSettings() !!}
 
         {!! getThemeColorsSettings() !!}
+
+        <style>
+    .header-logo {
+        max-height: 50px;
+    }
+    
+    @media (max-width: 768px) {
+        .header-logo {
+            max-height: 40px;
+        }
+        .logo-container {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    }
+</style>
     </style>
 
     @if(!empty($generalSettings['preloading']) and $generalSettings['preloading'] == '1')
@@ -44,12 +70,15 @@
 @endphp
 
 <div id="panel_app">
-  @include('web.default2.includes.top_nav2')
-    @include('web.default2'.'.includes.navbar')
+    <div class="d-none d-lg-block">
+        @include('web.default2.includes.top_nav2')
+        @include('web.default2'.'.includes.navbar')
+    </div>
        @if($authUser->isUser())
-<div class="container">
+<div class="container mt-30">
+    
     <div class="d-flex justify-content-end">
-
+         
          @include(getTemplate(). '.panel.includes.sidebar1')
         @else
         <div class="container-fluid">

@@ -10,6 +10,9 @@
     <title>{{ $pageTitle ?? '' }}{{ !empty($generalSettings['site_name']) ? (' | '.$generalSettings['site_name']) : '' }}</title>
 
     <link href="{{ config('app.js_css_url') }}/assets2/default/css/font.css" rel="stylesheet">
+ <link rel="stylesheet" href="https://asttrolok.in/public/marketing/assets2/default/css/app.css">
+<link rel="stylesheet" href="https://asttrolok.in/asttroloknew/assets/design_1/css/app.min.css">
+<link rel="stylesheet" href="https://asttrolok.in/public/marketing/asttroloknew/assets/design_1/css/parts/theme/headers/header_1.min.css">
 
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/vendors/sweetalert2/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/vendors/toast/jquery.toast.min.css">
@@ -45,7 +48,8 @@
 
 <div id="panel_app">
 
-    @include(getTemplate().'.includes.navbar')
+     @include('web.default2.includes.top_nav2')
+    @include('web.default2'.'.includes.navbar')
        @if($authUser->isUser())
 <div class="container">
     <div class="d-flex justify-content-end">
