@@ -16,6 +16,21 @@ class Faq extends Model implements TranslatableContract
 
     public $translatedAttributes = ['title', 'answer'];
 
+    // YE CONSTANTS ADD KAREIN - IMPORTANT!
+    const TYPE_FAQ = 'faq';
+    const TYPE_WHY_CHOOSE_US = 'why_choose_us';
+
+    // Scopes
+    public function scopeFaqType($query)
+    {
+        return $query->where('type', self::TYPE_FAQ);
+    }
+
+    public function scopeWhyChooseUsType($query)
+    {
+        return $query->where('type', self::TYPE_WHY_CHOOSE_US);
+    }
+
     public function getTitleAttribute()
     {
         return getTranslateAttributeValue($this, 'title');

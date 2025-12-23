@@ -24,6 +24,8 @@ class FAQController extends Controller
             $this->validate($request, [
                 'title' => 'required|max:255',
                 'answer' => 'required',
+               'type' => 'nullable|in:faq,why_choose_us',
+
             ]);
 
             $data = $request->all();
@@ -33,6 +35,9 @@ class FAQController extends Controller
             if (!empty($creator)) {
                 $columnName = !empty($data['webinar_id']) ? 'webinar_id' : (!empty($data['bundle_id']) ? 'bundle_id' : 'upcoming_course_id');
                 $columnValue = !empty($data['webinar_id']) ? $data['webinar_id'] : (!empty($data['bundle_id']) ? $data['bundle_id'] : $data['upcoming_course_id']);
+
+             $type = $data['type'] ?? 'faq';
+
 
                 $order = Faq::query()->where('creator_id', $creator->id)
                         ->where($columnName, $columnValue)
@@ -44,6 +49,7 @@ class FAQController extends Controller
                     'bundle_id' => !empty($data['bundle_id']) ? $data['bundle_id'] : null,
                     'upcoming_course_id' => !empty($data['upcoming_course_id']) ? $data['upcoming_course_id'] : null,
                     'order' => $order,
+                     'type' => $type,
                     'created_at' => time()
                 ]);
 
@@ -68,7 +74,7 @@ class FAQController extends Controller
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+           
             throw $e;
         }
     }
@@ -117,7 +123,7 @@ class FAQController extends Controller
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+           
             throw $e;
         }
     }
@@ -152,7 +158,7 @@ class FAQController extends Controller
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+           
             throw $e;
         }
     }
@@ -194,7 +200,7 @@ class FAQController extends Controller
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+           
             throw $e;
         }
     }
@@ -213,7 +219,7 @@ class FAQController extends Controller
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+           
             throw $e;
         }
     }
