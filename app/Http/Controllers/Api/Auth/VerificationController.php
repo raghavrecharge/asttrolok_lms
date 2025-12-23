@@ -62,8 +62,8 @@ class VerificationController extends Controller
             try {
                 if ($username == 'mobile') {
 
-                    $smsService = new \App\Services\TwoFactorService();
-                    $result = $smsService->sendOTP($value);
+                    $smsService = new \App\Services\Fast2smsService();
+                    $result = $smsService->sendOTP($value , $data['code'] );
 
                     if ($result['success']) {
                         $verification->session_id = $result['session_id'];

@@ -51,5 +51,9 @@ return [
         'channel' => env('PAYTM_CHANNEL'),
         'industry_type' => env('PAYTM_INDUSTRY_TYPE'),
     ],
+    'fast2sms' => [
+        'api_key' => env('FAST2SMS_API_KEY'),
+        'url' => env('FAST2SMS_URL', 'https://www.fast2sms.com/dev/bulkV2'),
+    ],
 
 ];

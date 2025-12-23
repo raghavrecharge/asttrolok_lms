@@ -34,4 +34,17 @@ class Verification extends Model
     {
         $this->notify(new SendVerificationSMSCode($this));
     }
+
+    public function isExpired(): bool
+    {
+        return time() > $this->expired_at;
+    }
+
+    /**
+     * Check if already verified
+     */
+    public function isVerified(): bool
+    {
+        return !empty($this->verified_at);
+    }
 }

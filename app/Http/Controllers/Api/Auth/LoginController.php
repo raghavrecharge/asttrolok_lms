@@ -252,12 +252,12 @@ class LoginController extends Controller
     function checkMobileExists($mobile)
     {
 
-        $exists = User::where('mobile', $mobile)->isNotEmpty();
+        $exists = User::where('mobile', $mobile)->exists();
         if($exists){
             $exists = DB::table('users')
         ->where('mobile', $mobile)
         ->orWhere('mobile', $mobile)
-        ->isNotEmpty();
+        ->exists();
         }
         return $exists;
     }
