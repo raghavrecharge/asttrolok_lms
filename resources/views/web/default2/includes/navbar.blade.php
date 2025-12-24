@@ -143,7 +143,7 @@
             <div class="row align-items-center h-100">
 
                 <div class="col-6 col-lg-2">
-                    <a href="{{ config('app.manual_base_url') }}/" class="theme-header-1__logo text-left d-block">
+                    <a href="{{ config('app.manual_base_url') }}" class="theme-header-1__logo text-left d-block">
                         <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/asttroloklogo-min_converted.webp" class="img-fluid light-only" alt="logo">
                         <!-- <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/asttroloklogo-min_converted.webp" class="img-fluid dark-only" alt="logo"> -->
                     </a>
@@ -256,7 +256,7 @@
                         @else
 
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ config('app.manual_base_url') }}/">Home</a>
+                                <a class="nav-link" href="{{ config('app.manual_base_url') }}">Home</a>
                             </li>
                              <li class="nav-item xs-categories-toggle position-relative">
                                 <span class="dropdown-toggle nav-link">Courses</span>

@@ -122,11 +122,11 @@
                             <div class="mt-20"> 
                                @guest
     {{-- Login/Register buttons for guests --}}
-    <a href="{{ config('app.manual_base_url') }}/login" target="_blank" class="d-block font-16 text-white opacity-70 mt-16" data-text="Login">
+    <a href="/login" target="_blank" class="d-block font-16 text-white opacity-70 mt-16" data-text="Login">
         <span class="btn-flip-effect__text">Login</span>
     </a>
     
-    <a href="{{ config('app.manual_base_url') }}/register" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Register">
+    <a href="/register" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Register">
         <span class="btn-flip-effect__text">Register</span>
     </a>
 @else
