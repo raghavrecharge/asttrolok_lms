@@ -111,7 +111,7 @@
                                                                     <h3 class="mt-16 font-44 text-white mr-0 mr-lg-48">Take the First Step Towards Cosmic</h3>
                                 
                                                                 <div class="footer-logo mt-10" style="width: 215px; height: 57px;">
-                        <a href="/"><img loading="lazy" decoding="async" src="/public/public/Asttolok-White-Logo 1.png" class="img-cover" alt="footer logo" style="
+                        <a href="{{ config('app.manual_base_url') }}/"><img loading="lazy" decoding="async" src="/public/public/Asttolok-White-Logo 1.png" class="img-cover" alt="footer logo" style="
     border-radius: 0;
 "/></a>
                     </div>
@@ -139,21 +139,21 @@
         <span class="btn-flip-effect__text">Logout</span>
     </a>
 @endguest
-                                                                                                                                                <a href="/contact" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Contact">
+                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/contact" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Contact">
                                             <span class="btn-flip-effect__text">Contact</span>
                                         </a>
                                                                                                                                               
                                             
-                                                                                                                                                <a href="/about" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="About">
+                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/about" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="About">
                                             <span class="btn-flip-effect__text">About</span>
                                         </a>
-                                                                                                                                                <a href="/pages/terms" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Terms and Policies">
+                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/pages/terms" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Terms and Policies">
                                             <span class="btn-flip-effect__text">Terms and Conditions</span>
                                         </a>
-                                                                                                                                            <a href="/pages/cancellation-and-refund-policy" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Become Instructor">
+                                                                                                                                            <a href="{{ config('app.manual_base_url') }}/pages/cancellation-and-refund-policy" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Become Instructor">
                                             <span class="btn-flip-effect__text">Cancellation &amp; Refund Policy</span>
                                         </a>
-                                         <a href="/tutorial-guide" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Become Instructor">
+                                         <a href="{{ config('app.manual_base_url') }}/tutorial-guide" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Become Instructor">
                                             <span class="btn-flip-effect__text">Tutorial Guide</span>
                                         </a>
                                        
@@ -163,25 +163,25 @@
             <div class=" col-md-2 mt-10"> 
                 <span class="header d-block text-white font-weight-bold d-none" style="font-size: 20px !important;">Popular Categories</span>
                 
-                     <a href="/categories/astrology" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-16" data-text="Development">
+                     <a href="{{ config('app.manual_base_url') }}/categories/astrology" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-16" data-text="Development">
                                             <span class="btn-flip-effect__text">Astrology</span>
                                         </a>
-                                                                                                                                                <a href="/categories/ayurveda" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Business">
+                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/categories/ayurveda" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Business">
                                             <span class="btn-flip-effect__text">Ayurveda</span>
                                         </a>
-                                                                                                                                                <a href="/categories/numerology" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Marketing">
+                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/categories/numerology" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Marketing">
                                             <span class="btn-flip-effect__text">Numerology</span>
                                         </a>
-                                                                                                                                                <a href="/categories/palmistry" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Lifestyle">
+                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/categories/palmistry" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Lifestyle">
                                             <span class="btn-flip-effect__text">Palmistry</span>
                                         </a>
-                                                                                                                                                <a href="/categories/vastu" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Health">
+                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/categories/vastu" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Health">
                                             <span class="btn-flip-effect__text">Vastu</span>
                                         </a>
-                                                                                                                                                <a href="/classes?hindi=on" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Academics">
+                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/classes?hindi=on" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Academics">
                                             <span class="btn-flip-effect__text">Hindi</span>
                                         </a>
-                                                                                                                                                <a href="/classes?english=on" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Design">
+                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/classes?english=on" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Design">
                                             <span class="btn-flip-effect__text">English</span>
                                         </a>
                         </div>
