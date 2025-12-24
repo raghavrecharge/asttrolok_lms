@@ -249,7 +249,7 @@
                                 @else
 
                                     <li class="nav-item">
-                                        <a class="nav-link" href="{{ config('app.manual_base_url') }}{{ $linkUrl }}">{{ $linkTitle }}</a>
+                                        <a class="nav-link" href="{{ config('app.manual_base_url') }}/{{ $linkUrl }}">{{ $linkTitle }}</a>
                                     </li>
                                 @endif
                             @endforeach
