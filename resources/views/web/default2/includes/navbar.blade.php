@@ -143,7 +143,7 @@
             <div class="row align-items-center h-100">
 
                 <div class="col-6 col-lg-2">
-                    <a href="/" class="theme-header-1__logo text-left d-block">
+                    <a href="{{ config('app.manual_base_url') }}/" class="theme-header-1__logo text-left d-block">
                         <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/asttroloklogo-min_converted.webp" class="img-fluid light-only" alt="logo">
                         <!-- <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/asttroloklogo-min_converted.webp" class="img-fluid dark-only" alt="logo"> -->
                     </a>
@@ -182,7 +182,7 @@
 
                                                     @if($catTitle != "Uncategories")
                                                         <li>
-                                                            <a href="/categories/{{ $catSlug }}">
+                                                            <a href="{{ config('app.manual_base_url') }}/categories/{{ $catSlug }}">
                                                                 <div class="d-flex align-items-center">
                                                                     <img src="{{ !empty($catIcon) ? config('app.img_dynamic_url') . $catIcon : 'https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%201.webp' }}"
                                                                          class="cat-dropdown-menu-icon"
@@ -196,7 +196,7 @@
                                             @else
 
                                                 <li>
-                                                    <a href="/categories/astrology">
+                                                    <a href="{{ config('app.manual_base_url') }}/categories/astrology">
                                                         <div class="d-flex align-items-center">
                                                             <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%201.webp" class="cat-dropdown-menu-icon" alt="">
                                                             Astrology
@@ -204,7 +204,7 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="/categories/ayurveda">
+                                                    <a href="{{ config('app.manual_base_url') }}/categories/ayurveda">
                                                         <div class="d-flex align-items-center">
                                                             <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%204.webp" class="cat-dropdown-menu-icon" alt="">
                                                             Ayurveda
@@ -212,7 +212,7 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="/categories/numerology">
+                                                    <a href="{{ config('app.manual_base_url') }}/categories/numerology">
                                                         <div class="d-flex align-items-center">
                                                             <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%204.webp" class="cat-dropdown-menu-icon" alt="">
                                                             Numerology
@@ -220,7 +220,7 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="/categories/palmistry">
+                                                    <a href="{{ config('app.manual_base_url') }}/categories/palmistry">
                                                         <div class="d-flex align-items-center">
                                                             <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%202.webp" class="cat-dropdown-menu-icon" alt="">
                                                             Palmistry
@@ -228,7 +228,7 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="/categories/veda">
+                                                    <a href="{{ config('app.manual_base_url') }}/categories/veda">
                                                         <div class="d-flex align-items-center">
                                                             <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%205.webp" class="cat-dropdown-menu-icon" alt="">
                                                             Veda
@@ -238,7 +238,7 @@
                                             @endif
 
                                             <li>
-                                                <a href="/classes">
+                                                <a href="{{ config('app.manual_base_url') }}/classes">
                                                     <div class="d-flex align-items-center" style="font-size:13px;font-weight:600;">
                                                         View All
                                                     </div>
@@ -249,21 +249,21 @@
                                 @else
 
                                     <li class="nav-item">
-                                        <a class="nav-link" href="{{ $linkUrl }}">{{ $linkTitle }}</a>
+                                        <a class="nav-link" href="{{ config('app.manual_base_url') }}{{ $linkUrl }}">{{ $linkTitle }}</a>
                                     </li>
                                 @endif
                             @endforeach
                         @else
 
                             <li class="nav-item">
-                                <a class="nav-link" href="/">Home</a>
+                                <a class="nav-link" href="{{ config('app.manual_base_url') }}/">Home</a>
                             </li>
                              <li class="nav-item xs-categories-toggle position-relative">
                                 <span class="dropdown-toggle nav-link">Courses</span>
 
                                 <ul class="cat-dropdown-menu">
                                     <li>
-                                        <a href="/categories/astrology">
+                                        <a href="{{ config('app.manual_base_url') }}/categories/astrology">
                                             <div class="d-flex align-items-center">
                                                 <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%201.webp" class="cat-dropdown-menu-icon" alt="">
                                                 Astrology
@@ -271,7 +271,7 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="/categories/ayurveda">
+                                        <a href="{{ config('app.manual_base_url') }}/categories/ayurveda">
                                             <div class="d-flex align-items-center">
                                                 <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%204.webp" class="cat-dropdown-menu-icon" alt="">
                                                 Ayurveda
@@ -279,7 +279,7 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="/categories/numerology">
+                                        <a href="{{ config('app.manual_base_url') }}/categories/numerology">
                                             <div class="d-flex align-items-center">
                                                 <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%204.webp" class="cat-dropdown-menu-icon" alt="">
                                                 Numerology
@@ -287,7 +287,7 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="/categories/palmistry">
+                                        <a href="{{ config('app.manual_base_url') }}/categories/palmistry">
                                             <div class="d-flex align-items-center">
                                                 <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%202.webp" class="cat-dropdown-menu-icon" alt="">
                                                 Palmistry
@@ -295,7 +295,7 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="/categories/vastu">
+                                        <a href="{{ config('app.manual_base_url') }}/categories/vastu">
                                             <div class="d-flex align-items-center">
                                                 <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%205.webp" class="cat-dropdown-menu-icon" alt="">
                                                 Veda
@@ -303,7 +303,7 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="/categories">
+                                        <a href="{{ config('app.manual_base_url') }}/categories">
                                             <div class="d-flex align-items-center" style="font-size:13px;font-weight:600;">
                                                 View All
                                             </div>
@@ -312,16 +312,16 @@
                                 </ul>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/consult-with-astrologers">Consultation</a>
+                                <a class="nav-link" href="{{ config('app.manual_base_url') }}/consult-with-astrologers">Consultation</a>
                             </li>
                              <li class="nav-item">
-                                <a class="nav-link" href="/remedies">Remedies</a>
+                                <a class="nav-link" href="{{ config('app.manual_base_url') }}/remedies">Remedies</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/blog">Blog</a>
+                                <a class="nav-link" href="{{ config('app.manual_base_url') }}/blog">Blog</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/contact">Contact</a>
+                                <a class="nav-link" href="{{ config('app.manual_base_url') }}/contact">Contact</a>
                             </li>
                         @endif
 
