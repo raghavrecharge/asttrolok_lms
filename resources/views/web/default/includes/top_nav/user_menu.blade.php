@@ -5,6 +5,21 @@
     .custom-dropdown-body {
     z-index: 1050 !important; /* Bootstrap ke fixed navbar se upar */
 }
+ .navbar-user img {
+        width: 40px !important;
+        height: 40px !important;
+        object-fit: cover;
+    }
+    
+    /* Agar size-40 class nahi hai to yeh add karein */
+    .size-40 {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .img-cover {
+        object-fit: cover;
+    }
 </style>
 
 
