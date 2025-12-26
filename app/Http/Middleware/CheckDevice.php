@@ -10,18 +10,19 @@ class CheckDevice
     public function handle(Request $request, Closure $next)
     {
         
-        if (Auth::check()) {
-            $user = Auth::user();
+        // if (Auth::check()) {
+        //     $user = Auth::user();
             //   print_r($user->device_id);
-            $currentDeviceId = $request->header('User-Agent');
+            // $currentDeviceId = $request->header('User-Agent');
 // print_r($currentDeviceId);
-            if ($user->device_id && $user->device_id !== $currentDeviceId) {
-                if($user->id != 1){
-                Auth::logout();
-                return redirect('/login')->with('error', 'You have been logged out because you logged in from another device.');
-                }
-            }
-        }
+            // if ($user->device_id && $user->device_id !== $currentDeviceId) {
+            //     if($user->id != 1){
+            //     Auth::logout();
+            //     return redirect('/login')->with('error', 'You have been logged out because you logged in from another device.');
+            //     }
+            // }
+        // }
+        
 
         return $next($request);
     }
