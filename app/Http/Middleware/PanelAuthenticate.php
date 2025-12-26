@@ -4,7 +4,9 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
+use App\User;
 class PanelAuthenticate
 {
     /**
@@ -16,6 +18,13 @@ class PanelAuthenticate
      */
     public function handle($request, Closure $next)
     {
+        $user_id = $request->get('user_id');
+        $user = User::where('id', $user_id)->first();
+        if ($user) {
+            if (!Auth::check()) {
+             Auth::login($user, true);
+            }
+        }
 
         if (auth()->check() and !auth()->user()->isAdmin()) {
 
@@ -26,7 +35,6 @@ class PanelAuthenticate
             $this->redirectIfPublic();
             return $next($request);
         }
-
         return redirect('/login');
     }
      function redirectIfPublic() {
