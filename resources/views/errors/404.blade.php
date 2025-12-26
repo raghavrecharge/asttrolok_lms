@@ -1,5 +1,10 @@
 
-@extends('web.default2'.'.layouts.app')
+@php
+$agent = new \Jenssegers\Agent\Agent;
+$layout = $agent->isMobile() ? 'web.default.layouts.app' : 'web.default2.layouts.app';
+@endphp
+
+@extends($layout)
 @section('content')
     @php
         $get404ErrorPageSettings = get404ErrorPageSettings();
