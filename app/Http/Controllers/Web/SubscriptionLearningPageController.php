@@ -19,7 +19,6 @@ use App\Models\SubscriptionAccess;
 use App\Models\Webinar;
 use App\Models\WebinarAccessControl;
 use Illuminate\Http\Request;
-use Jenssegers\Agent\Agent;
 
 class SubscriptionLearningPageController extends Controller
 {
@@ -138,13 +137,7 @@ public function inststep(Request $request, $slug){
             ->get();
             $data["webinars"] =$webinars;
 
-            $agent = new Agent();
-            if ($agent->isMobile()){
-                return view(getTemplate() . '.subscription.learningPage.index', $data);
-            }else{
-                return view('web.default2' . '.subscription.learningPage.index', $data);
-            }
-
+            return view('web.default.subscription.learningPage.index', $data);
         } catch (\Exception $e) {
             \Log::error('index error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
