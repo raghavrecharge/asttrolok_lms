@@ -112,7 +112,7 @@
 
                             <div class="webinar-card-body w-100 d-flex flex-column">
                                 <div class="d-flex align-items-center justify-content-between">
-                                    <a href="{{ $webinar->getUrl() }}" target="_blank">
+                                    <a href="{{ $webinar->getLearningPageUrl() }}" target="_blank">
                                         <h3 class="font-16 text-dark-blue font-weight-bold">{{ $webinar->title }}
                                             <span class="badge badge-dark ml-10 status-badge-dark">{{ trans('webinars.'.$webinar->type) }}</span>
                                         </h3>

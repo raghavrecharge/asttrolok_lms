@@ -734,7 +734,8 @@ class Webinar extends Model implements TranslatableContract
     {
         $slug = strtolower($this->slug);
 
-        $baseUrl = config('app.manual_base_url');
+        // $baseUrl = config('app.manual_base_url');
+        $baseUrl = env('APP_URL');
 
         return $baseUrl . '/course/' . $slug;
     }

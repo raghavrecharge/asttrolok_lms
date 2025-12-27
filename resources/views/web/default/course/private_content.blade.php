@@ -1,5 +1,9 @@
-@extends('web.default.layouts.app')
+@php
+$agent = new \Jenssegers\Agent\Agent;
+$layout = $agent->isMobile() ? 'web.default.layouts.app' : 'web.default2.layouts.app';
+@endphp
 
+@extends($layout)
 @section('content')
     <div class="container">
         <div class="course-private-content text-center w-100 border rounded-lg">
