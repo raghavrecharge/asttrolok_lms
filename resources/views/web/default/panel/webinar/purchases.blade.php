@@ -108,7 +108,7 @@
 
                                 <div class="webinar-card-body w-100 d-flex flex-column">
                                     <div class="d-flex align-items-center justify-content-between">
-                                        <a href="{{ $item->getUrl() }}">
+                                        <a href="{{ $item->getLearningPageUrl() }}">
                                             <h3 class="webinar-title font-weight-bold font-16 text-dark-blue">
                                                 {{ $item->title }}
 
@@ -144,7 +144,7 @@
                                                     <a href="/panel/webinars/{{ $item->id }}/sale/{{ $sale->id }}/invoice" target="_blank" class="webinar-actions d-block mt-10">{{ trans('public.invoice') }}</a>
                                                 @else
                                                     @if(!empty($item->access_days) and !$item->checkHasExpiredAccessDays($sale->created_at, $sale->gift_id))
-                                                        <a href="{{ $item->getUrl() }}" target="_blank" class="webinar-actions d-block mt-10">{{ trans('update.enroll_on_course') }}</a>
+                                                        <a href="{{ $item->getLearningPageUrl() }}" target="_blank" class="webinar-actions d-block mt-10">{{ trans('update.enroll_on_course') }}</a>
                                                     @elseif(!empty($sale->webinar))
                                                         <a href="{{ $item->getLearningPageUrl() }}" target="_blank" class="webinar-actions d-block">{{ trans('update.learning_page') }}</a>
 
