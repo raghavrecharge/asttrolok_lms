@@ -1,5 +1,13 @@
-@extends(getTemplate().'.layouts.app')
+@php
+$agent = new \Jenssegers\Agent\Agent;
+$layout = $agent->isMobile() ? 'web.default.layouts.app' : 'web.default2.layouts.app';
+@endphp
 
+@extends($layout)
+<style>
+
+
+</style>
 @section('content')
     <div class="container">
         <div class="row login-container1">

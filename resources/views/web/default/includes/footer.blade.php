@@ -79,7 +79,7 @@
                 <br><span class="font-12">Consultation</span>
          </a>
 
-         <a href="{{ config('app.manual_base_url') }}/blog" class="bloc-icon {{ (Request::path() == 'blog' or (isset($course)? $course->type == 'remedy': false )) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
+         <a href="{{ config('app.manual_base_url') }}/remedies" class="bloc-icon {{ (Request::path() == 'blog' or (isset($course)? $course->type == 'remedy': false )) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
 
                  @if((Request::path() == 'blog' or (isset($course)? $course->type == 'remedy': false )))
                           <svg width="29" height="28" viewBox="0 0 63 62" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -91,7 +91,7 @@
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M4.875 10.5C4.875 7.13324 7.63324 4.375 11 4.375H18C21.3668 4.375 24.125 7.13324 24.125 10.5V16.625H16.8333C16.3501 16.625 15.9583 17.0168 15.9583 17.5C15.9583 18.3001 15.3001 18.9583 14.5 18.9583C13.6999 18.9583 13.0417 18.3001 13.0417 17.5C13.0417 17.0168 12.6499 16.625 12.1667 16.625H4.875V10.5ZM3.125 17.5C3.125 21.8332 6.66675 25.375 11 25.375H18C22.3332 25.375 25.875 21.8332 25.875 17.5V10.5C25.875 6.16675 22.3332 2.625 18 2.625H11C6.66675 2.625 3.125 6.16675 3.125 10.5V17.5ZM4.93787 18.375H11.4134C11.796 19.7189 13.0365 20.7083 14.5 20.7083C15.9635 20.7083 17.204 19.7189 17.5866 18.375H24.0621C23.6338 21.3318 21.0698 23.625 18 23.625H11C7.93014 23.625 5.36619 21.3318 4.93787 18.375Z" fill="#61646B"/>
                 </svg>
                 @endif
-                <br><span class="font-12">Blog</span>
+                <br><span class="font-12">Remedies</span>
          </a>
          <a href="{{isset($_GET['ad'])?'#':'/panel'}}" class="bloc-icon {{ Request::path() == 'login' ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
 

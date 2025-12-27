@@ -1,4 +1,9 @@
-@extends(getTemplate().'.layouts.app')
+@php
+$agent = new \Jenssegers\Agent\Agent;
+$layout = $agent->isMobile() ? 'web.default.layouts.app' : 'web.default2.layouts.app';
+@endphp
+
+@extends($layout)
 
 @section('content')
     <div class="container">
@@ -10,7 +15,6 @@
                 </button>
             </div>
         @endif
-
         <div class="row login-container1">
 
             <div class="col-12 col-md-6 pl-0" style="display: flex;flex-wrap: nowrap;align-items: center;">
