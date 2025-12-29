@@ -570,8 +570,18 @@ class DashboardController extends Controller
             $openSupportsCount1 = deepClone($query1)->where('status', 'open')->count();
             $closeSupportsCount1 = deepClone($query1)->where('status', 'close')->count();
 
-            $featureWebinars = Webinar::where('status', 'active')
-                    ->get();
+            // $featureWebinars = Webinar::where('status', 'active')
+            //         ->where('private', false)
+            //         ->get();
+                    
+            $query = Webinar::where('status', 'active')
+             ->where('private', false);
+
+            if (!empty($webinarsIds)) {
+                $query->whereNotIn('id', $webinarsIds);
+            }
+
+            $featureWebinars = $query->get();
 
                 $data['openSupportsCount1'] = $openSupportsCount1;
                 $data['closeSupportsCount1'] = $closeSupportsCount1;
@@ -590,6 +600,8 @@ class DashboardController extends Controller
                 $data['featureWebinars']=$featureWebinars;
                 $data['subscriptionAccess'] = $subscriptionAccess;
             }
+
+            
 
             $sidebanner = Setting::getsidebanner();
 
