@@ -790,14 +790,18 @@ class WebinarController extends Controller
                     'certification_time', 'certification_focus', 'certification_outcome', 'rate_title', 'rate_options', 'rate_icon'
                 ]);
 
-                // JSON encode array fields
                 $arrayFields = ['material_text', 'material_icon', 'learn_text', 'learn_icon', 
                                 'certification_time', 'certification_focus', 'certification_outcome', 
                                 'rate_options', 'rate_icon'];
 
                 foreach ($arrayFields as $field) {
-                    if (isset($extraDetailsData[$field]) && is_array($extraDetailsData[$field])) {
-                        $extraDetailsData[$field] = json_encode($extraDetailsData[$field]);
+                    if (isset($extraDetailsData[$field])) {
+                        if (is_string($extraDetailsData[$field])) {
+                            $extraDetailsData[$field] = json_decode($extraDetailsData[$field], true);
+                        }
+                        if (is_array($extraDetailsData[$field])) {
+                            $extraDetailsData[$field] = json_encode($extraDetailsData[$field]);
+                        }
                     }
                 }
 
