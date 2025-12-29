@@ -791,24 +791,43 @@ class WebinarController extends Controller
         ]);
 
         $jsonFields = [
-            'material_text',
-            'learn_text',
-            'certification_time',
-            'certification_focus',
-            'certification_outcome',
-            'rate_options',
-        ];
+                'material_text',
+                'learn_text',
+                'certification_time',
+                'certification_focus',
+                'certification_outcome',
+                'rate_options',
+            ];
 
-        foreach ($jsonFields as $field) {
-            if (isset($extraDetailsData[$field]) && is_array($extraDetailsData[$field])) {
-                $extraDetailsData[$field] = json_encode(
-                    array_values(array_filter($extraDetailsData[$field])),
-                    JSON_UNESCAPED_UNICODE
-                );
-            } else {
-                $extraDetailsData[$field] = null;
+            foreach ($jsonFields as $field) {
+                if (!isset($extraDetailsData[$field]) || empty($extraDetailsData[$field])) {
+                    $extraDetailsData[$field] = null;
+                    continue;
+                }
+
+                // If already JSON string → decode first
+                if (is_string($extraDetailsData[$field])) {
+                    $decoded = json_decode($extraDetailsData[$field], true);
+
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        $extraDetailsData[$field] = json_encode(
+                            array_values(array_filter($decoded)),
+                            JSON_UNESCAPED_UNICODE
+                        );
+                    } else {
+                        $extraDetailsData[$field] = null;
+                    }
+                }
+
+                // If array → encode normally
+                elseif (is_array($extraDetailsData[$field])) {
+                    $extraDetailsData[$field] = json_encode(
+                        array_values(array_filter($extraDetailsData[$field])),
+                        JSON_UNESCAPED_UNICODE
+                    );
+                }
             }
-        }
+
 
      $webinar->extraDetails()->updateOrCreate(
         ['webinar_id' => $webinar->id],
