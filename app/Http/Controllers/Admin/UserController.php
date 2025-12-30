@@ -687,9 +687,9 @@ public function importExcel(Request $request)
             }
 
             if (!empty($user->location)) {
-                $user->location = \Geo::getST_AsTextFromBinary($user->location);
+                $user->location = getST_AsTextFromBinary($user->location);
 
-                $user->location = \Geo::get_geo_array($user->location);
+                $user->location = get_geo_array($user->location);
             }
 
             $userMetas = $user->userMetas;

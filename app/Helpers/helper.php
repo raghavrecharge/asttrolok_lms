@@ -2537,3 +2537,35 @@ function nicePriceWithTax($price)
    // return round(handlePrice($price, true,false,true), 2);
     return handlePrice($price, false,false,true);
 }
+function getST_AsTextFromBinary($binary)
+    {
+        if (empty($binary)) {
+            return null;
+        }
+        
+        // Convert binary to WKT (Well-Known Text) format
+        // This is typically used with MySQL spatial data
+        return \DB::selectOne("SELECT ST_AsText(?) as location", [$binary])->location;
+    }
+
+    /**
+     * Convert WKT location string to array with lat/lng
+     */
+function get_geo_array($wkt)
+    {
+        if (empty($wkt)) {
+            return null;
+        }
+
+        // Parse "POINT(longitude latitude)" format
+        preg_match('/POINT\(([^ ]+) ([^ ]+)\)/', $wkt, $matches);
+        
+        if (count($matches) === 3) {
+            return [
+                'longitude' => (float) $matches[1],
+                'latitude' => (float) $matches[2]
+            ];
+        }
+
+        return null;
+    }

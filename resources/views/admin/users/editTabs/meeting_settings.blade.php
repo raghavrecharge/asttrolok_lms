@@ -160,8 +160,8 @@
 
                     <div class="col-12 col-lg-8">
                         <div class="form-group">
-                            <input type="hidden" id="LocationLatitude" name="latitude" value="{{ (!empty($user->location)) ? $user->location[0] : '' }}">
-                            <input type="hidden" id="LocationLongitude" name="longitude" value="{{ (!empty($user->location)) ? $user->location[1] : '' }}">
+                            <input type="hidden" id="LocationLatitude" name="latitude" value="{{ (!empty($user->location)) ? $user->location['latitude'] : '' }}">
+                            <input type="hidden" id="LocationLongitude" name="longitude" value="{{ (!empty($user->location)) ? $user->location['longitude'] : '' }}">
 
                             <div id="mapContainer" class="d-none">
                                 <label class="input-label">{{ trans('update.select_location') }}</label>
