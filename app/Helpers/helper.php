@@ -2543,9 +2543,14 @@ function getST_AsTextFromBinary($binary)
             return null;
         }
         
-        // Convert binary to WKT (Well-Known Text) format
-        // This is typically used with MySQL spatial data
-        return \DB::selectOne("SELECT ST_AsText(?) as location", [$binary])->location;
+        // Parse the binary POINT structure
+        $coords = parseBinaryPoint($binary);
+        
+        if ($coords) {
+            return sprintf('POINT(%s %s)', $coords['longitude'], $coords['latitude']);
+        }
+        
+        return null;
     }
 
     /**
@@ -2557,10 +2562,7 @@ function get_geo_array($wkt)
             return null;
         }
 
-        // Parse "POINT(longitude latitude)" format
-        preg_match('/POINT\(([^ ]+) ([^ ]+)\)/', $wkt, $matches);
-        
-        if (count($matches) === 3) {
+        if (preg_match('/POINT\(([^\s]+)\s+([^\s]+)\)/', $wkt, $matches)) {
             return [
                 'longitude' => (float) $matches[1],
                 'latitude' => (float) $matches[2]
@@ -2568,4 +2570,30 @@ function get_geo_array($wkt)
         }
 
         return null;
+    }
+
+    function parseBinaryPoint($binary)
+    {
+        if (strlen($binary) < 25) {
+            return null;
+        }
+        $unpacked = unpack('Vsrid/Corder/Vtype/dlongitude/dlatitude', $binary);
+        
+        if ($unpacked && isset($unpacked['longitude']) && isset($unpacked['latitude'])) {
+            return [
+                'longitude' => $unpacked['longitude'],
+                'latitude' => $unpacked['latitude']
+            ];
+        }
+
+        return null;
+    }
+
+    function getBinaryPointArray($binary)
+    {
+        if (empty($binary)) {
+            return null;
+        }
+
+        return parseBinaryPoint($binary);
     }
