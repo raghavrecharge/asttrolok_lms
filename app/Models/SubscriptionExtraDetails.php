@@ -47,15 +47,21 @@ class SubscriptionExtraDetails extends Model
         'rate_title',
         'rate_options',
         'rate_icon',
+        'risk_title',
+        'risk_description',
+        'cta_text',
     ];
 
-    protected $casts = [
+   protected $casts = [
         'material_text' => 'array',
+        'material_icon' => 'array',
         'learn_text' => 'array',
+        'learn_icon' => 'array',
         'certification_time' => 'array',
         'certification_focus' => 'array',
         'certification_outcome' => 'array',
         'rate_options' => 'array',
+        'rate_icon' => 'array',
     ];
 
     public function subscription()
