@@ -313,7 +313,7 @@
 
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.price') }} ({{ $currency }})</label>
-                                                <input type="text" name="price" value="{{ !empty($subscription->extraDetails) ? $subscription->extraDetails->price : old('price') }}" class="form-control @error('price')  is-invalid @enderror" placeholder="{{ trans('public.0_for_free') }}"/>
+                                                <input type="text" name="price" value="{{ !empty($subscription->price) ? $subscription->price : old('price') }}" class="form-control @error('price')  is-invalid @enderror" placeholder="{{ trans('public.0_for_free') }}"/>
                                                 @error('price')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
