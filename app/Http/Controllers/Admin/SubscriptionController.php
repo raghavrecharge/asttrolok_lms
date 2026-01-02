@@ -835,9 +835,15 @@ class SubscriptionController extends Controller
             $data = $request->all();
 
             $subscription = Subscription::find($id);
-            $isDraft = (!empty($data['draft']) and $data['draft'] == 1);
-            $reject = (!empty($data['draft']) and $data['draft'] == 'reject');
-            $publish = (!empty($data['draft']) and $data['draft'] == 'publish');
+            if (!empty($data['status']) and $data['status'] == 'active') {
+              
+            $publish = 'publish';
+
+            }else {
+                $isDraft = (!empty($data['draft']) and $data['draft'] == 1);
+                $reject = (!empty($data['draft']) and $data['draft'] == 'reject');
+                $publish = (!empty($data['draft']) and $data['draft'] == 'publish');
+            }
 
             $rules = [
             // Basic Information

@@ -378,7 +378,63 @@
         <div class="invalid-feedback d-block">{{ $message }}</div>
         @enderror
     </div>
+
+    <div class="form-group mt-15">
+    <div class="custom-control custom-switch">
+        <input type="checkbox" 
+               name="status_toggle" 
+               id="status_toggle" 
+               value="1"
+               {{ old('status', $subscription->status ?? 'is_draft') == 'active' ? 'checked' : '' }}
+               class="custom-control-input"
+               onchange="updateStatusValue(this)">
+        <label class="custom-control-label" for="status_toggle">
+            <span id="status_label">
+                {{ old('status', $subscription->status ?? 'is_draft') == 'active' ? 'Published' : 'Draft' }}
+            </span>
+        </label>
+    </div>
+    
+    <!-- Hidden field to store actual enum value -->
+    <input type="hidden" 
+           name="status" 
+           id="status" 
+           value="{{ old('status', $subscription->status ?? 'is_draft') }}">
+    
+    <div class="text-muted text-small mt-1">
+        <span id="status_help">
+            @if(old('status', $subscription->status ?? 'is_draft') == 'active')
+                Subscription is visible on homepage
+            @else
+                Subscription is in draft mode
+            @endif
+        </span>
+    </div>
+    
+    @error('status')
+    <div class="invalid-feedback d-block">{{ $message }}</div>
+    @enderror
 </div>
+
+<script>
+function updateStatusValue(checkbox) {
+    const statusInput = document.getElementById('status');
+    const statusLabel = document.getElementById('status_label');
+    const statusHelp = document.getElementById('status_help');
+    
+    if (checkbox.checked) {
+        // Published
+        statusInput.value = 'active';
+        statusLabel.textContent = 'Published';
+        statusHelp.textContent = 'Subscription is visible on public site';
+    } else {
+        // Draft
+        statusInput.value = 'is_draft';
+        statusLabel.textContent = 'Draft';
+        statusHelp.textContent = 'Subscription is in draft mode';
+    }
+}
+</script>
 
 <!-- Risk Information -->
 <div class="form-group mt-15">
