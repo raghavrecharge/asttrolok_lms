@@ -574,7 +574,6 @@ class SubscriptionController extends Controller
             $subscription->extraDetails()->updateOrCreate(
             ['subscription_id' => $subscription->id],
             [
-                'price' => $data['price'] ?? null,
                 
                 // Main Content
                 'subtitle' => $data['subtitle'] ?? null,
@@ -1023,13 +1022,13 @@ class SubscriptionController extends Controller
                 'message_for_reviewer' => $request->message_for_reviewer,
                 'status' => $data['status'],
                 'home_view' => !empty($data['home_view']) ? 1 : 0,
+                'price' => $data['price'] ?? null,
 
             ]);
 
          $subscription->extraDetails()->updateOrCreate(
             ['subscription_id' => $subscription->id],
             [
-                'price' => $data['price'] ?? null,
                 
                 // Main Content
                 'subtitle' => $data['subtitle'] ?? null,
