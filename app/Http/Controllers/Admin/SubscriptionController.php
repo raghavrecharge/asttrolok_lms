@@ -453,6 +453,8 @@ class SubscriptionController extends Controller
             // Additional Information
             'access_days' => 'required|integer|min:1|max:36500', // Max 100 years
             'video_count' => 'nullable|integer|min:0|max:10000',
+            'student_count' => 'nullable|integer|min:0|max:10000000',
+            'review_number' => 'nullable|string',
             'price' => 'required|numeric|min:0|max:999999.99',
             'points' => 'nullable|integer|min:0',
             
@@ -563,6 +565,8 @@ class SubscriptionController extends Controller
                 'price' => $data['price'],
                 'access_days' => $data['access_days'] ?? null,
                 'video_count' => $data['video_count'] ?? 0,
+                'review_number' => $data['review_number'] ?? null,
+                'student_count' => $data['student_count'] ?? 0,
                 'category_id' => $data['category_id'],
                 'message_for_reviewer' => $data['message_for_reviewer'] ?? null,
                 'home_view' => !empty($data['home_view']) ? 1 : 0,
@@ -570,6 +574,28 @@ class SubscriptionController extends Controller
                 'created_at' => time(),
                 'updated_at' => time(),
             ]);
+
+            $defaultlearningicons = [
+                '/public/public/public/public/backgroundborder2863-oxt.svg',
+                '/public/public/svg2863-o6p.svg',
+                '/public/public/backgroundborder2863-j91r.svg',
+                '/public/public/backgroundborder2863-1wk.svg',
+            ];
+            if (!isset($data['learn_icon']) || !is_array($data['learn_icon']) || count(array_filter($data['learn_icon'])) === 0) {
+                $data['learn_icon'] = $defaultlearningicons;
+            }
+
+            $defaultmaterialicons = [
+                '/public/public/vector1660-2i9i.svg',
+                '/public/public/Vector (2).png',
+                '/public/public/Vector (3).png',
+                '/public/public/vector1661-4d1k.svg',
+            ];
+            if (!isset($data['material_icon']) || !is_array($data['material_icon']) || count(array_filter($data['material_icon'])) === 0) {
+                $data['material_icon'] = $defaultmaterialicons;
+            }
+            $plan_icon = '/public/public/vector1615-24vi.svg';
+            $data['plan_icon'] = $data['plan_icon'] ?? $plan_icon;
 
             $subscription->extraDetails()->updateOrCreate(
             ['subscription_id' => $subscription->id],
@@ -585,7 +611,7 @@ class SubscriptionController extends Controller
                 
                 // Material Items - ✅ Pass arrays directly
                 'material_text' => $data['material_text'] ?? [],
-                'material_icon' => $data['material_icon'] ?? [],
+                'material_icon' => $data['material_icon'] ?? null,
                 
                 // Learn Section
                 'learn_title' => $data['learn_title'] ?? null,
@@ -861,6 +887,8 @@ class SubscriptionController extends Controller
             // Additional Information
             'access_days' => 'required|integer|min:1|max:36500', // Max 100 years
             'video_count' => 'nullable|integer|min:0|max:10000',
+            'student_count' => 'nullable|integer|min:0|max:10000000',
+            'review_number' => 'nullable|string',
             'price' => 'required|numeric|min:0|max:999999.99',
             'points' => 'nullable|integer|min:0',
             
@@ -1024,6 +1052,8 @@ class SubscriptionController extends Controller
                 'seo_description' => $request->seo_description,
                 'access_days' => $request->access_days,
                 'video_count' => $request->video_count,
+                'student_count' => $request->student_count,
+                'review_number' => $request->review_number,
                 'category_id' => $request->category_id,
                 'message_for_reviewer' => $request->message_for_reviewer,
                 'status' => $data['status'],
@@ -1031,6 +1061,29 @@ class SubscriptionController extends Controller
                 'price' => $data['price'] ?? null,
 
             ]);
+           $plan_icon = '/public/public/vector1615-24vi.svg';
+           $data['plan_icon'] = $data['plan_icon'] ?? $plan_icon;
+              
+
+        $defaultmaterialicons = [
+                '/public/public/vector1660-2i9i.svg',
+                '/public/public/Vector (2).png',
+                '/public/public/Vector (3).png',
+                '/public/public/vector1661-4d1k.svg',
+            ];
+         if (!isset($data['material_icon']) || !is_array($data['material_icon']) || count(array_filter($data['material_icon'])) === 0) {
+                $data['material_icon'] = $defaultmaterialicons;
+            }
+        
+            $defaultlearningicons = [
+                '/public/public/public/public/backgroundborder2863-oxt.svg',
+                '/public/public/svg2863-o6p.svg',
+                '/public/public/backgroundborder2863-j91r.svg',
+                '/public/public/backgroundborder2863-1wk.svg',
+            ];
+            if (!isset($data['learn_icon']) || !is_array($data['learn_icon']) || count(array_filter($data['learn_icon'])) === 0) {
+                $data['learn_icon'] = $defaultlearningicons;
+            }
 
          $subscription->extraDetails()->updateOrCreate(
             ['subscription_id' => $subscription->id],
@@ -1052,7 +1105,7 @@ class SubscriptionController extends Controller
                 'learn_title' => $data['learn_title'] ?? null,
                 'learn_description' => $data['learn_description'] ?? null,
                 'learn_text' => $data['learn_text'] ?? [],
-                'learn_icon' => $data['learn_icon'] ?? [],
+                'learn_icon' => $data['learn_icon'] ?? null,
                 
                 // Bonus
                 'bonus_heading' => $data['bonus_heading'] ?? null,

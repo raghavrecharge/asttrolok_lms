@@ -380,6 +380,16 @@
     </div>
 
     <div class="form-group mt-15">
+        <label class="input-label">Total student learning</label>
+        <input type="text" name="student_count" value="{{ !empty($subscription) ? $subscription->student_count : old('student_count') }}" class="form-control @error('student_count')  is-invalid @enderror"/>
+        @error('student_count')
+        <div class="invalid-feedback">
+            {{ $message }}
+        </div>
+        @enderror
+    </div>
+
+    <div class="form-group mt-15">
     <div class="custom-control custom-switch">
         <input type="checkbox" 
                name="status_toggle" 
@@ -404,7 +414,7 @@
     <div class="text-muted text-small mt-1">
         <span id="status_help">
             @if(old('status', $subscription->status ?? 'is_draft') == 'active')
-                Subscription is visible on homepage
+                Subscription is published and visible on public site
             @else
                 Subscription is in draft mode
             @endif
@@ -1083,6 +1093,19 @@ function updateStatusValue(checkbox) {
                                             </div>
                                         </div>
                                         @endfor
+                                    </div>
+
+                                    <div class="form-group mt-15">
+                                        <label class="input-label d-block" style="font-weight: 700;font-size:20px">Reviews</label>
+                                            <div class="form-group mt-15">
+                                                    <label class="input-label">Enter Review Count</label>
+                                                    <input type="text" name="review_number" value="{{ !empty($subscription) ? $subscription->review_number : old('review_number') }}" class="form-control @error('review_number')  is-invalid @enderror"/>
+                                                    @error('review_number')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                    @enderror
+                                                </div>
                                     </div>
 
                                     <!-- Advertisement -->
