@@ -140,7 +140,7 @@
                                             <div class="form-group mt-15 ">
                                                 <label class="input-label d-block">{{ trans('admin/main.select_a_instructor') }}</label>
 
-                                                <select name="teacher_id" data-search-option="except_user" class="form-control search-user-select22"
+                                                <select name="teacher_id" data-search-option="except_user" class="form-control search-user-select22 @error('teacher_id') is-invalid @enderror"
                                                         data-placeholder="{{ trans('public.select_a_teacher') }}"
                                                 >
                                                     @if(!empty($webinar))
@@ -151,7 +151,7 @@
                                                 </select>
 
                                                 @error('teacher_id')
-                                                <div class="invalid-feedback">
+                                                <div class="invalid-feedback d-block">
                                                     {{ $message }}
                                                 </div>
                                                 @enderror

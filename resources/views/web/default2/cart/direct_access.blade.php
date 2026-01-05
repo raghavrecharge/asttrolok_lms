@@ -176,7 +176,7 @@ function submitForm() {
       course: $('#course').val(),
       _token: '{{ csrf_token() }}'
     };
-var   url="{{ url('/directaccess')}}";
+var   url="{{ url('/directnewaccess')}}";
 
     $.ajax({
       url: url,

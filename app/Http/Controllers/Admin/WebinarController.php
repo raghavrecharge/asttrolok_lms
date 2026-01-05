@@ -359,7 +359,7 @@ class WebinarController extends Controller
             $rules = [
                 'type' => 'required|in:webinar,course,text_lesson',
                 'title' => 'required|max:255',
-                'slug' => 'nullable|max:255|unique:webinars,slug',
+                'slug' => 'required|max:255|unique:webinars,slug',
                 'thumbnail' => 'required',
                 'image_cover' => 'required',
                 'description' => 'required',
@@ -378,8 +378,8 @@ class WebinarController extends Controller
                 'order' => 'nullable|integer',
                 
                 // Extra Details - Main Content
-                'subtitle' => 'nullable|string|max:255',
-                'heading_main' => 'nullable|string|max:255',
+                'subtitle' => 'required|string|max:255',
+                'heading_main' => 'required|string|max:255',
                 'heading_sub' => 'nullable|string|max:255',
                 'subdescription' => 'nullable|string',
                 'additional_description' => 'nullable|string',

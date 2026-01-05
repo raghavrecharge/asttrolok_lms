@@ -78,16 +78,16 @@
                                 <a class="nav-link" href="{{ getAdminPanelUrl() }}/webinars/create">{{ trans('admin/main.new') }}</a>
                             </li>
                         @endcan()
-                          @can('admin_webinars_create')
-                            <li class="{{ url('/directaccess', false) ? 'active' : '' }}">
-                                <a class="nav-link" href="{{ config('app.manual_base_url') }}/directaccess"> Extend(Direct) Access</a>
+                          <!-- @can('admin_webinars_create')
+                            <li class="{{ url('/fullnewaccess', false) ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ config('app.manual_base_url') }}/directnewaccess"> Extend(Direct) Access</a>
                             </li>
                         @endcan()
                         @can('admin_webinars_create')
-                            <li class="{{ url('/fullaccess', false) ? 'active' : '' }}">
-                                <a class="nav-link" href="{{ config('app.manual_base_url') }}/fullaccess">Course Access by Amount</a>
+                            <li class="{{ url('/fullnewaccess', false) ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ config('app.manual_base_url') }}/fullnewaccess">Course Access by Amount</a>
                             </li>
-                        @endcan()
+                        @endcan() -->
 
                         @can('admin_agora_history_list')
                             <li class="{{ (request()->is(getAdminPanelUrl('/agora_history', false))) ? 'active' : '' }}">

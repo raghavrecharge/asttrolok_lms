@@ -452,11 +452,11 @@ return \Illuminate\Support\Facades\Redirect::to('llm.txt');
         Route::get('/{id}/delete', 'CartManagerController@destroy');
     });
     
-     Route::get('fullaccess', 'InstallmentsController@fullAccessForm');
-     Route::post('fullaccess/', 'InstallmentsController@fullAccess');
-     
-     Route::get('directaccess', 'InstallmentsController@directAccessForm');
-     Route::post('directaccess/', 'InstallmentsController@directAccess');
+     Route::get('fullnewaccess', 'InstallmentsController@fullAccessForm');
+     Route::post('fullnewaccess/', 'InstallmentsController@fullAccess');
+
+     Route::get('directnewaccess', 'InstallmentsController@directAccessForm');
+     Route::post('directnewaccess/', 'InstallmentsController@directAccess');
      
     Route::group(['prefix' => 'cart'], function () {
         Route::get('/', 'CartController@cart1');
