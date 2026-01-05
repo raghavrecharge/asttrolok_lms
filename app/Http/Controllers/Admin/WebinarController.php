@@ -41,7 +41,7 @@ use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\StudentsExport;
 use App\Models\CourseProgress;
-
+use Illuminate\Validation\Rule;
 
 class WebinarController extends Controller
 {
@@ -349,63 +349,168 @@ class WebinarController extends Controller
         }
     }
 
-    public function store(Request $request)
+   public function store(Request $request)
     {
         try {
             $this->authorize('admin_webinars_create');
 
-            $this->validate($request, [
+            // Validation rules
+            $rules = [
                 'type' => 'required|in:webinar,course,text_lesson',
                 'title' => 'required|max:255',
-                'slug' => 'max:255|unique:webinars,slug',
+                'slug' => 'nullable|max:255|unique:webinars,slug',
                 'thumbnail' => 'required',
                 'image_cover' => 'required',
                 'description' => 'required',
                 'teacher_id' => 'required|exists:users,id',
-                'category_id' => 'required',
+                'category_id' => 'required|exists:categories,id',
                 'duration' => 'required|numeric',
-                'start_date' => 'required_if:type,webinar',
-                'capacity' => 'required_if:type,webinar',
-            ]);
+                'lang' => 'required|in:EN,HI',
+                'h1' => 'nullable|string|max:255',
+                'seo_title' => 'nullable|string|max:255',
+                'seo_description' => 'nullable|string|max:500',
+                'points' => 'nullable|numeric',
+                'capacity' => 'nullable|integer',
+                'price' => 'nullable|numeric',
+                'organization_price' => 'nullable|numeric',
+                'access_days' => 'nullable|integer',
+                'order' => 'nullable|integer',
+                
+                // Extra Details - Main Content
+                'subtitle' => 'nullable|string|max:255',
+                'heading_main' => 'nullable|string|max:255',
+                'heading_sub' => 'nullable|string|max:255',
+                'subdescription' => 'nullable|string',
+                'additional_description' => 'nullable|string',
+                'is_featured' => 'nullable|string',
+                'free_content_thumbnail' => 'nullable|string',
+                
+                // Material Items
+                'material_icon' => 'nullable|array|max:4',
+                'material_icon.*' => 'nullable|string',
+                'material_text' => 'nullable|array|max:4',
+                'material_text.*' => 'nullable|string|max:255',
+                
+                // Comparison Plan
+                'plan_duration' => 'nullable|string|max:100',
+                'plan_type' => 'nullable|string|max:100',
+                'plan_price' => 'nullable|string|max:100',
+                'plan_cancel_text' => 'nullable|string|max:255',
+                'plan_movie' => 'nullable|string',
+                'plan_duration_option' => 'nullable|string|max:100',
+                'price_suffix' => 'nullable|string|max:50',
+                'plan_badge' => 'nullable|string|max:100',
+                'plan_icon' => 'nullable|string',
+                'price_icon' => 'nullable|string',
+                'comparison_text' => 'nullable|string',
+                
+                // Learn Section
+                'learn_title' => 'nullable|string|max:255',
+                'learn_description' => 'nullable|string',
+                'learn_icon' => 'nullable|array|max:4',
+                'learn_icon.*' => 'nullable|string',
+                'learn_text' => 'nullable|array|max:4',
+                'learn_text.*' => 'nullable|string|max:255',
+                
+                // Bonus
+                'bonus_heading' => 'nullable|string|max:255',
+                'bonus_icon' => 'nullable|string',
+                
+                // Certification Roadmap
+                'certification_time' => 'nullable|array|max:3',
+                'certification_time.*' => 'nullable|string|max:100',
+                'certification_focus' => 'nullable|array|max:3',
+                'certification_focus.*' => 'nullable|string|max:255',
+                'certification_outcome' => 'nullable|array|max:3',
+                'certification_outcome.*' => 'nullable|string|max:255',
+                
+                // Rating
+                'rate_title' => 'nullable|string|max:255',
+                'rate_options' => 'nullable|array|max:5',
+                'rate_options.*' => 'nullable|string|max:255',
+                'rate_icon' => 'nullable|array|max:5',
+                'rate_icon.*' => 'nullable|string',
+                
+                // Advertisement
+                'ad_subtitle' => 'nullable|string|max:255',
+                'ad_title' => 'nullable|string|max:255',
+                'ad_description' => 'nullable|string',
+            ];
+
+            // Additional rules based on type
+            if ($request->input('type') == 'webinar') {
+                $rules['start_date'] = 'required|date';
+                $rules['capacity'] = 'required|integer';
+            }
+
+            $this->validate($request, $rules);
 
             $data = $request->all();
 
-            if ($data['type'] != Webinar::$webinar or $data['type'] != 'course') {
+            // Handle start_date
+            if ($data['type'] != Webinar::$webinar && $data['type'] != 'course') {
                 $data['start_date'] = null;
             }
 
-            if (!empty($data['start_date']) and ($data['type'] != Webinar::$webinar or $data['type'] != 'course') ) {
-                if (empty($data['timezone']) or !getFeaturesSettings('timezone_in_create_webinar')) {
+            if (!empty($data['start_date']) && ($data['type'] == Webinar::$webinar || $data['type'] == 'course')) {
+                if (empty($data['timezone']) || !getFeaturesSettings('timezone_in_create_webinar')) {
                     $data['timezone'] = getTimezone();
                 }
 
                 $startDate = convertTimeToUTCzone($data['start_date'], $data['timezone']);
-
                 $data['start_date'] = $startDate->getTimestamp();
             }
 
+            // Generate slug if not provided
             if (empty($data['slug'])) {
                 $data['slug'] = Webinar::makeSlug($data['title']);
             }
 
+            // Handle video demo
             if (empty($data['video_demo'])) {
                 $data['video_demo_source'] = null;
             }
-            if (!empty($data['order'])) {
-                $order = $data['order'];
-            } else {
-                $orderbycourse = Webinar::orderBy('order', 'desc')
-                ->get();
-                $order= $orderbycourse->order+1;
-            }
 
-            if (!empty($data['video_demo_source']) and !in_array($data['video_demo_source'], ['upload', 'youtube', 'vimeo', 'external_link'])) {
+            if (!empty($data['video_demo_source']) && !in_array($data['video_demo_source'], ['upload', 'youtube', 'vimeo', 'external_link'])) {
                 $data['video_demo_source'] = 'upload';
             }
 
+            // Handle order
+            if (!empty($data['order'])) {
+                $order = $data['order'];
+            } else {
+                $lastOrder = Webinar::orderBy('order', 'desc')->first();
+                $order = $lastOrder ? $lastOrder->order + 1 : 1;
+            }
+
+            // Convert prices
             $data['price'] = !empty($data['price']) ? convertPriceToDefaultCurrency($data['price']) : null;
             $data['organization_price'] = !empty($data['organization_price']) ? convertPriceToDefaultCurrency($data['organization_price']) : null;
 
+            // Set default values for arrays if empty
+            $defaultMaterialIcons = [
+                '/public/public/vector1660-2i9i.svg',
+                '/public/public/Vector (2).png',
+                '/public/public/Vector (3).png',
+                '/public/public/vector1661-4d1k.svg',
+            ];
+
+            $defaultLearnIcons = [
+                '/public/public/public/public/backgroundborder2863-oxt.svg',
+                '/public/public/svg2863-o6p.svg',
+                '/public/public/backgroundborder2863-j91r.svg',
+                '/public/public/backgroundborder2863-1wk.svg',
+            ];
+
+            $data['material_icon'] = !empty($data['material_icon']) && count(array_filter($data['material_icon'])) > 0 
+                ? $data['material_icon'] 
+                : $defaultMaterialIcons;
+
+            $data['learn_icon'] = !empty($data['learn_icon']) && count(array_filter($data['learn_icon'])) > 0 
+                ? $data['learn_icon'] 
+                : $defaultLearnIcons;
+
+            // Create webinar
             $webinar = Webinar::create([
                 'type' => $data['type'],
                 'slug' => $data['slug'],
@@ -414,20 +519,20 @@ class WebinarController extends Controller
                 'creator_id' => $data['teacher_id'],
                 'thumbnail' => $data['thumbnail'],
                 'image_cover' => $data['image_cover'],
-                'video_demo' => $data['video_demo'],
-                'video_demo_source' => $data['video_demo'] ? $data['video_demo_source'] : null,
+                'video_demo' => $data['video_demo'] ?? null,
+                'video_demo_source' => $data['video_demo'] ? ($data['video_demo_source'] ?? 'upload') : null,
                 'capacity' => $data['capacity'] ?? null,
-                'start_date' => (!empty($data['start_date'])) ? $data['start_date'] : null,
+                'start_date' => $data['start_date'] ?? null,
                 'timezone' => $data['timezone'] ?? null,
                 'duration' => $data['duration'] ?? null,
-                'support' => !empty($data['support']) ? true : false,
-                'certificate' => !empty($data['certificate']) ? true : false,
-                'downloadable' => !empty($data['downloadable']) ? true : false,
-                'partner_instructor' => !empty($data['partner_instructor']) ? true : false,
-                'subscribe' => !empty($data['subscribe']) ? true : false,
-                'private' => !empty($data['private']) ? true : false,
-                'forum' => !empty($data['forum']) ? true : false,
-                'enable_waitlist' => (!empty($data['enable_waitlist'])),
+                'support' => !empty($data['support']),
+                'certificate' => !empty($data['certificate']),
+                'downloadable' => !empty($data['downloadable']),
+                'partner_instructor' => !empty($data['partner_instructor']),
+                'subscribe' => !empty($data['subscribe']),
+                'private' => !empty($data['private']),
+                'forum' => !empty($data['forum']),
+                'enable_waitlist' => !empty($data['enable_waitlist']),
                 'access_days' => $data['access_days'] ?? null,
                 'price' => $data['price'],
                 'organization_price' => $data['organization_price'] ?? null,
@@ -441,21 +546,314 @@ class WebinarController extends Controller
                 'course_rate' => $data['course_rate'] ?? 4.5,
             ]);
 
-            if ($webinar) {
-                WebinarTranslation::updateOrCreate([
-                    'webinar_id' => $webinar->id,
-                    'locale' => mb_strtolower($data['locale']),
-                ], [
-                    'title' => $data['title'],
-                    'description' => $data['description'],
-                    'seo_description' => $data['seo_description'],
-                    'seo_title' => $data['seo_title'],
-                    'h1' => $data['h1'] ?? ''
-                ]);
+            if (!$webinar) {
+                throw new \Exception('Failed to create webinar');
             }
 
+            // Create translation
+            WebinarTranslation::create([
+                'webinar_id' => $webinar->id,
+                'locale' => mb_strtolower($data['locale'] ?? app()->getLocale()),
+                'title' => $data['title'],
+                'description' => $data['description'],
+                'seo_description' => $data['seo_description'] ?? '',
+                'seo_title' => $data['seo_title'] ?? '',
+                'h1' => $data['h1'] ?? ''
+            ]);
+
+            // Create extra details
+            $webinar->extraDetails()->create([
+                // Main Content
+                'subtitle' => $data['subtitle'] ?? null,
+                'heading_main' => $data['heading_main'] ?? null,
+                'heading_sub' => $data['heading_sub'] ?? null,
+                'subdescription' => $data['subdescription'] ?? null,
+                'additional_description' => $data['additional_description'] ?? null,
+                'is_featured' => $data['is_featured'] ?? null,
+                'free_content_thumbnail' => $data['free_content_thumbnail'] ?? null,
+                
+                // Material Items
+                'material_text' => $data['material_text'] ?? [],
+                'material_icon' => $data['material_icon'] ?? [],
+                
+                // Learn Section
+                'learn_title' => $data['learn_title'] ?? null,
+                'learn_description' => $data['learn_description'] ?? null,
+                'learn_text' => $data['learn_text'] ?? [],
+                'learn_icon' => $data['learn_icon'] ?? [],
+                
+                // Bonus
+                'bonus_heading' => $data['bonus_heading'] ?? null,
+                'bonus_icon' => $data['bonus_icon'] ?? null,
+                
+                // Comparison Plan
+                'plan_type' => $data['plan_type'] ?? null,
+                'plan_badge' => $data['plan_badge'] ?? null,
+                'plan_price' => $data['plan_price'] ?? null,
+                'plan_duration' => $data['plan_duration'] ?? null,
+                'price_suffix' => $data['price_suffix'] ?? null,
+                'plan_duration_option' => $data['plan_duration_option'] ?? null,
+                'plan_cancel_text' => $data['plan_cancel_text'] ?? null,
+                'comparison_text' => $data['comparison_text'] ?? null,
+                'plan_icon' => $data['plan_icon'] ?? '/public/public/vector1615-24vi.svg',
+                'plan_movie' => $data['plan_movie'] ?? null,
+                'price_icon' => $data['price_icon'] ?? null,
+                
+                // Certification
+                'certification_time' => $data['certification_time'] ?? [],
+                'certification_focus' => $data['certification_focus'] ?? [],
+                'certification_outcome' => $data['certification_outcome'] ?? [],
+                
+                // Rating
+                'rate_title' => $data['rate_title'] ?? null,
+                'rate_options' => $data['rate_options'] ?? [],
+                'rate_icon' => $data['rate_icon'] ?? [],
+                
+                // Advertisement
+                'ad_title' => $data['ad_title'] ?? null,
+                'ad_subtitle' => $data['ad_subtitle'] ?? null,
+                'ad_description' => $data['ad_description'] ?? null,
+            ]);
+
+            // Handle filters
             $filters = $request->get('filters', null);
-            if (!empty($filters) and is_array($filters)) {
+            if (!empty($filters) && is_array($filters)) {
+                foreach ($filters as $filter) {
+                    WebinarFilterOption::create([
+                        'webinar_id' => $webinar->id,
+                        'filter_option_id' => $filter
+                    ]);
+                }
+            }
+
+            // Handle tags
+            if (!empty($request->get('tags'))) {
+                $tags = explode(',', $request->get('tags'));
+                foreach ($tags as $tag) {
+                    Tag::create([
+                        'webinar_id' => $webinar->id,
+                        'title' => trim($tag),
+                    ]);
+                }
+            }
+
+            // Handle partner instructors
+            if (!empty($request->get('partner_instructor')) && !empty($request->get('partners'))) {
+                foreach ($request->get('partners') as $partnerId) {
+                    WebinarPartnerTeacher::create([
+                        'webinar_id' => $webinar->id,
+                        'teacher_id' => $partnerId,
+                    ]);
+                }
+            }
+
+            Log::channel('activity')->info('Course created', [
+                'course_id' => $webinar->id,
+                'ip' => $request->ip(),
+                'user_id' => auth()->id(),
+            ]);
+
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('webinars.success_store'),
+                'status' => 'success'
+            ];
+
+            return redirect(getAdminPanelUrl() . '/webinars/' . $webinar->id . '/edit?locale=' . ($data['locale'] ?? app()->getLocale()))
+                ->with(['toast' => $toastData]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
+                
+        } catch (\Exception $e) {
+            \Log::error('Webinar store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            $toastData = [
+                'title' => trans('public.request_failed'),
+                'msg' => trans('public.system_error') . ': ' . $e->getMessage(),
+                'status' => 'error'
+            ];
+
+            return back()
+                ->with(['toast' => $toastData])
+                ->withInput();
+        }
+    }
+
+    /**
+     * Update existing webinar
+     */
+    public function update(Request $request, $id)
+    {
+        try {
+            $this->authorize('admin_webinars_edit');
+
+            $webinar = Webinar::findOrFail($id);
+            $data = $request->all();
+
+            $isDraft = (!empty($data['draft']) && $data['draft'] == 1);
+            $reject = (!empty($data['draft']) && $data['draft'] == 'reject');
+            $publish = (!empty($data['draft']) && $data['draft'] == 'publish');
+
+            // Validation rules
+            $rules = [
+                'type' => 'required|in:webinar,course,text_lesson',
+                'title' => 'required|max:255',
+                'slug' => [
+                    'nullable',
+                    'max:255',
+                    Rule::unique('webinars')->ignore($webinar->id)
+                ],
+                'thumbnail' => 'required',
+                'image_cover' => 'required',
+                'description' => 'required',
+                'teacher_id' => 'required|exists:users,id',
+                'category_id' => 'required|exists:categories,id',
+                'lang' => 'required|in:EN,HI',
+                'h1' => 'nullable|string|max:255',
+                'seo_title' => 'nullable|string|max:255',
+                'seo_description' => 'nullable|string|max:500',
+                'points' => 'nullable|numeric',
+                'capacity' => 'nullable|integer',
+                'price' => 'nullable|numeric',
+                'organization_price' => 'nullable|numeric',
+                'access_days' => 'nullable|integer',
+                'order' => 'nullable|integer',
+                
+                // Extra Details - Main Content
+                'subtitle' => 'nullable|string|max:255',
+                'heading_main' => 'nullable|string|max:255',
+                'heading_sub' => 'nullable|string|max:255',
+                'subdescription' => 'nullable|string',
+                'additional_description' => 'nullable|string',
+                'is_featured' => 'nullable|string',
+                'free_content_thumbnail' => 'nullable|string',
+                
+                // Material Items
+                'material_icon' => 'nullable|array|max:4',
+                'material_icon.*' => 'nullable|string',
+                'material_text' => 'nullable|array|max:4',
+                'material_text.*' => 'nullable|string|max:255',
+                
+                // Comparison Plan
+                'plan_duration' => 'nullable|string|max:100',
+                'plan_type' => 'nullable|string|max:100',
+                'plan_price' => 'nullable|string|max:100',
+                'plan_cancel_text' => 'nullable|string|max:255',
+                'plan_movie' => 'nullable|string',
+                'plan_duration_option' => 'nullable|string|max:100',
+                'price_suffix' => 'nullable|string|max:50',
+                'plan_badge' => 'nullable|string|max:100',
+                'plan_icon' => 'nullable|string',
+                'price_icon' => 'nullable|string',
+                'comparison_text' => 'nullable|string',
+                
+                // Learn Section
+                'learn_title' => 'nullable|string|max:255',
+                'learn_description' => 'nullable|string',
+                'learn_icon' => 'nullable|array|max:4',
+                'learn_icon.*' => 'nullable|string',
+                'learn_text' => 'nullable|array|max:4',
+                'learn_text.*' => 'nullable|string|max:255',
+                
+                // Bonus
+                'bonus_heading' => 'nullable|string|max:255',
+                'bonus_icon' => 'nullable|string',
+                
+                // Certification Roadmap
+                'certification_time' => 'nullable|array|max:3',
+                'certification_time.*' => 'nullable|string|max:100',
+                'certification_focus' => 'nullable|array|max:3',
+                'certification_focus.*' => 'nullable|string|max:255',
+                'certification_outcome' => 'nullable|array|max:3',
+                'certification_outcome.*' => 'nullable|string|max:255',
+                
+                // Rating
+                'rate_title' => 'nullable|string|max:255',
+                'rate_options' => 'nullable|array|max:5',
+                'rate_options.*' => 'nullable|string|max:255',
+                'rate_icon' => 'nullable|array|max:5',
+                'rate_icon.*' => 'nullable|string',
+                
+                // Advertisement
+                'ad_subtitle' => 'nullable|string|max:255',
+                'ad_title' => 'nullable|string|max:255',
+                'ad_description' => 'nullable|string',
+            ];
+
+            if ($webinar->isWebinar()) {
+                $rules['start_date'] = 'required|date';
+                $rules['duration'] = 'required|numeric';
+                $rules['capacity'] = 'required|integer';
+            }
+
+            $this->validate($request, $rules);
+
+            // Validate teacher
+            if (!empty($data['teacher_id'])) {
+                $teacher = User::find($data['teacher_id']);
+                $creator = $webinar->creator;
+
+                if (empty($teacher) || ($creator->isOrganization() && ($teacher->organ_id != $creator->id && $teacher->id != $creator->id))) {
+                    $toastData = [
+                        'title' => trans('public.request_failed'),
+                        'msg' => trans('admin/main.is_not_the_teacher_of_this_organization'),
+                        'status' => 'error'
+                    ];
+                    return back()->with(['toast' => $toastData])->withInput();
+                }
+            }
+
+            // Generate slug if not provided
+            if (empty($data['slug'])) {
+                $data['slug'] = Webinar::makeSlug($data['title']);
+            }
+
+            // Determine status
+            $data['status'] = $publish ? Webinar::$active : ($reject ? Webinar::$inactive : ($isDraft ? Webinar::$isDraft : Webinar::$pending));
+            $data['updated_at'] = time();
+
+            // Handle start_date
+            if (!empty($data['start_date']) && ($data['type'] == Webinar::$webinar || $data['type'] == 'course')) {
+                if (empty($data['timezone']) || !getFeaturesSettings('timezone_in_create_webinar')) {
+                    $data['timezone'] = getTimezone();
+                }
+
+                $startDate = convertTimeToUTCzone($data['start_date'], $data['timezone']);
+                $data['start_date'] = $startDate->getTimestamp();
+            } else {
+                $data['start_date'] = null;
+            }
+
+            // Handle boolean fields
+            $data['support'] = !empty($data['support']);
+            $data['certificate'] = !empty($data['certificate']);
+            $data['downloadable'] = !empty($data['downloadable']);
+            $data['partner_instructor'] = !empty($data['partner_instructor']);
+            $data['subscribe'] = !empty($data['subscribe']);
+            $data['forum'] = !empty($data['forum']);
+            $data['private'] = !empty($data['private']);
+            $data['enable_waitlist'] = !empty($data['enable_waitlist']);
+
+            // Handle partner instructor
+            if (empty($data['partner_instructor'])) {
+                WebinarPartnerTeacher::where('webinar_id', $webinar->id)->delete();
+            }
+
+            // Handle category change
+            if ($data['category_id'] !== $webinar->category_id) {
+                WebinarFilterOption::where('webinar_id', $webinar->id)->delete();
+            }
+
+            // Handle filters
+            $filters = $request->get('filters', null);
+            if (!empty($filters) && is_array($filters)) {
                 WebinarFilterOption::where('webinar_id', $webinar->id)->delete();
                 foreach ($filters as $filter) {
                     WebinarFilterOption::create([
@@ -465,6 +863,7 @@ class WebinarController extends Controller
                 }
             }
 
+            // Handle tags
             if (!empty($request->get('tags'))) {
                 $tags = explode(',', $request->get('tags'));
                 Tag::where('webinar_id', $webinar->id)->delete();
@@ -472,12 +871,13 @@ class WebinarController extends Controller
                 foreach ($tags as $tag) {
                     Tag::create([
                         'webinar_id' => $webinar->id,
-                        'title' => $tag,
+                        'title' => trim($tag),
                     ]);
                 }
             }
 
-            if (!empty($request->get('partner_instructor')) and !empty($request->get('partners'))) {
+            // Handle partner instructors
+            if (!empty($request->get('partner_instructor')) && !empty($request->get('partners'))) {
                 WebinarPartnerTeacher::where('webinar_id', $webinar->id)->delete();
 
                 foreach ($request->get('partners') as $partnerId) {
@@ -488,20 +888,242 @@ class WebinarController extends Controller
                 }
             }
 
-            Log::channel('activity')->info('Course created', [
-            'course_id' => $webinar->id,
-            'ip' => $request->ip(),
+            // Handle video demo
+            if (empty($data['video_demo'])) {
+                $data['video_demo_source'] = null;
+            }
 
-             ]);
-            return redirect(getAdminPanelUrl() . '/webinars/' . $webinar->id . '/edit?locale=' . $data['locale']);
+            if (!empty($data['video_demo_source']) && !in_array($data['video_demo_source'], ['upload', 'youtube', 'vimeo', 'external_link'])) {
+                $data['video_demo_source'] = 'upload';
+            }
+
+            // Set default values for arrays if empty
+            $defaultMaterialIcons = [
+                '/public/public/vector1660-2i9i.svg',
+                '/public/public/Vector (2).png',
+                '/public/public/Vector (3).png',
+                '/public/public/vector1661-4d1k.svg',
+            ];
+
+            $defaultLearnIcons = [
+                '/public/public/public/public/backgroundborder2863-oxt.svg',
+                '/public/public/svg2863-o6p.svg',
+                '/public/public/backgroundborder2863-j91r.svg',
+                '/public/public/backgroundborder2863-1wk.svg',
+            ];
+
+            $emptyArray = [];
+
+            $data['material_icon'] = !empty($data['material_icon']) && count(array_filter($data['material_icon'])) > 0 
+                ? $data['material_icon'] 
+                : $defaultMaterialIcons;
+
+            $data['material_text'] = !empty($data['material_text']) && count(array_filter($data['material_text'])) > 0 
+                ? $data['material_text'] 
+                : $emptyArray;
+
+            $data['learn_icon'] = !empty($data['learn_icon']) && count(array_filter($data['learn_icon'])) > 0 
+                ? $data['learn_icon'] 
+                : $defaultLearnIcons;
+
+            $data['learn_text'] = !empty($data['learn_text']) && count(array_filter($data['learn_text'])) > 0 
+                ? $data['learn_text'] 
+                : $emptyArray;
+
+            $data['certification_time'] = !empty($data['certification_time']) && count(array_filter($data['certification_time'])) > 0 
+                ? $data['certification_time'] 
+                : $emptyArray;
+
+            $data['certification_focus'] = !empty($data['certification_focus']) && count(array_filter($data['certification_focus'])) > 0 
+                ? $data['certification_focus'] 
+                : $emptyArray;
+
+            $data['certification_outcome'] = !empty($data['certification_outcome']) && count(array_filter($data['certification_outcome'])) > 0 
+                ? $data['certification_outcome'] 
+                : $emptyArray;
+
+            $data['rate_options'] = !empty($data['rate_options']) && count(array_filter($data['rate_options'])) > 0 
+                ? $data['rate_options'] 
+                : $emptyArray;
+
+            $data['rate_icon'] = !empty($data['rate_icon']) && count(array_filter($data['rate_icon'])) > 0 
+                ? $data['rate_icon'] 
+                : $emptyArray;
+
+            // Determine creator
+            $newCreatorId = !empty($data['organ_id']) ? $data['organ_id'] : $data['teacher_id'];
+            $changedCreator = ($webinar->creator_id != $newCreatorId);
+
+            // Convert prices
+            $data['price'] = !empty($data['price']) ? convertPriceToDefaultCurrency($data['price']) : null;
+            $data['organization_price'] = !empty($data['organization_price']) ? convertPriceToDefaultCurrency($data['organization_price']) : null;
+
+            // Update webinar
+            $webinar->update([
+                'slug' => $data['slug'],
+                'creator_id' => $newCreatorId,
+                'lang' => $data['lang'],
+                'teacher_id' => $data['teacher_id'],
+                'type' => $data['type'],
+                'thumbnail' => $data['thumbnail'],
+                'image_cover' => $data['image_cover'],
+                'video_demo' => $data['video_demo'] ?? null,
+                'video_demo_source' => $data['video_demo'] ? ($data['video_demo_source'] ?? 'upload') : null,
+                'capacity' => $data['capacity'] ?? null,
+                'start_date' => $data['start_date'],
+                'timezone' => $data['timezone'] ?? null,
+                'duration' => $data['duration'] ?? null,
+                'support' => $data['support'],
+                'certificate' => $data['certificate'],
+                'private' => $data['private'],
+                'enable_waitlist' => $data['enable_waitlist'],
+                'downloadable' => $data['downloadable'],
+                'partner_instructor' => $data['partner_instructor'],
+                'subscribe' => $data['subscribe'],
+                'forum' => $data['forum'],
+                'access_days' => $data['access_days'] ?? null,
+                'price' => $data['price'],
+                'organization_price' => $data['organization_price'] ?? null,
+                'category_id' => $data['category_id'],
+                'points' => $data['points'] ?? null,
+                'message_for_reviewer' => $data['message_for_reviewer'] ?? null,
+                'status' => $data['status'],
+                'updated_at' => time(),
+                'order' => $data['order'] ?? $webinar->order,
+                'course_rate' => $data['course_rate'] ?? $webinar->course_rate,
+            ]);
+
+            // Update or create extra details
+            $webinar->extraDetails()->updateOrCreate(
+                ['webinar_id' => $webinar->id],
+                [
+                    // Main Content
+                    'subtitle' => $data['subtitle'] ?? null,
+                    'heading_main' => $data['heading_main'] ?? null,
+                    'heading_sub' => $data['heading_sub'] ?? null,
+                    'subdescription' => $data['subdescription'] ?? null,
+                    'additional_description' => $data['additional_description'] ?? null,
+                    'is_featured' => $data['is_featured'] ?? null,
+                    'free_content_thumbnail' => $data['free_content_thumbnail'] ?? null,
+                    
+                    // Material Items
+                    'material_text' => $data['material_text'] ?? [],
+                    'material_icon' => $data['material_icon'] ?? [],
+                    
+                    // Learn Section
+                    'learn_title' => $data['learn_title'] ?? null,
+                    'learn_description' => $data['learn_description'] ?? null,
+                    'learn_text' => $data['learn_text'] ?? [],
+                    'learn_icon' => $data['learn_icon'] ?? [],
+                    
+                    // Bonus
+                    'bonus_heading' => $data['bonus_heading'] ?? null,
+                    'bonus_icon' => $data['bonus_icon'] ?? null,
+                    
+                    // Comparison Plan
+                    'plan_type' => $data['plan_type'] ?? null,
+                    'plan_badge' => $data['plan_badge'] ?? null,
+                    'plan_price' => $data['plan_price'] ?? null,
+                    'plan_duration' => $data['plan_duration'] ?? null,
+                    'price_suffix' => $data['price_suffix'] ?? null,
+                    'plan_duration_option' => $data['plan_duration_option'] ?? null,
+                    'plan_cancel_text' => $data['plan_cancel_text'] ?? null,
+                    'comparison_text' => $data['comparison_text'] ?? null,
+                    'plan_icon' => $data['plan_icon'] ?? '/public/public/vector1615-24vi.svg',
+                    'plan_movie' => $data['plan_movie'] ?? null,
+                    'price_icon' => $data['price_icon'] ?? null,
+                    
+                    // Certification
+                    'certification_time' => $data['certification_time'] ?? [],
+                    'certification_focus' => $data['certification_focus'] ?? [],
+                    'certification_outcome' => $data['certification_outcome'] ?? [],
+                    
+                    // Rating
+                    'rate_title' => $data['rate_title'] ?? null,
+                    'rate_options' => $data['rate_options'] ?? [],
+                    'rate_icon' => $data['rate_icon'] ?? [],
+                    
+                    // Advertisement
+                    'ad_title' => $data['ad_title'] ?? null,
+                    'ad_subtitle' => $data['ad_subtitle'] ?? null,
+                    'ad_description' => $data['ad_description'] ?? null,
+                ]
+            );
+
+            // Update translation
+            WebinarTranslation::updateOrCreate(
+                [
+                    'webinar_id' => $webinar->id,
+                    'locale' => mb_strtolower($data['locale'] ?? app()->getLocale()),
+                ],
+                [
+                    'title' => $data['title'],
+                    'description' => $data['description'],
+                    'seo_description' => $data['seo_description'] ?? '',
+                    'seo_title' => $data['seo_title'] ?? '',
+                    'h1' => $data['h1'] ?? ''
+                ]
+            );
+
+            // Handle notifications
+            if ($publish) {
+                sendNotification('course_approve', ['[c.title]' => $webinar->title], $webinar->teacher_id);
+
+                $createClassesReward = RewardAccounting::calculateScore(Reward::CREATE_CLASSES);
+                RewardAccounting::makeRewardAccounting(
+                    $webinar->creator_id,
+                    $createClassesReward,
+                    Reward::CREATE_CLASSES,
+                    $webinar->id,
+                    true
+                );
+            } elseif ($reject) {
+                sendNotification('course_reject', ['[c.title]' => $webinar->title], $webinar->teacher_id);
+            }
+
+            // Handle creator change
+            if ($changedCreator) {
+                $this->webinarChangedCreator($webinar);
+            }
+
+            Log::channel('activity')->info('Course updated', [
+                'course_id' => $webinar->id,
+                'ip' => $request->ip(),
+                'user_id' => auth()->id(),
+            ]);
+
+            removeContentLocale();
+
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('public.updated_successfully'),
+                'status' => 'success'
+            ];
+
+            return back()->with(['toast' => $toastData]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
+                
         } catch (\Exception $e) {
-            \Log::error('store error: ' . $e->getMessage(), [
+            \Log::error('Webinar update error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'webinar_id' => $id
             ]);
-            
-            throw $e;
+
+            $toastData = [
+                'title' => trans('public.request_failed'),
+                'msg' => trans('public.system_error') . ': ' . $e->getMessage(),
+                'status' => 'error'
+            ];
+
+            return back()
+                ->with(['toast' => $toastData])
+                ->withInput();
         }
     }
 
@@ -601,335 +1223,6 @@ class WebinarController extends Controller
             return view('admin.webinars.create', $data);
         } catch (\Exception $e) {
             \Log::error('edit error: ' . $e->getMessage(), [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            throw $e;
-        }
-    }
-
-    public function update(Request $request, $id)
-    {
-        try {
-            $this->authorize('admin_webinars_edit');
-            $data = $request->all();
-
-            $webinar = Webinar::find($id);
-            $isDraft = (!empty($data['draft']) and $data['draft'] == 1);
-            $reject = (!empty($data['draft']) and $data['draft'] == 'reject');
-            $publish = (!empty($data['draft']) and $data['draft'] == 'publish');
-
-            $rules = [
-                'type' => 'required|in:webinar,course,text_lesson',
-                'title' => 'required|max:255',
-                'slug' => 'max:255|unique:webinars,slug,' . $webinar->id,
-                'thumbnail' => 'required',
-                'image_cover' => 'required',
-                'description' => 'required',
-                'teacher_id' => 'required|exists:users,id',
-                'category_id' => 'required',
-            ];
-
-            if ($webinar->isWebinar()) {
-                $rules['start_date'] = 'required|date';
-                $rules['duration'] = 'required';
-                $rules['capacity'] = 'required|integer';
-            }
-
-            $this->validate($request, $rules);
-
-            if (!empty($data['teacher_id'])) {
-                $teacher = User::find($data['teacher_id']);
-                $creator = $webinar->creator;
-
-                if (empty($teacher) or ($creator->isOrganization() and ($teacher->organ_id != $creator->id and $teacher->id != $creator->id))) {
-                    $toastData = [
-                        'title' => trans('public.request_failed'),
-                        'msg' => trans('admin/main.is_not_the_teacher_of_this_organization'),
-                        'status' => 'error'
-                    ];
-                    return back()->with(['toast' => $toastData]);
-                }
-            }
-
-            if (empty($data['slug'])) {
-                $data['slug'] = Webinar::makeSlug($data['title']);
-            }
-
-            $data['status'] = $publish ? Webinar::$active : ($reject ? Webinar::$inactive : ($isDraft ? Webinar::$isDraft : Webinar::$pending));
-            $data['updated_at'] = time();
-
-            if (!empty($data['start_date']) and ($data['type'] != Webinar::$webinar or $data['type'] != 'course')) {
-                if (empty($data['timezone']) or !getFeaturesSettings('timezone_in_create_webinar')) {
-                    $data['timezone'] = getTimezone();
-                }
-
-                $startDate = convertTimeToUTCzone($data['start_date'], $data['timezone']);
-
-                $data['start_date'] = $startDate->getTimestamp();
-            } else {
-                $data['start_date'] = null;
-            }
-
-            $data['support'] = !empty($data['support']) ? true : false;
-            $data['certificate'] = !empty($data['certificate']) ? true : false;
-            $data['downloadable'] = !empty($data['downloadable']) ? true : false;
-            $data['partner_instructor'] = !empty($data['partner_instructor']) ? true : false;
-            $data['subscribe'] = !empty($data['subscribe']) ? true : false;
-            $data['forum'] = !empty($data['forum']) ? true : false;
-            $data['private'] = !empty($data['private']) ? true : false;
-            $data['enable_waitlist'] = (!empty($data['enable_waitlist']));
-
-            if (empty($data['partner_instructor'])) {
-                WebinarPartnerTeacher::where('webinar_id', $webinar->id)->delete();
-                unset($data['partners']);
-            }
-
-            if ($data['category_id'] !== $webinar->category_id) {
-                WebinarFilterOption::where('webinar_id', $webinar->id)->delete();
-            }
-
-            $filters = $request->get('filters', null);
-            if (!empty($filters) and is_array($filters)) {
-                WebinarFilterOption::where('webinar_id', $webinar->id)->delete();
-                foreach ($filters as $filter) {
-                    WebinarFilterOption::create([
-                        'webinar_id' => $webinar->id,
-                        'filter_option_id' => $filter
-                    ]);
-                }
-            }
-
-            if (!empty($request->get('tags'))) {
-                $tags = explode(',', $request->get('tags'));
-                Tag::where('webinar_id', $webinar->id)->delete();
-
-                foreach ($tags as $tag) {
-                    Tag::create([
-                        'webinar_id' => $webinar->id,
-                        'title' => $tag,
-                    ]);
-                }
-            }
-
-            if (!empty($request->get('partner_instructor')) and !empty($request->get('partners'))) {
-                WebinarPartnerTeacher::where('webinar_id', $webinar->id)->delete();
-
-                foreach ($request->get('partners') as $partnerId) {
-                    WebinarPartnerTeacher::create([
-                        'webinar_id' => $webinar->id,
-                        'teacher_id' => $partnerId,
-                    ]);
-                }
-            }
-            unset($data['_token'],
-                $data['current_step'],
-                $data['draft'],
-                $data['get_next'],
-                $data['partners'],
-                $data['tags'],
-                $data['filters'],
-                $data['ajax']
-            );
-
-            if (empty($data['video_demo'])) {
-                $data['video_demo_source'] = null;
-            }
-
-            if (!empty($data['video_demo_source']) and !in_array($data['video_demo_source'], ['upload', 'youtube', 'vimeo', 'external_link'])) {
-                $data['video_demo_source'] = 'upload';
-            }
-            
-           $plan_icon = '/public/public/vector1615-24vi.svg';
-           $data['plan_icon'] = $data['plan_icon'] ?? $plan_icon;
-              
-
-        $defaultmaterialicons = [
-                '/public/public/vector1660-2i9i.svg',
-                '/public/public/Vector (2).png',
-                '/public/public/Vector (3).png',
-                '/public/public/vector1661-4d1k.svg',
-            ];
-         if (!isset($data['material_icon']) || !is_array($data['material_icon']) || count(array_filter($data['material_icon'])) === 0) {
-                $data['material_icon'] = $defaultmaterialicons;
-            }
-        
-            $defaultlearningicons = [
-                '/public/public/public/public/backgroundborder2863-oxt.svg',
-                '/public/public/svg2863-o6p.svg',
-                '/public/public/backgroundborder2863-j91r.svg',
-                '/public/public/backgroundborder2863-1wk.svg',
-            ];
-            if (!isset($data['learn_icon']) || !is_array($data['learn_icon']) || count(array_filter($data['learn_icon'])) === 0) {
-                $data['learn_icon'] = $defaultlearningicons;
-            }
-
-            if (!isset($data['learn_text']) || !is_array($data['learn_text']) || count(array_filter($data['learn_text'])) === 0) {
-                $data['learn_text'] = $defaultlearningicons;
-            }
-            if (!isset($data['certification_time']) || !is_array($data['certification_time']) || count(array_filter($data['certification_time'])) === 0) {
-                $data['certification_time'] = $defaultlearningicons;
-            }
-             if (!isset($data['certification_focus']) || !is_array($data['certification_focus']) || count(array_filter($data['certification_focus'])) === 0) {
-                $data['certification_focus'] = $defaultlearningicons;
-            }
-             if (!isset($data['certification_outcome']) || !is_array($data['certification_outcome']) || count(array_filter($data['certification_outcome'])) === 0) {
-                $data['certification_outcome'] = $defaultlearningicons;
-            }
-             if (!isset($data['rate_options']) || !is_array($data['rate_options']) || count(array_filter($data['rate_options'])) === 0) {
-                $data['rate_options'] = $defaultlearningicons;
-            }
-
-             if (!isset($data['rate_icon']) || !is_array($data['rate_icon']) || count(array_filter($data['rate_icon'])) === 0) {
-                $data['rate_icon'] = $defaultlearningicons;
-            }
-
-            if (!isset($data['material_text']) || !is_array($data['material_text']) || count(array_filter($data['material_text'])) === 0) {
-                $data['material_text'] = $defaultlearningicons;
-            }
-
-            $newCreatorId = !empty($data['organ_id']) ? $data['organ_id'] : $data['teacher_id'];
-            $changedCreator = ($webinar->creator_id != $newCreatorId);
-
-            $data['price'] = !empty($data['price']) ? convertPriceToDefaultCurrency($data['price']) : null;
-            $data['organization_price'] = !empty($data['organization_price']) ? convertPriceToDefaultCurrency($data['organization_price']) : null;
-
-            $webinar->update([
-                'slug' => $data['slug'],
-                'creator_id' => $newCreatorId,
-                'lang' => $data['lang'],
-                'teacher_id' => $data['teacher_id'],
-                'type' => $data['type'],
-                'thumbnail' => $data['thumbnail'],
-                'image_cover' => $data['image_cover'],
-                'video_demo' => $data['video_demo'],
-                'video_demo_source' => $data['video_demo'] ? $data['video_demo_source'] : null,
-                'capacity' => $data['capacity'] ?? null,
-                'start_date' => $data['start_date'],
-                'timezone' => $data['timezone'] ?? null,
-                'duration' => $data['duration'] ?? null,
-                'support' => $data['support'],
-                'certificate' => $data['certificate'],
-                'private' => $data['private'],
-                'enable_waitlist' => $data['enable_waitlist'],
-                'downloadable' => $data['downloadable'],
-                'partner_instructor' => $data['partner_instructor'],
-                'subscribe' => $data['subscribe'],
-                'forum' => $data['forum'],
-                'access_days' => $data['access_days'] ?? null,
-                'price' => $data['price'],
-                'organization_price' => $data['organization_price'] ?? null,
-                'category_id' => $data['category_id'],
-                'points' => $data['points'] ?? null,
-                'message_for_reviewer' => $data['message_for_reviewer'] ?? null,
-                'free_content_thumbnail' => $data['free_content_thumbnail'] ?? null,
-                'status' => $data['status'],
-                'updated_at' => time(),
-                'order' => $data['order'] ?? $webinar->order,
-                'course_rate' => $data['course_rate'] ?? $webinar->course_rate,
-            ]);
-                  $webinar->extraDetails()->updateOrCreate(
-                ['webinar_id' => $webinar->id],
-                [
-                    // Main Content
-                    'subtitle' => $data['subtitle'] ?? null,
-                    'heading_main' => $data['heading_main'] ?? null,
-                    'heading_sub' => $data['heading_sub'] ?? null,
-                    'heading_extra' => $data['heading_extra'] ?? null,
-                    'subdescription' => $data['subdescription'] ?? null,
-                    'additional_description' => $data['additional_description'] ?? null,
-                    'extra_description' => $data['extra_description'] ?? null,
-                    'is_featured' => $data['is_featured'] ?? null,
-                    
-                    // Material Items - Pass arrays directly
-                    'material_text' => $data['material_text'] ?? [],
-                    'material_icon' => $data['material_icon'] ?? [],
-                    
-                    // Learn Section
-                    'learn_title' => $data['learn_title'] ?? null,
-                    'learn_description' => $data['learn_description'] ?? null,
-                    'learn_text' => $data['learn_text'] ?? [],
-                    'learn_icon' => $data['learn_icon'] ?? null,
-                    
-                    // Bonus
-                    'bonus_heading' => $data['bonus_heading'] ?? null,
-                    'bonus_icon' => $data['bonus_icon'] ?? null,
-                    
-                    // Comparison Plan
-                    'plan_type' => $data['plan_type'] ?? null,
-                    'plan_badge' => $data['plan_badge'] ?? null,
-                    'plan_price' => $data['plan_price'] ?? null,
-                    'price_suffix' => $data['price_suffix'] ?? null,
-                    'plan_duration_option' => $data['plan_duration_option'] ?? null,
-                    'plan_cancel_text' => $data['plan_cancel_text'] ?? null,
-                    'comparison_text' => $data['comparison_text'] ?? null,
-                    'plan_icon' => $data['plan_icon'] ?? null,
-                    'plan_movie' => $data['plan_movie'] ?? null,
-                    'price_icon' => $data['price_icon'] ?? null,
-                    
-                    // Certification - Pass arrays directly
-                    'certification_time' => $data['certification_time'] ?? [],
-                    'certification_focus' => $data['certification_focus'] ?? [],
-                    'certification_outcome' => $data['certification_outcome'] ?? [],
-                    
-                    // Rating - Pass arrays directly
-                    'rate_title' => $data['rate_title'] ?? null,
-                    'rate_options' => $data['rate_options'] ?? [],
-                    'rate_icon' => $data['rate_icon'] ?? [],
-                    
-                    // Advertisement
-                    'ad_title' => $data['ad_title'] ?? null,
-                    'ad_subtitle' => $data['ad_subtitle'] ?? null,
-                    'ad_description' => $data['ad_description'] ?? null,
-                    'ad_img' => $data['ad_img'] ?? null,
-                ]
-            );
-            if ($webinar) {
-                WebinarTranslation::updateOrCreate([
-                    'webinar_id' => $webinar->id,
-                    'locale' => mb_strtolower($data['locale']),
-                ], [
-                    'title' => $data['title'],
-                    'description' => $data['description'],
-                    'seo_description' => $data['seo_description'],
-                    'seo_title' => $data['seo_title'],
-                    'h1' => $data['h1'] ?? ''
-                ]);
-            }
-
-            if ($publish) {
-                sendNotification('course_approve', ['[c.title]' => $webinar->title], $webinar->teacher_id);
-
-                $createClassesReward = RewardAccounting::calculateScore(Reward::CREATE_CLASSES);
-                RewardAccounting::makeRewardAccounting(
-                    $webinar->creator_id,
-                    $createClassesReward,
-                    Reward::CREATE_CLASSES,
-                    $webinar->id,
-                    true
-                );
-
-            } elseif ($reject) {
-                sendNotification('course_reject', ['[c.title]' => $webinar->title], $webinar->teacher_id);
-            }
-
-            if ($changedCreator) {
-                $this->webinarChangedCreator($webinar);
-            }
-            
-            
-
-            removeContentLocale();
-            Log::channel('activity')->info('Course updated', [
-            'course_id' => $webinar->id,
-            'ip' => $request->ip(),
-
-             ]);
-            return back();
-        } catch (\Exception $e) {
-            \Log::error('update error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
