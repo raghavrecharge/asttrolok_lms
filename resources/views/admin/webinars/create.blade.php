@@ -607,6 +607,25 @@
     </div>
 </div>
 <div class="form-group mt-15">
+    <label class="input-label">Upload free content thumbnail</label>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button type="button" class="input-group-text admin-file-manager" data-input="free_content_thumbnail" data-preview="holder">
+                <i class="fa fa-upload"></i>
+            </button>
+        </div>
+        <input type="text" name="free_content_thumbnail" id="free_content_thumbnail" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->free_content_thumbnail : old('free_content_thumbnail') }}" class="form-control @error('free_content_thumbnail') is-invalid @enderror"/>
+        <div class="input-group-append">
+            <button type="button" class="input-group-text admin-file-view" data-input="free_content_thumbnail">
+                <i class="fa fa-eye"></i>
+            </button>
+        </div>
+        @error('free_content_thumbnail')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+</div>
+<div class="form-group mt-15">
     <label class="input-label d-block"style="font-weight: 700;font-size:20px">Material Items</label>
    
     @php

@@ -49,6 +49,16 @@ class WebinarExtraDescriptionController extends Controller
                     'order' => $order,
                     'created_at' => time()
                 ]);
+                if (isset($data['img']) && !empty($data['img'])) {
+                    $img = $data['img'];
+                } else {
+                    $img = null;
+                }
+                if (isset($data['description']) && !empty($data['description'])) {
+                    $description = $data['description'];
+                } else {
+                    $description = null;
+                }
 
                 if (!empty($webinarExtraDescription)) {
                     WebinarExtraDescriptionTranslation::updateOrCreate([
@@ -56,8 +66,8 @@ class WebinarExtraDescriptionController extends Controller
                         'locale' => mb_strtolower($data['locale']),
                     ], [
                         'value' => $data['value'],
-                        'img' => $data['img'],
-                         'description' => $data['description'],
+                        'img' => $img,
+                         'description' => $description,
                     ]);
                 }
             }
@@ -147,13 +157,24 @@ class WebinarExtraDescriptionController extends Controller
 
             if ($webinarExtraDescription) {
 
+                if (isset($data['img']) && !empty($data['img'])) {
+                    $img = $data['img'];
+                } else {
+                    $img = null;
+                }
+                if (isset($data['description']) && !empty($data['description'])) {
+                    $description = $data['description'];
+                } else {
+                    $description = null;
+                }
+
                 WebinarExtraDescriptionTranslation::updateOrCreate([
                     'webinar_extra_description_id' => $webinarExtraDescription->id,
                     'locale' => mb_strtolower($data['locale']),
                 ], [
                     'value' => $data['value'],
-                    'img' => $data['img'],
-                    'description' => $data['description'],
+                    'img' => $img,
+                    'description' => $description,
                 ]);
             }
 

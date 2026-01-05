@@ -48,14 +48,18 @@ class WebinarExtraDetails extends Model
         'rate_icon',
     ];
 
-    protected $casts = [
-        'material_text' => 'array',
-        'learn_text' => 'array',
-        'certification_time' => 'array',
-        'certification_focus' => 'array',
-        'certification_outcome' => 'array',
-        'rate_options' => 'array',
-    ];
+protected $casts = [
+    'material_text' => 'array',
+    'material_icon' => 'array',
+    'learn_text' => 'array',
+    'learn_icon' => 'array',
+    'certification_time' => 'array',
+    'certification_focus' => 'array',
+    'certification_outcome' => 'array',
+    'rate_options' => 'array',
+    'rate_icon' => 'array',
+];
+
 
     public function webinar()
     {
