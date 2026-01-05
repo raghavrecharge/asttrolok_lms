@@ -39,3 +39,13 @@ storage/logs/*.log
 storage/logs/*.txt
 storage/logs/*
 
+
+# Laravel storage and cache
+/storage/*.log
+/storage/app/public
+/storage/framework/*
+/storage/logs/*
+/storage/debugbar/*
+
+# Bootstrap cache
+/bootstrap/cache/*

@@ -42,6 +42,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\StudentsExport;
 use App\Models\CourseProgress;
 use Illuminate\Validation\Rule;
+use Cviebrock\EloquentSluggable\Services\SlugService;
 
 class WebinarController extends Controller
 {
@@ -689,7 +690,7 @@ class WebinarController extends Controller
     /**
      * Update existing webinar
      */
-    public function update(Request $request, $id)
+  public function update(Request $request, $id)
     {
         try {
             $this->authorize('admin_webinars_edit');
@@ -957,7 +958,6 @@ class WebinarController extends Controller
             // Convert prices
             $data['price'] = !empty($data['price']) ? convertPriceToDefaultCurrency($data['price']) : null;
             $data['organization_price'] = !empty($data['organization_price']) ? convertPriceToDefaultCurrency($data['organization_price']) : null;
-
             // Update webinar
             $webinar->update([
                 'slug' => $data['slug'],
@@ -966,6 +966,7 @@ class WebinarController extends Controller
                 'teacher_id' => $data['teacher_id'],
                 'type' => $data['type'],
                 'thumbnail' => $data['thumbnail'],
+                'free_content_thumbnail' => $data['free_content_thumbnail'],
                 'image_cover' => $data['image_cover'],
                 'video_demo' => $data['video_demo'] ?? null,
                 'video_demo_source' => $data['video_demo'] ? ($data['video_demo_source'] ?? 'upload') : null,
@@ -1004,7 +1005,6 @@ class WebinarController extends Controller
                     'subdescription' => $data['subdescription'] ?? null,
                     'additional_description' => $data['additional_description'] ?? null,
                     'is_featured' => $data['is_featured'] ?? null,
-                    'free_content_thumbnail' => $data['free_content_thumbnail'] ?? null,
                     
                     // Material Items
                     'material_text' => $data['material_text'] ?? [],
