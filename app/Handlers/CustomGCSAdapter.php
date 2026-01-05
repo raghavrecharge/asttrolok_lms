@@ -17,8 +17,7 @@ class CustomGCSAdapter extends FilesystemAdapter
         $parts = explode('/', $fullPath);
         $filtered = array_filter($parts, fn($p) => $p !== 'webp');
         $fullPath = implode('/', $filtered);
-        
-        return '/'.$fullPath ;
+        return '/webp/'.$fullPath ;
         // return "https://storage.googleapis.com/{$bucket}/{$fullPath}";
     }
 
