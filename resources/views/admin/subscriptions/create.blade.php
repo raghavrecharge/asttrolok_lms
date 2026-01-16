@@ -320,6 +320,16 @@
                                                 </div>
                                                 @enderror
                                             </div>
+                                            
+                                            <div class="form-group mt-15">
+                                                <label class="input-label">Free video Access</label>
+                                                <input type="text" name="free_video_count" value="{{ !empty($subscription->free_video_count) ? $subscription->free_video_count : old('free_video_count') }}" class="form-control @error('free_video_count')  is-invalid @enderror"/>
+                                                @error('free_video_count')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
+                                                </div>
+                                                @enderror
+                                            </div>
 
                                             <div class="form-group mt-15">
                                                 <label class="input-label d-block">{{ trans('public.tags') }}</label>

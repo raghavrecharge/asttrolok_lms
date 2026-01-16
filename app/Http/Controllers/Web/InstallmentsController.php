@@ -3189,47 +3189,81 @@ class InstallmentsController extends Controller
                 $existingPayments_price = $existingPayments->item_price;
 
                 if ($existingPayments_price != $currentAmount) {
-                    DB::transaction(function () use ($userId, $webinarId) {
+                     $itemId_ins = $data1['course'];
+             $itemType_ins  = 'course';
+             $courses_ins  = Webinar::where('id',$itemId_ins )->where('status', 'active')
+                    ->first();
+            $item_ins  = $this->getItem($itemId_ins, $itemType_ins , $user);
+            $itemPrice_ins = $item_ins->getPrice();
+            $totalDiscount_ins= $itemPrice_ins - $data1['amount'];
+                    
+                    
+                    InstallmentOrder::where('user_id', $userId)
+    ->where('webinar_id', $webinarId)
+    ->update([
+        'item_price' => $data1['amount'] ,
+        'discount' =>$totalDiscount_ins // jo field update karni ho
+    ]);
+    
+     $orderPayments = InstallmentOrderPayment:: where(
+                        'installment_order_id', $existingPayments->id)
+                        ->get();
+                        
+ 
+     $saleId = $orderPayments->sale_id;
+     
+              Sale::where('id', $saleId)
+    ->update([
+       
+        'status' =>'part' // jo field update karni ho
+    ]);
+    
 
-                        $sale = Sale::where('buyer_id', $userId)
-                            ->where('webinar_id', $webinarId)
-                            ->first();
+                  
+                       
+                  
+                    
+                    // DB::transaction(function () use ($userId, $webinarId) {
 
-                        if ($sale !== null) {
-                            InstallmentOrderPayment::where('sale_id', $sale->id)->delete();
-                        }
+                    //     $sale = Sale::where('buyer_id', $userId)
+                    //         ->where('webinar_id', $webinarId)
+                    //         ->first();
 
-                        InstallmentOrder::where('user_id', $userId)
-                            ->where('webinar_id', $webinarId)
-                            ->delete();
+                    //     if ($sale !== null) {
+                    //         InstallmentOrderPayment::where('sale_id', $sale->id)->delete();
+                    //     }
 
-                        OrderItem::where('user_id', $userId)
-                            ->where('webinar_id', $webinarId)
-                            ->delete();
+                    //     InstallmentOrder::where('user_id', $userId)
+                    //         ->where('webinar_id', $webinarId)
+                    //         ->delete();
 
-                        $orderIds = OrderItem::where('user_id', $userId)
-                            ->where('webinar_id', $webinarId)
-                            ->pluck('order_id')
-                            ->toArray();
+                    //     OrderItem::where('user_id', $userId)
+                    //         ->where('webinar_id', $webinarId)
+                    //         ->delete();
 
-                        if (!empty($orderIds)) {
-                            Order::whereIn('id', $orderIds)
-                                ->where('user_id', $userId)
-                                ->delete();
-                        }
+                    //     $orderIds = OrderItem::where('user_id', $userId)
+                    //         ->where('webinar_id', $webinarId)
+                    //         ->pluck('order_id')
+                    //         ->toArray();
 
-                        Accounting::where('user_id', $userId)
-                            ->where('webinar_id', $webinarId)
-                            ->delete();
+                    //     if (!empty($orderIds)) {
+                    //         Order::whereIn('id', $orderIds)
+                    //             ->where('user_id', $userId)
+                    //             ->delete();
+                    //     }
 
-                        Sale::where('buyer_id', $userId)
-                            ->where('webinar_id', $webinarId)
-                            ->delete();
+                    //     Accounting::where('user_id', $userId)
+                    //         ->where('webinar_id', $webinarId)
+                    //         ->delete();
 
-                        WebinarPartPayment::where('user_id', $userId)
-                            ->where('webinar_id', $webinarId)
-                            ->delete();
-                    });
+                    //     Sale::where('buyer_id', $userId)
+                    //         ->where('webinar_id', $webinarId)
+                    //         ->delete();
+
+                    //     WebinarPartPayment::where('user_id', $userId)
+                    //         ->where('webinar_id', $webinarId)
+                    //         ->delete();
+                    // });
                 }
             }
              $itemId = $data1['course'];

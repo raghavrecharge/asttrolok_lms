@@ -297,7 +297,7 @@
                                                 @switch($remedy->status)
                                                     @case(\App\Models\Remedy::$active)
                                                         <div class="text-success font-600-bold">{{ trans('admin/main.published') }}</div>
-                                                        @if($remedy->isRemedy())
+                                                      <!--  @if($remedy->isRemedy())
                                                             @if($remedy->isProgressing())
                                                                 <div class="text-warning text-small">({{  trans('remedies.in_progress') }})</div>
                                                             @elseif($remedy->start_date > time())
@@ -305,7 +305,7 @@
                                                             @else
                                                                 <div class="text-success text-small">({{ trans('public.finished') }})</div>
                                                             @endif
-                                                        @endif
+                                                        @endif -->
                                                         @break
                                                     @case(\App\Models\Remedy::$isDraft)
                                                         <span class="text-dark">{{ trans('admin/main.is_draft') }}</span>
@@ -348,31 +348,31 @@
                                                         @endcan
 
                                                         @can('admin_webinar_notification_to_students')
-                                                            <a href="{{ getAdminPanelUrl() }}/remedies/{{ $remedy->id }}/sendNotification" target="_blank" class="d-flex align-items-center text-dark text-decoration-none btn-transparent btn-sm text-primary mt-1 ">
+                                                           <!-- <a href="{{ getAdminPanelUrl() }}/remedies/{{ $remedy->id }}/sendNotification" target="_blank" class="d-flex align-items-center text-dark text-decoration-none btn-transparent btn-sm text-primary mt-1 ">
                                                                 <i class="fa fa-bell"></i>
                                                                 <span class="ml-2">{{ trans('notification.send_notification') }}</span>
-                                                            </a>
+                                                            </a> -->
                                                         @endcan
 
                                                         @can('admin_webinar_students_lists')
-                                                            <a href="{{ getAdminPanelUrl() }}/remedies/{{ $remedy->id }}/students" target="_blank" class="d-flex align-items-center text-dark text-decoration-none btn-transparent btn-sm text-primary mt-1 " title="{{ trans('admin/main.students') }}">
+                                                          <!--   <a href="{{ getAdminPanelUrl() }}/remedies/{{ $remedy->id }}/students" target="_blank" class="d-flex align-items-center text-dark text-decoration-none btn-transparent btn-sm text-primary mt-1 " title="{{ trans('admin/main.students') }}">
                                                                 <i class="fa fa-users"></i>
                                                                 <span class="ml-2">{{ trans('admin/main.students') }}</span>
-                                                            </a>
+                                                            </a> -->
                                                         @endcan
 
                                                         @can('admin_webinar_statistics')
-                                                            <a href="{{ getAdminPanelUrl() }}/remedies/{{ $remedy->id }}/statistics" target="_blank" class="d-flex align-items-center text-dark text-decoration-none btn-transparent btn-sm text-primary mt-1 " title="{{ trans('admin/main.students') }}">
+                                                           <!--  <a href="{{ getAdminPanelUrl() }}/remedies/{{ $remedy->id }}/statistics" target="_blank" class="d-flex align-items-center text-dark text-decoration-none btn-transparent btn-sm text-primary mt-1 " title="{{ trans('admin/main.students') }}">
                                                                 <i class="fa fa-chart-pie"></i>
                                                                 <span class="ml-2">{{ trans('update.statistics') }}</span>
-                                                            </a>
+                                                            </a> -->
                                                         @endcan
 
                                                         @can('admin_support_send')
-                                                            <a href="{{ getAdminPanelUrl() }}/supports/create?user_id={{ $remedy->teacher->id }}" target="_blank" class="d-flex align-items-center text-dark text-decoration-none btn-transparent btn-sm text-primary mt-1" title="{{ trans('admin/main.send_message_to_teacher') }}">
+                                                          <!--   <a href="{{ getAdminPanelUrl() }}/supports/create?user_id={{ $remedy->teacher->id }}" target="_blank" class="d-flex align-items-center text-dark text-decoration-none btn-transparent btn-sm text-primary mt-1" title="{{ trans('admin/main.send_message_to_teacher') }}">
                                                                 <i class="fa fa-comment"></i>
                                                                 <span class="ml-2">{{ trans('site.send_message') }}</span>
-                                                            </a>
+                                                            </a> -->
                                                         @endcan
 
                                                         @can('admin_webinars_edit')

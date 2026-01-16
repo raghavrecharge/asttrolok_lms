@@ -246,8 +246,14 @@
                                             $Progress = 0;
                                             $totalVideos =0;
                                             $webinar_id = request()->route('id');
+                                            $access_content = DB::table('subscription_access')
+            ->where('subscription_id',  (int) $webinar_id)
+            ->where('user_id', (int) $student->id)
+            ->first();
+            
+            $video_limit=($access_content->access_content_count)+5;
 
-                                          $totalVideos =10;
+                                          $totalVideos =$video_limit;
                                           $watchedVideos = \App\Models\SubscriptionCourseProgress::where('subscription_id', (int) $webinar_id)
                                             ->where('user_id',(int) $student->id)
                                             ->sum('watch_percentage');
@@ -287,7 +293,7 @@
                                         </a>
                                     @endcan
 
-                                    @can('admin_webinar_students_delete')
+                                  <!--  @can('admin_webinar_students_delete')
                                         @if(!$student->access_to_purchased_item)
                                             @include('admin.includes.delete_button',[
                                                 'url' => getAdminPanelUrl().'/enrollments/'. $student->sale_id .'/enable-access',
@@ -300,7 +306,7 @@
                                                         'tooltip' => trans('update.block_access'),
                                                     ])
                                         @endif
-                                    @endcan
+                                    @endcan -->
                                 @endif
                             </td>
 

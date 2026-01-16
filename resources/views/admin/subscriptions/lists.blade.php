@@ -265,7 +265,7 @@
 
                                             <td>
                                                 @switch($subscription->status)
-                                                    @case(\App\Models\Webinar::$active)
+                                                    @case(\App\Models\Subscription::$active)
                                                     <div class="text-success font-600-bold">{{ trans('admin/main.published') }}</div>
                                                     @break
                                                     @case(\App\Models\Subscription::$isDraft)
@@ -285,6 +285,27 @@
                                                         <i class="fa fa-ellipsis-v"></i>
                                                     </button>
                                                     <div class="dropdown-menu text-left webinars-lists-dropdown">
+                                                         @can('admin_webinars_edit')
+                                                            @if($subscription->status == \App\Models\Subscription::$pending)
+                                                                @include('admin.includes.delete_button',[
+                                                                    'url' => getAdminPanelUrl().'/subscriptions/'.$subscription->id.'/approve',
+                                                                    'btnClass' => 'd-flex align-items-center text-success text-decoration-none btn-transparent btn-sm mt-1',
+                                                                    'btnText' => '<i class="fa fa-check"></i><span class="ml-2">'. trans("admin/main.approve") .'</span>'
+                                                                    ])
+
+                                                                @include('admin.includes.delete_button',[
+                                                                    'url' => getAdminPanelUrl().'/subscriptions/'.$subscription->id.'/reject',
+                                                                    'btnClass' => 'd-flex align-items-center text-danger text-decoration-none btn-transparent btn-sm mt-1',
+                                                                    'btnText' => '<i class="fa fa-times"></i><span class="ml-2">'. trans("admin/main.reject") .'</span>'
+                                                                    ])
+                                                            @elseif($subscription->status == \App\Models\Subscription::$active)
+                                                                @include('admin.includes.delete_button',[
+                                                                    'url' => getAdminPanelUrl().'/subscriptions/'.$subscription->id.'/unpublish',
+                                                                    'btnClass' => 'd-flex align-items-center text-danger text-decoration-none btn-transparent btn-sm mt-1',
+                                                                    'btnText' => '<i class="fa fa-times"></i><span class="ml-2">'. trans("admin/main.unpublish") .'</span>'
+                                                                    ])
+                                                            @endif
+                                                        @endcan
                                                         @can('admin_webinar_notification_to_students')
                                                             {{--<a href="{{ getAdminPanelUrl() }}/subscriptions/{{ $subscription->id }}/sendNotification" target="_blank" class="d-flex align-items-center text-dark text-decoration-none btn-transparent btn-sm text-primary mt-1 ">
                                                                 <i class="fa fa-bell"></i>

@@ -209,7 +209,7 @@
 
                                                 <div class="dropdown-menu menu-lg">
 
-                                                    <a href="/panel/financial/installments/{{ $order->id }}/pay_upcoming_part" target="_blank"
+                                                    <a href="{{ config('app.manual_base_url')}}/register-course/{{$webinar_title}}" target="_blank"
                                                        class="webinar-actions d-block mt-10 font-weight-normal">Pay Upcomming Part</a>
                                                 </div>
                                             </div>

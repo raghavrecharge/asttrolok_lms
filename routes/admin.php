@@ -1011,10 +1011,17 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
             Route::get('/{id}/edit', 'SubscriptionController@edit');
             Route::post('/{id}/update', 'SubscriptionController@update');
             Route::get('/{id}/delete', 'SubscriptionController@destroy');
+            Route::get('/{id}/approve', 'SubscriptionController@approve');
+            Route::get('/{id}/reject', 'SubscriptionController@reject');
+            Route::get('/{id}/unpublish', 'SubscriptionController@unpublish');
+            
+            
             Route::post('/search', 'SubscriptionController@search');
             Route::get('/excel', 'SubscriptionController@exportExcel');
             Route::post('/{id}/update-status', 'SubscriptionController@updateStatus')->name('subscriptionItem.status.update');
             Route::post('/order-items', 'SubscriptionController@orderItems')->name('subscriptionItem.order.update');
+            
+              
             
     
                

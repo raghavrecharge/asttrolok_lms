@@ -14,6 +14,7 @@ class SubscriptionExtraDetails extends Model
         'plan_badge',
         'plan_price',
         'price_suffix',
+        'plan_duration',
         'plan_duration_option',
         'plan_option',
         'plan_cancel_text',

@@ -564,6 +564,7 @@ class SubscriptionController extends Controller
                 'points' => $data['points'] ?? null,
                 'price' => $data['price'],
                 'access_days' => $data['access_days'] ?? null,
+                'free_video_count' =>  $data['free_video_count'] ?? null,
                 'video_count' => $data['video_count'] ?? 0,
                 'review_number' => $data['review_number'] ?? null,
                 'student_count' => $data['student_count'] ?? 0,
@@ -1051,6 +1052,7 @@ class SubscriptionController extends Controller
                 'description' => $request->description,
                 'seo_description' => $request->seo_description,
                 'access_days' => $request->access_days,
+                'free_video_count' =>  $request->free_video_count,
                 'video_count' => $request->video_count,
                 'student_count' => $request->student_count,
                 'review_number' => $request->review_number,
@@ -1201,127 +1203,26 @@ class SubscriptionController extends Controller
         }
     }
 
-    public function studentsLists(Request $request, $id)
+    public function approve(Request $request, $id)
     {
         try {
-            $this->authorize('admin_webinar_students_lists');
+            $this->authorize('admin_subscriptions_edit');
 
-            $subscription = Subscription::where('id', $id)
-                ->with([
-                    'teacher' => function ($qu) {
-                        $qu->select('id', 'full_name');
-                    }
-                ])
-                ->first();
+            $subscription = Subscription::query()->findOrFail($id);
 
-            if (!empty($subscription)) {
-                $giftsIds = Gift::query()->where('subscription_id', $subscription->id)
-                    ->where('status', 'active')
-                    ->where(function ($query) {
-                        $query->whereNull('date');
-                        $query->orWhere('date', '<', time());
-                    })
-                    ->whereHas('sale')
-                    ->pluck('id')
-                    ->toArray();
+            $subscription->update([
+                'status' => Subscription::$active
+            ]);
 
-                $query = User::join('sales', 'sales.buyer_id', 'users.id')
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.course_status_changes_to_approved'),
+                'status' => 'success'
+            ];
 
-                    ->where(function ($query) use ($subscription) {
-                        $query->where('sales.subscription_id', $subscription->id);
-                    })
-                    ->whereNull('sales.refund_at');
-
-                $students = $this->studentsListsFilters($subscription, $query, $request)
-                    ->orderBy('sales.created_at', 'desc')
-                    ->paginate(10);
-
-                $userGroups = Group::where('status', 'active')
-                    ->orderBy('created_at', 'desc')
-                    ->get();
-
-                $totalExpireStudents = 0;
-                if (!empty($subscription->access_days)) {
-                    $accessTimestamp = $subscription->access_days * 24 * 60 * 60;
-
-                    $totalExpireStudents = User::join('sales', 'sales.buyer_id', 'users.id')
-                        ->select('users.*', DB::raw('sales.created_at as purchase_date'))
-                        ->where(function ($query) use ($subscription) {
-                            $query->where('sales.subscription_id', $subscription->id);
-                        })
-                        ->whereRaw('sales.created_at + ? < ?', [$accessTimestamp, time()])
-                        ->whereNull('sales.refund_at')
-                        ->count();
-                }
-
-                $subscriptionWebinars = $subscription->subscriptionWebinars;
-
-                $webinarStatisticController = new WebinarStatisticController();
-
-                foreach ($students as $key => $student) {
-                    $learnings = 0;
-                    $webinarCount = 0;
-
-                    foreach ($subscriptionWebinars as $subscriptionWebinar) {
-                        if (!empty($subscriptionWebinar->webinar)) {
-                            $webinarCount += 1;
-                            $learnings += $webinarStatisticController->getCourseProgressForStudent($subscriptionWebinar->webinar, $student->id);
-                        }
-                    }
-
-                    $learnings = ($learnings > 0 and $webinarCount > 0) ? round($learnings / $webinarCount, 2) : 0;
-
-                    if (!empty($student->gift_id)) {
-                        $gift = Gift::query()->where('id', $student->gift_id)->first();
-
-                        if (!empty($gift)) {
-                            $receipt = $gift->receipt;
-
-                            if (!empty($receipt)) {
-                                $receipt->rates = $student->rates;
-                                $receipt->access_to_purchased_item = $student->access_to_purchased_item;
-                                $receipt->sale_id = $student->sale_id;
-                                $receipt->purchase_date = $student->purchase_date;
-                                $receipt->learning = $learnings;
-
-                                $students[$key] = $receipt;
-                            } else {
-                                $newUser = new User();
-                                $newUser->full_name = $gift->name;
-                                $newUser->email = $gift->email;
-                                $newUser->rates = 0;
-                                $newUser->access_to_purchased_item = $student->access_to_purchased_item;
-                                $newUser->sale_id = $student->sale_id;
-                                $newUser->purchase_date = $student->purchase_date;
-                                $newUser->learning = 0;
-
-                                $students[$key] = $newUser;
-                            }
-                        }
-                    } else {
-                        $student->learning = $learnings;
-                    }
-                }
-
-                $roles = Role::all();
-
-                $data = [
-                    'pageTitle' => trans('admin/main.students'),
-                    'webinar' => $subscription,
-                    'students' => $students,
-                    'userGroups' => $userGroups,
-                    'roles' => $roles,
-                    'totalStudents' => $students->total(),
-                    'totalActiveStudents' => $students->total() - $totalExpireStudents,
-                    'totalExpireStudents' => $totalExpireStudents,
-                ];
-
-                return view('admin.subscriptions.students', $data);
-            }
-
-            abort(404);
+            return redirect(getAdminPanelUrl() . '/subscriptions')->with(['toast' => $toastData]);
         } catch (\Exception $e) {
-            \Log::error('studentsLists error: ' . $e->getMessage(), [
+            \Log::error('approve error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
@@ -1329,6 +1230,192 @@ class SubscriptionController extends Controller
             
             throw $e;
         }
+    }
+
+    public function reject(Request $request, $id)
+    {
+        try {
+            $this->authorize('admin_subscriptions_edit');
+
+            $webinar = Subscription::query()->findOrFail($id);
+
+            $webinar->update([
+                'status' => Subscription::$inactive
+            ]);
+
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.course_status_changes_to_rejected'),
+                'status' => 'success'
+            ];
+
+            return redirect(getAdminPanelUrl() . '/subscriptions')->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('reject error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    public function unpublish(Request $request, $id)
+    {
+        try {
+            $this->authorize('admin_subscriptions_edit');
+
+            $webinar = Subscription::query()->findOrFail($id);
+
+            $webinar->update([
+                'status' => Webinar::$pending
+            ]);
+
+            $toastData = [
+                'title' => trans('public.request_success'),
+                'msg' => trans('update.course_status_changes_to_unpublished'),
+                'status' => 'success'
+            ];
+
+            return redirect(getAdminPanelUrl() . '/subscriptions')->with(['toast' => $toastData]);
+        } catch (\Exception $e) {
+            \Log::error('unpublish error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    public function studentsLists(Request $request, $id)
+    {
+        $this->authorize('admin_webinar_students_lists');
+
+        $subscription = Subscription::where('id', $id)
+            ->with([
+                'teacher' => function ($qu) {
+                    $qu->select('id', 'full_name');
+                }
+            ])
+            ->first();
+
+
+        if (!empty($subscription)) {
+            $giftsIds = Gift::query()->where('subscription_id', $subscription->id)
+                ->where('status', 'active')
+                ->where(function ($query) {
+                    $query->whereNull('date');
+                    $query->orWhere('date', '<', time());
+                })
+                ->whereHas('sale')
+                ->pluck('id')
+                ->toArray();
+
+
+            $query = User::join('sales', 'sales.buyer_id', 'users.id')
+                ->leftJoin('webinar_reviews', function ($query) use ($subscription) {
+                    $query->on('webinar_reviews.creator_id', 'users.id')
+                        ->where('webinar_reviews.subscription_id', $subscription->id);
+                })
+                ->select('users.*', 'webinar_reviews.rates', 'sales.gift_id', DB::raw('sales.created_at as purchase_date'))
+                ->where(function ($query) use ($subscription, $giftsIds) {
+                    $query->where('sales.subscription_id', $subscription->id);
+                    $query->orWhereIn('sales.gift_id', $giftsIds);
+                })
+                ->whereNull('sales.refund_at');
+
+            $students = $this->studentsListsFilters($subscription, $query, $request)
+                ->orderBy('sales.created_at', 'desc')
+                ->paginate(10);
+
+            $userGroups = Group::where('status', 'active')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $totalExpireStudents = 0;
+            if (!empty($subscription->access_days)) {
+                $accessTimestamp = $subscription->access_days * 24 * 60 * 60;
+
+                $totalExpireStudents = User::join('sales', 'sales.buyer_id', 'users.id')
+                    ->select('users.*', DB::raw('sales.created_at as purchase_date'))
+                    ->where(function ($query) use ($subscription, $giftsIds) {
+                        $query->where('sales.subscription_id', $subscription->id);
+                        $query->orWhereIn('sales.gift_id', $giftsIds);
+                    })
+                    ->whereRaw('sales.created_at + ? < ?', [$accessTimestamp, time()])
+                    ->whereNull('sales.refund_at')
+                    ->count();
+            }
+
+            $subscriptionWebinars = $subscription->subscriptionWebinars;
+
+            $webinarStatisticController = new WebinarStatisticController();
+
+            foreach ($students as $key => $student) {
+                $learnings = 0;
+                $webinarCount = 0;
+
+                foreach ($subscriptionWebinars as $subscriptionWebinar) {
+                    if (!empty($subscriptionWebinar->webinar)) {
+                        $webinarCount += 1;
+                        $learnings += $webinarStatisticController->getCourseProgressForStudent($subscriptionWebinar->webinar, $student->id);
+                    }
+                }
+
+                $learnings = ($learnings > 0 and $webinarCount > 0) ? round($learnings / $webinarCount, 2) : 0;
+
+                if (!empty($student->gift_id)) {
+                    $gift = Gift::query()->where('id', $student->gift_id)->first();
+
+                    if (!empty($gift)) {
+                        $receipt = $gift->receipt;
+
+                        if (!empty($receipt)) {
+                            $receipt->rates = $student->rates;
+                            $receipt->access_to_purchased_item = $student->access_to_purchased_item;
+                            $receipt->sale_id = $student->sale_id;
+                            $receipt->purchase_date = $student->purchase_date;
+                            $receipt->learning = $learnings;
+
+                            $students[$key] = $receipt;
+                        } else { /* Gift recipient who has not registered yet */
+                            $newUser = new User();
+                            $newUser->full_name = $gift->name;
+                            $newUser->email = $gift->email;
+                            $newUser->rates = 0;
+                            $newUser->access_to_purchased_item = $student->access_to_purchased_item;
+                            $newUser->sale_id = $student->sale_id;
+                            $newUser->purchase_date = $student->purchase_date;
+                            $newUser->learning = 0;
+
+                            $students[$key] = $newUser;
+                        }
+                    }
+                } else {
+                    $student->learning = $learnings;
+                }
+            }
+
+            $roles = Role::all();
+
+            $data = [
+                'pageTitle' => trans('admin/main.students'),
+                'webinar' => $subscription,
+                'students' => $students,
+                'userGroups' => $userGroups,
+                'roles' => $roles,
+                'totalStudents' => $students->total(),
+                'totalActiveStudents' => $students->total() - $totalExpireStudents,
+                'totalExpireStudents' => $totalExpireStudents,
+            ];
+
+            return view('admin.subscriptions.students', $data);
+        }
+
+        abort(404);
     }
 
     private function studentsListsFilters($subscription, $query, $request)

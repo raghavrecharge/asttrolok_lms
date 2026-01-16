@@ -226,6 +226,170 @@ class SubscriptionController extends Controller
         }
     }
 
+       public function subscription1($slug, $justReturnData = false)
+    { 
+      
+        $user = null;
+
+        if (auth()->check()) {
+            $user = auth()->user();
+        }
+
+
+       
+       
+
+
+        $subscription = Subscription::where('slug', $slug)
+            ->with([
+                'tags',
+                'faqs' => function ($query) {
+                    $query->orderBy('order', 'asc');
+                },
+          
+                'filterOptions',
+                'category',
+                'teacher',
+              
+            ])
+            ->withCount([
+                'sales' => function ($query) {
+                    $query->whereNull('refund_at');
+                },
+            ])
+            ->where('status', 'active')
+            ->first();
+            
+            // print_r($subscription);die();
+
+        if (empty($subscription)) {
+            return $justReturnData ? false : back();
+        }
+
+     
+        if($subscription->private==1){
+         if (!$justReturnData) {
+            $contentLimitation = $this->checkContentLimitation($user, true);
+          
+            if ($contentLimitation != "ok") {
+                return $contentLimitation;
+            }
+        }
+        }
+//   print_r($subscription->private);
+        $hasBought = $subscription->checkUserHasBought($user, true, true);
+        $isPrivate = $subscription->private;
+
+        if (!empty($user) and ($user->id == $subscription->creator_id or $user->organ_id == $subscription->creator_id or $user->isAdmin())) {
+            $isPrivate = false;
+        }
+
+        if ($isPrivate and $hasBought) { // check the user has bought the subscription or not
+            $isPrivate = false;
+        }
+
+        if ($isPrivate) {
+            // echo 'ok';
+            return $justReturnData ? false : back();
+        }
+
+        $isFavorite = false;
+
+        if (!empty($user)) {
+            $isFavorite = Favorite::where('webinar_id', $subscription->id)
+                ->where('user_id', $user->id)
+                ->first();
+        }
+
+        $webinarContentCount = 0;
+        if (!empty($subscription->sessions)) {
+            $webinarContentCount += $subscription->sessions->count();
+        }
+        if (!empty($subscription->files)) {
+            $webinarContentCount += $subscription->files->count();
+        }
+        if (!empty($subscription->textLessons)) {
+            $webinarContentCount += $subscription->textLessons->count();
+        }
+        if (!empty($subscription->quizzes)) {
+            $webinarContentCount += $subscription->quizzes->count();
+        }
+        if (!empty($subscription->assignments)) {
+            $webinarContentCount += $subscription->assignments->count();
+        }
+
+        $advertisingBanners = AdvertisingBanner::where('published', true)
+            ->whereIn('position', ['subscription', 'subscription_sidebar'])
+            ->get();
+
+
+        $pageRobot = getPageRobot('subscription_show'); // index
+        $canSale = ($subscription->canSale() and !$hasBought);
+
+        /* Installments */
+        $showInstallments = true;
+        $overdueInstallmentOrders = $this->checkUserHasOverdueInstallment($user);
+
+        if ($overdueInstallmentOrders->isNotEmpty() and getInstallmentsSettings('disable_instalments_when_the_user_have_an_overdue_installment')) {
+            $showInstallments = false;
+        }
+
+        if ($canSale and !empty($subscription->price) and $subscription->price > 0 and $showInstallments and getInstallmentsSettings('status') and (empty($user) or $user->enable_installments)) {
+            $installmentPlans = new InstallmentPlans($user);
+            $installments = $installmentPlans->getPlans('subscriptions', $subscription->id, $subscription->type, $subscription->category_id, $subscription->teacher_id);
+        }
+
+        /* Cashback Rules */
+        if ($canSale and !empty($subscription->price) and getFeaturesSettings('cashback_active') and (empty($user) or !$user->disable_cashback)) {
+            $cashbackRulesMixin = new CashbackRules($user);
+            $cashbackRules = $cashbackRulesMixin->getRules('subscriptions', $subscription->id, $subscription->type, $subscription->category_id, $subscription->teacher_id);
+        }
+        
+$chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
+    ->where('subscription_id', $subscription->id)
+            ->where('status', 'active')
+    ->orderBy('order', 'asc')
+    ->get();
+
+
+        $data = [
+            'pageH1' => $subscription->h1,
+            'pageTitle' => $subscription->title,
+            'pageDescription' => $subscription->seo_description,
+            'pageRobot' => $pageRobot,
+            'subscription' => $subscription,
+            'isFavorite' => $isFavorite,
+            'hasBought' => $hasBought,
+            'user' => $user,
+            'webinarContentCount' => $webinarContentCount,
+            'advertisingBanners' => $advertisingBanners->where('position', 'subscription'),
+            'advertisingBannersSidebar' => $advertisingBanners->where('position', 'subscription_sidebar'),
+            'activeSpecialOffer' => $subscription->activeSpecialOffer(),
+            // 'sessionsWithoutChapter' => $sessionsWithoutChapter,
+            // 'filesWithoutChapter' => $filesWithoutChapter,
+            // 'textLessonsWithoutChapter' => $textLessonsWithoutChapter,
+            // 'quizzes' => $quizzes,
+            'installments' => $installments ?? null,
+            'cashbackRules' => $cashbackRules ?? null,
+            // 'astromani_23' =>$subscription_Astromani_2023,
+            // 'subscription_Professional' =>$subscription_Professional,
+             'chapterItems' => $chapterItems,
+
+        ];
+
+        if ($justReturnData) {
+            return $data;
+        }
+
+        $agent = new Agent();
+        if ($agent->isMobile()){
+            return view(getTemplate() . '.subscription.index', $data);
+        }else{
+            return view('web.default2' . '.subscription.index', $data);
+        }
+        // return view('web.default.subscription.index', $data);
+    }
+
     public function landingpage($slug)
     {
         try {

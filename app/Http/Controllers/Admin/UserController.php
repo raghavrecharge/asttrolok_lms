@@ -46,7 +46,8 @@ use App\Models\WebinarChapter;
 use App\Models\Installment;
 use App\Models\InstallmentSpecificationItem;
 use App\Models\InstallmentStep;
-
+use App\Models\SubscriptionAccess;
+use App\Http\Controllers\Web\SubscriptionController;
 class UserController extends Controller
 {
     public function staffs(Request $request)
@@ -856,6 +857,77 @@ public function importExcel(Request $request)
         }
     }
        public function subcourseprogress(Request $request, $id,$slug)
+    {
+    
+        
+        
+         $requestData = $request->all();
+        $webinarController = new SubscriptionController();
+
+        $data = $webinarController->subscription($slug, true);
+      
+        $course = $data['subscription'];
+        $user = $data['user'];
+      
+         $data['limit']=100;
+        
+        
+
+        if ($course->creator_id != $user->id and $course->teacher_id != $user->id and !$user->isAdmin()) {
+            $unReadCourseNoticeboards = CourseNoticeboard::where('webinar_id', $course->id)
+                ->whereDoesntHave('noticeboardStatus', function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
+                ->count();
+
+            if ($unReadCourseNoticeboards) {
+                $url = $course->getNoticeboardsPageUrl();
+                return redirect($url);
+            }
+        }
+        
+         $requestData = $request->all();
+        $subscriptionController = new SubscriptionController();
+      
+        $data = $subscriptionController->subscription1($slug, true);
+     
+        $subscription = $data['subscription'];
+        $user = $data['user'];
+         $subscription_pricess = $subscription->price;
+          $cchapt=count($data['chapterItems']);
+          
+         $Access = SubscriptionAccess ::where('subscription_id', $subscription->id)
+            ->where('user_id', $user->id)
+               ->first();
+             
+  
+            
+            // print_r($Access);
+            
+            $access_content_count =0;
+         
+         $data['limit']=$access_content_count;
+         $data['install_url']='/subscriptions/direct-payment/'.$subscription->slug;
+       
+        if ((!$data or !$data['hasBought'])) {
+            
+            abort(403);
+        }
+
+       
+           
+         
+            $data["webinars"] =[];
+            
+     
+     
+        return view('web.default.subscriptionProgress.learningPage.course_progress', $data);
+    
+            
+        
+        
+    }   
+       public function subcourseprogress123(Request $request, $id,$slug)
     {
         try {
             $requestData = $request->all();

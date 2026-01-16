@@ -188,10 +188,21 @@
                                     <td class="text-center">{{ !empty($stepPayment) ? dateTimeFormat($stepPayment->created_at, 'j M Y H:i') : '-' }}</td>
 
                                     <td class="text-center">
+                                          @php
+                                        $installment =(float) handlePrice($step->getPrice($itemPrice));
+                                        $remainig_installment_amount= ($installment - (float) $paidAmount);
+                                         
+                                        @endphp
+                                        @php
+    $remainig_installment_amount = ceil($remainig_installment_amount);
+@endphp
+                                         <span class="text-primary d-none">{{ $remainig_installment_amount }}</span>
                                         @if(!empty($stepPayment))
                                             <span class="text-primary">{{ trans('public.paid') }}</span>
                                             @php
                                              $paidAmount;
+                                             
+                                             
                                             @endphp
                                         @else
                                             <span class="{{ $isOverdue ? 'text-danger' : 'text-dark-blue' }}">{{ trans('update.unpaid') }} {{ $isOverdue ? "(". trans('update.overdue') .")" : '' }}</span>
@@ -209,7 +220,9 @@
 
                                                 <div class="dropdown-menu menu-lg">
 
-                                                    <a href="/panel/financial/installments/{{ $order->id }}/pay_upcoming_part" target="_blank"
+   <!--<a href="/panel/financial/installments/{{ $order->id }}/pay_upcoming_part" target="_blank"-->
+   <!--                                                    class="webinar-actions d-block mt-10 font-weight-normal">Pay Upcomming Part</a>-->
+                                                    <a href="{{ config('app.manual_base_url')}}/register-course/{{$webinar_title}}" target="_blank"
                                                        class="webinar-actions d-block mt-10 font-weight-normal">Pay Upcomming Part</a>
                                                 </div>
                                             </div>
