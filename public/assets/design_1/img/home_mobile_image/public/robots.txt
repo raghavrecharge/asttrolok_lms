@@ -1,0 +1,7 @@
+User-agent: Googlebot
+Disallow: /nogooglebot/
+
+User-agent: *
+Allow: /
+
+Sitemap: https://asttrolok-new-mobile-view-e6slsn.teleporthq.app/sitemap.xml

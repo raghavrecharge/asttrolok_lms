@@ -1,0 +1,70 @@
+<?php
+namespace App\Http\Controllers\Api\Auth;
+
+use Illuminate\Support\Facades\Log;
+use Exception;
+
+use App\Http\Controllers\Controller;
+
+use App\Helpers\SmsHelper;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
+
+class OtpController extends Controller
+{
+    public function sendOtp(Request $request)
+    {
+        try {
+            $request->validate([
+                'mobile' => 'required|digits:10',
+            ]);
+
+            $otp = rand(100000, 999999);
+            $mobile = $request->mobile;
+
+            Cache::put('otp_'.$mobile, $otp, now()->addMinutes(5));
+
+            $response = SmsHelper::sendOtp($mobile, $otp);
+            return response()->json($response);
+        } catch (\Exception $e) {
+            \Log::error('sendOtp error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    public function verifyOtp(Request $request)
+    {
+        try {
+            $request->validate([
+                'mobile' => 'required|digits:10',
+                'otp' => 'required|digits:6',
+            ]);
+
+            $cachedOtp = Cache::get('otp_'.$request->mobile);
+
+            if (!$cachedOtp) {
+                return response()->json(['status' => false, 'message' => 'OTP expired or invalid']);
+            }
+
+            if ($cachedOtp == $request->otp) {
+                Cache::forget('otp_'.$request->mobile);
+                return response()->json(['status' => true, 'message' => 'OTP verified successfully']);
+            }
+
+            return response()->json(['status' => false, 'message' => 'Incorrect OTP']);
+        } catch (\Exception $e) {
+            \Log::error('verifyOtp error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+}

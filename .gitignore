@@ -1,0 +1,58 @@
+/vendor/
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Laravel 4 specific
+bootstrap/compiled.php
+app/storage/
+
+# Laravel 5 & Lumen specific
+public/storage
+public/hot
+
+bootstrap/cache/*.php
+# Laravel 5 & Lumen specific with changed public path
+public_html/storage
+public_html/hot
+storage/logs/laravel.log
+storage/*.key
+.env
+absolute-water-387410-3c083ae6a069.json
+absolute-water-387410-1ea261a9eede.json
+gc.json
+Homestead.yaml
+Homestead.json
+/.vagrant
+.phpunit.result.cache
+/storage/
+/public/build
+/storage/pail
+.env.backup
+.env.production
+.phpactor.json
+auth.json
+storage/logs/*.log
+storage/logs/*.log
+
+storage/logs/*.log
+storage/logs/*.txt
+storage/logs/*
+
+
+# Laravel storage and cache
+/storage/*.log
+/storage/app/public
+/storage/framework/*
+/storage/logs/*
+/storage/debugbar/*
+
+# Bootstrap cache
+/bootstrap/cache/*
+
+public/store/support-attachments/*
+public/store/support-payments/*
+
+# Uploaded media/assets (too large for git)
+public/store/*
+!public/store/.gitkeep

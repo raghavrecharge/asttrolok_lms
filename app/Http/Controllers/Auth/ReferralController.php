@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use Illuminate\Support\Facades\Log;
+use Exception;
+
+use App\Http\Controllers\Controller;
+use App\Models\AffiliateCode;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
+
+class ReferralController extends Controller
+{
+    public function referral($code)
+    {
+        try {
+            $check = AffiliateCode::where('code', $code)->first();
+
+            if (!empty($check)) {
+                Cookie::queue('referral_code', $code, 24 * 60);
+            }
+
+            return redirect('/register');
+        } catch (\Exception $e) {
+            \Log::error('referral error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+}
