@@ -798,13 +798,12 @@ class PaymentController extends Controller
         $userId = $data['user_id'];
         $amount = $this->getTransactionAmount($data['razorpay_payment_id']);
 
-        Log::info('processSubscriptionPayment', [
-                'subscriptionId' => $subscriptionId
-            ]);
+        Log::info('processSubscriptionPayment', ['subscriptionId' => $subscriptionId]);
 
         $subscription = Subscription::findOrFail($subscriptionId);
         $user = User::findOrFail($userId);
 
+        // Legacy SubscriptionAccess + SubscriptionPayments (keep for backward compat)
         $SubscriptionAccess = SubscriptionAccess::where('user_id', $userId)
             ->where('subscription_id', $subscriptionId)
             ->first();
@@ -813,37 +812,29 @@ class PaymentController extends Controller
         $endDate = $this->calculateSubscriptionEndDate($subscription, $startDate);
 
         SubscriptionPayments::create([
-                        'user_id' => $userId,
-                        'subscription_id' => $subscriptionId,
-                        'amount' => $amount,
-                        'created_at' => time()
-                        ]);
+            'user_id' => $userId,
+            'subscription_id' => $subscriptionId,
+            'amount' => $amount,
+            'created_at' => time()
+        ]);
 
-        $Subscription = Subscription::where('id' , $subscriptionId)
-                            ->first();
-
+        $Subscription = Subscription::where('id', $subscriptionId)->first();
         $SubscriptionPayments = SubscriptionPayments::where('user_id', $userId)
-                                    ->where('subscription_id', $subscriptionId)
-                                            ->get();
+            ->where('subscription_id', $subscriptionId)->get();
 
         $access_till_date = time() + ($Subscription->access_days * 24 * 60 * 60);
         $paid_no_of_subscriptions = $SubscriptionPayments->count();
         $access_content_count = $Subscription->video_count * $SubscriptionPayments->count();
 
-        if(!empty($SubscriptionAccess->subscription_id)){
-
+        if (!empty($SubscriptionAccess->subscription_id)) {
             $access_till_date1 = $SubscriptionAccess->access_till_date + ($Subscription->access_days * 24 * 60 * 60);
-
             $access_till_date = $access_till_date >= $access_till_date1 ? $access_till_date : $access_till_date1;
-
             $SubscriptionAccess->update([
                 'access_till_date' => $access_till_date,
                 'access_content_count' => $access_content_count,
                 'paid_no_of_subscriptions' => $paid_no_of_subscriptions
-                ]);
-
-        }else{
-
+            ]);
+        } else {
             SubscriptionAccess::create([
                 'user_id' => $userId,
                 'subscription_id' => $subscriptionId,
@@ -851,28 +842,12 @@ class PaymentController extends Controller
                 'access_content_count' => $access_content_count,
                 'paid_no_of_subscriptions' => $paid_no_of_subscriptions,
                 'created_at' => time()
-                ]);
-
+            ]);
         }
 
-        $this->createSaleRecord([
-            'buyer_id' => $userId,
-            'seller_id' => $subscription->creator_id ?? 1,
-            'subscription_id' => $subscriptionId,
-            'type' => 'subscription',
-            'payment_method' => 'payment_channel',
-            'amount' => $amount,
-            'total_amount' => $amount,
-            'created_at' => time(),
-        ]);
-
-        $this->createAccountingEntry([
-            'user_id' => $subscription->creator_id ?? 1,
-            'subscription_id' => $subscriptionId,
-            'amount' => $amount,
-            'type' => 'addiction',
-            'description' => 'Subscription: ' . $subscription->title,
-        ]);
+        // UPE CheckoutService (creates UPE sale + subscription + ledger + legacy Sale + accounting)
+        $checkout = app(\App\Services\PaymentEngine\CheckoutService::class);
+        $checkout->processSubscriptionPurchase($userId, $subscriptionId, $amount, 'razorpay', $data['razorpay_payment_id']);
 
         $this->processAffiliate($userId, $amount, 'subscription', $subscriptionId);
 
@@ -900,46 +875,22 @@ class PaymentController extends Controller
         $webinar = Webinar::findOrFail($webinarId);
         $user = User::findOrFail($userId);
 
-        $existingSale = Sale::where('buyer_id', $userId)
-            ->where('webinar_id', $webinarId)
-            ->where('type', 'webinar')
-            ->first();
+        // UPE CheckoutService (handles idempotency, UPE sale + ledger + legacy Sale + accounting)
+        $checkout = app(\App\Services\PaymentEngine\CheckoutService::class);
+        $result = $checkout->processWebinarPurchase($userId, $webinarId, $amount, 'razorpay', $data['razorpay_payment_id']);
 
-        if ($existingSale) {
+        if ($result['already_exists']) {
             Log::warning('User already purchased this webinar', [
-                'user_id' => $userId,
-                'webinar_id' => $webinarId,
+                'user_id' => $userId, 'webinar_id' => $webinarId,
             ]);
             return;
         }
 
-        $sale = $this->createSaleRecord([
-            'buyer_id' => $userId,
-            'seller_id' => $webinar->creator_id,
-            'webinar_id' => $webinarId,
-            'type' => 'webinar',
-            'payment_method' => 'payment_channel',
-            'amount' => $amount,
-            'total_amount' => $amount,
-            'created_at' => time(),
-        ]);
-
-        $this->createAccountingEntry([
-            'user_id' => $webinar->creator_id,
-            'webinar_id' => $webinarId,
-            'sale_id' => $sale->id,
-            'amount' => $amount,
-            'type' => 'addiction',
-            'description' => 'Course purchase: ' . $webinar->title,
-        ]);
-
         $this->processAffiliate($userId, $amount, 'webinar', $webinarId);
-
         $this->sendPurchaseNotification($user, $webinar, 'webinar');
 
         Log::info('Webinar access granted', [
-            'user_id' => $userId,
-            'webinar_id' => $webinarId,
+            'user_id' => $userId, 'webinar_id' => $webinarId,
         ]);
     }
 
@@ -953,38 +904,18 @@ class PaymentController extends Controller
         $bundle = Bundle::findOrFail($bundleId);
         $user = User::findOrFail($userId);
 
-        $existingSale = Sale::where('buyer_id', $userId)
-            ->where('bundle_id', $bundleId)
-            ->where('type', 'bundle')
-            ->first();
+        // UPE CheckoutService (handles idempotency, UPE sale + ledger + legacy Sale + accounting)
+        $checkout = app(\App\Services\PaymentEngine\CheckoutService::class);
+        $result = $checkout->processBundlePurchase($userId, $bundleId, $amount, 'razorpay', $data['razorpay_payment_id']);
 
-        if ($existingSale) {
+        if ($result['already_exists']) {
             Log::warning('User already purchased this bundle', [
-                'user_id' => $userId,
-                'bundle_id' => $bundleId,
+                'user_id' => $userId, 'bundle_id' => $bundleId,
             ]);
             return;
         }
 
-        $sale = $this->createSaleRecord([
-            'buyer_id' => $userId,
-            'seller_id' => $bundle->creator_id,
-            'bundle_id' => $bundleId,
-            'type' => 'bundle',
-            'payment_method' => 'payment_channel',
-            'amount' => $amount,
-            'total_amount' => $amount,
-            'created_at' => time(),
-        ]);
-
-        $this->createAccountingEntry([
-            'user_id' => $bundle->creator_id,
-            'bundle_id' => $bundleId,
-            'sale_id' => $sale->id,
-            'amount' => $amount,
-            'type' => 'addiction',
-            'description' => 'Bundle purchase: ' . $bundle->title,
-        ]);
+        $sale = $result['legacy_sale'];
         $order = Order::where('id',$orderId)->first();
         foreach ($order->orderItems as $orderItem) {
             if($orderItem->bundle->bundleWebinars){
@@ -1135,26 +1066,9 @@ class PaymentController extends Controller
                             'created_at' => time()
                         ]);
 
-        $sale = $this->createSaleRecord([
-            'buyer_id' => $userId,
-            'seller_id' => $product->creator_id,
-            'product_id' => $productId,
-            'type' => 'product',
-            'product_order_id' => $productOrder->id,
-            'payment_method' => 'payment_channel',
-            'amount' => $amount,
-            'total_amount' => $amount,
-            'created_at' => time(),
-        ]);
-
-        $this->createAccountingEntry([
-            'user_id' => $product->creator_id,
-            'product_id' => $productId,
-            'sale_id' => $sale->id,
-            'amount' => $amount,
-            'type' => 'addiction',
-            'description' => 'Product purchase: ' . $product->title,
-        ]);
+        // Product = physical/digital, not course access — legacy only via CheckoutService
+        $checkout = app(\App\Services\PaymentEngine\CheckoutService::class);
+        $sale = $checkout->processProductPurchase($userId, $productId, $amount, $productOrder->id, $data['razorpay_payment_id']);
 
         if ($product->unlimited_inventory == 0) {
             $product->decrement('inventory');
@@ -1228,39 +1142,22 @@ class PaymentController extends Controller
     protected function processMeetingPayment($data)
     {
         $reserve_meeting_id = $data['reserve_meeting_id'];
-
         $userId = $data['user_id'];
         $amount = $this->getTransactionAmount($data['razorpay_payment_id']);
 
         $user = User::findOrFail($userId);
-
-        $reserveMeeting = ReserveMeeting::where('id' , $reserve_meeting_id)->first();
+        $reserveMeeting = ReserveMeeting::where('id', $reserve_meeting_id)->first();
         $meetingId = $reserveMeeting->meeting_id;
         $meeting = Meeting::findOrFail($meetingId);
 
-        $sale = $this->createSaleRecord([
-            'buyer_id' => $userId,
-            'seller_id' => $meeting->creator_id,
-            'meeting_id' => $meetingId,
-            'type' => 'meeting',
-            'payment_method' => 'payment_channel',
-            'amount' => $amount,
-            'total_amount' => $amount,
-            'created_at' => time(),
-        ]);
+        // Meeting = not course access — legacy only via CheckoutService
+        $checkout = app(\App\Services\PaymentEngine\CheckoutService::class);
+        $sale = $checkout->processMeetingPurchase($userId, $meetingId, $amount);
 
-        $this->createAccountingEntry([
-            'user_id' => $meeting->creator_id,
-            'meeting_id' => $meetingId,
+        $reserveMeeting->update([
             'sale_id' => $sale->id,
-            'amount' => $amount,
-            'type' => 'addiction',
-            'description' => 'Meeting booking: ' . $meeting->title,
+            'reserved_at' => time()
         ]);
-
-        $reserveMeeting ->update([
-            'sale_id' => $sale->id,
-            'reserved_at' => time()]);
 
         $this->processAffiliate($userId, $amount, 'meeting', $meetingId);
 
@@ -1275,9 +1172,7 @@ class PaymentController extends Controller
     {
         $orderId = $data['order_id'];
 
-        Log::info('processInstallmentPayment', [
-            'data' => $data
-        ]);
+        Log::info('processInstallmentPayment', ['data' => $data]);
         $installmentPaymentId = $data['installment_payment_id'];
         $installmentStep = $data['installment_step'] ?? 1;
         $userId = $data['user_id'];
@@ -1295,37 +1190,16 @@ class PaymentController extends Controller
         $webinarId = $installmentOrder->webinar_id;
         $webinar = Webinar::findOrFail($webinarId);
 
-        $sale = $this->createSaleRecord([
-            'buyer_id' => $userId,
-            'seller_id' => $webinar->seller_id ?? 1,
-            'webinar_id' => $webinarId,
-            'order_id' => $orderId,
-            'installment_payment_id' => $installmentPaymentId,
-            'type' => 'installment_payment',
-            'payment_method' => 'payment_channel',
-            'amount' => $amount,
-            'total_amount' => $amount,
-            'created_at' => time(),
-        ]);
+        $installmentOrder->update(['status' => 'open']);
 
-        $installmentOrder->update([
-            'status' => 'open'
-        ]);
-
-        $this->createAccountingEntry([
-            'user_id' => $installmentPayment->installmentOrder->seller_id ?? 1,
-            'installment_payment_id' => $installmentPaymentId,
-            'sale_id' => $sale->id,
-            'amount' => $amount,
-            'type' => 'addiction',
-            'description' => "Installment payment {$installmentStep}",
-        ]);
+        // UPE CheckoutService (creates UPE sale + plan + schedule + ledger + legacy Sale + accounting)
+        $checkout = app(\App\Services\PaymentEngine\CheckoutService::class);
+        $checkout->processInstallmentPayment($userId, $webinarId, $amount, $installmentPaymentId, 'razorpay', $data['razorpay_payment_id']);
 
         Log::info('Installment payment processed', [
             'user_id' => $userId,
             'installment_payment_id' => $installmentPaymentId,
             'step' => $installmentStep,
-
         ]);
     }
 
@@ -1378,6 +1252,14 @@ class PaymentController extends Controller
         ];
 
         return Accounting::create(array_merge($defaults, $data));
+    }
+
+    /**
+     * Get CheckoutService instance.
+     */
+    protected function getCheckoutService(): \App\Services\PaymentEngine\CheckoutService
+    {
+        return app(\App\Services\PaymentEngine\CheckoutService::class);
     }
 
     protected function processAffiliate($userId, $amount, $type, $itemId)

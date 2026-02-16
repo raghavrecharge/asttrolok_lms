@@ -86,6 +86,24 @@ Route::group(['middleware' => ['api.auth']], function () {
         Route::get('/my', [ReferralController::class, 'myReferrals']);
     });
 
+    // ── Support Actions ──
+    Route::group(['prefix' => 'support'], function () {
+        Route::get('/visibility', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'visibility']);
+        Route::get('/user-matrix', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'userMatrix']);
+        Route::post('/check-eligibility', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'checkEligibility']);
+        Route::post('/create', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'create']);
+        Route::get('/actions', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'index']);
+        Route::get('/actions/{id}', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'show']);
+        Route::post('/actions/{id}/approve', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'approve']);
+        Route::post('/actions/{id}/reject', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'reject']);
+        Route::post('/actions/{id}/execute', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'execute']);
+
+        // Mentor badge management
+        Route::post('/mentor/grant', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'grantMentorBadge']);
+        Route::post('/mentor/revoke', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'revokeMentorBadge']);
+        Route::get('/mentor/list', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'listMentors']);
+    });
+
     // ── Admin Panel ──
     Route::group(['prefix' => 'admin'], function () {
         Route::get('/requests', [AdminPaymentController::class, 'listRequests']);

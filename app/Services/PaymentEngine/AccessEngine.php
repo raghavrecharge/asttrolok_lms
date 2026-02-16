@@ -5,6 +5,8 @@ namespace App\Services\PaymentEngine;
 use App\Models\PaymentEngine\UpeProduct;
 use App\Models\PaymentEngine\UpeSale;
 use App\Models\PaymentEngine\UpeSubscription;
+use App\Models\PaymentEngine\UpeMentorBadge;
+use App\Models\PaymentEngine\UpeSupportAction;
 use Illuminate\Support\Facades\Cache;
 
 class AccessEngine
@@ -53,28 +55,53 @@ class AccessEngine
             ->orderByDesc('id')
             ->get();
 
-        if ($sales->isEmpty()) {
-            return AccessResult::denied('No sale found for this user and product.');
-        }
-
-        foreach ($sales as $sale) {
-            $result = $this->evaluateSale($sale);
-            if ($result->hasAccess) {
-                return $result;
+        // 1. Check sale-based access
+        if ($sales->isNotEmpty()) {
+            foreach ($sales as $sale) {
+                $result = $this->evaluateSale($sale);
+                if ($result->hasAccess) {
+                    return $result;
+                }
             }
         }
 
-        // Check if there's a subscription for this product (may not be tied to same sale)
+        // 2. Check subscription access (may not be tied to same sale)
         $subscription = UpeSubscription::where('user_id', $userId)
             ->where('product_id', $productId)
             ->whereIn('status', ['trial', 'active', 'grace'])
             ->first();
 
         if ($subscription && $subscription->hasAccess()) {
-            return AccessResult::granted('subscription', $sale ?? null, $subscription);
+            return AccessResult::granted('subscription', $sales->first(), $subscription);
         }
 
-        return AccessResult::denied('No active access found. Sales exist but do not grant access.');
+        // 3. Check temporary access via support actions
+        $tempAccess = UpeSupportAction::where('user_id', $userId)
+            ->where('product_id', $productId)
+            ->where('action_type', UpeSupportAction::ACTION_TEMPORARY_ACCESS)
+            ->where('status', UpeSupportAction::STATUS_EXECUTED)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->first();
+
+        if ($tempAccess) {
+            return AccessResult::granted('temporary', $sales->first(), null, [
+                'expires_at'        => $tempAccess->expires_at?->toDateTimeString(),
+                'support_action_id' => $tempAccess->id,
+            ]);
+        }
+
+        // 4. Check mentor badge — grants access to ANY product without sale
+        if (UpeMentorBadge::hasBadge($userId)) {
+            return AccessResult::granted('mentor', null, null, ['badge' => true]);
+        }
+
+        $reason = $sales->isEmpty()
+            ? 'No sale found for this user and product.'
+            : 'No active access found. Sales exist but do not grant access.';
+
+        return AccessResult::denied($reason);
     }
 
     /**

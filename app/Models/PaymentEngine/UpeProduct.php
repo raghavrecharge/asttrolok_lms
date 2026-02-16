@@ -9,6 +9,8 @@ class UpeProduct extends Model
 {
     protected $table = 'upe_products';
 
+    protected $appends = ['name'];
+
     protected $fillable = [
         'product_type',
         'external_id',
@@ -83,5 +85,33 @@ class UpeProduct extends Model
     public function hasValidity(): bool
     {
         return $this->validity_days !== null;
+    }
+
+    public function getNameAttribute(): string
+    {
+        try {
+            switch ($this->product_type) {
+                case 'course_video':
+                case 'webinar':
+                    $entity = \App\Models\Webinar::find($this->external_id);
+                    return $entity ? ($entity->title ?? "Course #{$this->external_id}") : "Course #{$this->external_id}";
+                case 'bundle':
+                    $entity = \App\Models\Bundle::find($this->external_id);
+                    return $entity ? ($entity->title ?? "Bundle #{$this->external_id}") : "Bundle #{$this->external_id}";
+                case 'meeting':
+                    return "Meeting #{$this->external_id}";
+                case 'product':
+                    $entity = \App\Models\Product::find($this->external_id);
+                    return $entity ? ($entity->title ?? $entity->name ?? "Product #{$this->external_id}") : "Product #{$this->external_id}";
+                case 'subscribe':
+                case 'subscription':
+                    $entity = \App\Models\Subscribe::find($this->external_id);
+                    return $entity ? ($entity->title ?? "Subscription #{$this->external_id}") : "Subscription #{$this->external_id}";
+                default:
+                    return ucfirst($this->product_type) . " #{$this->external_id}";
+            }
+        } catch (\Throwable $e) {
+            return ucfirst($this->product_type) . " #{$this->external_id}";
+        }
     }
 }

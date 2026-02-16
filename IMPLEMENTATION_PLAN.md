@@ -898,4 +898,43 @@ User ──▶ Pay step N ──▶ Server calculates amount from:
 
 ---
 
+## G. UI ENTRY POINTS — HYBRID APPROACH (Approved)
+
+**Decision:** Users can initiate common, self-explanatory requests directly from the UPE Financial Dashboard. Complex/verification-heavy scenarios remain through the support ticket system.
+
+### Dashboard Self-Service (UPE Financial Dashboard)
+
+| Scenario | Request Type | Entry Point | Form Location |
+|----------|-------------|-------------|---------------|
+| **1. Course Extension** | `course_extension` | Purchase Detail page | Extension period (7/15/30 days) + reason. Max 3 per purchase. |
+| **7. Installment Restructure** | `installment_restructure` | EMI Plan Detail page | Reason + auto-calculated overdue/remaining info. One pending per plan. |
+| **9. Refund Payment** | `refund` | Purchase Detail page | Amount (capped at balance) + reason. Active/partially_refunded sales only. |
+| **10. Post-Purchase Coupon** | `post_purchase_coupon` | Purchase Detail page | Coupon code. One pending per purchase. |
+| *(bonus)* **Upgrade** | `upgrade` | Purchase Detail page | Target product + reason. Active sales only. |
+
+All dashboard-submitted requests create `UpePaymentRequest` records with `status=pending` and follow the same 3-step workflow: `pending → verified (Support) → executed (Admin)`.
+
+### Support Ticket Only (via NewSupportForAsttrolok)
+
+| Scenario | Why Support-Only |
+|----------|-----------------|
+| **2. Temporary Access** | Requires verification of pending payment |
+| **3. Mentor Access** | Requires mentor identity verification |
+| **4. Relatives/Friends Access** | Requires third-party identity verification |
+| **5. Free Course Grant** | Admin-initiated, not student |
+| **6. Offline/Cash Payment** | Requires receipt verification + amount matching |
+| **8. New Service/Event Access** | No execution logic yet, needs scoping |
+| **11. Wrong Course Correction** | Complex price-difference handling, needs admin judgment |
+
+### Files Implementing Dashboard Forms
+
+- **Controller:** `app/Http/Controllers/Panel/UpeController.php`
+- **Routes:** `routes/panel.php` (prefix: `panel/upe`)
+- **Views:**
+  - `resources/views/web/default/panel/upe/purchase_detail.blade.php` (refund, upgrade, extension, coupon)
+  - `resources/views/web/default/panel/upe/installment_detail.blade.php` (restructure)
+- **Sidebar:** `resources/views/web/default/panel/includes/sidebar1.blade.php` (student role)
+
+---
+
 *End of Implementation Plan*

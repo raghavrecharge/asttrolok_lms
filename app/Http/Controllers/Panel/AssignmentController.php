@@ -30,10 +30,12 @@ class AssignmentController extends Controller
 
         $user = auth()->user();
 
-        $purchasedCoursesIds = Sale::where('buyer_id', $user->id)
-            ->whereNotNull('webinar_id')
-            ->whereNull('refund_at')
-            ->pluck('webinar_id')
+        $purchasedCoursesIds = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
+            ->whereIn('status', ['active', 'partially_refunded'])
+            ->whereHas('product', fn($q) => $q->whereIn('product_type', ['course_video', 'webinar']))
+            ->get()
+            ->pluck('product.external_id')
+            ->unique()
             ->toArray();
 
         $webinars = Webinar::select('id', 'creator_id', 'teacher_id')
@@ -132,12 +134,15 @@ class AssignmentController extends Controller
     private function getAssignmentDeadline(&$assignment, $user)
     {
         if (!empty($assignment->deadline)) {
-            $sale = Sale::where('buyer_id', $user->id)
-                ->where('webinar_id', $assignment->webinar_id)
-                ->whereNull('refund_at')
-                ->first();
+            $webinar = \App\Models\Webinar::find($assignment->webinar_id);
+            $sale = $webinar ? $webinar->getSaleItem($user) : null;
 
-            $assignment->deadlineTime = strtotime("+{$assignment->deadline} days", $sale->created_at);
+            if ($sale) {
+                $purchaseTimestamp = $sale->created_at instanceof \Carbon\Carbon
+                    ? $sale->created_at->timestamp
+                    : (int) $sale->created_at;
+                $assignment->deadlineTime = strtotime("+{$assignment->deadline} days", $purchaseTimestamp);
+            }
         }
     }
 
@@ -265,10 +270,9 @@ class AssignmentController extends Controller
             foreach ($histories as &$history) {
                 $history->usedAttemptsCount = 0;
 
-                $sale = Sale::where('buyer_id', $history->student_id)
-                    ->where('webinar_id', $assignment->webinar_id)
-                    ->whereNull('refund_at')
-                    ->first();
+                $webinar = \App\Models\Webinar::find($assignment->webinar_id);
+                $studentUser = \App\User::find($history->student_id);
+                $sale = ($webinar && $studentUser) ? $webinar->getSaleItem($studentUser) : null;
 
                 if (!empty($sale)) {
                     $history->purchase_date = $sale->created_at;

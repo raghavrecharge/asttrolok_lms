@@ -70,13 +70,14 @@ class WebinarAssignment extends Model implements TranslatableContract
         }
 
         if (!empty($this->deadline)) {
-            $sale = Sale::where('buyer_id', $user->id)
-                ->where('webinar_id', $this->webinar_id)
-                ->whereNull('refund_at')
-                ->first();
+            $webinar = \App\Models\Webinar::find($this->webinar_id);
+            $sale = $webinar ? $webinar->getSaleItem($user) : null;
 
             if (!empty($sale)) {
-                $deadline = strtotime("+{$this->deadline} days", $sale->created_at);
+                $purchaseTimestamp = $sale->created_at instanceof \Carbon\Carbon
+                    ? $sale->created_at->timestamp
+                    : (int) $sale->created_at;
+                $deadline = strtotime("+{$this->deadline} days", $purchaseTimestamp);
             } else {
                 $deadline = false;
             }

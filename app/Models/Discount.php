@@ -212,8 +212,8 @@ class Discount extends Model
         }
 
         if ($this->for_first_purchase) {
-            $checkIsFirstPurchase = Sale::where('buyer_id', $user->id)
-                ->whereNull('refund_at')
+            $checkIsFirstPurchase = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
+                ->whereIn('status', ['active', 'partially_refunded', 'completed'])
                 ->count();
 
             if ($checkIsFirstPurchase > 0) {

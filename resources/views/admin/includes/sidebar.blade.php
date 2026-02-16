@@ -1156,6 +1156,28 @@
                 </li>
             @endcan
 
+            {{-- UPE Payment Engine --}}
+            <li class="nav-item dropdown {{ (request()->is(getAdminPanelUrl('/upe*', false))) ? 'active' : '' }}">
+                <a href="#" class="nav-link has-dropdown" data-toggle="dropdown">
+                    <i class="fas fa-layer-group"></i>
+                    <span>Payment Engine</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li class="{{ (request()->is(getAdminPanelUrl('/upe/sales*', false))) ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ getAdminPanelUrl() }}/upe/sales">UPE Sales</a>
+                    </li>
+                    <li class="{{ (request()->is(getAdminPanelUrl('/upe/requests*', false))) ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ getAdminPanelUrl() }}/upe/requests">Payment Requests</a>
+                    </li>
+                    <li class="{{ (request()->is(getAdminPanelUrl('/upe/user-access*', false))) ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ getAdminPanelUrl() }}/upe/user-access">User Access</a>
+                    </li>
+                    <li class="{{ (request()->is(getAdminPanelUrl('/upe/audit*', false))) ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ getAdminPanelUrl() }}/upe/audit">Audit Log</a>
+                    </li>
+                </ul>
+            </li>
+
             @can('admin_payouts')
                <!-- <li class="nav-item dropdown {{ (request()->is(getAdminPanelUrl('/financial/payouts*', false))) ? 'active' : '' }}">
                     <a href="#" class="nav-link has-dropdown"><i class="fas fa-credit-card"></i> <span>{{ trans('admin/main.payout') }}</span></a>

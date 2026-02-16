@@ -774,82 +774,33 @@ class User extends Authenticatable
     {
         $webinarIds = [];
         $bundleIds = [];
-        $installment = [];
 
-        $sales = Sale::where('buyer_id', $this->id)
-            ->where(function ($query) {
-                $query->whereNotNull('webinar_id');
-                $query->orWhereNotNull('bundle_id');
-                $query->orWhereNotNull('installment_payment_id');
-            })
-            ->whereNull('refund_at')
+        // Get all active UPE sales for this user
+        $upeSales = \App\Models\PaymentEngine\UpeSale::where('user_id', $this->id)
+            ->whereIn('status', ['active', 'partially_refunded', 'pending_payment'])
+            ->with('product')
             ->get();
 
-        foreach ($sales as $sale) {
-            if ($sale->payment_method == Sale::$subscribe) {
-                $subscribe = $sale->getUsedSubscribe($sale->buyer_id, $sale->webinar_id);
-
-                if (!empty($subscribe)) {
-                    $subscribeSale = Sale::where('buyer_id', $this->id)
-                        ->where('type', Sale::$subscribe)
-                        ->where('subscribe_id', $subscribe->id)
-                        ->whereNull('refund_at')
-                        ->latest('created_at')
-                        ->first();
-
-                    if (!empty($subscribeSale)) {
-                        $usedDays = (int)diffTimestampDay(time(), $subscribeSale->created_at);
-
-                        if ($usedDays <= $subscribe->days) {
-                            if (!empty($sale->webinar_id)) {
-                                $webinarIds[] = $sale->webinar_id;
-                            }
-
-                            if (!empty($sale->bundle_id)) {
-                                $bundleIds[] = $sale->bundle_id;
-                            }
-                        }
-                    }
-                }
-            } else {
-                if (!empty($sale->webinar_id)) {
-                    $webinarIds[] = $sale->webinar_id;
-                }
-                if (!empty($sale->installment_payment_id)) {
-                    $installment_payment_id = $sale->installment_payment_id;
-                   $installments2 =DB::table('installment_order_payments') 
-                   ->selectRaw(' * ')
-                  ->where('id', $installment_payment_id )
-            ->get();
-                   foreach ($installments2 as $installments3) {
-                       $orderid=$installments3->installment_order_id;
-                    $installments1 =DB::table('installment_orders') 
-                   ->selectRaw(' * ')
-                  ->where('id', $orderid )
-            ->get();
-            foreach ($installments1 as $installments) {
-                if (in_array($installments->webinar_id, $installment))
-  {
- 
-  }
-else
-  {
-  $installment[]=   $installments->webinar_id;
-  }
-          
+        foreach ($upeSales as $upeSale) {
+            if (!$upeSale->product) {
+                continue;
             }
-    }
-    // print_r($installment);
-            // $installment[]=$installments1->webinar_id;
-            $webinarIds = array_merge($webinarIds,$installment);
-                }
 
-                if (!empty($sale->bundle_id)) {
-                    $bundleIds[] = $sale->bundle_id;
-                }
+            $product = $upeSale->product;
+
+            // Check validity period
+            if ($upeSale->valid_until && $upeSale->valid_until->isPast()) {
+                continue;
+            }
+
+            if (in_array($product->product_type, ['course_video', 'webinar', 'course_live'])) {
+                $webinarIds[] = $product->external_id;
+            } elseif ($product->product_type === 'bundle') {
+                $bundleIds[] = $product->external_id;
             }
         }
 
+        // Expand bundle IDs into webinar IDs
         if (!empty($bundleIds)) {
             $bundleWebinarIds = BundleWebinar::query()->whereIn('bundle_id', $bundleIds)
                 ->pluck('webinar_id')

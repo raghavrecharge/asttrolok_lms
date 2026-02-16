@@ -1237,6 +1237,26 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
             Route::post('/{paymentId}/reject', 'OfflinePaymentController@reject')->name('admin.offline_payments.reject');
         });
 
+        // ── UPE (Unified Payment Engine) ──
+        Route::group(['prefix' => 'upe'], function () {
+            Route::get('/sales', 'UpeController@sales');
+            Route::get('/sales/{id}', 'UpeController@saleDetail');
+
+            Route::get('/requests', 'UpeController@requests');
+            Route::get('/requests/{id}', 'UpeController@requestDetail');
+            Route::post('/requests/{id}/verify', 'UpeController@verifyRequest');
+            Route::post('/requests/{id}/approve', 'UpeController@approveRequest');
+            Route::post('/requests/{id}/reject', 'UpeController@rejectRequest');
+            Route::post('/requests/{id}/execute', 'UpeController@executeRequest');
+
+            Route::post('/grant-free', 'UpeController@grantFreeAccess');
+            Route::post('/offline-payment', 'UpeController@recordOfflinePayment');
+            Route::post('/refund', 'UpeController@processRefund');
+
+            Route::get('/audit', 'UpeController@auditLog');
+            Route::get('/user-access', 'UpeController@userAccess');
+        });
+
         // Event Management Routes
         Route::group(['prefix' => 'events'], function () {
             Route::get('/', 'EventController@index')->name('admin.events.index');

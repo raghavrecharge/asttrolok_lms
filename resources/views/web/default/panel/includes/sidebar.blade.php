@@ -439,6 +439,16 @@
                             <a href="/panel/financial/installments">{{ trans('update.installments') }}</a>
                         </li>
                     @endif
+
+                    <li class="mt-5 {{ (request()->is('panel/upe/purchases*')) ? 'active font-weight-bold' : '' }}">
+                        <a href="/panel/upe/purchases">My Purchases</a>
+                    </li>
+                    <li class="mt-5 {{ (request()->is('panel/upe/installments*')) ? 'active' : '' }}">
+                        <a href="/panel/upe/installments">EMI Plans</a>
+                    </li>
+                    <li class="mt-5 {{ (request()->is('panel/upe/requests*')) ? 'active' : '' }}">
+                        <a href="/panel/upe/requests">My Requests</a>
+                    </li>
                 </ul>
             </div>
         </li>

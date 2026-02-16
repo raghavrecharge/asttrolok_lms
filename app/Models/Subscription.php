@@ -260,105 +260,38 @@ public function whyChooseUsItems()
 
     public function checkUserHasBought($user = null, $checkExpired = true): bool
     {
-        $hasBought = false;
-
         if (empty($user) and auth()->check()) {
             $user = auth()->user();
         }
 
-        if (!empty($user)) {
-            $sale = Sale::where('buyer_id', $user->id)
-                ->where('subscription_id', $this->id)
-                ->where('type', 'subscription')
-                ->whereNull('refund_at')
-                ->where('access_to_purchased_item', true)
-                ->orderBy('created_at', 'desc')
-                ->first();
-
-            if (!empty($sale)) {
-                $hasBought = true;
-
-                if ($sale->payment_method == Sale::$subscribe) {
-                    $subscribe = $sale->getUsedSubscribe($sale->buyer_id, $sale->subscription_id, 'subscription_id');
-
-                    if (!empty($subscribe)) {
-                        $subscribeSaleCreatedAt = null;
-
-                        if (!empty($subscribe->installment_order_id)) {
-                            $installmentOrder = InstallmentOrder::query()->where('user_id', $user->id)
-                                ->where('id', $subscribe->installment_order_id)
-                                ->where('status', 'open')
-                                ->whereNull('refund_at')
-                                ->first();
-
-                            if (!empty($installmentOrder)) {
-                                $subscribeSaleCreatedAt = $installmentOrder->created_at;
-
-                                if ($installmentOrder->checkOrderHasOverdue()) {
-                                    $overdueIntervalDays = getInstallmentsSettings('overdue_interval_days');
-
-                                    if (empty($overdueIntervalDays) or $installmentOrder->overdueDaysPast() > $overdueIntervalDays) {
-                                        $hasBought = false;
-                                    }
-                                }
-                            }
-                        } else {
-                            $subscribeSale = Sale::where('buyer_id', $user->id)
-                                ->where('type', Sale::$subscribe)
-                                ->where('subscription_id', $subscribe->id)
-                                ->whereNull('refund_at')
-                                ->latest('created_at')
-                                ->first();
-
-                            if (!empty($subscribeSale)) {
-                                $subscribeSaleCreatedAt = $subscribeSale->created_at;
-                            }
-                        }
-
-                        if (!empty($subscribeSaleCreatedAt)) {
-                            $usedDays = (int)diffTimestampDay(time(), $subscribeSaleCreatedAt);
-
-                            if ($usedDays > $subscribe->days) {
-                                $hasBought = false;
-                            }
-                        }
-                    } else {
-                        $hasBought = false;
-                    }
-                }
-
-                if ($hasBought and !empty($this->access_days) and $checkExpired) {
-                    $hasBought = $this->checkHasExpiredAccessDays($sale->created_at, $sale->gift_id);
-                }
-            }
-
-            if (!$hasBought) {
-                $hasBought = ($this->creator_id == $user->id or $this->teacher_id == $user->id);
-            }
-
-            if (!$hasBought) {
-                $hasBought = $user->isAdmin();
-            }
-
-            if (!$hasBought) {
-                $installmentOrder = $this->getInstallmentOrder();
-
-                if (!empty($installmentOrder)) {
-                    $hasBought = true;
-
-                    if ($installmentOrder->checkOrderHasOverdue()) {
-                        $overdueIntervalDays = getInstallmentsSettings('overdue_interval_days');
-
-                        if (empty($overdueIntervalDays) or $installmentOrder->overdueDaysPast() > $overdueIntervalDays) {
-                            $hasBought = false;
-                        }
-                    }
-                }
-            }
-
+        if (empty($user)) {
+            return false;
         }
 
-        return $hasBought;
+        // Role-based bypass: creator, teacher, admin
+        if ($this->creator_id == $user->id or $this->teacher_id == $user->id) {
+            return true;
+        }
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        // UPE AccessEngine: check subscription access
+        $accessEngine = app(\App\Services\PaymentEngine\AccessEngine::class);
+
+        $upeProduct = \App\Models\PaymentEngine\UpeProduct::where('product_type', 'subscription')
+            ->where('external_id', $this->id)
+            ->first();
+
+        if ($upeProduct) {
+            $result = $accessEngine->hasAccess($user->id, $upeProduct->id);
+            if ($result->hasAccess) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function getInstallmentOrder()

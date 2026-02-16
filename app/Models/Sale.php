@@ -191,6 +191,16 @@ class Sale extends Model
             'product_delivery_fee' => $orderItem->product_delivery_fee,
             'created_at' => time(),
         ]);
+
+        // UPE dual-write: create UPE records for course-access purchases
+        try {
+            static::createUpeRecordsForSale($sale, $orderItem);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('UPE dual-write failed in createSales, legacy sale preserved', [
+                'sale_id' => $sale->id, 'error' => $e->getMessage(),
+            ]);
+        }
+
 if(!empty($orderItem->webinar_id)){
     if($orderItem->webinar_id=='2033'){
         $u_id=$orderItem->user_id;
@@ -522,5 +532,258 @@ curl_close($webhookcurl);
     public function orderAddress()
     {
         return $this->hasOne(OrderAddress::class, 'order_id', 'order_id');
+    }
+
+    /**
+     * UPE dual-write: create UPE records when a legacy Sale is created via createSales().
+     * Covers webinar, bundle, subscription, and installment purchases.
+     * Meetings, products, promotions, registration packages are NOT UPE-managed.
+     */
+    private static function createUpeRecordsForSale($sale, $orderItem)
+    {
+        $userId = $orderItem->user_id;
+        $amount = $orderItem->total_amount;
+
+        // Determine what kind of purchase this is
+        if (!empty($orderItem->webinar_id) && empty($orderItem->installment_payment_id) && empty($orderItem->gift_id)) {
+            // Direct webinar purchase
+            $webinar = \App\Models\Webinar::find($orderItem->webinar_id);
+            if (!$webinar) return;
+
+            $productType = match ($webinar->type ?? 'course') {
+                'webinar' => 'webinar',
+                default => 'course_video',
+            };
+
+            $upeProduct = \App\Models\PaymentEngine\UpeProduct::firstOrCreate(
+                ['external_id' => $webinar->id, 'product_type' => $productType],
+                ['name' => $webinar->slug ?? "webinar-{$webinar->id}", 'base_fee' => $amount, 'validity_days' => $webinar->access_days, 'status' => 'active']
+            );
+
+            $existingUpeSale = \App\Models\PaymentEngine\UpeSale::where('user_id', $userId)
+                ->where('product_id', $upeProduct->id)
+                ->whereIn('status', ['active', 'partially_refunded'])
+                ->first();
+
+            if ($existingUpeSale) return;
+
+            $validFrom = now();
+            $validUntil = $webinar->access_days ? $validFrom->copy()->addDays($webinar->access_days) : null;
+
+            $upeSale = \App\Models\PaymentEngine\UpeSale::create([
+                'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                'user_id' => $userId,
+                'product_id' => $upeProduct->id,
+                'sale_type' => 'new',
+                'pricing_mode' => 'one_time',
+                'base_fee_snapshot' => $amount,
+                'status' => 'active',
+                'valid_from' => $validFrom,
+                'valid_until' => $validUntil,
+                'metadata' => json_encode(['legacy_sale_id' => $sale->id, 'source' => 'createSales_hook']),
+            ]);
+
+            app(\App\Services\PaymentEngine\PaymentLedgerService::class)->appendEntry($upeSale->id, [
+                'entry_type' => \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_PAYMENT,
+                'direction' => \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
+                'amount' => $amount,
+                'currency' => 'INR',
+                'payment_method' => $sale->payment_method ?? 'payment_channel',
+                'description' => "Payment via createSales for webinar {$webinar->id}",
+                'idempotency_key' => "legacy_sale_{$sale->id}",
+            ]);
+
+            \Illuminate\Support\Facades\Cache::forget(\App\Services\PaymentEngine\AccessEngine::CACHE_PREFIX . "{$userId}_{$upeProduct->id}");
+
+        } elseif (!empty($orderItem->bundle_id) && empty($orderItem->gift_id)) {
+            // Bundle purchase
+            $bundle = \App\Models\Bundle::find($orderItem->bundle_id);
+            if (!$bundle) return;
+
+            $upeProduct = \App\Models\PaymentEngine\UpeProduct::firstOrCreate(
+                ['external_id' => $bundle->id, 'product_type' => 'bundle'],
+                ['name' => $bundle->slug ?? "bundle-{$bundle->id}", 'base_fee' => $amount, 'validity_days' => $bundle->access_days, 'status' => 'active']
+            );
+
+            $existingUpeSale = \App\Models\PaymentEngine\UpeSale::where('user_id', $userId)
+                ->where('product_id', $upeProduct->id)
+                ->whereIn('status', ['active', 'partially_refunded'])
+                ->first();
+
+            if ($existingUpeSale) return;
+
+            $validFrom = now();
+            $validUntil = $bundle->access_days ? $validFrom->copy()->addDays($bundle->access_days) : null;
+
+            $upeSale = \App\Models\PaymentEngine\UpeSale::create([
+                'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                'user_id' => $userId,
+                'product_id' => $upeProduct->id,
+                'sale_type' => 'new',
+                'pricing_mode' => 'one_time',
+                'base_fee_snapshot' => $amount,
+                'status' => 'active',
+                'valid_from' => $validFrom,
+                'valid_until' => $validUntil,
+                'metadata' => json_encode(['legacy_sale_id' => $sale->id, 'source' => 'createSales_hook']),
+            ]);
+
+            app(\App\Services\PaymentEngine\PaymentLedgerService::class)->appendEntry($upeSale->id, [
+                'entry_type' => \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_PAYMENT,
+                'direction' => \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
+                'amount' => $amount,
+                'currency' => 'INR',
+                'payment_method' => $sale->payment_method ?? 'payment_channel',
+                'description' => "Payment via createSales for bundle {$bundle->id}",
+                'idempotency_key' => "legacy_sale_{$sale->id}",
+            ]);
+
+            \Illuminate\Support\Facades\Cache::forget(\App\Services\PaymentEngine\AccessEngine::CACHE_PREFIX . "{$userId}_{$upeProduct->id}");
+
+        } elseif (!empty($orderItem->subscription_id)) {
+            // Subscription purchase
+            $subscription = \App\Models\Subscription::find($orderItem->subscription_id);
+            if (!$subscription) return;
+
+            $upeProduct = \App\Models\PaymentEngine\UpeProduct::firstOrCreate(
+                ['external_id' => $subscription->id, 'product_type' => 'subscription'],
+                ['name' => $subscription->slug ?? "subscription-{$subscription->id}", 'base_fee' => $amount, 'validity_days' => $subscription->access_days, 'status' => 'active']
+            );
+
+            $validFrom = now();
+            $validUntil = $subscription->access_days ? $validFrom->copy()->addDays($subscription->access_days) : $validFrom->copy()->addDays(30);
+
+            $upeSale = \App\Models\PaymentEngine\UpeSale::create([
+                'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                'user_id' => $userId,
+                'product_id' => $upeProduct->id,
+                'sale_type' => 'new',
+                'pricing_mode' => 'subscription',
+                'base_fee_snapshot' => $amount,
+                'status' => 'active',
+                'valid_from' => $validFrom,
+                'valid_until' => $validUntil,
+                'metadata' => json_encode(['legacy_sale_id' => $sale->id, 'source' => 'createSales_hook']),
+            ]);
+
+            // Create or update UPE subscription
+            $existingSub = \App\Models\PaymentEngine\UpeSubscription::where('user_id', $userId)
+                ->where('product_id', $upeProduct->id)
+                ->whereIn('status', ['active', 'trial', 'grace'])
+                ->first();
+
+            if ($existingSub) {
+                $newEnd = $existingSub->current_period_end->copy()->addDays($subscription->access_days ?? 30);
+                $existingSub->update(['current_period_end' => $newEnd, 'status' => 'active']);
+            } else {
+                \App\Models\PaymentEngine\UpeSubscription::create([
+                    'user_id' => $userId,
+                    'product_id' => $upeProduct->id,
+                    'sale_id' => $upeSale->id,
+                    'status' => 'active',
+                    'billing_interval' => 'monthly',
+                    'billing_amount' => $amount,
+                    'current_period_start' => $validFrom,
+                    'current_period_end' => $validUntil,
+                    'grace_period_days' => 3,
+                ]);
+            }
+
+            app(\App\Services\PaymentEngine\PaymentLedgerService::class)->appendEntry($upeSale->id, [
+                'entry_type' => \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_PAYMENT,
+                'direction' => \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
+                'amount' => $amount,
+                'currency' => 'INR',
+                'payment_method' => $sale->payment_method ?? 'payment_channel',
+                'description' => "Subscription payment via createSales for {$subscription->id}",
+                'idempotency_key' => "legacy_sale_{$sale->id}",
+            ]);
+
+            \Illuminate\Support\Facades\Cache::forget(\App\Services\PaymentEngine\AccessEngine::CACHE_PREFIX . "{$userId}_{$upeProduct->id}");
+
+        } elseif (!empty($orderItem->installment_payment_id)) {
+            // Installment payment
+            $installmentPayment = \App\Models\InstallmentOrderPayment::find($orderItem->installment_payment_id);
+            if (!$installmentPayment || !$installmentPayment->installmentOrder) return;
+
+            $installmentOrder = $installmentPayment->installmentOrder;
+            $webinarId = $installmentOrder->webinar_id;
+            $webinar = \App\Models\Webinar::find($webinarId);
+            if (!$webinar) return;
+
+            $productType = match ($webinar->type ?? 'course') {
+                'webinar' => 'webinar',
+                default => 'course_video',
+            };
+
+            $upeProduct = \App\Models\PaymentEngine\UpeProduct::firstOrCreate(
+                ['external_id' => $webinar->id, 'product_type' => $productType],
+                ['name' => $webinar->slug ?? "webinar-{$webinar->id}", 'base_fee' => $webinar->price ?? $amount, 'validity_days' => $webinar->access_days, 'status' => 'active']
+            );
+
+            // Find existing UPE installment sale or create new one
+            $existingSale = \App\Models\PaymentEngine\UpeSale::where('user_id', $userId)
+                ->where('product_id', $upeProduct->id)
+                ->where('pricing_mode', 'installment')
+                ->whereIn('status', ['active', 'pending_payment', 'partially_refunded'])
+                ->first();
+
+            if ($existingSale) {
+                // Subsequent payment — add ledger entry
+                app(\App\Services\PaymentEngine\PaymentLedgerService::class)->appendEntry($existingSale->id, [
+                    'entry_type' => \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
+                    'direction' => \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
+                    'amount' => $amount,
+                    'currency' => 'INR',
+                    'payment_method' => $sale->payment_method ?? 'payment_channel',
+                    'description' => "Installment payment via createSales",
+                    'idempotency_key' => "legacy_sale_{$sale->id}",
+                ]);
+            } else {
+                // New installment purchase
+                $validFrom = now();
+                $validUntil = $webinar->access_days ? $validFrom->copy()->addDays($webinar->access_days) : null;
+
+                $upeSale = \App\Models\PaymentEngine\UpeSale::create([
+                    'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                    'user_id' => $userId,
+                    'product_id' => $upeProduct->id,
+                    'sale_type' => 'new',
+                    'pricing_mode' => 'installment',
+                    'base_fee_snapshot' => $webinar->price ?? $amount,
+                    'status' => 'pending_payment',
+                    'valid_from' => $validFrom,
+                    'valid_until' => $validUntil,
+                    'metadata' => json_encode(['legacy_sale_id' => $sale->id, 'source' => 'createSales_hook']),
+                ]);
+
+                $plan = \App\Models\PaymentEngine\UpeInstallmentPlan::create([
+                    'sale_id' => $upeSale->id,
+                    'total_amount' => $installmentOrder->item_price ?? $webinar->price ?? $amount,
+                    'total_installments' => ($installmentOrder->installment->steps_count ?? 1) + 1,
+                    'status' => 'active',
+                ]);
+
+                \App\Models\PaymentEngine\UpeInstallmentSchedule::create([
+                    'plan_id' => $plan->id,
+                    'installment_number' => 1,
+                    'due_date' => now(),
+                    'amount_due' => $amount,
+                    'status' => 'paid',
+                ]);
+
+                app(\App\Services\PaymentEngine\PaymentLedgerService::class)->appendEntry($upeSale->id, [
+                    'entry_type' => \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
+                    'direction' => \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
+                    'amount' => $amount,
+                    'currency' => 'INR',
+                    'payment_method' => $sale->payment_method ?? 'payment_channel',
+                    'description' => "Installment upfront via createSales",
+                    'idempotency_key' => "legacy_sale_{$sale->id}",
+                ]);
+            }
+
+            \Illuminate\Support\Facades\Cache::forget(\App\Services\PaymentEngine\AccessEngine::CACHE_PREFIX . "{$userId}_{$upeProduct->id}");
+        }
     }
 }

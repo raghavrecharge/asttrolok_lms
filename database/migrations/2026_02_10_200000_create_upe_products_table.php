@@ -13,6 +13,7 @@ return new class extends Migration
             $table->enum('product_type', [
                 'course_live', 'course_video', 'webinar',
                 'subscription', 'event', 'bundle',
+                'meeting', 'physical_product',
             ]);
             $table->unsignedInteger('external_id')->comment('FK to webinars.id, bundles.id, etc.');
             $table->decimal('base_fee', 15, 2)->comment('Immutable base price');

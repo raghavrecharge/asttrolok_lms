@@ -271,6 +271,20 @@ Route::group(['namespace' => 'Panel', 'prefix' => 'panel', 'middleware' => ['che
         });
     });
 
+    // ── UPE User Panel ──
+    Route::group(['prefix' => 'upe'], function () {
+        Route::get('/purchases', 'UpeController@myPurchases');
+        Route::get('/purchases/{id}', 'UpeController@purchaseDetail');
+        Route::post('/request-refund', 'UpeController@requestRefund');
+        Route::post('/request-upgrade', 'UpeController@requestUpgrade');
+        Route::post('/request-extension', 'UpeController@requestExtension');
+        Route::post('/request-coupon', 'UpeController@requestCoupon');
+        Route::post('/request-restructure', 'UpeController@requestRestructure');
+        Route::get('/requests', 'UpeController@myRequests');
+        Route::get('/installments', 'UpeController@installments');
+        Route::get('/installments/{id}', 'UpeController@installmentDetail');
+    });
+
     Route::group(['prefix' => 'setting'], function () {
         Route::get('/step/{step?}', 'UserController@setting');
         Route::get('/', 'UserController@setting');

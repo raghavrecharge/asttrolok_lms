@@ -115,13 +115,14 @@ trait SequenceContent
         $day = $this->access_after_day;
 
         if (!empty($user)) {
-            $sale = Sale::where('buyer_id', $user->id)
-                ->where('webinar_id', $this->webinar_id)
-                ->whereNull('refund_at')
-                ->first();
+            $webinar = \App\Models\Webinar::find($this->webinar_id);
+            $sale = $webinar ? $webinar->getSaleItem($user) : null;
 
             if (!empty($sale)) {
-                $conditionDay = strtotime("+$day days", $sale->created_at);
+                $purchaseTimestamp = $sale->created_at instanceof \Carbon\Carbon
+                    ? $sale->created_at->timestamp
+                    : (int) $sale->created_at;
+                $conditionDay = strtotime("+$day days", $purchaseTimestamp);
 
                 if (time() < $conditionDay) {
                     $result = trans('update.this_content_will_be_accessible_for_you_on_date', ['date' => dateTimeFormat($conditionDay, 'j M Y H:i')]);

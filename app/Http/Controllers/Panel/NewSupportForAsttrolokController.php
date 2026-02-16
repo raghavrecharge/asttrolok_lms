@@ -57,28 +57,25 @@ class NewSupportForAsttrolokController extends Controller
                         ->get();
             
 
-            $salesByWebinar = Sale::where('buyer_id', $user->id)
-                ->whereNull('refund_at')
-                ->whereIn('webinar_id', $userPurchases->pluck('id'))
-                ->get()
-                ->keyBy('webinar_id');
-
-            
-
+            // Use UPE sales to find purchase dates for expiry check
                 foreach ($userPurchases as $item) {
 
                     if (!$item->access_days) {
                         continue;
                     }
 
-                    $sale = $salesByWebinar->get($item->id);
+                    $sale = $item->getSaleItem($user);
 
                     if (!$sale || !$sale->created_at) {
                         continue;
                     }
 
-                    if (!$item->checkHasExpiredAccessDays($sale->created_at)) {
-                        $item->expired_date = $sale->created_at;
+                    $purchaseTimestamp = $sale->created_at instanceof \Carbon\Carbon
+                        ? $sale->created_at->timestamp
+                        : (int) $sale->created_at;
+
+                    if (!$item->checkHasExpiredAccessDays($purchaseTimestamp)) {
+                        $item->expired_date = $purchaseTimestamp;
                         $expiredCourses[] = $item;
                     }
                 }
@@ -699,25 +696,25 @@ class NewSupportForAsttrolokController extends Controller
             return 'flow_a'; 
         }
         
-        $sale = Sale::where('buyer_id', Auth::id())
-        ->where('webinar_id', $webinarId)
-        ->whereNull('refund_at')
-        ->orderBy('created_at', 'desc')
-        ->first();
+        $webinar = \App\Models\Webinar::find($webinarId);
         
-        
-        
-        if (!$sale) {
+        if (!$webinar) {
             return 'flow_a'; 
         }
         
-        $access = $sale->webinar->checkUserHasBought();
+        $access = $webinar->checkUserHasBought();
         
         if ($access) {
             return 'flow_c'; 
         }
+
+        // Check if user ever had a sale (now expired)
+        $sale = $webinar->getSaleItem();
+        if ($sale) {
+            return 'flow_b';
+        }
         
-        return 'flow_b'; 
+        return 'flow_a'; 
     }
     
     /**
@@ -733,11 +730,17 @@ class NewSupportForAsttrolokController extends Controller
             ];
         }
         
-        $sale = Sale::where('buyer_id', Auth::id())
-        ->where('webinar_id', $webinarId)
-        ->whereNull('refund_at')
-        ->orderBy('created_at', 'desc')
-        ->first();
+        $webinar = \App\Models\Webinar::find($webinarId);
+        
+        if (!$webinar) {
+            return [
+                'status' => 'never_purchased',
+                'purchased_at' => null,
+                'expires_at' => null,
+            ];
+        }
+
+        $sale = $webinar->getSaleItem();
         
         if (!$sale) {
             return [
@@ -746,27 +749,26 @@ class NewSupportForAsttrolokController extends Controller
                 'expires_at' => null,
             ];
         }
-        $access = $sale->webinar->checkUserHasBought();
-        
-        $expiresAt = null;
-        if (!empty($sale->subscribe_id)) {
-            $subscribe = $sale->subscribe;
-            if ($subscribe) {
-                $expiresAt = $sale->created_at + ($subscribe->days * 86400);
-            }
-        }
+
+        $access = $webinar->checkUserHasBought();
+        $purchasedAt = $sale->created_at instanceof \Carbon\Carbon
+            ? $sale->created_at->timestamp
+            : (int) $sale->created_at;
+        $expiresAt = $sale->valid_until
+            ? ($sale->valid_until instanceof \Carbon\Carbon ? $sale->valid_until->timestamp : (int) $sale->valid_until)
+            : null;
         
         if ($access) {
             return [
                 'status' => 'active',
-                'purchased_at' => $sale->created_at,
+                'purchased_at' => $purchasedAt,
                 'expires_at' => $expiresAt,
             ];
         }
 
         return [
             'status' => 'expired',
-            'purchased_at' => $sale->created_at,
+            'purchased_at' => $purchasedAt,
             'expires_at' => $expiresAt,
         ];
     }

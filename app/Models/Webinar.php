@@ -356,30 +356,55 @@ public function whyChooseUsItems()
         }
 
         if (!empty($user)) {
-            return Sale::query()->where('buyer_id', $user->id)
-                ->where('webinar_id', $this->id)
-                ->where('type', 'webinar')
-                ->whereNull('refund_at')
-                ->where('access_to_purchased_item', true)
-                ->orderBy('created_at', 'desc')
+            $productTypes = match ($this->type) {
+                'webinar' => ['webinar'],
+                'course' => ['course_video'],
+                'text_lesson' => ['course_video'],
+                default => ['course_video', 'webinar'],
+            };
+
+            $upeProduct = \App\Models\PaymentEngine\UpeProduct::whereIn('product_type', $productTypes)
+                ->where('external_id', $this->id)
                 ->first();
+
+            if ($upeProduct) {
+                return \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
+                    ->where('product_id', $upeProduct->id)
+                    ->whereIn('status', ['active', 'partially_refunded'])
+                    ->orderByDesc('id')
+                    ->first();
+            }
         }
 
         return null;
     }
- public function getSaleItem1($user = null)
+
+    public function getSaleItem1($user = null)
     {
         if (empty($user)) {
             $user = auth()->user();
         }
 
         if (!empty($user)) {
-            return Sale::query()->where('buyer_id', $user->id)
-                ->where('type', 'installment_payment')
-                ->whereNull('refund_at')
-                ->where('access_to_purchased_item', true)
-                ->orderBy('created_at', 'desc')
+            $productTypes = match ($this->type) {
+                'webinar' => ['webinar'],
+                'course' => ['course_video'],
+                'text_lesson' => ['course_video'],
+                default => ['course_video', 'webinar'],
+            };
+
+            $upeProduct = \App\Models\PaymentEngine\UpeProduct::whereIn('product_type', $productTypes)
+                ->where('external_id', $this->id)
                 ->first();
+
+            if ($upeProduct) {
+                return \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
+                    ->where('product_id', $upeProduct->id)
+                    ->where('pricing_mode', 'installment')
+                    ->whereIn('status', ['active', 'partially_refunded', 'pending_payment'])
+                    ->orderByDesc('id')
+                    ->first();
+            }
         }
 
         return null;
@@ -405,129 +430,61 @@ public function whyChooseUsItems()
 
     public function checkUserHasBought($user = null, $checkExpired = true, $test = false): bool
     {
-        $hasBought = false;
-
         if (empty($user) and auth()->check()) {
             $user = auth()->user();
         }
 
-        if (!empty($user)) {
-            $sale = $this->getSaleItem($user);
+        if (empty($user)) {
+            return false;
+        }
 
-            if (!empty($sale)) {
-                $hasBought = true;
+        // Role-based bypass: creator, teacher, partner teacher, admin
+        if ($this->creator_id == $user->id or $this->teacher_id == $user->id) {
+            return true;
+        }
 
-                if ($sale->payment_method == Sale::$subscribe) {
-                    $subscribe = $sale->getUsedSubscribe($sale->buyer_id, $sale->webinar_id);
+        $partnerTeachers = !empty($this->webinarPartnerTeacher) ? $this->webinarPartnerTeacher->pluck('teacher_id')->toArray() : [];
+        if (in_array($user->id, $partnerTeachers)) {
+            return true;
+        }
 
-                    if (!empty($subscribe)) {
-                        $subscribeSaleCreatedAt = null;
+        if ($user->isAdmin()) {
+            return true;
+        }
 
-                        if (!empty($subscribe->installment_order_id)) {
-                            $installmentOrder = InstallmentOrder::query()->where('user_id', $user->id)
-                                ->where('id', $subscribe->installment_order_id)
-                                ->where('status', 'open')
-                                ->whereNull('refund_at')
-                                ->first();
+        // UPE AccessEngine: check direct course access
+        $accessEngine = app(\App\Services\PaymentEngine\AccessEngine::class);
+        $productTypes = match ($this->type) {
+            'webinar' => ['webinar'],
+            'course' => ['course_video'],
+            'text_lesson' => ['course_video'],
+            default => ['course_video', 'webinar'],
+        };
 
-                            if (!empty($installmentOrder)) {
-                                $subscribeSaleCreatedAt = $installmentOrder->created_at;
+        $upeProduct = \App\Models\PaymentEngine\UpeProduct::whereIn('product_type', $productTypes)
+            ->where('external_id', $this->id)
+            ->first();
 
-                            }
-                        } else {
-                            $subscribeSale = Sale::where('buyer_id', $user->id)
-                                ->where('type', Sale::$subscribe)
-                                ->where('subscribe_id', $subscribe->id)
-                                ->whereNull('refund_at')
-                                ->latest('created_at')
-                                ->first();
-
-                            if (!empty($subscribeSale)) {
-                                $subscribeSaleCreatedAt = $subscribeSale->created_at;
-                            }
-                        }
-
-                        if (!empty($subscribeSaleCreatedAt)) {
-                            $usedDays = (int)diffTimestampDay(time(), $subscribeSaleCreatedAt);
-
-                            if ($usedDays > $subscribe->days) {
-                                $hasBought = false;
-                            }
-                        }
-                    } else {
-                        $hasBought = false;
-                    }
-                }
-
-                if ($hasBought and !empty($this->access_days) and $checkExpired) {
-                    $hasBought = $this->checkHasExpiredAccessDays($sale->created_at, $sale->gift_id);
-                }
+        if ($upeProduct) {
+            $result = $accessEngine->hasAccess($user->id, $upeProduct->id);
+            if ($result->hasAccess) {
+                return true;
             }
+        }
 
-            if (!$hasBought) {
-                $hasBought = ($this->creator_id == $user->id or $this->teacher_id == $user->id);
+        // Check bundle access: if this webinar is in any bundle the user bought
+        $bundleWebinar = BundleWebinar::where('webinar_id', $this->id)
+            ->with(['bundle'])->get();
 
-                if (!$hasBought) {
-                    $partnerTeachers = !empty($this->webinarPartnerTeacher) ? $this->webinarPartnerTeacher->pluck('teacher_id')->toArray() : [];
-
-                    $hasBought = in_array($user->id, $partnerTeachers);
-                }
-            }
-
-            if (!$hasBought) {
-                $hasBought = $user->isAdmin();
-            }
-
-            if (!$hasBought) {
-                $bundleWebinar = BundleWebinar::where('webinar_id', $this->id)
-                    ->with([
-                        'bundle'
-                    ])->get();
-
-                if ($bundleWebinar->isNotEmpty()) {
-                    foreach ($bundleWebinar as $item) {
-                        if (!empty($item->bundle) and $item->bundle->checkUserHasBought($user)) {
-                            $hasBought = true;
-                        }
-                    }
-                }
-            }
-
-            if (!$hasBought) {
-                $installmentOrder = $this->getInstallmentOrder();
-
-                if (!empty($installmentOrder)) {
-                    $hasBought = true;
-
-                    if ($installmentOrder->checkOrderHasOverdue()) {
-                        $overdueDays = $installmentOrder->overdueDaysPast();
-                        $overdueLimit = !empty($installmentOrder->installment) ? $installmentOrder->installment->overdue_interval_days : 0;
-
-                        if ($overdueLimit > 0 && $overdueDays > $overdueLimit) {
-                            $hasBought = false;
-                        }
-                    }
-                }
-            }
-
-            if (!$hasBought) {
-                $gift = Gift::query()->where('email', $user->email)
-                    ->where('status', 'active')
-                    ->where('webinar_id', $this->id)
-                    ->where(function ($query) {
-                        $query->whereNull('date');
-                        $query->orWhere('date', '<', time());
-                    })
-                    ->whereHas('sale')
-                    ->first();
-
-                if (!empty($gift)) {
-                    $hasBought = true;
+        if ($bundleWebinar->isNotEmpty()) {
+            foreach ($bundleWebinar as $item) {
+                if (!empty($item->bundle) and $item->bundle->checkUserHasBought($user)) {
+                    return true;
                 }
             }
         }
 
-        return $hasBought;
+        return false;
     }
 
     public function getInstallmentOrder()

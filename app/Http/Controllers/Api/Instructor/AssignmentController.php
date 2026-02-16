@@ -114,10 +114,9 @@ class AssignmentController extends Controller
             foreach ($histories as &$history) {
                 $history->usedAttemptsCount = 0;
 
-                $sale = Sale::where('buyer_id', $history->student_id)
-                    ->where('webinar_id', $assignment->webinar_id)
-                    ->whereNull('refund_at')
-                    ->first();
+                $webinar = \App\Models\Webinar::find($assignment->webinar_id);
+                $studentUser = \App\User::find($history->student_id);
+                $sale = ($webinar && $studentUser) ? $webinar->getSaleItem($studentUser) : null;
 
                 if (!empty($sale)) {
                     $history->purchase_date = $sale->created_at;
@@ -201,10 +200,9 @@ class AssignmentController extends Controller
             foreach ($histories as &$history) {
                 $history->usedAttemptsCount = 0;
 
-                $sale = Sale::where('buyer_id', $history->student_id)
-                    ->where('webinar_id', $assignment->webinar_id)
-                    ->whereNull('refund_at')
-                    ->first();
+                $webinar = \App\Models\Webinar::find($assignment->webinar_id);
+                $studentUser = \App\User::find($history->student_id);
+                $sale = ($webinar && $studentUser) ? $webinar->getSaleItem($studentUser) : null;
 
                 if (!empty($sale)) {
                     $history->purchase_date = $sale->created_at;

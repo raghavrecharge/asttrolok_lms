@@ -44,13 +44,15 @@ class WebinarAssignment extends Model
             return null;
         }
         if (!empty($this->deadline)) {
-            $sale = Sale::where('buyer_id', apiAuth()->id)
-                ->where('webinar_id', $this->webinar_id)
-                ->whereNull('refund_at')
-                ->first();
+            $webinar = \App\Models\Webinar::find($this->webinar_id);
+            $sale = $webinar ? $webinar->getSaleItem(apiAuth()) : null;
 
-            return strtotime("+{$this->deadline} days", $sale->created_at);
-
+            if ($sale) {
+                $purchaseTimestamp = $sale->created_at instanceof \Carbon\Carbon
+                    ? $sale->created_at->timestamp
+                    : (int) $sale->created_at;
+                return strtotime("+{$this->deadline} days", $purchaseTimestamp);
+            }
         }
     }
 

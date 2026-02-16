@@ -27,11 +27,7 @@ class AssignmentController extends Controller
 
             $user = apiAuth();
 
-            $purchasedCoursesIds = Sale::where('buyer_id', $user->id)
-                ->whereNotNull('webinar_id')
-                ->whereNull('refund_at')
-                ->pluck('webinar_id')
-                ->toArray();
+            $purchasedCoursesIds = $user->getPurchasedCoursesIds();
 
             $query = WebinarAssignment::whereIn('webinar_id', $purchasedCoursesIds)
                 ->where('status', 'active')
@@ -74,11 +70,7 @@ class AssignmentController extends Controller
                 ->where('status', WebinarChapter::$chapterActive)->first();
             abort_unless($assignmnet, 404);
 
-            $purchasedCoursesIds = Sale::where('buyer_id', $user->id)
-                ->whereNotNull('webinar_id')
-                ->whereNull('refund_at')
-                ->pluck('webinar_id')
-                ->toArray();
+            $purchasedCoursesIds = $user->getPurchasedCoursesIds();
             if (!in_array($assignmnet->webinar->id,$purchasedCoursesIds)){
                 abort(404);
             }

@@ -39,78 +39,38 @@ class Subscribe extends Model implements TranslatableContract
 
     public static function getActiveSubscribe($userId)
     {
-        $activePlan = null;
-        $subscribe = null;
-        $saleCreatedAt = null;
-
-        $lastSubscribeSale = Sale::where('buyer_id', $userId)
-            ->where('type', Sale::$subscribe)
-            ->whereNull('refund_at')
-            ->latest('created_at')
+        // Check UPE subscriptions for active access
+        $upeSubscription = \App\Models\PaymentEngine\UpeSubscription::where('user_id', $userId)
+            ->whereIn('status', ['active', 'trial', 'grace'])
+            ->with('product')
+            ->orderByDesc('id')
             ->first();
 
-        if ($lastSubscribeSale) {
-            $subscribe = $lastSubscribeSale->subscribe;
-            $saleCreatedAt = $lastSubscribeSale->created_at;
-        }
+        if ($upeSubscription && $upeSubscription->product) {
+            // Find the matching legacy subscribe model by external_id
+            $subscribe = self::find($upeSubscription->product->external_id);
 
-        if (empty($subscribe)) {
-            $installmentOrder = InstallmentOrder::query()->where('user_id', $userId)
-                ->whereNotNull('subscribe_id')
-                ->where('status', 'open')
-                ->whereNull('refund_at')
-                ->latest('created_at')
-                ->first();
-
-            if (!empty($installmentOrder)) {
-                $subscribe = $installmentOrder->subscribe;
-                $subscribe->installment_order_id = $installmentOrder->id;
-                $saleCreatedAt = $installmentOrder->created_at;
-
-                if ($installmentOrder->checkOrderHasOverdue()) {
-                    $overdueIntervalDays = getInstallmentsSettings('overdue_interval_days');
-
-                    if (empty($overdueIntervalDays) or $installmentOrder->overdueDaysPast() > $overdueIntervalDays) {
-                        $subscribe = null;
-                    }
-                }
+            if ($subscribe) {
+                $subscribe->used_count = 0; // UPE handles usage tracking
+                return $subscribe;
             }
         }
 
-        if (!empty($subscribe) and !empty($saleCreatedAt)) {
-            $useCount = SubscribeUse::where('user_id', $userId)
-                ->where('subscribe_id', $subscribe->id)
-                ->whereHas('sale', function ($query) use ($saleCreatedAt) {
-                    $query->where('created_at', '>', $saleCreatedAt);
-                    $query->whereNull('refund_at');
-                })
-                ->count();
-
-            $subscribe->used_count = $useCount;
-
-            $countDayOfSale = (int)diffTimestampDay(time(), $saleCreatedAt);
-
-            if (
-                ($subscribe->usable_count > $useCount or $subscribe->infinite_use)
-                and
-                $subscribe->days >= $countDayOfSale
-            ) {
-                $activePlan = $subscribe;
-            }
-        }
-
-        return $activePlan;
+        return null;
     }
 
     public static function getDayOfUse($userId)
     {
-        $lastSubscribeSale = Sale::where('buyer_id', $userId)
-            ->where('type', Sale::$subscribe)
-            ->whereNull('refund_at')
-            ->latest('created_at')
+        $upeSubscription = \App\Models\PaymentEngine\UpeSubscription::where('user_id', $userId)
+            ->whereIn('status', ['active', 'trial', 'grace'])
+            ->orderByDesc('id')
             ->first();
 
-        return $lastSubscribeSale ? (int)diffTimestampDay(time(), $lastSubscribeSale->created_at) : 0;
+        if ($upeSubscription && $upeSubscription->current_period_start) {
+            return (int)diffTimestampDay(time(), $upeSubscription->current_period_start->timestamp);
+        }
+
+        return 0;
     }
 
     public function activeSpecialOffer()

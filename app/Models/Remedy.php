@@ -319,13 +319,17 @@ class Remedy extends Model implements TranslatableContract
         }
 
         if (!empty($user)) {
-            return Sale::query()->where('buyer_id', $user->id)
-                ->where('remedy_id', $this->id)
-                ->where('type', 'remedy')
-                ->whereNull('refund_at')
-                ->where('access_to_purchased_item', true)
-                ->orderBy('created_at', 'desc')
+            $upeProduct = \App\Models\PaymentEngine\UpeProduct::where('product_type', 'course_video')
+                ->where('external_id', $this->id)
                 ->first();
+
+            if ($upeProduct) {
+                return \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
+                    ->where('product_id', $upeProduct->id)
+                    ->whereIn('status', ['active', 'partially_refunded'])
+                    ->orderByDesc('id')
+                    ->first();
+            }
         }
 
         return null;
@@ -333,120 +337,43 @@ class Remedy extends Model implements TranslatableContract
 
     public function checkUserHasBought($user = null, $checkExpired = true, $test = false): bool
     {
-        $hasBought = false;
-
         if (empty($user) and auth()->check()) {
             $user = auth()->user();
         }
 
-        if (!empty($user)) {
-            $sale = $this->getSaleItem($user);
+        if (empty($user)) {
+            return false;
+        }
 
-            if (!empty($sale)) {
-                $hasBought = true;
+        // Role-based bypass: creator, teacher, partner teacher, admin
+        if ($this->creator_id == $user->id or $this->teacher_id == $user->id) {
+            return true;
+        }
 
-                if ($sale->payment_method == Sale::$subscribe) {
-                    $subscribe = $sale->getUsedSubscribe($sale->buyer_id, $sale->remedy_id);
+        $partnerTeachers = !empty($this->remedyPartnerTeacher) ? $this->remedyPartnerTeacher->pluck('teacher_id')->toArray() : [];
+        if (in_array($user->id, $partnerTeachers)) {
+            return true;
+        }
 
-                    if (!empty($subscribe)) {
-                        $subscribeSaleCreatedAt = null;
+        if ($user->isAdmin()) {
+            return true;
+        }
 
-                        if (!empty($subscribe->installment_order_id)) {
-                            $installmentOrder = InstallmentOrder::query()->where('user_id', $user->id)
-                                ->where('id', $subscribe->installment_order_id)
-                                ->where('status', 'open')
-                                ->whereNull('refund_at')
-                                ->first();
+        // UPE AccessEngine: check remedy access (mapped as course_video)
+        $accessEngine = app(\App\Services\PaymentEngine\AccessEngine::class);
 
-                            if (!empty($installmentOrder)) {
-                                $subscribeSaleCreatedAt = $installmentOrder->created_at;
+        $upeProduct = \App\Models\PaymentEngine\UpeProduct::where('product_type', 'course_video')
+            ->where('external_id', $this->id)
+            ->first();
 
-                                if ($installmentOrder->checkOrderHasOverdue()) {
-                                    $overdueIntervalDays = getInstallmentsSettings('overdue_interval_days');
-
-                                    if (empty($overdueIntervalDays) or $installmentOrder->overdueDaysPast() > $overdueIntervalDays) {
-                                        $hasBought = false;
-                                    }
-                                }
-                            }
-                        } else {
-                            $subscribeSale = Sale::where('buyer_id', $user->id)
-                                ->where('type', Sale::$subscribe)
-                                ->where('subscribe_id', $subscribe->id)
-                                ->whereNull('refund_at')
-                                ->latest('created_at')
-                                ->first();
-
-                            if (!empty($subscribeSale)) {
-                                $subscribeSaleCreatedAt = $subscribeSale->created_at;
-                            }
-                        }
-
-                        if (!empty($subscribeSaleCreatedAt)) {
-                            $usedDays = (int)diffTimestampDay(time(), $subscribeSaleCreatedAt);
-
-                            if ($usedDays > $subscribe->days) {
-                                $hasBought = false;
-                            }
-                        }
-                    } else {
-                        $hasBought = false;
-                    }
-                }
-
-                if ($hasBought and !empty($this->access_days) and $checkExpired) {
-                    $hasBought = $this->checkHasExpiredAccessDays($sale->created_at, $sale->gift_id);
-                }
-            }
-
-            if (!$hasBought) {
-                $hasBought = ($this->creator_id == $user->id or $this->teacher_id == $user->id);
-
-                if (!$hasBought) {
-                    $partnerTeachers = !empty($this->remedyPartnerTeacher) ? $this->remedyPartnerTeacher->pluck('teacher_id')->toArray() : [];
-
-                    $hasBought = in_array($user->id, $partnerTeachers);
-                }
-            }
-
-            if (!$hasBought) {
-                $hasBought = $user->isAdmin();
-            }
-
-            if (!$hasBought) {
-                $installmentOrder = $this->getInstallmentOrder();
-
-                if (!empty($installmentOrder)) {
-                    $hasBought = true;
-
-                    if ($installmentOrder->checkOrderHasOverdue()) {
-                        $overdueIntervalDays = getInstallmentsSettings('overdue_interval_days');
-
-                        if (empty($overdueIntervalDays) or $installmentOrder->overdueDaysPast() > $overdueIntervalDays) {
-                            $hasBought = false;
-                        }
-                    }
-                }
-            }
-
-            if (!$hasBought) {
-                $gift = Gift::query()->where('email', $user->email)
-                    ->where('status', 'active')
-                    ->where('remedy_id', $this->id)
-                    ->where(function ($query) {
-                        $query->whereNull('date');
-                        $query->orWhere('date', '<', time());
-                    })
-                    ->whereHas('sale')
-                    ->first();
-
-                if (!empty($gift)) {
-                    $hasBought = true;
-                }
+        if ($upeProduct) {
+            $result = $accessEngine->hasAccess($user->id, $upeProduct->id);
+            if ($result->hasAccess) {
+                return true;
             }
         }
 
-        return $hasBought;
+        return false;
     }
 
     public function getInstallmentOrder()

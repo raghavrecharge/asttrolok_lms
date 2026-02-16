@@ -421,7 +421,7 @@
             </li>
         @endif
 
-        <li class="sidenav-item {{ (request()->is('panel/financial') or request()->is('panel/financial/*')) ? 'sidenav-item-active' : '' }}">
+        <li class="sidenav-item {{ (request()->is('panel/financial') or request()->is('panel/financial/*') or request()->is('panel/upe/*')) ? 'sidenav-item-active' : '' }}">
             <a class="d-flex align-items-center" data-toggle="collapse" href="#financialCollapse" role="button" aria-expanded="false" aria-controls="financialCollapse">
                 <span class="sidenav-item-icon mr-10">
                     @include('web.default.panel.includes.sidebar_icons.financial')
@@ -429,7 +429,7 @@
                 <span class="font-14 text-dark-blue font-weight-500">{{ trans('panel.financial') }}</span>
             </a>
 
-            <div class="collapse {{ (request()->is('panel/financial') or request()->is('panel/financial/*')) ? 'show' : '' }}" id="financialCollapse">
+            <div class="collapse {{ (request()->is('panel/financial') or request()->is('panel/financial/*') or request()->is('panel/upe/*')) ? 'show' : '' }}" id="financialCollapse">
                 <ul class="sidenav-item-collapse">
 
                     @if($authUser->isOrganization() || $authUser->isTeacher())
@@ -453,6 +453,16 @@
                             <a href="/panel/financial/installments">{{ trans('update.installments') }}</a>
                         </li>
                     @endif
+
+                    <li class="mt-5 {{ (request()->is('panel/upe/purchases*')) ? 'active font-weight-bold' : '' }}">
+                        <a href="/panel/upe/purchases">My Purchases</a>
+                    </li>
+                    <li class="mt-5 {{ (request()->is('panel/upe/installments*')) ? 'active' : '' }}">
+                        <a href="/panel/upe/installments">EMI Plans</a>
+                    </li>
+                    <li class="mt-5 {{ (request()->is('panel/upe/requests*')) ? 'active' : '' }}">
+                        <a href="/panel/upe/requests">My Requests</a>
+                    </li>
                 </ul>
             </div>
         </li>

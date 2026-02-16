@@ -315,6 +315,59 @@ class OfflinePaymentController extends Controller
                 'description' => 'Offline payment approved - Payment #' . $payment->id,
             ]);
 
+            // UPE dual-write: create UPE sale + ledger entry
+            try {
+                $webinar = $payment->webinar;
+                $productType = match ($webinar->type ?? 'course') {
+                    'webinar' => 'webinar',
+                    default => 'course_video',
+                };
+
+                $upeProduct = \App\Models\PaymentEngine\UpeProduct::firstOrCreate(
+                    ['external_id' => $webinar->id, 'product_type' => $productType],
+                    ['name' => $webinar->slug ?? "webinar-{$webinar->id}", 'base_fee' => $payment->amount, 'validity_days' => $webinar->access_days, 'status' => 'active']
+                );
+
+                $existingUpeSale = \App\Models\PaymentEngine\UpeSale::where('user_id', $payment->user_id)
+                    ->where('product_id', $upeProduct->id)
+                    ->whereIn('status', ['active', 'partially_refunded'])
+                    ->first();
+
+                if (!$existingUpeSale) {
+                    $validFrom = now();
+                    $validUntil = $webinar->access_days ? $validFrom->copy()->addDays($webinar->access_days) : null;
+
+                    $upeSale = \App\Models\PaymentEngine\UpeSale::create([
+                        'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                        'user_id' => $payment->user_id,
+                        'product_id' => $upeProduct->id,
+                        'sale_type' => 'paid',
+                        'pricing_mode' => 'full',
+                        'base_fee_snapshot' => $payment->amount,
+                        'status' => 'active',
+                        'valid_from' => $validFrom,
+                        'valid_until' => $validUntil,
+                        'metadata' => json_encode(['legacy_sale_id' => $sale->id, 'source' => 'offline_payment_approve', 'offline_payment_id' => $payment->id]),
+                    ]);
+
+                    app(\App\Services\PaymentEngine\PaymentLedgerService::class)->append(
+                        saleId: $upeSale->id,
+                        entryType: \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_PAYMENT,
+                        direction: \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
+                        amount: (float) $payment->amount,
+                        paymentMethod: 'offline',
+                        description: "Offline payment approved #{$payment->id}",
+                        idempotencyKey: "offline_payment_{$payment->id}",
+                    );
+
+                    \Illuminate\Support\Facades\Cache::forget(\App\Services\PaymentEngine\AccessEngine::CACHE_PREFIX . "{$payment->user_id}_{$upeProduct->id}");
+                }
+            } catch (\Exception $e) {
+                Log::warning('UPE dual-write failed in offline approve, legacy sale preserved', [
+                    'payment_id' => $payment->id, 'error' => $e->getMessage(),
+                ]);
+            }
+
             // Update payment status
             $payment->update([
                 'status' => OfflinePayment::$approved,

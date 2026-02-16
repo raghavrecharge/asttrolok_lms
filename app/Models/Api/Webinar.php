@@ -724,17 +724,12 @@ class Webinar extends Model
     public function purchasedDate()
     {
         $user = apiAuth();
-        $sale = null;
         if ($user) {
-            $sale = Sale::where('buyer_id', $user->id)
-                ->whereNotNull('webinar_id')
-                ->where('type', 'webinar')
-                ->where('webinar_id', $this->id)
-                ->whereNull('refund_at')
-                ->first();
+            $sale = $this->getSaleItem($user);
+            return ($sale) ? $sale->created_at : null;
         }
 
-        return ($sale) ? $sale->created_at : null;
+        return null;
     }
 
     public function contentItems()

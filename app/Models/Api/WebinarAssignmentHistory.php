@@ -101,11 +101,9 @@ class WebinarAssignmentHistory extends Model
 
     public function sale()
     {
-        return Sale::where('buyer_id', $this->student_id)
-            ->where('webinar_id', $this->assignment->webinar_id)
-            ->whereNull('refund_at')
-            ->first();
-
+        $webinar = \App\Models\Webinar::find($this->assignment->webinar_id);
+        $student = \App\User::find($this->student_id);
+        return ($webinar && $student) ? $webinar->getSaleItem($student) : null;
     }
 
     public function assignment()
