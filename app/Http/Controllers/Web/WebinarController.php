@@ -1160,6 +1160,16 @@ class WebinarController extends Controller
 
                 $item = $this->getItem($webinarId, 'course');
 
+                $itemPrice = $webinar ? $webinar->getPrice() : 0;
+                $price = $webinar ? $webinar->price : 0;
+                $totalDiscount = 0;
+                $itemPrice1 = $itemPrice;
+
+                if (isset($Discount) && $Discount) {
+                    $percent = $Discount->percent ?? 0;
+                    $totalDiscount = ($price > 0) ? $price * $percent / 100 : 0;
+                    $itemPrice1 = $itemPrice - $totalDiscount;
+                }
 
                     $data = [
 

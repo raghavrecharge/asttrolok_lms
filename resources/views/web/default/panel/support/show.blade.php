@@ -28,7 +28,7 @@
                         <div class="flex-grow-1">
                             <h5 class="alert-heading mb-1">Payment Successful! 🎉</h5>
                             <p class="mb-2">Your offline cash payment of <strong>₹{{ number_format($supportRequest->cash_amount, 2) }}</strong> has been verified and approved.</p>
-                            <p class="mb-0">You now have full access to <strong>{{ $supportRequest->webinar->title }}</strong>. You can start learning immediately!</p>
+                            <p class="mb-0">You now have full access to <strong>{{ $supportRequest->webinar?->title }}</strong>. You can start learning immediately!</p>
                         </div>
                     </div>
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -37,7 +37,7 @@
                 </div>
                 
                 <div class="text-center mb-4">
-                    <a href="{{ route('webinar', $supportRequest->webinar->id) }}" class="btn btn-success btn-lg">
+                    <a href="{{ $supportRequest->webinar ? route('webinar', $supportRequest->webinar->id) : '#' }}" class="btn btn-success btn-lg">
                         <i class="fa fa-play-circle mr-2"></i> Start Learning Now
                     </a>
                     <a href="{{ route('user.purchased_courses') }}" class="btn btn-outline-primary btn-lg ml-2">
@@ -76,7 +76,7 @@
                     <div class="mb-4">
                         <label class="font-weight-500 text-dark-blue d-block mb-2">Course</label>
                         <p class="mb-0">{{ $supportRequest->webinar?->title }}</p>
-                        <small class="text-gray">by {{ $supportRequest->webinar?->creator->full_name }}</small>
+                        <small class="text-gray">by {{ $supportRequest->webinar?->creator?->full_name }}</small>
                     </div>
 
                     <div class="mb-4">

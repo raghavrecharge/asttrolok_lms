@@ -148,6 +148,11 @@ class NewSupportForAsttrolok extends Model
         return $query->where('status', 'approved');
     }
 
+    public function scopeVerified($query)
+    {
+        return $query->where('status', 'verified');
+    }
+
     public function scopeCompleted($query)
     {
         return $query->where('status', 'Completed');
@@ -179,6 +184,7 @@ class NewSupportForAsttrolok extends Model
         $classes = [
             'pending' => 'warning',
             'in_review' => 'info',
+            'verified' => 'info',
             'approved' => 'success',
             'rejected' => 'danger',
             'executed' => 'primary',

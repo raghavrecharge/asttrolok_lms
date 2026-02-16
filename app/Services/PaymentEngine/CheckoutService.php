@@ -38,7 +38,7 @@ class CheckoutService
             'webinar' => 'webinar',
             default => 'course_video',
         };
-        $upeProduct = $this->resolveProduct($webinarId, $productType, $webinar->slug ?? "webinar-{$webinarId}", $amount, $webinar->access_days);
+        $upeProduct = $this->resolveProduct($webinarId, $productType, $webinar->price ?? $amount, $webinar->access_days);
 
         // Check idempotency — already has active UPE sale?
         $existingSale = UpeSale::where('user_id', $userId)
@@ -61,9 +61,9 @@ class CheckoutService
             'uuid' => (string) Str::uuid(),
             'user_id' => $userId,
             'product_id' => $upeProduct->id,
-            'sale_type' => 'new',
-            'pricing_mode' => 'one_time',
-            'base_fee_snapshot' => $amount,
+            'sale_type' => $amount > 0 ? 'paid' : 'free',
+            'pricing_mode' => 'full',
+            'base_fee_snapshot' => $upeProduct->base_fee,
             'status' => 'active',
             'valid_from' => $validFrom,
             'valid_until' => $validUntil,
@@ -75,16 +75,20 @@ class CheckoutService
         ]);
 
         // Create ledger entry
-        $this->ledger->appendEntry($upeSale->id, [
-            'entry_type' => UpeLedgerEntry::TYPE_PAYMENT,
-            'direction' => UpeLedgerEntry::DIR_CREDIT,
-            'amount' => $amount,
-            'currency' => 'INR',
-            'payment_method' => $paymentMethod,
-            'gateway_reference' => $razorpayPaymentId,
-            'description' => "Payment for course: {$webinar->slug}",
-            'idempotency_key' => $razorpayPaymentId ? "rp_{$razorpayPaymentId}_webinar_{$webinarId}" : "checkout_webinar_{$userId}_{$webinarId}_" . time(),
-        ]);
+        $this->ledger->append(
+            $upeSale->id,
+            UpeLedgerEntry::TYPE_PAYMENT,
+            UpeLedgerEntry::DIR_CREDIT,
+            $amount,
+            $paymentMethod,
+            $razorpayPaymentId,
+            null, // gatewayResponse
+            null, // referenceType
+            null, // referenceId
+            "Payment for course: {$webinar->slug}",
+            null, // processedBy
+            $razorpayPaymentId ? "rp_{$razorpayPaymentId}_webinar_{$webinarId}" : "checkout_webinar_{$userId}_{$webinarId}_" . time()
+        );
 
         // Audit
         $this->audit->logSaleCreated($userId, 'student', $upeSale->toArray());
@@ -136,7 +140,7 @@ class CheckoutService
     {
         $bundle = \App\Models\Bundle::findOrFail($bundleId);
 
-        $upeProduct = $this->resolveProduct($bundleId, 'bundle', $bundle->slug ?? "bundle-{$bundleId}", $amount, $bundle->access_days);
+        $upeProduct = $this->resolveProduct($bundleId, 'bundle', $bundle->price ?? $amount, $bundle->access_days);
 
         $existingSale = UpeSale::where('user_id', $userId)
             ->where('product_id', $upeProduct->id)
@@ -157,9 +161,9 @@ class CheckoutService
             'uuid' => (string) Str::uuid(),
             'user_id' => $userId,
             'product_id' => $upeProduct->id,
-            'sale_type' => 'new',
-            'pricing_mode' => 'one_time',
-            'base_fee_snapshot' => $amount,
+            'sale_type' => $amount > 0 ? 'paid' : 'free',
+            'pricing_mode' => 'full',
+            'base_fee_snapshot' => $upeProduct->base_fee,
             'status' => 'active',
             'valid_from' => $validFrom,
             'valid_until' => $validUntil,
@@ -170,16 +174,20 @@ class CheckoutService
             ]),
         ]);
 
-        $this->ledger->appendEntry($upeSale->id, [
-            'entry_type' => UpeLedgerEntry::TYPE_PAYMENT,
-            'direction' => UpeLedgerEntry::DIR_CREDIT,
-            'amount' => $amount,
-            'currency' => 'INR',
-            'payment_method' => $paymentMethod,
-            'gateway_reference' => $razorpayPaymentId,
-            'description' => "Payment for bundle: {$bundle->slug}",
-            'idempotency_key' => $razorpayPaymentId ? "rp_{$razorpayPaymentId}_bundle_{$bundleId}" : "checkout_bundle_{$userId}_{$bundleId}_" . time(),
-        ]);
+        $this->ledger->append(
+            $upeSale->id,
+            UpeLedgerEntry::TYPE_PAYMENT,
+            UpeLedgerEntry::DIR_CREDIT,
+            $amount,
+            $paymentMethod,
+            $razorpayPaymentId,
+            null, // gatewayResponse
+            null, // referenceType
+            null, // referenceId
+            "Payment for bundle: {$bundle->slug}",
+            null, // processedBy
+            $razorpayPaymentId ? "rp_{$razorpayPaymentId}_bundle_{$bundleId}" : "checkout_bundle_{$userId}_{$bundleId}_" . time()
+        );
 
         $this->audit->logSaleCreated($userId, 'student', $upeSale->toArray());
 
@@ -227,7 +235,7 @@ class CheckoutService
     {
         $subscription = \App\Models\Subscription::findOrFail($subscriptionId);
 
-        $upeProduct = $this->resolveProduct($subscriptionId, 'subscription', $subscription->slug ?? "subscription-{$subscriptionId}", $amount, $subscription->access_days);
+        $upeProduct = $this->resolveProduct($subscriptionId, 'subscription', $amount, $subscription->access_days);
 
         $validFrom = now();
         $validUntil = $subscription->access_days ? $validFrom->copy()->addDays($subscription->access_days) : $validFrom->copy()->addDays(30);
@@ -251,7 +259,7 @@ class CheckoutService
                 'uuid' => (string) Str::uuid(),
                 'user_id' => $userId,
                 'product_id' => $upeProduct->id,
-                'sale_type' => 'renewal',
+                'sale_type' => 'paid',
                 'pricing_mode' => 'subscription',
                 'base_fee_snapshot' => $amount,
                 'status' => 'active',
@@ -270,7 +278,7 @@ class CheckoutService
                 'uuid' => (string) Str::uuid(),
                 'user_id' => $userId,
                 'product_id' => $upeProduct->id,
-                'sale_type' => 'new',
+                'sale_type' => $amount > 0 ? 'paid' : 'free',
                 'pricing_mode' => 'subscription',
                 'base_fee_snapshot' => $amount,
                 'status' => 'active',
@@ -296,16 +304,20 @@ class CheckoutService
             ]);
         }
 
-        $this->ledger->appendEntry($upeSale->id, [
-            'entry_type' => UpeLedgerEntry::TYPE_PAYMENT,
-            'direction' => UpeLedgerEntry::DIR_CREDIT,
-            'amount' => $amount,
-            'currency' => 'INR',
-            'payment_method' => $paymentMethod,
-            'gateway_reference' => $razorpayPaymentId,
-            'description' => "Subscription payment: {$subscription->slug}",
-            'idempotency_key' => $razorpayPaymentId ? "rp_{$razorpayPaymentId}_sub_{$subscriptionId}" : "checkout_sub_{$userId}_{$subscriptionId}_" . time(),
-        ]);
+        $this->ledger->append(
+            $upeSale->id,
+            UpeLedgerEntry::TYPE_PAYMENT,
+            UpeLedgerEntry::DIR_CREDIT,
+            $amount,
+            $paymentMethod,
+            $razorpayPaymentId,
+            null, // gatewayResponse
+            null, // referenceType
+            null, // referenceId
+            "Subscription payment: {$subscription->slug}",
+            null, // processedBy
+            $razorpayPaymentId ? "rp_{$razorpayPaymentId}_sub_{$subscriptionId}" : "checkout_sub_{$userId}_{$subscriptionId}_" . time()
+        );
 
         $this->audit->logSaleCreated($userId, 'student', $upeSale->toArray());
 
@@ -358,7 +370,7 @@ class CheckoutService
             'webinar' => 'webinar',
             default => 'course_video',
         };
-        $upeProduct = $this->resolveProduct($webinarId, $productType, $webinar->slug ?? "webinar-{$webinarId}", $webinar->price ?? $amount, $webinar->access_days);
+        $upeProduct = $this->resolveProduct($webinarId, $productType, $webinar->price ?? $amount, $webinar->access_days);
 
         // Check if UPE sale already exists for this installment
         $existingSale = UpeSale::where('user_id', $userId)
@@ -369,16 +381,20 @@ class CheckoutService
 
         if ($existingSale) {
             // This is a subsequent installment payment — just add ledger entry
-            $this->ledger->appendEntry($existingSale->id, [
-                'entry_type' => UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
-                'direction' => UpeLedgerEntry::DIR_CREDIT,
-                'amount' => $amount,
-                'currency' => 'INR',
-                'payment_method' => $paymentMethod,
-                'gateway_reference' => $razorpayPaymentId,
-                'description' => "Installment payment for: {$webinar->slug}",
-                'idempotency_key' => $razorpayPaymentId ? "rp_{$razorpayPaymentId}_inst_{$installmentPaymentId}" : "inst_{$userId}_{$installmentPaymentId}_" . time(),
-            ]);
+            $this->ledger->append(
+                $existingSale->id,
+                UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
+                UpeLedgerEntry::DIR_CREDIT,
+                $amount,
+                $paymentMethod,
+                $razorpayPaymentId,
+                null, // gatewayResponse
+                null, // referenceType
+                null, // referenceId
+                "Installment payment for: {$webinar->slug}",
+                null, // processedBy
+                $razorpayPaymentId ? "rp_{$razorpayPaymentId}_inst_{$installmentPaymentId}" : "inst_{$userId}_{$installmentPaymentId}_" . time()
+            );
 
             // Check if fully paid → activate
             $plan = UpeInstallmentPlan::where('sale_id', $existingSale->id)->first();
@@ -414,7 +430,7 @@ class CheckoutService
             'uuid' => (string) Str::uuid(),
             'user_id' => $userId,
             'product_id' => $upeProduct->id,
-            'sale_type' => 'new',
+            'sale_type' => $amount > 0 ? 'paid' : 'free',
             'pricing_mode' => 'installment',
             'base_fee_snapshot' => $webinar->price ?? $amount,
             'status' => 'pending_payment',
@@ -456,16 +472,20 @@ class CheckoutService
         ]);
 
         // Ledger entry for upfront payment
-        $this->ledger->appendEntry($upeSale->id, [
-            'entry_type' => UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
-            'direction' => UpeLedgerEntry::DIR_CREDIT,
-            'amount' => $amount,
-            'currency' => 'INR',
-            'payment_method' => $paymentMethod,
-            'gateway_reference' => $razorpayPaymentId,
-            'description' => "Installment upfront for: {$webinar->slug}",
-            'idempotency_key' => $razorpayPaymentId ? "rp_{$razorpayPaymentId}_inst_{$installmentPaymentId}" : "inst_upfront_{$userId}_{$webinarId}_" . time(),
-        ]);
+        $this->ledger->append(
+            $upeSale->id,
+            UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
+            UpeLedgerEntry::DIR_CREDIT,
+            $amount,
+            $paymentMethod,
+            $razorpayPaymentId,
+            null, // gatewayResponse
+            null, // referenceType
+            null, // referenceId
+            "Installment upfront for: {$webinar->slug}",
+            null, // processedBy
+            $razorpayPaymentId ? "rp_{$razorpayPaymentId}_inst_{$installmentPaymentId}" : "inst_upfront_{$userId}_{$webinarId}_" . time()
+        );
 
         $this->audit->logSaleCreated($userId, 'student', $upeSale->toArray());
 
@@ -587,12 +607,11 @@ class CheckoutService
     /**
      * Find or create a UPE product by external_id + type.
      */
-    private function resolveProduct(int $externalId, string $productType, string $name, float $baseFee, ?int $validityDays = null): UpeProduct
+    private function resolveProduct(int $externalId, string $productType, float $baseFee, ?int $validityDays = null): UpeProduct
     {
         return UpeProduct::firstOrCreate(
             ['external_id' => $externalId, 'product_type' => $productType],
             [
-                'name' => $name,
                 'base_fee' => $baseFee,
                 'validity_days' => $validityDays,
                 'status' => 'active',

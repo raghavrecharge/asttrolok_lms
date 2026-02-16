@@ -670,12 +670,17 @@ class NewSupportForAsttrolokController extends Controller
         ->orderBy('created_at', 'desc')
         ->paginate(15);
         
-        // Statistics
+        // Statistics — merge old (in_review/approved) + new (verified/executed) workflows
+        $statsQuery = $user->isUser()
+            ? NewSupportForAsttrolok::where('user_id', $user->id)
+            : NewSupportForAsttrolok::where(function($q) use ($user, $webinarIds) {
+                $q->where('user_id', $user->id)->orWhereIn('webinar_id', $webinarIds ?? []);
+            });
         $stats = [
-            'total' => $query->count(),
-            'pending' => (clone $query)->where('status', 'pending')->count(),
-            'in_review' => (clone $query)->where('status', 'in_review')->count(),
-            'approved' => (clone $query)->where('status', 'approved')->count(),
+            'total' => (clone $statsQuery)->count(),
+            'pending' => (clone $statsQuery)->where('status', 'pending')->count(),
+            'in_review' => (clone $statsQuery)->whereIn('status', ['in_review', 'verified'])->count(),
+            'approved' => (clone $statsQuery)->whereIn('status', ['approved', 'executed'])->count(),
         ];
         
         $data = [

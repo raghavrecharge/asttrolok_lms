@@ -88,24 +88,29 @@ Route::group(['middleware' => ['api.auth']], function () {
 
     // ── Support Actions ──
     Route::group(['prefix' => 'support'], function () {
+        // Read-only routes (any authenticated user)
         Route::get('/visibility', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'visibility']);
         Route::get('/user-matrix', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'userMatrix']);
         Route::post('/check-eligibility', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'checkEligibility']);
-        Route::post('/create', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'create']);
-        Route::get('/actions', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'index']);
-        Route::get('/actions/{id}', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'show']);
-        Route::post('/actions/{id}/approve', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'approve']);
-        Route::post('/actions/{id}/reject', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'reject']);
-        Route::post('/actions/{id}/execute', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'execute']);
 
-        // Mentor badge management
-        Route::post('/mentor/grant', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'grantMentorBadge']);
-        Route::post('/mentor/revoke', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'revokeMentorBadge']);
-        Route::get('/mentor/list', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'listMentors']);
+        // Admin-only routes (create, approve, reject, execute, mentor management)
+        Route::group(['middleware' => ['admin']], function () {
+            Route::post('/create', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'create']);
+            Route::get('/actions', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'index']);
+            Route::get('/actions/{id}', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'show']);
+            Route::post('/actions/{id}/approve', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'approve']);
+            Route::post('/actions/{id}/reject', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'reject']);
+            Route::post('/actions/{id}/execute', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'execute']);
+
+            // Mentor badge management
+            Route::post('/mentor/grant', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'grantMentorBadge']);
+            Route::post('/mentor/revoke', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'revokeMentorBadge']);
+            Route::get('/mentor/list', [\App\Http\Controllers\PaymentEngine\SupportActionController::class, 'listMentors']);
+        });
     });
 
     // ── Admin Panel ──
-    Route::group(['prefix' => 'admin'], function () {
+    Route::group(['prefix' => 'admin', 'middleware' => ['admin']], function () {
         Route::get('/requests', [AdminPaymentController::class, 'listRequests']);
         Route::get('/requests/{id}', [AdminPaymentController::class, 'showRequest']);
         Route::post('/requests/{id}/verify', [AdminPaymentController::class, 'verifyRequest']);

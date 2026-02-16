@@ -24,7 +24,34 @@ class UpeController extends Controller
     {
         $user = auth()->user();
 
-        $query = UpeSale::where('user_id', $user->id)->with('product');
+        // Subquery: pick the best (most relevant) sale per product
+        // Priority: active > partially_refunded > pending_payment > others; then newest id
+        $bestSaleIds = UpeSale::where('user_id', $user->id)
+            ->selectRaw('MAX(CASE
+                WHEN status = "active" THEN 4
+                WHEN status = "partially_refunded" THEN 3
+                WHEN status = "pending_payment" THEN 2
+                ELSE 1
+            END) as priority')
+            ->selectRaw('product_id')
+            ->groupBy('product_id')
+            ->pluck('product_id');
+
+        // For each product, get the single best sale
+        $deduped = collect();
+        foreach ($bestSaleIds as $productId) {
+            $sale = UpeSale::where('user_id', $user->id)
+                ->where('product_id', $productId)
+                ->when($request->filled('status'), fn($q) => $q->where('status', $request->status))
+                ->orderByRaw("FIELD(status, 'active', 'partially_refunded', 'pending_payment', 'completed', 'refunded', 'expired', 'cancelled') ASC")
+                ->orderByDesc('id')
+                ->first();
+            if ($sale) {
+                $deduped->push($sale->id);
+            }
+        }
+
+        $query = UpeSale::whereIn('id', $deduped)->with('product');
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
