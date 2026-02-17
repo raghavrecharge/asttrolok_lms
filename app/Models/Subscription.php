@@ -149,7 +149,9 @@ class Subscription extends Model implements TranslatableContract
 
     public function getImage()
     {
-        return config('app_url') . $this->thumbnail;
+        // return config('app_url') . $this->thumbnail;
+        $baseUrl = '/webp';
+        return $baseUrl . $this->thumbnail;
     }
 
     public function getRate()
