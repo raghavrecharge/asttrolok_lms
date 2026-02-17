@@ -727,7 +727,11 @@ class Webinar extends Model implements TranslatableContract
 
     public function getImage()
     {
-        return $this->thumbnail;
+        $thumbnail = ltrim($this->thumbnail, '/');
+
+        $path = str_starts_with($thumbnail, 'webp/') ? $thumbnail : 'webp/' . $thumbnail;
+
+        return '/' . $path;
     }
 
     public function getUrl()
