@@ -1,6 +1,6 @@
 <div class="content-tab p-15 pb-50">
     @php
-    $limit1=$limit;
+    $limit1 = $limit;
     @endphp
 
     @if(
@@ -18,16 +18,18 @@
         </div>
     @else
         @foreach($chapterItems as $chapterItem)
-        @php
-    $limit1--;
-    @endphp
-
             @if(!empty($chapterItem->file))
+                @if($chapterItem->file->file_type)
+                    @php
+                    // Only decrement if file_type is 'video'
+                    if($chapterItem->file->file_type == 'video') {
+                        $limit1--;
+                    }
+                    @endphp
 
                     @include('web.default.subscription.learningPage.components.content_tab.content',['item' => $chapterItem->file, 'type' => \App\Models\WebinarChapter::$chapterFile])
-
+                @endif
             @endif
-
         @endforeach
     @endif
 </div>

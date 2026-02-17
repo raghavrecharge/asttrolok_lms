@@ -621,6 +621,7 @@ class WebinarsController extends Controller
                     ],
                     'chapters' => $data['chapterItems'] ?? [],
                     'chapter_count' => $cchapt,
+                    'extraDetails' => $subscription->extraDetails,
                     
                 ],
                 'message' => 'Subscription details retrieved successfully'
