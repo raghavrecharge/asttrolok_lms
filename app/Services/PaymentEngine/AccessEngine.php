@@ -109,8 +109,12 @@ class AccessEngine
      */
     private function evaluateSale(UpeSale $sale): AccessResult
     {
-        // Check sale status
-        if (!in_array($sale->status, ['active', 'partially_refunded'])) {
+        // Check sale status — installment sales may be 'pending_payment' and still grant access
+        $allowedStatuses = ['active', 'partially_refunded'];
+        if ($sale->pricing_mode === 'installment') {
+            $allowedStatuses[] = 'pending_payment';
+        }
+        if (!in_array($sale->status, $allowedStatuses)) {
             return AccessResult::denied("Sale #{$sale->id} status '{$sale->status}' does not grant access.");
         }
 

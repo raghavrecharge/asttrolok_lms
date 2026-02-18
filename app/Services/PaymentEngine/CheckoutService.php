@@ -458,17 +458,20 @@ class CheckoutService
         $plan = UpeInstallmentPlan::create([
             'sale_id' => $upeSale->id,
             'total_amount' => $totalAmount,
-            'total_installments' => $totalInstallments,
+            'num_installments' => $totalInstallments,
+            'plan_type' => 'standard',
             'status' => 'active',
         ]);
 
         // Upfront schedule
         UpeInstallmentSchedule::create([
             'plan_id' => $plan->id,
-            'installment_number' => 1,
+            'sequence' => 1,
             'due_date' => now(),
             'amount_due' => $amount,
+            'amount_paid' => $amount,
             'status' => 'paid',
+            'paid_at' => now(),
         ]);
 
         // Ledger entry for upfront payment
