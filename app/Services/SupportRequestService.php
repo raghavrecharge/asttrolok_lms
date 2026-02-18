@@ -21,6 +21,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Discount;
 use App\Services\AdminCoursePurchaseService;
+use App\Services\SupportUpeBridge;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -239,6 +240,11 @@ class SupportRequestService
         $newAccess->status = 'active';
         $newAccess->save();
 
+        // UPE: Create extension sale so AccessEngine grants access
+        app(SupportUpeBridge::class)->grantCourseExtension(
+            $request->user_id, $request->webinar_id, $request->id, $user->id, $request->extension_days
+        );
+
         Log::info('Course extension granted', [
             'support_request_id' => $request->id,
             'user_id' => $request->user_id,
@@ -262,6 +268,11 @@ class SupportRequestService
         $access->expire = now()->addDays(7);
         $access->status = 'active';
         $access->save();
+
+        // UPE: Create temporary access support action so AccessEngine grants access
+        app(SupportUpeBridge::class)->grantTemporaryAccess(
+            $request->user_id, $request->webinar_id, $request->id, $user->id, 7, $percentage
+        );
 
         Log::info('Temporary access granted', [
             'support_request_id' => $request->id,
@@ -340,6 +351,11 @@ class SupportRequestService
             'created_at' => time(),
         ]);
 
+        // UPE: Create UPE sale so AccessEngine grants access
+        app(SupportUpeBridge::class)->grantRelativeAccess(
+            $beneficiaryUserId, $request->webinar_id, $request->id, $user->id
+        );
+
         Log::info('Relatives/friends access granted', [
             'support_request_id' => $request->id,
             'beneficiary_user_id' => $beneficiaryUserId,
@@ -390,6 +406,11 @@ class SupportRequestService
                 'granted_by_admin_id' => $user->id,
                 'created_at' => time(),
             ]);
+
+            // UPE: Create UPE sale so AccessEngine grants access
+            app(SupportUpeBridge::class)->grantFreeCourseAccess(
+                $userId, $targetCourseId, $request->id, $user->id
+            );
 
             $grantedCount++;
         }
@@ -657,6 +678,11 @@ class SupportRequestService
             $ac->update(['status' => 'revoked']);
         }
 
+        // UPE: Record refund in UPE ledger
+        app(SupportUpeBridge::class)->recordRefund(
+            $request->user_id, $request->webinar_id, $request->id, $user->id
+        );
+
         Log::info('Refund payment processed (soft-revoke)', [
             'support_request_id' => $request->id,
             'sale_id' => $sale->id,
@@ -839,6 +865,11 @@ class SupportRequestService
         foreach ($oldAccessControls as $ac) {
             $ac->update(['status' => 'revoked']);
         }
+
+        // UPE: Revoke wrong course + grant correct course in UPE
+        app(SupportUpeBridge::class)->handleWrongCourseCorrection(
+            $request->user_id, $wrongCourseId, $correctCourseId, $request->id, $user->id
+        );
 
         Log::info('Wrong course correction completed', [
             'support_request_id' => $request->id,

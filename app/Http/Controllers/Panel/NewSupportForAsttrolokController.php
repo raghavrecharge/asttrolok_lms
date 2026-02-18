@@ -57,26 +57,52 @@ class NewSupportForAsttrolokController extends Controller
                         ->get();
             
 
-            // Use UPE sales to find purchase dates for expiry check
+            // Use UPE sales to find expired courses for extension dropdown
                 foreach ($userPurchases as $item) {
 
-                    if (!$item->access_days) {
+                    // Try to get the latest UPE sale (active or not) for this user+course
+                    $productTypes = ['course_video', 'webinar'];
+                    $upeProduct = \App\Models\PaymentEngine\UpeProduct::whereIn('product_type', $productTypes)
+                        ->where('external_id', $item->id)
+                        ->first();
+
+                    if (!$upeProduct) {
+                        // Fallback: use legacy access_days check
+                        if (!$item->access_days) continue;
+                        $sale = $item->getSaleItem($user);
+                        if (!$sale || !$sale->created_at) continue;
+                        $purchaseTimestamp = $sale->created_at instanceof \Carbon\Carbon
+                            ? $sale->created_at->timestamp
+                            : (int) $sale->created_at;
+                        if (!$item->checkHasExpiredAccessDays($purchaseTimestamp)) {
+                            $item->expired_date = $purchaseTimestamp;
+                            $expiredCourses[] = $item;
+                        }
                         continue;
                     }
 
-                    $sale = $item->getSaleItem($user);
+                    // Find the latest sale for this user+product (any non-cancelled status)
+                    $upeSale = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
+                        ->where('product_id', $upeProduct->id)
+                        ->whereNotIn('status', ['cancelled'])
+                        ->orderByDesc('id')
+                        ->first();
 
-                    if (!$sale || !$sale->created_at) {
-                        continue;
-                    }
+                    if (!$upeSale) continue;
 
-                    $purchaseTimestamp = $sale->created_at instanceof \Carbon\Carbon
-                        ? $sale->created_at->timestamp
-                        : (int) $sale->created_at;
-
-                    if (!$item->checkHasExpiredAccessDays($purchaseTimestamp)) {
-                        $item->expired_date = $purchaseTimestamp;
+                    // Course is expired if valid_until is set and in the past
+                    if ($upeSale->valid_until !== null && $upeSale->valid_until->isPast()) {
+                        $item->expired_date = $upeSale->valid_until->timestamp;
                         $expiredCourses[] = $item;
+                    } elseif ($item->access_days && $upeSale->valid_until === null) {
+                        // Fallback: calculate from created_at + access_days
+                        $purchaseTimestamp = $upeSale->created_at instanceof \Carbon\Carbon
+                            ? $upeSale->created_at->timestamp
+                            : (int) $upeSale->created_at;
+                        if (!$item->checkHasExpiredAccessDays($purchaseTimestamp)) {
+                            $item->expired_date = $purchaseTimestamp;
+                            $expiredCourses[] = $item;
+                        }
                     }
                 }
             }
@@ -182,21 +208,9 @@ class NewSupportForAsttrolokController extends Controller
                 ->first();
             
             if (!$discount) {
-                // Get available coupons for suggestion
-                $availableCoupons = \App\Models\Discount::where('status', 'active')
-                    ->where(function($query) {
-                        $query->whereNull('expired_at')
-                        ->orWhere('expired_at', '>', time());
-                    })
-                    ->limit(5)
-                    ->pluck('code')
-                    ->toArray();
-                
-                $couponList = implode(', ', $availableCoupons);
-                
                 return response()->json([
                     'success' => false,
-                    'message' => 'Invalid coupon code. Try: ' . $couponList
+                    'message' => 'Invalid or expired coupon code.'
                 ]);
             }
             
@@ -374,21 +388,6 @@ class NewSupportForAsttrolokController extends Controller
                     $rules['payment_screenshot'] = 'required|file|image|mimes:jpeg,png,jpg|max:5120';
                     break;
                     
-                
-                case 'relatives_friends_access':
-                    $rules['relative_description'] = 'required|string';
-                    break;
-                    
-                case 'free_course_grant':
-                    $rules['free_course_reason'] = 'required|string';
-                    break;
-                    
-                case 'offline_cash_payment':
-                    $rules['cash_amount'] = 'required|numeric|min:0';
-                    $rules['payment_date'] = 'required|date';
-                    $rules['payment_location'] = 'required|string';
-                    break;
-                    
                 case 'installment_restructure':
                     // $rules['webinar_id'] = 'required|exists:webinars,id';
                     // $rules['requested_installments'] = 'required|integer';
@@ -418,9 +417,6 @@ class NewSupportForAsttrolokController extends Controller
                     $rules['wrong_course_id'] = 'required|exists:webinars,id';
                     $rules['correct_course_id'] = 'required|exists:webinars,id';
                     $rules['correction_reason'] = 'required|string';
-                    break;
-                case 'temporary_access':
-                    $rules['temporary_access_reason'] = 'required|string';
                     break;
             }
 
@@ -713,7 +709,24 @@ class NewSupportForAsttrolokController extends Controller
             return 'flow_c'; 
         }
 
-        // Check if user ever had a sale (now expired)
+        // Check if user ever had a sale (now expired) — look at ALL statuses, not just active
+        $productTypes = ['course_video', 'webinar'];
+        $upeProduct = \App\Models\PaymentEngine\UpeProduct::whereIn('product_type', $productTypes)
+            ->where('external_id', $webinarId)
+            ->first();
+
+        if ($upeProduct) {
+            $anySale = \App\Models\PaymentEngine\UpeSale::where('user_id', Auth::id())
+                ->where('product_id', $upeProduct->id)
+                ->whereNotIn('status', ['cancelled'])
+                ->exists();
+
+            if ($anySale) {
+                return 'flow_b';
+            }
+        }
+
+        // Fallback: check legacy getSaleItem (active sales with expired valid_until)
         $sale = $webinar->getSaleItem();
         if ($sale) {
             return 'flow_b';

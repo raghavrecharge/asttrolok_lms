@@ -91,7 +91,8 @@ class PaymentLedgerService
         ?string $gatewayTransactionId = null,
         ?array $gatewayResponse = null,
         ?int $processedBy = null,
-        ?string $description = null
+        ?string $description = null,
+        ?string $idempotencyKey = null
     ): UpeLedgerEntry {
         return $this->append(
             saleId: $saleId,
@@ -103,7 +104,7 @@ class PaymentLedgerService
             gatewayResponse: $gatewayResponse,
             description: $description ?? "Payment via {$paymentMethod}",
             processedBy: $processedBy,
-            idempotencyKey: $gatewayTransactionId ? "payment_{$paymentMethod}_{$gatewayTransactionId}" : null
+            idempotencyKey: $idempotencyKey ?? ($gatewayTransactionId ? "payment_{$paymentMethod}_{$gatewayTransactionId}" : null)
         );
     }
 

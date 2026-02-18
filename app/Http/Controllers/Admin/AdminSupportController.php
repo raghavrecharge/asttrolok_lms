@@ -31,6 +31,7 @@ use App\Models\WebinarChapterItem;
 use App\Models\File;
 use App\Models\SupportAuditLog;
 use App\Services\AdminCoursePurchaseService;
+use App\Services\SupportUpeBridge;
 use Illuminate\Support\Facades\Storage;
 
 class AdminSupportController extends Controller
@@ -545,6 +546,7 @@ class AdminSupportController extends Controller
                 $rules['support_remarks'] = 'required|string';
             }
 
+            // Only require temporary_access_percentage on approval (not rejection)
             if (
                 $request->status === 'approved' &&
                 $supportRequest->support_scenario === 'temporary_access' &&
@@ -553,7 +555,10 @@ class AdminSupportController extends Controller
                 $rules['temporary_access_percentage'] = 'required|integer|min:1|max:100';
             }
 
-            
+            // On rejection, support_remarks is optional
+            if ($request->status === 'rejected') {
+                $rules['support_remarks'] = 'nullable|string';
+            }
 
             $validated = $request->validate($rules);
 
@@ -710,6 +715,10 @@ class AdminSupportController extends Controller
                         $sale->created_at = time();
                         $sale->save();
 
+                        // UPE: Create UPE sale so AccessEngine grants access
+                        $bridge = app(SupportUpeBridge::class);
+                        $bridge->grantRelativeAccess($userMain->id, $webinar->id, $supportRequest->id, $user->id);
+
                         $updateData['course_purchased_at'] = now();
                         $updateData['purchase_status'] = 'purchased';
                     }
@@ -722,6 +731,10 @@ class AdminSupportController extends Controller
                     $userMain = \App\User::find($supportRequest->user_id);
 
                     if ($webinar && $userMain) {
+                        // UPE: Create UPE sale so AccessEngine grants access
+                        $bridge = app(SupportUpeBridge::class);
+                        $bridge->grantMentorAccess($userMain->id, $webinar->id, $supportRequest->id, $user->id);
+
                         // Check if user already has access
                         $existingSale = \App\Models\Sale::where('buyer_id', $userMain->id)
                             ->where('webinar_id', $webinar->id)
@@ -808,6 +821,10 @@ class AdminSupportController extends Controller
                             $sale->access_to_purchased_item = 1;
                             $sale->created_at = time();
                             $sale->save();
+
+                            // UPE: Create UPE sale so AccessEngine grants access
+                            $bridge = app(SupportUpeBridge::class);
+                            $bridge->grantFreeCourseAccess($sourceUserId, $targetCourseId, $supportRequest->id, Auth::id());
                             
                             $grantedCount++;
                         }
@@ -834,13 +851,25 @@ class AdminSupportController extends Controller
                 if ($supportRequest->support_scenario === 'temporary_access' && Auth::user()->role_name === 'admin') {
 
                         $expireDate = now()->addDays(7);
+                        $percentage = $supportRequest->temporary_access_percentage ?? 100;
 
                         WebinarAccessControl::create([
                             'user_id'    => $supportRequest->user_id,
                             'webinar_id' => $supportRequest->webinar_id,
-                            'percentage' => $supportRequest->temporary_access_percentage,
+                            'percentage' => $percentage,
                             'expire'     => $expireDate,
                         ]);
+
+                        // UPE: Create temporary access support action so AccessEngine grants access
+                        $bridge = app(SupportUpeBridge::class);
+                        $bridge->grantTemporaryAccess(
+                            $supportRequest->user_id,
+                            $supportRequest->webinar_id,
+                            $supportRequest->id,
+                            $user->id,
+                            7,
+                            $percentage
+                        );
                     }
 
      
@@ -865,6 +894,16 @@ class AdminSupportController extends Controller
                             'expire'     => $newExpireDate,
                             'status'     => 'active',
                         ]);
+
+                        // UPE: Create extension sale so AccessEngine grants access
+                        $bridge = app(SupportUpeBridge::class);
+                        $bridge->grantCourseExtension(
+                            $supportRequest->user_id,
+                            $supportRequest->webinar_id,
+                            $supportRequest->id,
+                            $user->id,
+                            $extensionDays
+                        );
                     }
                 }
 
@@ -874,10 +913,34 @@ class AdminSupportController extends Controller
                  /* ---------- offline_cash_payment ---------- */
                 if ($supportRequest->support_scenario === 'offline_cash_payment') {
                      $this->offlineCashPayment($supportRequest);
+
+                     // UPE: Record the actual cash amount (not full course price)
+                     $cashAmount = (float) ($supportRequest->cash_amount ?? 0);
+                     if ($cashAmount > 0 && $supportRequest->webinar_id) {
+                         $bridge = app(SupportUpeBridge::class);
+                         $bridge->recordOfflinePayment(
+                             $supportRequest->user_id,
+                             $supportRequest->webinar_id,
+                             $supportRequest->id,
+                             $user->id,
+                             $cashAmount
+                         );
+                     }
                 }
                  /* ---------- refund_payment ---------- */
                 if ($supportRequest->support_scenario === 'refund_payment') {
                      $this->refundPayment($supportRequest);
+
+                     // UPE: Record refund in UPE ledger
+                     if ($supportRequest->webinar_id) {
+                         $bridge = app(SupportUpeBridge::class);
+                         $bridge->recordRefund(
+                             $supportRequest->user_id,
+                             $supportRequest->webinar_id,
+                             $supportRequest->id,
+                             $user->id
+                         );
+                     }
                 }
             }
 
@@ -1832,6 +1895,16 @@ class AdminSupportController extends Controller
                 ->where('webinar_id', $wrongCourseId)
                 ->where('status', 'active')
                 ->update(['status' => 'revoked']);
+
+            // UPE: Revoke wrong course + grant correct course in UPE
+            $bridge = app(SupportUpeBridge::class);
+            $bridge->handleWrongCourseCorrection(
+                $userId,
+                $wrongCourseId,
+                $correctCourseId,
+                $supportRequest->id,
+                Auth::id()
+            );
 
             \Log::info('Wrong course correction completed (all original records preserved)', [
                 'user_id' => $userId,

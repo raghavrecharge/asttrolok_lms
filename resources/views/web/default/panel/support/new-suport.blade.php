@@ -298,13 +298,14 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="input-label">Select Course <span class="text-danger">*</span></label>
+                        <label class="input-label">Select Your Purchased Course <span class="text-danger">*</span></label>
                         <select name="webinar_id" class="form-control select2">
                             <option value="">{{ trans('panel.select_course') }}</option>
-                            @foreach($webinars as $webinar)
-                                <option value="{{ $webinar->id }}">{{ $webinar->title }} - {{ $webinar->creator->full_name }}</option>
+                            @foreach($userPurchases as $webinar)
+                                <option value="{{ $webinar->id }}">{{ $webinar->title ?? 'Course #'.$webinar->id }} - {{ $webinar->creator->full_name ?? '' }}</option>
                             @endforeach
                         </select>
+                        <small class="form-text text-muted">You can only share access to courses you have purchased</small>
                     </div>
                     
                     <div class="form-group">

@@ -208,38 +208,19 @@
 
 
 
-@if($supportRequest->support_scenario === 'temporary_access' && auth()->user()->role_name === 'Support Role')
+@if($supportRequest->support_scenario === 'temporary_access' && (auth()->user()->role_name === 'Support Role' || auth()->user()->role_name === 'admin'))
     <div class="form-group">
         <label>
             Approved Access Percentage (%) <span class="text-danger">*</span>
         </label>
-                                <div class="form-group">
-                                    <label>Change Status</label>
-                                    <select name="status" id="statusSelect" class="form-control" required>
-                                        <option value="pending" {{ $supportRequest->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                        <option value="approved" {{ $supportRequest->status == 'approved' ? 'selected' : '' }}>Approve</option>
-                                        @if(auth()->check() && auth()->user()->role === 'admin')
-                                        <option value="in_review" {{ $supportRequest->status == 'in_review' ? 'selected' : '' }}>In Review</option>
-
-                                            <option value="completed" {{ $supportRequest->status == 'completed' ? 'selected' : '' }}>
-                                                Completed
-                                            </option>
-                                                                                    <option value="executed" {{ $supportRequest->status == 'executed' ? 'selected' : '' }}>Executed</option>
-                                        <option value="closed" {{ $supportRequest->status == 'closed' ? 'selected' : '' }}>Closed</option>
-
-                                        @endif
-                                        <option value="rejected" {{ $supportRequest->status == 'rejected' ? 'selected' : '' }}>Reject</option>
-                                    </select>
-                                </div>
-
         <input type="number"
                name="temporary_access_percentage"
                class="form-control"
                min="1"
                max="100"
+               value="{{ old('temporary_access_percentage', $supportRequest->temporary_access_percentage) }}"
                placeholder="Enter access percentage"
                required>
-
         <small class="text-muted">
             Access will be granted only for 7 days
         </small>
