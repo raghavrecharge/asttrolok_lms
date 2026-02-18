@@ -113,8 +113,10 @@ public function inststep(Request $request, $slug){
              $data['install_url']='/subscriptions/direct-payment/'.$subscription->slug;
 
             if ((!$data or !$data['hasBought'])) {
+                $baseUrl = config('app.manual_base_url');
 
-                abort(403);
+               $installUrl = $baseUrl.'/subscriptions/direct-payment/'.$subscription->slug;
+                return response()->view('errors.403', compact('installUrl'), 403);
             }
 
             $webinars = Webinar::where('webinars.status', 'active')
