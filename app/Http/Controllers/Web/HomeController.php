@@ -37,6 +37,11 @@ use Illuminate\Support\Facades\Http;
 use App\Mixins\Financial\MultiCurrency;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Talk;
+use App\Models\Personalizedcategory;
+use App\Models\PathshalaOffer;
+use App\Models\FeaturedBook;
+use App\Models\Channel;
 
 class HomeController extends Controller
 {
@@ -473,9 +478,51 @@ public function index()
 
             $testimonial_video = Setting::gettestimonialVideo();
 
-            $subscriptions = Subscription::select('id', 'slug', 'price', 'status')
+            $subscriptions = Subscription::select('id', 'slug', 'price', 'status', 'thumbnail', 'home_banner', 'creator_id')
+            ->where('status', 'active')
             ->orderBy('created_at', 'desc')
             ->get();
+
+            // Marketing theme: extra variables
+            $talks = Cache::remember('upcoming_talks', $cacheTime / 2, function () {
+                return Talk::select('id', 'speaker_id', 'slug', 'thumbnail', 'date_time', 'status', 'city', 'location')
+                    ->with('speaker:id,full_name,avatar')
+                    ->where('status', 'upcoming')
+                    ->orderBy('date_time', 'asc')
+                    ->limit(6)
+                    ->get();
+            });
+
+            $products = Cache::remember('latest_products_home', $cacheTime, fn() =>
+                Product::select('id', 'price', 'status', 'creator_id')
+                    ->where('status', 'active')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(1)
+                    ->get()
+            );
+
+            $bundles = Cache::remember('active_bundles_home', $cacheTime, fn() =>
+                Bundle::select('id', 'slug', 'price', 'thumbnail', 'category_id', 'creator_id', 'status')
+                    ->where('status', 'active')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(4)
+                    ->get()
+            );
+
+            $categories = Personalizedcategory::all();
+            $pathshalaOffers = PathshalaOffer::all();
+
+            $courseFilters = [
+                ['link' => 'classes?liveClasses=on', 'type' => 'live', 'label' => 'Live Classes', 'icon' => '/assets/design_1/img/home_mobile_image/public/vector1171-5ybd.svg'],
+                ['link' => 'classes?recordedClasses=on', 'type' => 'recorded', 'label' => 'Recorded Class', 'icon' => '/assets/design_1/img/home_mobile_image/public/vector1171-255.svg'],
+                ['link' => 'classes?english=on', 'type' => 'english', 'label' => 'English', 'icon' => null],
+                ['link' => 'classes?hindi=on', 'type' => 'hindi', 'label' => 'Hindi', 'icon' => null],
+            ];
+
+            $featuredBook = FeaturedBook::where('is_active', 1)->latest()->first();
+            $channels = Channel::getActiveChannels();
+            $videos = $this->latestVideos();
+            $siteGeneralSettings = getGeneralSettings();
 
             $data = [
                 'pageTitle' => $pageTitle,
@@ -517,7 +564,17 @@ public function index()
                 'sidebanner'=>$sidebanner,
                 'testimonial_video' => $testimonial_video,
                 'hasBoughtCourse' => $hasBoughtCourse,
-                'subscriptions'=>$subscriptions,
+                'subscriptions' => $subscriptions,
+                'talks' => $talks,
+                'products' => $products,
+                'bundles' => $bundles,
+                'generalSettings' => $siteGeneralSettings,
+                'pathshalaOffers' => $pathshalaOffers,
+                'videos' => $videos,
+                'channels' => $channels,
+                'categories_mobile' => $categories,
+                'featuredBook' => $featuredBook,
+                'courseFilters' => $courseFilters,
             ];
 
             if ($agent->isMobile()){
@@ -563,6 +620,99 @@ public function index()
             ]);
             
             throw $e;
+        }
+    }
+
+    public function latestVideos()
+    {
+        try {
+            $apiKey = env('YOUTUBE_API_KEY');
+            $channelId = "UCpTpt23TwNia1DV831JZgDg";
+            $cacheKey = "youtube_latest_videos_{$channelId}";
+
+            return Cache::remember($cacheKey, 7200, function () use ($apiKey, $channelId) {
+                $searchResponse = Http::get("https://www.googleapis.com/youtube/v3/search", [
+                    'key' => $apiKey,
+                    'channelId' => $channelId,
+                    'part' => 'snippet',
+                    'order' => 'date',
+                    'maxResults' => 5
+                ]);
+
+                if ($searchResponse->failed()) {
+                    \Log::error('YouTube Search API failed');
+                    return false;
+                }
+
+                $videos = collect($searchResponse->json()['items'] ?? [])
+                    ->where('id.kind', 'youtube#video')
+                    ->values();
+
+                if ($videos->isEmpty()) {
+                    return false;
+                }
+
+                $videoIds = $videos->pluck('id.videoId')->implode(',');
+
+                $statsResponse = Http::get("https://www.googleapis.com/youtube/v3/videos", [
+                    'key' => $apiKey,
+                    'id' => $videoIds,
+                    'part' => 'statistics,contentDetails'
+                ]);
+
+                if ($statsResponse->failed()) {
+                    \Log::error('YouTube Stats API failed');
+                    return false;
+                }
+
+                $statsMap = collect($statsResponse->json()['items'] ?? [])
+                    ->mapWithKeys(fn($item) => [
+                        $item['id'] => [
+                            'statistics' => $item['statistics'],
+                            'duration' => $item['contentDetails']['duration'] ?? null
+                        ]
+                    ]);
+
+                return $videos->map(function ($video) use ($statsMap) {
+                    $videoId = $video['id']['videoId'];
+                    $videoData = $statsMap[$videoId] ?? null;
+
+                    return [
+                        'title' => $video['snippet']['title'],
+                        'video_id' => $videoId,
+                        'url' => "https://www.youtube.com/watch?v={$videoId}",
+                        'published_at' => $video['snippet']['publishedAt'],
+                        'thumbnail' => $video['snippet']['thumbnails']['high']['url'],
+                        'views' => $videoData['statistics']['viewCount'] ?? 0,
+                        'likes' => $videoData['statistics']['likeCount'] ?? 0,
+                        'duration' => $this->parseDuration($videoData['duration'] ?? null),
+                        'duration_raw' => $videoData['duration'] ?? null,
+                        'comments' => $videoData['statistics']['commentCount'] ?? 0
+                    ];
+                });
+            });
+        } catch (\Exception $e) {
+            \Log::error('latestVideos error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function parseDuration($duration)
+    {
+        if (!$duration) {
+            return '0:00';
+        }
+
+        preg_match('/PT(\d+H)?(\d+M)?(\d+S)?/', $duration, $matches);
+
+        $hours = isset($matches[1]) ? rtrim($matches[1], 'H') : 0;
+        $minutes = isset($matches[2]) ? rtrim($matches[2], 'M') : 0;
+        $seconds = isset($matches[3]) ? rtrim($matches[3], 'S') : 0;
+
+        if ($hours > 0) {
+            return sprintf('%d:%02d:%02d', $hours, $minutes, $seconds);
+        } else {
+            return sprintf('%d:%02d', $minutes, $seconds);
         }
     }
 

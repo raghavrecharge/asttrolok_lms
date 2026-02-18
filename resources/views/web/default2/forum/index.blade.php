@@ -1,4 +1,4 @@
-@extends('web.default2.layouts.app')
+@extends('web.default.layouts.app')
 
 @section('content')
     <section class="forum-hero-section mt-50 position-relative">

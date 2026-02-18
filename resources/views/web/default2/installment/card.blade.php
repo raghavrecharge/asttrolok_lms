@@ -24,7 +24,7 @@
                 @else
 
                 <div class="default-package-icon mt-20">
-                <img src="/assets2/default/img/become-instructor/default.png" class="img-cover" alt="{{ trans('update.installment_overview') }}" width="176" height="144">
+                <img src="{{ config('app.js_css_url') }}/assets2/default/img/become-instructor/default.png" class="img-cover" alt="{{ trans('update.installment_overview') }}" width="176" height="144">
             </div>
             @endif
 
@@ -80,9 +80,9 @@
                         <span class="valid-feedback">{{ trans('cart.coupon_valid') }}</span>
                     </div>
                     </div><div class="col-12 col-lg-3 ">
-                    <button type="submit" id="checkCoupon1" class="btn btn-sm btn-primary mt-25">{{ trans('cart.validate') }}</button></div></div>
+                    <button type="submit" id="checkCoupon1" style="font-family: 'Inter', sans-serif !important;"  class="btn btn-sm btn-primary mt-25" >{{ trans('cart.validate') }}</button></div></div>
                 </form>
- <a href="/installments/{{ $installment->id }}?item={{ $itemId }}&item_type={{ $itemType }}&{{ http_build_query(request()->all()) }}#Payment-Option" class=" btn btn-primary btn-block mt-auto">{{ trans('update.pay_with_installments') }}</a>
+ <a href="/installments/{{ $installment->id }}?item={{ $itemId }}&item_type={{ $itemType }}&{{ http_build_query(request()->all()) }}#Payment-Option" style="font-family: 'Inter', sans-serif !important;"  class=" btn btn-primary btn-block mt-auto">{{ trans('update.pay_with_installments') }}</a>
 
             </div>
         </div>

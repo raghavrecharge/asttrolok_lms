@@ -5,7 +5,7 @@
         @endif
 
         <a href="{{ $upcomingCourse->getUrl() }}">
-            <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $upcomingCourse->getImage() }}" class="img-cover" alt="{{ $upcomingCourse->title }}">
+            <img src="{{ config('app.img_dynamic_url') }}{{ $upcomingCourse->getImage() }}" class="img-cover" alt="{{ $upcomingCourse->title }}">
         </a>
     </div>
 
@@ -29,10 +29,11 @@
 
         <div class="user-inline-avatar d-flex align-items-center mt-10">
             <div class="avatar bg-gray200">
-                <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $upcomingCourse->teacher->getAvatar() }}" class="img-cover" alt="{{ $upcomingCourse->teacher->full_name }}">
+                <img src="{{ config('app.img_dynamic_url') }}{{ $upcomingCourse->teacher->getAvatar() }}" class="img-cover" alt="{{ $upcomingCourse->teacher->full_name }}">
             </div>
             <a href="{{ $upcomingCourse->teacher->getProfileUrl() }}" target="_blank" class="user-name ml-5 font-14">{{ $upcomingCourse->teacher->full_name }}</a>
         </div>
+
 
         <div class="d-flex justify-content-between mt-auto">
             <div class="d-flex align-items-center">

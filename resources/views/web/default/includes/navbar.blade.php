@@ -56,7 +56,9 @@
     justify-content: space-between;
 }
 
-
+.astro-left img {
+    height: 28px;
+}
 
 /* RIGHT ICONS */
 .astro-right {
@@ -186,7 +188,7 @@
     <!-- LEFT: LOGO -->
     <div class="astro-left">
         <a href="/">
-            <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/asttroloklogo-min_converted.webp" alt="logo">
+            <img src="/assets/design_1/img/home_mobile_image/public/asttroloklogo-min_converted.png" alt="logo">
         </a>
     </div>
                <div class="astro-center">
@@ -241,14 +243,14 @@
     <span aria-hidden="true">&times;</span>
 </button>
     <ul>
-        <li><a href="{{ config('app.manual_base_url') }}/">Home</a></li>
-        <li><a href="{{ config('app.manual_base_url') }}/consult-with-astrologers">Consult with Astrologer's</a></li>
+        <li><a href="/">Home</a></li>
+        <li><a href="/consult-with-astrologers">Consult with Astrologer's</a></li>
 
-        <li><a href="{{ config('app.manual_base_url') }}/classes">Courses</a></li>
-        <li><a href="{{ config('app.manual_base_url') }}/remedies">Remedies</a></li>
-        <li><a href="{{ config('app.manual_base_url') }}/contact">Contact Us</a></li>
+        <li><a href="/classes">Courses</a></li>
+        <li><a href="/remedies">Remedies</a></li>
+        <li><a href="/contact">Contact Us</a></li>
 
-        <li><a href="{{ config('app.manual_base_url') }}/tutorial-guide">Tutorial Guide</a></li>
+        <li><a href="/tutorial-guide">Tutorial Guide</a></li>
     </ul>
 
     <div class="menu-buttons" >

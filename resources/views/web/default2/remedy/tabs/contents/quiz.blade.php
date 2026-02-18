@@ -3,6 +3,7 @@
     $sequenceContentHasError = (!empty($checkSequenceContent) and (!empty($checkSequenceContent['all_passed_items_error']) or !empty($checkSequenceContent['access_after_day_error'])));
 @endphp
 
+
 <div class="accordion-row rounded-sm border mt-15 p-15">
     <div class="d-flex align-items-center justify-content-between" role="tab" id="quiz_{{ $quiz->id }}">
         <div class="d-flex align-items-center" href="#collapseQuiz{{ !empty($tagId) }}{{ $quiz->id }}" aria-controls="collapseQuiz{{ !empty($tagId) }}{{ $quiz->id }}" data-parent="#{{ $accordionParent }}" role="button" data-toggle="collapse" aria-expanded="true">

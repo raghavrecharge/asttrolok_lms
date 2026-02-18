@@ -6,12 +6,16 @@
 @endpush
 <style>
     .loader {
+      //border: 16px solid #f3f3f3;
+      //border-radius: 50%;
+      //border-top: 16px solid #3498db;
 
       height: 80px;
       -webkit-animation: spin 2s linear infinite;
       animation: spin 2s linear infinite;
     }
 
+    #loader {
     position: fixed;
     left: 50%;
     top: 50%;
@@ -195,6 +199,17 @@
 
      <script  >
 
+    //  function IsEmail(email) {
+    //     var regex = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+    //     if(!regex.test(email)) {
+    //         document.getElementById("customer_email").value =email;
+    //         var emailvalidation ='Email field is required';
+    //         $(document).find('#customer_email').after('<span class="text-strong textdanger " style="color:red;">' +emailvalidation+ '</span>');
+    //       return false;
+    //     }else{
+    //       return true;
+    //     }
+    //   }
      $("#loader").css("display", "none");
 
     function addscript(){
@@ -207,21 +222,22 @@
          mobile = document.getElementById("customer_number").value;
 
         $('.textdanger').remove();
-
+        // $('#customer_email').html('');
+        // $('#customer_number').html('');
         if(name ===''){
-
+            // $('#paymentSubmit').prop('disabled', false);
             $("input:radio").attr("checked", false);
             var namevalidation ='Name field is required';
             $(document).find('#customer_name').after('<span class="text-strong textdanger " style="color:red;">' +namevalidation+ '</span>');
 
         }
          if(email ===''){
-
+            // $('#paymentSubmit').prop('disabled', false);
             var emailvalidation ='Email field is required';
             $(document).find('#customer_email').after('<span class="text-strong textdanger " style="color:red;">' +emailvalidation+ '</span>');
         }
          if(mobile ===''){
-
+            // $('#paymentSubmit').prop('disabled', false);
             $("input:radio").attr("checked", false);
             var mobilevalidation ='Mobile field is required';
             $(document).find('#customer_number').after('<span class="text-strong textdanger " style="color:red;">' +mobilevalidation+ '</span>');
@@ -237,7 +253,7 @@
 
             if (mobile.length < 9) {
                   $('#paymentSubmit').prop('disabled', false);
-
+                    // $("input:radio").attr("checked", false);
                     var mobilevalidation ='Enter Valid Mobile Number';
                     $(document).find('#customer_number').after('<span class="text-strong textdanger " style="color:red;">' +mobilevalidation+ '</span>');
                 return false;
@@ -260,17 +276,17 @@
             email: dataprefillemail,
             mobile: dataprefillcontact,
           }
-
+    // webhook url sent data
       $.ajax({
             method: 'post',
             url: url,
             data: data,
         }).done(function(response, status){
-
+            //
         }).fail(function(jqXHR, textStatus, errorThrown){
-
+            //
         });
-
+          // payment start proccess
         const rzp_options = {
         key: datakey,
         amount: dataamount,
@@ -281,11 +297,11 @@
         handler: function(response) {
             $("#loader").css("display", "block");
             $('#paymentSubmit').prop('disabled', true);
-
+            // loader
             document.body.classList.add('disabled-page');
             document.getElementById('loader').style.display = 'block';
             document.documentElement.style.overflow = 'hidden';
-
+            // alert(`Payment Succesful ${response.razorpay_payment_id}`);
             document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
             document.getElementById('razorpay_signature').value = response.razorpay_signature;
             document.getElementById("razorpayview").submit();
@@ -311,12 +327,35 @@
     const rzp1 = new Razorpay(rzp_options);
     rzp1.open();
 
+    //  var s = document.createElement( 'script' );
+    //     s.setAttribute( 'src', "https://checkout.razorpay.com/v1/checkout.js" );
+    //     s.setAttribute( 'id', "razorpay_script" );
+    //     // s.setAttribute( 'onLoad', "loadPaymentModal()" );
+    //     s.setAttribute( 'data-key',datakey );
+    //     s.setAttribute( 'data-amount', dataamount );
+    //     s.setAttribute( 'data-buttontext', databuttontext );
+    //     s.setAttribute( 'data-currency', datacurrency );
+    //     s.setAttribute( 'data-name', 'Asttrolok' );
+    //     s.setAttribute( 'data-description', datadescription );
+    //     s.setAttribute( 'data-image', dataimage);
+    //     s.setAttribute( 'data-theme.color', "#43d477" );
+    //     s.setAttribute( 'data-prefill.name', dataprefillname );
+    //     s.setAttribute( 'data-prefill.email', dataprefillemail );
+    //     s.setAttribute( 'data-prefill.contact', dataprefillcontact );
+    //     document.querySelector("#razorpayview").appendChild( s );
+
+        // setTimeout(function(){
+        //     $("#loader").removeClass('d-none');
+        //   $('form').css("filter", "blur(2px)");
+        //   },3600);
+
         }
         }
     $(document).ready(function(){
 
          $('body').on('click', '.paymentSubmit', function (e) {
-
+            // var load ='<img src="{{ config("app.js_css_url") }}/assets/default/img/loading.gif" width="80" height="80">';
+            // $("#loader").html(load);
          });
 
        $('body').on('change paste keyup', '#customer_name', function (e) {
@@ -343,7 +382,7 @@ $('#customer_number').on('keypress', function(e) {
  var $this = $(this);
  var regex = new RegExp("^[0-9\b]+$");
  var str = String.fromCharCode(!e.charCode ? e.which : e.charCode);
-
+ // for 10 digit number only
  if ($this.val().length > 9) {
     e.preventDefault();
     return false;

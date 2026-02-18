@@ -3,6 +3,7 @@
     $sequenceContentHasError = (!empty($checkSequenceContent) and (!empty($checkSequenceContent['all_passed_items_error']) or !empty($checkSequenceContent['access_after_day_error'])));
 @endphp
 
+
 <div class="accordion-row rounded-sm border mt-15 p-15">
     <div class="d-flex align-items-center justify-content-between" role="tab" id="quiz_{{ $quiz->id }}">
         <div class="d-flex align-items-center" href="#collapseQuiz{{ !empty($tagId) }}{{ $quiz->id }}" aria-controls="collapseQuiz{{ !empty($tagId) }}{{ $quiz->id }}" data-parent="#{{ $accordionParent }}" role="button" data-toggle="collapse" aria-expanded="true">
@@ -64,7 +65,7 @@
 
             <div class="d-flex justify-content-end mt-20">
                 @if(!empty($user) and $quiz->can_try and $hasBought)
-                    <a href="/panel/quizzes/{{ $quiz->id }}/start" class="course-content-btns btn btn-sm btn-primary">{{ trans('quiz.quiz_start') }}</a>
+                    <a href="{{ config('app.manual_base_url') }}/panel/quizzes/{{ $quiz->id }}/start" class="course-content-btns btn btn-sm btn-primary">{{ trans('quiz.quiz_start') }}</a>
                 @else
                     <button type="button" class="course-content-btns btn btn-sm btn-gray disabled {{ ((empty($user)) ? 'not-login-toast' : (!$hasBought ? 'not-access-toast' : (!$quiz->can_try ? 'can-not-try-again-quiz-toast' : ''))) }}">
                         {{ trans('quiz.quiz_start') }}

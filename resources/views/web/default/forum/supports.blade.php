@@ -14,7 +14,7 @@
 <section class="container forums-featured-section mt-30 mt-md-50">
 
             <div class="text-center mb-30">
-                <h1 class="font-36 font-weight-bold text-secondary">How can we help you ?</h1>
+                <h1 class="font-36 font-weight-bold text-secondary">How can we help you?</h1>
                 <p class="font-14 text-gray">Follow simple steps and video tutorials to easily navigate and use the site effectively.</p>
             </div>
 
@@ -22,11 +22,11 @@
                 <div class="col-12 col-lg-6">
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img loading="lazy" src="/store/1/default_images/forums/icons/How to Login.svg" alt="What is social media ?" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/marketing.svg" alt="What is social media?" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import" class="">
-                                <h4 class="font-16 font-weight-bold text-dark">How to Login ?</h4>
+                                <h4 class="font-16 font-weight-bold text-dark">How to Login?</h4>
                             </a>
 
                         </div>
@@ -34,18 +34,18 @@
 
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img loading="lazy" src="/store/1/default_images/forums/icons/How to Reset Your Password.svg" alt="How do you put a Group Link in a note card" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/forum_music.svg" alt="How do you put a Group Link in a note card" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import1" class="">
-                                <h4 class="font-16 font-weight-bold text-dark">How to Reset Your Password ?</h4>
+                                <h4 class="font-16 font-weight-bold text-dark">How to Reset Your Password?</h4>
                             </a>
                         </div>
                     </div>
 
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img loading="lazy" src="/store/1/default_images/forums/icons/How to Purchase an Online Course.svg" alt="The best texture quality settings for makeup" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/forum_makeup.svg" alt="The best texture quality settings for makeup" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import2" class="">
@@ -56,7 +56,7 @@
 
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img loading="lazy" src="/store/1/default_images/forums/icons/How to See Access Course Content.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/food_forum.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import3" class="">
@@ -67,11 +67,11 @@
 
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img loading="lazy" src="/store/1/default_images/forums/icons/How to View Quiz Results and Answers.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/food_forum.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import4" class="">
-                                <h4 class="font-16 font-weight-bold text-dark">How to View Quiz Results and Answers ?</h4>
+                                <h4 class="font-16 font-weight-bold text-dark">How to View Quiz Results and Answers?</h4>
                             </a>
                         </div>
                     </div>
@@ -81,7 +81,7 @@
 
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img loading="lazy" src="/store/1/default_images/forums/icons/How to give a second attempt for Quiz.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/food_forum.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import5" class="">
@@ -92,7 +92,7 @@
 
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img loading="lazy" src="/store/1/default_images/forums/icons/How to set a meeting time for the instructor.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/food_forum.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import6" class="">
@@ -103,7 +103,7 @@
 
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img loading="lazy" src="/store/1/default_images/forums/icons/How to download a ppt file.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/food_forum.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import7" class="">
@@ -114,7 +114,7 @@
 
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img loading="lazy" src="/store/1/default_images/forums/icons/How to Complete the Quiz in Waiting.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/food_forum.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import8" class="">
@@ -123,16 +123,6 @@
                         </div>
                     </div>
 
-                    <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
-                        <div class="forums-featured-card-icon">
-                            <img loading="lazy" src="/store/1/default_images/forums/icons/QUIZ.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
-                        </div>
-                        <div class="ml-15">
-                            <a href="#" data-toggle="modal" data-target="#import9" class="">
-                                <h4 class="font-16 font-weight-bold text-dark">How to attempt the Quiz ? </h4>
-                            </a>
-                        </div>
-                    </div>
                 </div>
             </div>
 

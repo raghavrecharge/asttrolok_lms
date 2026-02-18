@@ -1,0 +1,232 @@
+.home-container1 {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+ 
+.home-thq-navbar-elm {
+  width: 100%;
+  height: auto;
+  display: flex;
+  padding: 10px;
+  align-items: flex-start;
+  flex-shrink: 0;
+  border-color: rgba(237, 237, 237, 1);
+  border-style: solid;
+  border-width: 1px 0 0;
+  background-color: var(--dl-color-primary-putih);
+}
+ 
+.home-thq-frame8-elm {
+  gap: 4px;
+  display: flex;
+  flex-grow: 1;
+  align-self: stretch;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+ 
+.home-thq-discovercircle-elm {
+  width: 24px;
+  height: 24px;
+}
+ 
+.home-thq-text-elm1 {
+  color: rgba(107, 106, 106, 1);
+  height: auto;
+  font-size: 12px;
+  font-style: Regular;
+  text-align: center;
+  font-family: Roboto;
+  font-weight: 400;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.home-thq-frame9-elm {
+  gap: 4px;
+  display: flex;
+  z-index: 1;
+  flex-grow: 1;
+  align-self: stretch;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+ 
+.home-thq-sent-elm {
+  width: 24px;
+  height: 24px;
+}
+ 
+.home-thq-text-elm2 {
+  color: rgba(107, 106, 106, 1);
+  height: auto;
+  font-size: 12px;
+  font-style: Regular;
+  text-align: center;
+  font-family: Roboto;
+  font-weight: 400;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.home-thq-frame14-elm1 {
+  gap: 2px;
+  height: 44px;
+  display: flex;
+  opacity: 0.00;
+  z-index: 2;
+  align-self: stretch;
+  box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.10000000149011612) ;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 60px;
+  flex-direction: column;
+  justify-content: center;
+  background-color: rgba(48, 48, 48, 1);
+}
+ 
+.home-thq-text-elm3 {
+  color: rgba(255, 255, 255, 1);
+  height: auto;
+  font-size: 10px;
+  font-style: Medium;
+  text-align: center;
+  font-family: SF Pro Text;
+  font-weight: 500;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.home-thq-frame15-elm {
+  gap: 4px;
+  display: flex;
+  z-index: 3;
+  flex-grow: 1;
+  align-self: stretch;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+ 
+.home-thq-map-elm {
+  width: 20px;
+  height: 20px;
+}
+ 
+.home-thq-text-elm4 {
+  color: rgba(107, 106, 106, 1);
+  height: auto;
+  font-size: 12px;
+  font-style: Regular;
+  text-align: center;
+  font-family: Roboto;
+  font-weight: 400;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.home-thq-frame11-elm {
+  gap: 4px;
+  display: flex;
+  z-index: 4;
+  flex-grow: 1;
+  align-self: stretch;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+ 
+.home-thq-user-elm {
+  width: 24px;
+  height: 24px;
+}
+ 
+.home-thq-text-elm5 {
+  color: rgba(107, 106, 106, 1);
+  height: auto;
+  font-size: 12px;
+  font-style: Regular;
+  text-align: center;
+  font-family: Roboto;
+  font-weight: 400;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.home-thq-frame14-elm2 {
+  gap: 6px;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  z-index: 5;
+  background: linear-gradient(162deg, rgba(85, 194, 88, 1) 0%, rgba(5, 109, 0, 1) 100%);
+  box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.10000000149011612) ;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 60px;
+  flex-direction: column;
+  justify-content: center;
+}
+ 
+.home-thq-vector-elm {
+  width: 23px;
+  height: 23px;
+}
+ 
+.home-thq-text-elm6 {
+  color: var(--dl-color-primary-putih);
+  height: auto;
+  font-size: 12px;
+  font-style: SemiBold;
+  text-align: center;
+  font-family: Roboto;
+  font-weight: 600;
+  line-height: normal;
+  font-stretch: normal;
+  text-decoration: none;
+}
+ 
+.home-link {
+  display: contents;
+}
+ 
+.home-container2 {
+  right: 50px;
+  border: 1px solid #ffffff5c;
+  bottom: 30px;
+  display: flex;
+  z-index: 22;
+  position: fixed;
+  box-shadow: 5px 5px 10px 0px rgba(31, 31, 31, 0.4);
+  min-height: auto;
+  align-items: center;
+  padding-top: 8px;
+  padding-left: 12px;
+  border-radius: 8px;
+  padding-right: 12px;
+  padding-bottom: 8px;
+  backdrop-filter: blur(6px);
+  background-color: rgba(41, 41, 41, 0.41);
+}
+ 
+.home-icon1 {
+  width: 24px;
+  margin-right: 4px;
+}
+ 
+.home-text {
+  color: white;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 24px;
+}

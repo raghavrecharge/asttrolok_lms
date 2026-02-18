@@ -2,24 +2,28 @@
     $cookieSecuritySettings = getCookieSettings();
 @endphp
 <style>
-.cookie-security-dialog {
+    .cookie-security-dialog1 {
     position: fixed !important;
-    left: 280px !important;
+    right: auto !important;
+    left: 24px !important;
     bottom: 24px !important;
     width: 480px !important;
-    z-index: 99999 !important;
+    z-index: 201 !important;
+    transform: none !important;
 }
 </style>
 @if(!empty($cookieSecuritySettings['cookie_settings_modal_message']) and !empty(strip_tags($cookieSecuritySettings['cookie_settings_modal_message'])))
-    <div class="cookie-security-dialog p-20 bg-gray rounded-lg">
+    <div class="cookie-security-dialog p-20 bg-gray rounded-lg cookie-security-dialog1">
         <h3 class="font-14 font-weight-bold text-white">{{ trans('update.your_privacy') }}</h3>
         <p class="mt-5 text-white font-12">{{ trans('update.your_privacy_hint') }}</p>
 
         <div class="mt-10 d-flex flex-wrap align-items-center">
             <button type="button" class="js-accept-all-cookies btn btn-primary btn-sm flex-grow-1 mr-0 mr-md-5" style=" margin: 2px;">{{ trans('update.accept_all_cookies') }}</button>
             <button type="button" class="js-cookie-customize-settings btn btn-light btn-sm flex-grow-1  mr-0 mr-md-5" style=" margin: 2px;">{{ trans('update.customize_settings') }}</button>
-        <button type="button" class="js-reject-all-cookies btn btn-danger btn-sm flex-grow-1  mr-0 mr-md-5" style=" margin: 2px;">Reject All Cookies</button>
-
+<button type="button"
+    class="js-reject-all-cookies btn btn-danger btn-sm flex-grow-1 w-100 mt-2">
+    Reject All Cookies
+</button>
         </div>
     </div>
 

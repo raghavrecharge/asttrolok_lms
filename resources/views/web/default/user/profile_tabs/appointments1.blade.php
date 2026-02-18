@@ -163,7 +163,7 @@
 
                 <div class="mt-25 d-none js-finalize-reserve  align-items-center" style="text-align: center;">
                 <div class=" align-items-center justify-content-end mt-30" id="Confirm">
-                    <button type="button" onclick="pop();" class="btn bookbtn btn-primary  bookb">Confirm</button>
+                    <button type="button" onclick="pop();" class="btn bookbtn btn-primary  bookb"  style="font-family: 'Inter', sans-serif !important;">Confirm</button>
                 </div>
                     <h3 class="font-16  d-none font-weight-bold text-dark-blue">{{ trans('update.finalize_your_meeting') }}</h3>
                     <span class="selected-date-time   d-none font-14 text-gray font-weight-500">{{ trans('update.meeting_time') }}: <span></span></span>
@@ -388,11 +388,12 @@
         <script defer src="{{ config('app.js_css_url') }}/assets/vendors/wrunner-html-range-slider-with-2-handles/js/wrunner-jquery.js"></script>
         <script defer>
 $(document).ready(function() {
-
+    // Attach change event listener to radio buttons
     $('#slotsTime input[type="radio"]').change(function() {
-
+        // Remove 'date-active' class from all elements
         $('.available-times1').removeClass('date-active');
 
+        // Add 'date-active' class to the selected radio button's parent element
         $(this).closest('.available-times1').addClass('date-active');
         $('#PickTimeBody').addClass('d-none');
 

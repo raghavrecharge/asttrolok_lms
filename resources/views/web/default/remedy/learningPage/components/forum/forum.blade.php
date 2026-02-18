@@ -96,6 +96,7 @@
                         </button>
                     @endif
 
+
                     @if(!empty($forum->answers) and count($forum->answers))
                         <div class="py-15 row">
                             <div class="col-3">

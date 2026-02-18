@@ -12,7 +12,7 @@
             <button type="button" class="js-blog-share-link-copy btn btn-primary btn-sm font-14 font-weight-500 flex-none" data-toggle="tooltip" data-placement="top" title="{{ trans('public.copy') }}">{{ trans('public.copy') }}</button>
         </div>
 
-        <div class="mt-32 mt-lg-40 row align-items-center font-14">
+        <div class="mt-32 mt-lg-40 row align-items-center font-14 mt-20">
             <a href="{{ $post->getShareLink('telegram') }}" target="_blank" class="col text-center">
                 <img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/social/telegram.svg" width="50" height="50" alt="telegram">
                 <span class="mt-10 d-block">{{ trans('public.telegram') }}</span>

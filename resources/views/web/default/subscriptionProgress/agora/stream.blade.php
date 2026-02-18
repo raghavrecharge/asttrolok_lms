@@ -19,7 +19,6 @@
     <div id="remote-stream-player" class="remote-stream-box"></div>
 </div>
 
-<!-- Single button -->
 <div class="stream-footer py-20 px-15 px-lg-30 mt-15 d-flex align-items-center justify-content-around bg-white">
 
     @if($sessionStreamType == 'multiple')
@@ -30,7 +29,6 @@
 
             <span class="mt-1 text-gray font-14">{{ trans('update.microphone') }}</span>
         </button>
-
 
         <button type="button" id="cameraEffect" class="stream-bottom-actions btn-transparent d-flex flex-column align-items-center active">
             <span class="icon">
@@ -113,4 +111,3 @@
     <script  src="{{ config('app.js_css_url') }}/assets/vendors/agora/AgoraRTC_N.js"></script>
     <script  src="{{ config('app.js_css_url') }}/assets/default/agora/stream.min.js"></script>
 @endpush
-

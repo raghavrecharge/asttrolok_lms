@@ -1,232 +1,46 @@
 @extends('web.default2'.'.layouts.app')
 
 @push('styles_top')
+<link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/persian-datepicker/persian-datepicker.min.css"/>
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/css-stars.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.10.2/video-js.min.css" rel="stylesheet">
+       <link rel="stylesheet" href="{{ config('app.js_css_url') }}/asttroloknew/assets/design_1/css/parts/profile.min.css">
 
-    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/video/video-js.min.css">
-    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/mobile-courses.css">
-
-<link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/mobile-remedies.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
-
-<meta name="robots" content="noindex, nofollow" />
-
-  <style>
-        .course-description p{
-            font-family: 'main-font-family' !important;
-        }
-        .course-description p span{
-            font-family: 'main-font-family' !important;
-        }
-        .course-description span{
-            font-family: 'main-font-family' !important;
-        }
-        .course-content-sidebar .course-img.has-video .course-video-icon {
-
-    width: 50px;
-    height: 50px;
-}
-
-	.modal.left .modal-dialog,
-	.modal.right .modal-dialog {
-		position: fixed;
-		right: -100%;
-		margin: auto;
-		width: 320px;
-		height: 100%;
-		-webkit-transform: translateX(100%);
-		    -ms-transform: translateX(100%);
-		     -o-transform: translateX(100%);
-		        transform: translateX(100%);
-	}
-.afterpop{
-
-    transition: all 2s  !important;
-    transition-timing-function: ease-in  !important;
-   -webkit-transform: translateX(0%) !important;
-		    -ms-transform: translateX(0%) !important;
-		     -o-transform: translateX(0%) !important;
-		        transform: translateX(0%) !important;
-
-}
-	.modal.left .modal-content,
-	.modal.right .modal-content {
-		height: 100%;
-		overflow-y: auto;
-	}
-
-	.modal.left .modal-body,
-	.modal.right .modal-body {
-		padding: 15px 15px 80px;
-	}
-
-	.modal.right.fade .modal-dialog {
-
-		right: 0px;
-
-	}
-
-	.modal.right.fade.in .modal-dialog {
-		right: 0;
-		transition: all .5s;
-	}
-    .webinar-card .image-box {
-    height: 100px !important;
-}
-
-	.modal-content {
-		border-radius: 0;
-		border: none;
-	}
-.r-video{
-    display:none;
-}
-	.modal-header {
-		border-bottom-color: #EEEEEE;
-		background-color: #FAFAFA;
-	}
-
-    </style>
 @endpush
+
 {{ session()->put('my_test_key',url()->current())}}
 
 @section('content')
-    <section class="mobile-home-slider site-top-banner search-top-banner opacity-04 position-relative">
-        <img src="{{ config('app.img_dynamic_url') }}{{ $course->getImageCover() }}" class="banner-redius img-cover" alt="{{ $course->title }}"/>
 
-        <div class="cover-content pt-40">
-            <div class="container position-relative">
-                @if(!empty($activeSpecialOffer))
-
-                @endif
-            </div>
-        </div>
-    </section>
-
-    <section class="container course-content-section {{ $course->type }} {{ ($hasBought or $course->isRemedy()) ? 'has-progress-bar' : '' }}">
-        <div class="row">
-            <div class="col-12 col-lg-12">
-                <div class="course-content-body  user-select-none">
-                <div class="rounded-lg shadow-sm">
-                    <div class="px-20 mt-50 pb-30">
-                        <form action="/cart/store" method="post">
-                            <input type="hidden" name="_token" value="SXuDDKudplSl9qnS61QkBZIc2ItObinac6yO5Lgj">
-                            <input type="hidden" name="item_id" value="5">
-                            <input type="hidden" name="item_name" value="webinar_id">
-                            <div id="priceBox" class="d-flex  mt-20 pt-20 ">
-                                <div class="text-left">
-                                    <span id="realPrice" data-value="2100" data-special-offer="" class="  font-30 text-secondary ">  {{ clean($course->title, 't') }}</span>
-                                </div>
-                            </div>
-                        </form>
-                        <div class="mt-35">
-                            <p dir="ltr" style="line-height:1.38;margin-top:12pt;margin-bottom:12pt;">{!! $course->description !!}</p>
-                         </div>
-                    </div>
-        </div>
-
-                    @include(getTemplate().'.remedy.tabs.content')
-<style>
-    .homehide{
-        display:none;
-    }
-</style>
-
-                </div>
-            </div>
-
-        </div>
-
-    </section>
-
-<div class="container demo">
-
-	<div class="text-center d-none">
-
-		<button type="button" class="btn btn-demo" data-toggle="modal" data-target="#myModal2">
-			Right Sidebar Modal
-		</button>
-	</div>
-
-	<div class="modal right fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-
-				</div>
-
-				<div class="modal-body">
-					<div class="h-100">
-            <div class="navbar-shopping-cart h-100" data-simplebar>
-                @if(!empty($userCarts) and count($userCarts) > 0)
-                    <div class="mb-auto">
-                        @foreach($userCarts as $cart)
-                            @php
-                                $cartItemInfo = $cart->getItemInfo();
-                            @endphp
-
-                            @if(!empty($cartItemInfo))
-                                <div class="navbar-cart-box d-flex align-items-center">
-
-                                    <a href="{{ $cartItemInfo['itemUrl'] }}" target="_blank" class="navbar-cart-img">
-                                        <img src="{{ config('app.img_dynamic_url') }}{{ $cartItemInfo['imgPath'] }}" alt="product title" class="img-cover"/>
-                                    </a>
-
-                                    <div class="navbar-cart-info">
-                                        <a href="{{ $cartItemInfo['itemUrl'] }}" target="_blank">
-                                            <h4>{{ $cartItemInfo['title'] }}</h4>
-                                        </a>
-                                        <div class="price mt-10">
-                                            @if(!empty($cartItemInfo['discountPrice']))
-                                                <span class="text-primary font-weight-bold">{{ handlePrice($cartItemInfo['discountPrice'], true, true, false, null, true) }}</span>
-                                                <span class="off ml-15">{{ handlePrice($cartItemInfo['price'], true, true, false, null, true) }}</span>
-                                            @else
-                                                <span class="text-primary font-weight-bold">{{ handlePrice($cartItemInfo['price'], true, true, false, null, true) }}</span>
-                                            @endif
-
-                                            @if(!empty($cartItemInfo['quantity']))
-                                                <span class="font-12 text-warning font-weight-500 ml-10">({{ $cartItemInfo['quantity'] }} {{ trans('update.product') }})</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-                        @endforeach
-                    </div>
-                    <div class="navbar-cart-actions">
-                        <div class="navbar-cart-total mt-15 border-top d-flex align-items-center justify-content-between">
-                            <strong class="total-text">{{ trans('cart.total') }}</strong>
-                            <strong class="text-primary font-weight-bold">{{ !empty($totalCartsPrice) ? handlePrice($totalCartsPrice, true, true, false, null, true) : 0 }}</strong>
-                        </div>
-
-                        <a href="/cart/" class="btn btn-sm btn-primary btn-block mt-50 mt-md-15">{{ trans('cart.go_to_cart') }}</a>
-                    </div>
-                @else
-                    <div class="d-flex align-items-center text-center py-50">
-                        <i data-feather="shopping-cart" width="20" height="20" class="mr-10"></i>
-                        <span class="">{{ trans('cart.your_cart_empty') }}</span>
-                    </div>
-                @endif
-            </div>
-        </div>
-				</div>
-
-			</div>
-		</div>
-	</div>
-
+<div class="profile-cover-card">
+        <img src="https://storage.googleapis.com/astrolok/webp/store/1/banner/Remedies.webp" class="img-cover" alt="">
 </div>
 
-    @include('web.default.course.share_modal')
-    @include('web.default.course.buy_with_point_modal')
-    @include('web.default.course.login_modal')
-    @include('web.default.remedy.file_view')
-    @include('web.default.course.buynow_modal')
+ <div class="profile-container">
+        <div class="container mb-104">
+            <div class="row">
+                <div class="col-12 col-md-4 col-lg-3">
+ <div class="profile-card-has-mask bg-white py-16 rounded-24 w-100">
+                        <div class="d-flex-center flex-column text-center px-16">
+                    @include('web.default2.remedy.tabs.content')
+                     </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-8 col-lg-9 mt-32 mt-md-0">
+                    <div class="profile-card-has-mask position-relative bg-white pt-24 pb-20 rounded-24">
+                        <div class="d-flex-center flex-column  px-16">
+                           <div class="px-lg-50 mt-40">
+                                <h2>{{ clean($course->title, 't') }}</h2>
+<br>
+<p class="duration font-14 ml-5">{!! $course->description !!}</p>
+                           </div>
+
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 @endsection
 
@@ -267,11 +81,14 @@ $(".pdfs").removeClass("active");
      </script>
 @if(empty($authUser))
 <script>
-
+//      setTimeout(function() {
+//     $('#textpop').modal();
+// }, 5000);
 </script>
 @endif
 
 <script>
+// Get the modal
 
 function viewfile(src1,id){
 
@@ -294,7 +111,7 @@ function viewfile(src1,id){
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/video/vimeo.js"></script>
 <script>
     function buy_course(){
-
+        // alert('');
         $('.buy_now').click();
     }
 
@@ -304,7 +121,8 @@ function viewfile(src1,id){
 
 $("#myModal2").modal('show');
   $('.modal-dialog').addClass('afterpop');
-
+    // $('.btn-demo').click();
+    // $('.modal-dialog').addClass('afterpop');
 </script>
 @endif
 @php
@@ -352,9 +170,28 @@ $("#myModal2").modal('show');
 
     <script src="{{ config('app.js_css_url') }}/assets/default/js/parts/video_player_helpers.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets/default/js/parts/webinar_show.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 @endpush
 <style>
+@media screen and (max-width: 992px) {
+  #pre1 {
+      width: -webkit-fill-available;
+    height: 283px;
+
+  }
+  .pdf {
+      display:none !important;
+  }
+}
+@media screen and (min-width: 991px) {
+  #pre1 {
+      width:-webkit-fill-available;
+      height:450px;
+  }
+  #mob1 {
+
+      display:none !important;
+  }
+
+}
 
 </style>

@@ -1,14 +1,91 @@
 @extends('web.default2'.'.layouts.app')
 
 @push('styles_top')
+<style>
+.form-control.is-invalid {
+    border-color: #dc3545 !important;
+}
+
+.form-control.is-valid {
+    border-color: #28a745 !important;
+}
+
+.form-control.is-invalid:focus {
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-control.is-valid:focus {
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.invalid-feedback {
+    display: none;
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.form-control.is-invalid ~ .invalid-feedback {
+    display: block;
+}
+
+.loader {
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+#loader {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+}
+
+.disabled-page {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+#paymentLoader {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#paymentLoader .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 44%;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
     <style>
 .loader {
+  //border: 16px solid #f3f3f3;
+  //border-radius: 50%;
+  //border-top: 16px solid #3498db;
 
   height: 120px;
   -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
+ #loader {
             position: fixed;
             left: 50%;
             top: 50%;
@@ -20,6 +97,31 @@
             pointer-events: none;
             opacity: 0.5;
         }
+</style>
+<style>
+  #paymentLoader {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  #paymentLoader .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 44%;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
 </style>
 @endpush
 
@@ -80,7 +182,7 @@
                     </div>
                     </div>
                     <div class="col-4 col-lg-3 ">
-                    <button type="submit" id="checkCoupon1" class="btn btn-sm btn-primary mt-10">{{ trans('cart.validate') }}</button>
+                    <button type="submit" id="checkCoupon1" class="btn btn-sm btn-primary mt-10"style="font-family: 'Inter', sans-serif !important;">{{ trans('cart.validate') }}</button>
                     </div></div>
                 </form>
 
@@ -93,6 +195,12 @@
 
             <input type="text" name="name" value="{{ auth()->check() ? auth()->user()->full_name :'' }}" id="customer_name" placeholder="Name" class="form-control mt-25 " >
             <input type="email" name="email" value="{{ auth()->check() ? auth()->user()->email :'' }}" id="customer_email" placeholder="Email" class="form-control mt-25 " >
+<input type="password" name="password" id="customer_password" placeholder="Create Password" class="form-control mt-25" required>
+            
+            <input type="password" name="password_confirmation" id="customer_password_confirmation" placeholder="Confirm Password" class="form-control mt-25 mb-25" required>
+            <div class="invalid-feedback">
+    Passwords do not match!
+</div>
             <input type="number" name="number" value="{{ auth()->check() ? auth()->user()->mobile :'' }}" id="customer_number" placeholder="Contact Number" class="form-control mt-25 mb-25" >
              <h2 class="section-title d-none">{{ trans('financial.select_a_payment_gateway') }}</h2>
 
@@ -156,7 +264,7 @@
 
             <div class="d-flex align-items-center justify-content-between mt-45">
                 <span class="font-16 font-weight-500 text-gray">{{ trans('financial.total_amount') }} {{ handlePrice($total) }}</span>
-                <button type="button" id="paymentSubmit"  class="btn btn-sm btn-primary ">{{ trans('public.start_payment') }}</button>
+                <button type="button" id="paymentSubmit"  class="btn btn-sm btn-primary " style="font-family: 'Inter', sans-serif !important;">{{ trans('public.start_payment') }}</button>
             </div>
         </form>
 
@@ -172,179 +280,156 @@
                  <input type="hidden" name="razorpay_signature" value="" id="razorpay_signature" class="form-control mt-25 mb-25">
 
             </form>
-
+<div id="paymentLoader">
+        <div class="spinner"></div>
+        </div>
     </section>
 
 @endsection
 
 @push('scripts_bottom')
-<script src="{{ config('app.js_css_url') }}/assets2/default/js/parts/payment.min.js"></script>
+    <script>
+        var couponInvalidLng = '{{ trans('cart.coupon_invalid') }}';
+        var selectProvinceLang = '{{ trans('update.select_province') }}';
+        var selectCityLang = '{{ trans('update.select_city') }}';
+        var selectDistrictLang = '{{ trans('update.select_district') }}';
+    </script>
+
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
+<script src="/js/unified-payment.js"></script>
 <script>
-    $(document).ready(function() {
+    const loaderEl = document.getElementById('paymentLoader');
 
-        $('#customer_number').on('keypress', function(e) {
-            var $this = $(this);
-            var regex = /^[0-9]$/;
-            var str = String.fromCharCode(!e.charCode ? e.which : e.charCode);
+    function showPaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'block';
+    }
 
-            if ($this.val().length >= 10) {
-                e.preventDefault();
-                return false;
-            }
+    function hidePaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'none';
+    }
+document.getElementById('paymentSubmit').addEventListener('click', function(e) {
+    e.preventDefault();
 
-            if ($this.val().length === 0 && e.charCode >= 48 && e.charCode <= 53) {
-                e.preventDefault();
-                return false;
-            }
+    const userDetails = {
+        name: document.getElementById('customer_name').value,
+        email: document.getElementById('customer_email').value,
+        number: document.getElementById('customer_number').value,
+        password: document.getElementById('customer_password').value,
+        discount_id: @json(session('discountCouponId'))
+    };
+     showPaymentLoader();
 
-            if (regex.test(str)) {
+    initiatePayment('webinar', {{ $webinar->id }}, userDetails);
+});
+</script>
+<script>
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Password confirmation validation
+    const passwordField = document.getElementById('customer_password');
+    const confirmPasswordField = document.getElementById('customer_password_confirmation');
+    
+    if (!passwordField || !confirmPasswordField) {
+        console.error('Password fields not found');
+        return;
+    }
+
+    function validatePasswordMatch() {
+        const password = passwordField.value;
+        const confirmPassword = confirmPasswordField.value;
+        
+        // अगर confirm password खाली है तो कुछ नहीं करो
+        if (confirmPassword === '') {
+            confirmPasswordField.classList.remove('is-invalid', 'is-valid');
+            return true;
+        }
+        
+        // तभी validate करो जब confirm password की length >= password की length हो
+        if (confirmPassword.length >= password.length) {
+            if (password === confirmPassword) {
+                confirmPasswordField.classList.remove('is-invalid');
+                confirmPasswordField.classList.add('is-valid');
                 return true;
-            }
-
-            e.preventDefault();
-            return false;
-        });
-
-        $('#paymentSubmit').on('click', function(e) {
-            e.preventDefault();
-
-            $('.error-message').text('');
-
-            var name = $('#customer_name').val().trim();
-            var email = $('#customer_email').val().trim();
-            var mobile = $('#customer_number').val().trim();
-
-            var isValid = true;
-
-            if (name === '') {
-                $('#name-error').text('Name field is required');
-                isValid = false;
-            }
-
-            if (email === '') {
-                $('#email-error').text('Email field is required');
-                isValid = false;
             } else {
-                var emailRegex = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-                if (!emailRegex.test(email)) {
-                    $('#email-error').text('Enter a valid email address');
-                    isValid = false;
-                }
+                confirmPasswordField.classList.remove('is-valid');
+                confirmPasswordField.classList.add('is-invalid');
+                return false;
             }
+        }
+        
+        return true;
+    }
 
-            if (mobile === '') {
-                $('#mobile-error').text('Mobile field is required');
-                isValid = false;
-            } else if (mobile.length < 10) {
-                $('#mobile-error').text('Enter a valid 10-digit mobile number');
-                isValid = false;
-            }
+    // Input event - sirf tabhi check karo jab puri length match kare
+    confirmPasswordField.addEventListener('input', validatePasswordMatch);
 
-            if (!isValid) {
+    // Blur event - jab user field se bahar jaye tab bhi check karo
+    confirmPasswordField.addEventListener('blur', function() {
+        if (confirmPasswordField.value !== '') {
+            validatePasswordMatch();
+        }
+    });
+
+    // Jab password field change ho, confirm password ko bhi revalidate karo
+    passwordField.addEventListener('input', function() {
+        if (confirmPasswordField.value !== '' && 
+            confirmPasswordField.value.length >= passwordField.value.length) {
+            validatePasswordMatch();
+        }
+    });
+
+    // Loader functions
+    const loaderEl = document.getElementById('paymentLoader');
+
+    function showPaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'flex';
+    }
+
+    function hidePaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'none';
+    }
+
+    // Payment submit with validation
+    const paymentSubmitBtn = document.getElementById('paymentSubmit');
+    if (paymentSubmitBtn) {
+        paymentSubmitBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Get form values
+            const name = document.getElementById('customer_name').value.trim();
+            const email = document.getElementById('customer_email').value.trim();
+            const number = document.getElementById('customer_number').value.trim();
+            const password = document.getElementById('customer_password').value;
+            const confirmPassword = document.getElementById('customer_password_confirmation').value;
+
+            // Check if all required fields are filled
+            if (!name || !email || !number || !password || !confirmPassword) {
+                alert('Please fill in all required fields!');
                 return false;
             }
 
-            $(this).prop('disabled', true);
+            // Check if passwords match
+            if (password !== confirmPassword) {
+                confirmPasswordField.classList.add('is-invalid');
+                alert('Passwords do not match!');
+                return false;
+            }
 
-            $.ajax({
-                method: 'POST',
-                url: "{{ url('/webhook-url') }}",
-                data: {
-                    name: name,
-                    email: email,
-                    mobile: mobile,
-                    course_title: "{{ $webinar->title }}",
-                    _token: "{{ csrf_token() }}"
-                }
-            });
-
-            var options = {
-                key: "{{ env('RAZORPAY_API_KEY') }}",
-                amount: "{{ (int)(preg_replace('/[^\d.]/', '', handlePrice($total * 100))) }}",
-                currency: "{{ currency() }}",
-                name: 'Asttrolok',
-                description: "Payment for the course {{ $webinar->title }}",
-                image: "{{ $generalSettings['logo'] ?? '' }}",
-                handler: function(response) {
-
-                    $('#loader').show();
-                    $('#paymentSubmit').prop('disabled', true);
-
-                    @if(auth()->check())
-                        window.dataLayer = window.dataLayer || [];
-                        window.dataLayer.push({
-                            'event': 'purchase',
-                            'transaction_id': response.razorpay_payment_id,
-                            'user_id': {{ auth()->id() }},
-                            'value': {{ $total }},
-                            'currency': "{{ currency() }}",
-                            'course': '{{ $webinar->id }}'
-                        });
-                    @else
-                        fetch('/get-user-id', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': "{{ csrf_token() }}"
-                            },
-                            body: JSON.stringify({
-                                name: name,
-                                email: email,
-                                phone: mobile
-                            })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            window.dataLayer = window.dataLayer || [];
-                            window.dataLayer.push({
-                                'event': 'purchase',
-                                'transaction_id': response.razorpay_payment_id,
-                                'user_id': data.user_id,
-                                'value': {{ $total }},
-                                'currency': "{{ currency() }}",
-                                'course': '{{ $webinar->id }}'
-                            });
-                        })
-                        .catch(err => console.error('User lookup failed:', err));
-                    @endif
-
-                    $('#verify_name').val(name);
-                    $('#verify_email').val(email);
-                    $('#verify_number').val(mobile);
-                    $('#razorpay_payment_id').val(response.razorpay_payment_id);
-                    $('#razorpay_signature').val(response.razorpay_signature);
-                    $('#razorpay-verify-form').submit();
-                },
-                modal: {
-                    ondismiss: function() {
-                        $('#paymentSubmit').prop('disabled', false);
-                        alert('Payment cancelled');
-                    }
-                },
-                prefill: {
-                    name: name,
-                    email: email,
-                    contact: mobile
-                },
-                notes: {
-                    name: name,
-                    item: 'course'
-                },
-                theme: {
-                    color: "#43d477"
-                }
+            const userDetails = {
+                name: name,
+                email: email,
+                number: number,
+                password: password,
+                password_confirmation: confirmPassword,
+                discount_id: @json(session('discountCouponId'))
             };
 
-            var rzp = new Razorpay(options);
-            rzp.open();
+            showPaymentLoader();
 
-            setTimeout(function() {
-                $('#paymentSubmit').prop('disabled', false);
-            }, 1000);
+            initiatePayment('webinar', {{ $webinar->id }}, userDetails);
         });
-    });
+    }
+});
 </script>
 @endpush

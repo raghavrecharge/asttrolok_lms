@@ -65,10 +65,10 @@
                         <span class="valid-feedback">{{ trans('cart.coupon_valid') }}</span>
                     </div>
                     </div><div class="col-12 col-lg-3">
-                    <button type="submit" id="checkCoupon1" class="btn btn-sm btn-primary mt-25">{{ trans('cart.validate') }}</button></div></div>
+                    <button type="submit" id="checkCoupon1" class="btn btn-sm btn-primary mt-25" style="font-family: 'Inter', sans-serif !important;">{{ trans('cart.validate') }}</button></div></div>
                 </form>
 
-                <a href="/installments/{{ $installment->id }}?item={{ $itemId }}&item_type={{ $itemType }}&{{ http_build_query(request()->all()) }}#Payment-Option" class=" btn btn-primary btn-block mt-auto">{{ trans('update.pay_with_installments') }}</a>
+                <a href="/installments/{{ $installment->id }}?item={{ $itemId }}&item_type={{ $itemType }}&{{ http_build_query(request()->all()) }}#Payment-Option" style="font-family: 'Inter', sans-serif !important;" class=" btn btn-primary btn-block mt-auto">{{ trans('update.pay_with_installments') }}</a>
             </div>
         </div>
     </div>

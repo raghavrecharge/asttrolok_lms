@@ -3,12 +3,16 @@
 @push('styles_top')
     <style>
 .loader {
+  //border: 16px solid #f3f3f3;
+  //border-radius: 50%;
+  //border-top: 16px solid #3498db;
 
   height: 120px;
   -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
+#loader {
     position: fixed;
     left: 50%;
     top: 50%;
@@ -73,7 +77,7 @@
                     </div>
                     </div>
                     <div class="col-4 col-lg-3 ">
-                    <button type="submit" id="checkCoupon1" class="btn btn-sm btn-primary mt-10">{{ trans('cart.validate') }}</button>
+                    <button type="submit" id="checkCoupon1" class="btn btn-sm btn-primary mt-10" style="font-family: 'Inter', sans-serif !important;">{{ trans('cart.validate') }}</button>
                     </div></div>
                 </form>
 
@@ -148,7 +152,7 @@
 
             <div class="d-flex align-items-center justify-content-between mt-45">
                 <span class="font-16 font-weight-500 text-gray">{{ trans('financial.total_amount') }} {{ handlePrice($total) }}</span>
-                <button type="button" id="paymentSubmit"  class="btn btn-sm btn-primary ">{{ trans('public.start_payment') }}</button>
+                <button type="button" id="paymentSubmit"  class="btn btn-sm btn-primary " >{{ trans('public.start_payment') }}</button>
             </div>
         </form>
 
@@ -182,6 +186,19 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
      <script>
 
+    //  function IsEmail(email) {
+    //     var regex = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+    //     if(!regex.test(email)) {
+    //         document.getElementById("customer_email").value =email;
+    //         var emailvalidation ='Email field is required';
+    //         $(document).find('#customer_email').after('<span class="text-strong textdanger " style="color:red;">' +emailvalidation+ '</span>');
+    //       return false;
+    //     }else{
+    //       return true;
+    //     }
+    //   }
+//   $("#loader").css("display", "none");
+
     function addscript(){
 
         var name = '';
@@ -192,29 +209,30 @@
          mobile = document.getElementById("customer_number").value;
          var checkBox = $("input[type='radio']:checked").val();
         $('.textdanger').remove();
-
+        // $('#customer_email').html('');
+        // $('#customer_number').html('');
         if(name ===''){
             $('#paymentSubmit').prop('disabled', false);
-
+            // $("input:radio").attr("checked", false);
             var namevalidation ='Name field is required';
             $(document).find('#customer_name').after('<span class="text-strong textdanger " style="color:red;">' +namevalidation+ '</span>');
 
         }
          if(email ===''){
             $('#paymentSubmit').prop('disabled', false);
-
+            // $("input:radio").attr("checked", false);
             var emailvalidation ='Email field is required';
             $(document).find('#customer_email').after('<span class="text-strong textdanger " style="color:red;">' +emailvalidation+ '</span>');
         }
          if(mobile ===''){
             $('#paymentSubmit').prop('disabled', false);
-
+            // $("input:radio").attr("checked", false);
             var mobilevalidation ='Mobile field is required';
             $(document).find('#customer_number').after('<span class="text-strong textdanger " style="color:red;">' +mobilevalidation+ '</span>');
         }else{
             var regex = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
             if(!regex.test(email)) {
-
+                // $("input:radio").attr("checked", false);
                 document.getElementById("customer_email").value =email;
                 var emailvalidation ='Enter Valid Email Address';
                 $(document).find('#customer_email').after('<span class="text-strong textdanger " style="color:red;">' +emailvalidation+ '</span>');
@@ -222,15 +240,16 @@
             }
              if (mobile.length < 9) {
                   $('#paymentSubmit').prop('disabled', false);
-
+                    // $("input:radio").attr("checked", false);
                     var mobilevalidation ='Enter Valid Mobile Number';
                     $(document).find('#customer_number').after('<span class="text-strong textdanger " style="color:red;">' +mobilevalidation+ '</span>');
                 return false;
               }
 
+            // $('#pay-btn').attr('id','paymentSubmit');
           var   datakey="<?php echo  env('RAZORPAY_API_KEY'); ?>";
           var   dataamount="<?php echo (int)($order->total_amount * 100); ?>";
-
+        //var   databuttontext="product_price";
           var   datadescription="Rozerpay";
           var   datacurrency="<?php echo currency(); ?>";
           var   dataimage="<?php echo  $generalSettings['logo']; ?>";
@@ -244,17 +263,17 @@
             email: dataprefillemail,
             mobile: dataprefillcontact,
           }
-
+    // webhook url sent data
       $.ajax({
             method: 'post',
             url: url,
             data: data,
         }).done(function(response, status){
-
+            //
         }).fail(function(jqXHR, textStatus, errorThrown){
-
+            //
         });
-
+          // payment start proccess
         const rzp_options = {
         key: datakey,
         amount: dataamount,
@@ -263,12 +282,16 @@
         currency:datacurrency,
         image:dataimage,
         handler: function(response) {
-
+            // console.log('payment','test');
+            // $("#loader").css("display", "block");
+            // $('#paymentSubmit').prop('disabled', true);
+             // loader
               document.body.classList.add('disabled-page');
             document.getElementById('loader').style.display = 'block';
             document.documentElement.style.overflow = 'hidden';
             if(response){
 
+            // alert(`Payment Succesful ${response.razorpay_payment_id}`);
             document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
             document.getElementById('razorpay_signature').value = response.razorpay_signature;
 
@@ -295,10 +318,32 @@
     const rzp1 = new Razorpay(rzp_options);
     rzp1.open();
 
+    //  var s = document.createElement( 'script' );
+    //     s.setAttribute( 'src', "https://checkout.razorpay.com/v1/checkout.js" );
+    //     s.setAttribute( 'id', "razorpay_script" );
+    //     s.setAttribute( 'data-key',datakey );
+    //     s.setAttribute( 'data-amount', dataamount );
+    //     // s.setAttribute( 'data-buttontext', databuttontext );
+    //     s.setAttribute( 'data-currency', datacurrency );
+    //     s.setAttribute( 'data-name', 'Asttrolok' );
+    //     s.setAttribute( 'data-description', datadescription );
+    //     s.setAttribute( 'data-image', dataimage);
+    //     s.setAttribute( 'data-theme.color', "#43d477" );
+    //     s.setAttribute( 'data-prefill.name', dataprefillname );
+    //     s.setAttribute( 'data-prefill.email', dataprefillemail );
+    //     s.setAttribute( 'data-prefill.contact', dataprefillcontact );
+    //     document.querySelector("#razorpayview").appendChild( s );
+        // document.getElementById("pay-btn").click();
         return true;
         }
         }
     $(document).ready(function(){
+
+        //  $('body').on('click', '#pay-btn', function (e) {
+
+        //     addscript();
+
+        //  });
 
        $('body').on('change paste keyup', '#customer_name', function (e) {
         e.preventDefault();
@@ -324,7 +369,7 @@ $('#customer_number').on('keypress', function(e) {
  var $this = $(this);
  var regex = new RegExp("^[0-9\b]+$");
  var str = String.fromCharCode(!e.charCode ? e.which : e.charCode);
-
+ // for 10 digit number only
  if ($this.val().length > 9) {
     e.preventDefault();
     return false;

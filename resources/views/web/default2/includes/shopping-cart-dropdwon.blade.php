@@ -54,12 +54,12 @@
                             <strong class="text-primary font-weight-bold">{{ !empty($totalCartsPrice) ? handlePrice($totalCartsPrice, true, true, false, null, true) : 0 }}</strong>
                         </div>
 
-                        <a href="/cart" class="btn btn-sm btn-primary btn-block mt-50 mt-md-15">{{ trans('cart.go_to_cart') }}</a>
+                        <a href="/cart" class="btn btn-sm btn-primary btn-block mt-50 mt-md-15" style="font-family: 'Inter', sans-serif !important;">{{ trans('cart.go_to_cart') }}</a>
                     </div>
                 @else
                     <div class="d-flex align-items-center text-center py-50">
                         <i data-feather="shopping-cart" width="20" height="20" class="mr-10"></i>
-                        <span class="">{{ trans('cart.your_cart_empty') }}</span>
+                        <span class=""style="font-family: 'Inter', sans-serif !important;">{{ trans('cart.your_cart_empty') }}</span>
                     </div>
                 @endif
             </div>

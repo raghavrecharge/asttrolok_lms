@@ -56,7 +56,7 @@
 <script >
 
 function download_file(fileURL, fileName) {
-
+// for non-IE
 alert(fileName);
 if (!window.ActiveXObject) {
     var save = document.createElement('a');
@@ -66,7 +66,7 @@ if (!window.ActiveXObject) {
     save.download = fileName || filename;
        if ( navigator.userAgent.toLowerCase().match(/(ipad|iphone|safari)/) && navigator.userAgent.search("Chrome") < 0) {
             document.location = save.href;
-
+// window event not working here
         }else{
             var evt = new MouseEvent('click', {
                 'view': window,
@@ -78,6 +78,7 @@ if (!window.ActiveXObject) {
         }
 }
 
+// for IE < 11
 else if ( !! window.ActiveXObject && document.execCommand)     {
     var _window = window.open(fileURL, '_blank');
     _window.document.close();
@@ -159,52 +160,98 @@ var name = 'file.mp4';
 @endif
 
 @if($file->file_type == "pdf")
-    <div id="mob1" class="col-6 pt-30 r-pdf rounded-lg   shadow-sm col-md-6 col-lg-2" >
-        <div class="row margin-31 p-10">
-            <div class="col-4 col-md-6 col-lg-4" style="padding:0;">
+    @if($loop->count > 1)
 
-                <a href="#"  class="text-left d-flex flex-column align-items-left justify-content-left">
-                    <div class="position-relative" style="display: flex;justify-content: center;">
+                <div id="mob1" class="col-6 pt-30 r-pdf rounded-lg   shadow-sm col-md-6 col-lg-2" >
+                    <div class="row margin-31 p-10">
+                        <div class="col-4 col-md-6 col-lg-4" style="padding:0;">
 
-                        <svg  width="38" height="51" viewBox="0 0 38 51" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M7.04539 0.955566H23.6555L37.7332 15.6291V44.1693C37.7332 47.7445 34.8407 50.637 31.2778 50.637H7.04539C3.47013 50.637 0.577637 47.7445 0.577637 44.1693V7.42332C0.577574 3.84806 3.47006 0.955566 7.04539 0.955566Z" fill="#E5252A"/>
-                        <path opacity="0.302" fill-rule="evenodd" clip-rule="evenodd" d="M23.6426 0.955566V15.5174H37.7327L23.6426 0.955566Z" fill="white"/>
-                        <path d="M7.76562 38.0243V28.9495H11.6264C12.5823 28.9495 13.3396 29.2102 13.9107 29.744C14.4817 30.2654 14.7673 30.9731 14.7673 31.8544C14.7673 32.7358 14.4817 33.4435 13.9107 33.9649C13.3396 34.4987 12.5823 34.7594 11.6264 34.7594H10.0871V38.0243H7.76562ZM10.0871 32.7855H11.3657C11.7133 32.7855 11.9864 32.711 12.1727 32.5373C12.3589 32.3759 12.4582 32.1524 12.4582 31.8545C12.4582 31.5566 12.3589 31.3331 12.1727 31.1717C11.9865 30.9979 11.7134 30.9235 11.3657 30.9235H10.0871V32.7855ZM15.7231 38.0243V28.9495H18.9384C19.5715 28.9495 20.1674 29.0364 20.726 29.2226C21.2846 29.4088 21.7936 29.6696 22.2405 30.0296C22.6874 30.3772 23.0474 30.8489 23.3081 31.4448C23.5564 32.0407 23.693 32.7235 23.693 33.4931C23.693 34.2504 23.5565 34.9332 23.3081 35.529C23.0474 36.1249 22.6874 36.5966 22.2405 36.9442C21.7936 37.3042 21.2846 37.5649 20.726 37.7512C20.1674 37.9373 19.5715 38.0243 18.9384 38.0243H15.7231ZM17.9949 36.0505H18.6652C19.0252 36.0505 19.3604 36.0132 19.6708 35.9263C19.9687 35.8394 20.2543 35.7028 20.5274 35.5166C20.7881 35.3305 20.9991 35.0697 21.1481 34.7221C21.297 34.3746 21.3715 33.9649 21.3715 33.4931C21.3715 33.009 21.297 32.5993 21.1481 32.2517C20.9991 31.9042 20.7881 31.6435 20.5274 31.4572C20.2543 31.271 19.9688 31.1344 19.6708 31.0476C19.3604 30.9607 19.0252 30.9234 18.6652 30.9234H17.9949V36.0505ZM24.8599 38.0243V28.9495H31.3153V30.9234H27.1814V32.3758H30.4835V34.3373H27.1814V38.0243H24.8599Z" fill="white"/>
-                        </svg>
+                            <a href="#"  class="text-left d-flex flex-column align-items-left justify-content-left">
+                                <div class="position-relative" style="display: flex;justify-content: center;">
+
+                                    <svg  width="38" height="51" viewBox="0 0 38 51" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M7.04539 0.955566H23.6555L37.7332 15.6291V44.1693C37.7332 47.7445 34.8407 50.637 31.2778 50.637H7.04539C3.47013 50.637 0.577637 47.7445 0.577637 44.1693V7.42332C0.577574 3.84806 3.47006 0.955566 7.04539 0.955566Z" fill="#E5252A"/>
+                                    <path opacity="0.302" fill-rule="evenodd" clip-rule="evenodd" d="M23.6426 0.955566V15.5174H37.7327L23.6426 0.955566Z" fill="white"/>
+                                    <path d="M7.76562 38.0243V28.9495H11.6264C12.5823 28.9495 13.3396 29.2102 13.9107 29.744C14.4817 30.2654 14.7673 30.9731 14.7673 31.8544C14.7673 32.7358 14.4817 33.4435 13.9107 33.9649C13.3396 34.4987 12.5823 34.7594 11.6264 34.7594H10.0871V38.0243H7.76562ZM10.0871 32.7855H11.3657C11.7133 32.7855 11.9864 32.711 12.1727 32.5373C12.3589 32.3759 12.4582 32.1524 12.4582 31.8545C12.4582 31.5566 12.3589 31.3331 12.1727 31.1717C11.9865 30.9979 11.7134 30.9235 11.3657 30.9235H10.0871V32.7855ZM15.7231 38.0243V28.9495H18.9384C19.5715 28.9495 20.1674 29.0364 20.726 29.2226C21.2846 29.4088 21.7936 29.6696 22.2405 30.0296C22.6874 30.3772 23.0474 30.8489 23.3081 31.4448C23.5564 32.0407 23.693 32.7235 23.693 33.4931C23.693 34.2504 23.5565 34.9332 23.3081 35.529C23.0474 36.1249 22.6874 36.5966 22.2405 36.9442C21.7936 37.3042 21.2846 37.5649 20.726 37.7512C20.1674 37.9373 19.5715 38.0243 18.9384 38.0243H15.7231ZM17.9949 36.0505H18.6652C19.0252 36.0505 19.3604 36.0132 19.6708 35.9263C19.9687 35.8394 20.2543 35.7028 20.5274 35.5166C20.7881 35.3305 20.9991 35.0697 21.1481 34.7221C21.297 34.3746 21.3715 33.9649 21.3715 33.4931C21.3715 33.009 21.297 32.5993 21.1481 32.2517C20.9991 31.9042 20.7881 31.6435 20.5274 31.4572C20.2543 31.271 19.9688 31.1344 19.6708 31.0476C19.3604 30.9607 19.0252 30.9234 18.6652 30.9234H17.9949V36.0505ZM24.8599 38.0243V28.9495H31.3153V30.9234H27.1814V32.3758H30.4835V34.3373H27.1814V38.0243H24.8599Z" fill="white"/>
+                                    </svg>
+
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="col-8 col-md-6 col-lg-8">
+
+                            <div class=" font-14 text-gray text-left ">
+                                <p class="  text-dark-blue " style="font-size:10px;">{{ $file->title }}
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <a href="{{ url('/free-download') }}?url={{ urlencode(config('app.img_dynamic_url') . $file->file) }}&title={{ urlencode($file->title . '.pdf') }}"
+            class="btn bookbtn btn-primary my-20 ">
+            <span class="ml-5"style="font-family: 'Inter', sans-serif !important;">Download Now</span>
+            </a>
 
                     </div>
-                </a>
-            </div>
 
-            <div class="col-8 col-md-6 col-lg-8">
-
-                <div class=" font-14 text-gray text-left ">
-                    <p class="  text-dark-blue " style="font-size:10px;">{{ $file->title }}
-                    </p>
                 </div>
+@else
+<div id="mob1" class="col-12 col-md-6 col-lg-3 pt-3 r-pdf rounded-lg shadow-sm">
 
-            </div>
+    <div class="d-flex align-items-center p-3">
 
+        <!-- PDF SVG Left (Vertically Center Aligned) -->
+        <div class="mr-3" style="display:flex; align-items:center;">
+            <svg width="38" height="51" viewBox="0 0 38 51" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M7.04539 0.955566H23.6555L37.7332 15.6291V44.1693C37.7332 47.7445 34.8407 50.637 31.2778 50.637H7.04539C3.47013 50.637 0.577637 47.7445 0.577637 44.1693V7.42332C0.577574 3.84806 3.47006 0.955566 7.04539 0.955566Z"
+                    fill="#E5252A" />
+                <path opacity="0.302" fill-rule="evenodd" clip-rule="evenodd"
+                    d="M23.6426 0.955566V15.5174H37.7327L23.6426 0.955566Z"
+                    fill="white" />
+                <path
+                    d="M7.76562 38.0243V28.9495H11.6264C12.5823 28.9495 13.3396 29.2102 13.9107 29.744C14.4817 30.2654 14.7673 30.9731 14.7673 31.8544C14.7673 32.7358 14.4817 33.4435 13.9107 33.9649C13.3396 34.4987 12.5823 34.7594 11.6264 34.7594H10.0871V38.0243H7.76562ZM10.0871 32.7855H11.3657C11.7133 32.7855 11.9864 32.711 12.1727 32.5373C12.3589 32.3759 12.4582 32.1524 12.4582 31.8545C12.4582 31.5566 12.3589 31.3331 12.1727 31.1717C11.9865 30.9979 11.7134 30.9235 11.3657 30.9235H10.0871V32.7855ZM15.7231 38.0243V28.9495H18.9384C19.5715 28.9495 20.1674 29.0364 20.726 29.2226C21.2846 29.4088 21.7936 29.6696 22.2405 30.0296C22.6874 30.3772 23.0474 30.8489 23.3081 31.4448C23.5564 32.0407 23.693 32.7235 23.693 33.4931C23.693 34.2504 23.5565 34.9332 23.3081 35.529C23.0474 36.1249 22.6874 36.5966 22.2405 36.9442C21.7936 37.3042 21.2846 37.5649 20.726 37.7512C20.1674 37.9373 19.5715 38.0243 18.9384 38.0243H15.7231ZM17.9949 36.0505H18.6652C19.0252 36.0505 19.3604 36.0132 19.6708 35.9263C19.9687 35.8394 20.2543 35.7028 20.5274 35.5166C20.7881 35.3305 20.9991 35.0697 21.1481 34.7221C21.297 34.3746 21.3715 33.9649 21.3715 33.4931C21.3715 33.009 21.297 32.5993 21.1481 32.2517C20.9991 31.9042 20.7881 31.6435 20.5274 31.4572C20.2543 31.271 19.9688 31.1344 19.6708 31.0476C19.3604 30.9607 19.0252 30.9234 18.6652 30.9234H17.9949V36.0505ZM24.8599 38.0243V28.9495H31.3153V30.9234H27.1814V32.3758H30.4835V34.3373H27.1814V38.0243H24.8599Z"
+                    fill="white" />
+            </svg>
+        </div>
+
+        <!-- Right Side: Title + Button -->
+        <div>
+
+            <!-- Bigger Title -->
+            <p class="text-dark-blue" style="font-size:14px; font-weight:600; margin:0;">
+                {{ $file->title }}
+            </p>
+
+            <!-- Button under title -->
             <a href="{{ url('/free-download') }}?url={{ urlencode(config('app.img_dynamic_url') . $file->file) }}&title={{ urlencode($file->title . '.pdf') }}"
-   class="btn bookbtn btn-primary my-20 ">
-   <span class="ml-5">Download Now</span>
-</a>
+                class="btn btn-primary mt-2"
+                style="font-size:12px; padding:6px 14px;">
+                Download
+            </a>
 
+        </div>
+
+    </div>
+
+</div>
+
+
+
+@endif
 <script >
 function downloadFile(url, filename) {
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
-    link.target = '_blank';
+    link.target = '_blank'; // optional
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 }
 </script>
 
-        </div>
-
-    </div>
 
     <div class="modal fade" id="videoModal{{ $file->id }}" tabindex="-1" aria-labelledby="videoModalLabel{{ $file->id }}" aria-hidden="true">
       <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -234,13 +281,13 @@ function downloadFile(url, filename) {
 
         modal.addEventListener('hidden.bs.modal', function () {
             if(iframe){
-                iframe.src = '';
+                iframe.src = '';  // पॉपअप बंद होते ही वीडियो रोकें
             }
         });
 
         modal.addEventListener('shown.bs.modal', function () {
             if(iframe){
-                iframe.src = originalSrc;
+                iframe.src = originalSrc;  // पॉपअप खुलते ही वीडियो फिर से शुरू करें
             }
         });
     });

@@ -1,8 +1,7 @@
-@extends('web.default2.layouts.app')
+@extends('web.default.layouts.app')
 
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/css-stars.css">
-    <meta name="robots" content="noindex, nofollow" />.
 @endpush
 
 @section('content')
@@ -12,6 +11,12 @@
             @include('web.default.includes.cashback_alert',['itemPrice' => $product->price])
         </div>
     @endif
+
+    <div class="container product-show-special-offer position-relative mt-30">
+        @if(!empty($activeSpecialOffer))
+            @include('web.default.course.special_offer')
+        @endif
+    </div>
 
     <div class="container {{ !empty($activeSpecialOffer) ? 'mt-50' : 'mt-30' }}">
         <div class="row">

@@ -18,10 +18,6 @@
     max-width: 100% !important;
     height: 100% !important;
 }
-.learning-page .learning-page-tabs.show {
-    width: 100% !important;
-
-}
 @media (min-width: 0px) and (max-width: 2000px){
 
     .webinar-card.webinar-list {
@@ -120,30 +116,94 @@
 
     <div class="learning-page">
 
-        @include('web.default.course.learningPage.components.navbar')
-
         <div class="d-flex position-relative">
+            <div class="learning-page-content flex-grow-1 bg-info-light p-15">
+                @include('web.default.subscription.learningPage.components.content')
+            </div>
 
             <div class="learning-page-tabs show">
+                <ul class="nav nav-tabs py-15 d-flex align-items-center justify-content-around" id="tabs-tab" role="tablist">
+                    <li class="nav-item">
+                        <a class="position-relative font-14 d-flex align-items-center active" id="content-tab"
+                           data-toggle="tab" href="#content" role="tab" aria-controls="content"
+                           aria-selected="true">
+                            <i class="learning-page-tabs-icons mr-5">
+                                @include('web.default.panel.includes.sidebar_icons.webinars')
+                            </i>
+                            <span class="learning-page-tabs-link-text">{{ trans('product.content') }}</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="position-relative font-14 d-flex align-items-center" id="courses-tab" data-toggle="tab"
+                           href="#courses" role="tab" aria-controls="courses"
+                           aria-selected="false">
+                            <i class="learning-page-tabs-icons mr-5">
+                                @include('web.default.panel.includes.sidebar_icons.rewards')
+                            </i>
+                            <span class="learning-page-tabs-link-text">Courses</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="position-relative font-14 d-flex align-items-center" id="quizzes-tab" data-toggle="tab"
+                           href="#quizzes" role="tab" aria-controls="quizzes"
+                           aria-selected="false">
+                            <i class="learning-page-tabs-icons mr-5">
+                                @include('web.default.panel.includes.sidebar_icons.quizzes')
+                            </i>
+                            <span class="learning-page-tabs-link-text">{{ trans('quiz.quizzes') }}</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item d-none" >
+                        <a class="position-relative font-14 d-flex align-items-center" id="certificates-tab" data-toggle="tab"
+                           href="#certificates" role="tab" aria-controls="certificates"
+                           aria-selected="false">
+                            <i class="learning-page-tabs-icons mr-5">
+                                @include('web.default.panel.includes.sidebar_icons.certificate')
+                            </i>
+                            <span class="learning-page-tabs-link-text">{{ trans('panel.certificates') }}</span>
+                        </a>
+                    </li>
+                </ul>
 
                 <div class="tab-content h-100" id="nav-tabContent">
                     <div class="pb-20 tab-pane fade show active h-100" id="content" role="tabpanel"
                          aria-labelledby="content-tab">
-                        @include('web.default.course.learningPage.components.content_for_progress.index')
+                        @include('web.default.subscription.learningPage.components.content_tab.index')
                     </div>
 
+                    <div class="pb-20 tab-pane fade  h-100" id="courses" role="tabpanel"
+                         aria-labelledby="courses-tab">
+                        @include('web.default.subscription.learningPage.components.course_tab.index')
+                    </div>
+
+                    <div class="pb-20 tab-pane fade  h-100" id="quizzes" role="tabpanel"
+                         aria-labelledby="quizzes-tab">
+                        @include('web.default.subscription.learningPage.components.quiz_tab.index')
+                    </div>
+
+                    <div class="pb-20 tab-pane fade  h-100" id="certificates" role="tabpanel"
+                         aria-labelledby="certificates-tab">
+                        @include('web.default.subscription.learningPage.components.certificate_tab.index')
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    @include('web.default2.course.consultation_popup')
+    @include('web.default2.subscription.consultation_popup')
 @endsection
 
 @push('scripts_bottom')
 
 <script  >
+                    // $('#myModal21').modal();
 
+                //      setTimeout(function() {
+                //     $('#consultationModal').modal();
+                // }, 30000);
                 </script>
 
     <script   src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.10.2/video.min.js"></script>
@@ -154,10 +214,11 @@
         var defaultItemType = '{{ request()->get('type') }}'
         var defaultItemId = '{{ request()->get('item') }}'
 
-        var loadFirstContent = {{ (!empty($dontAllowLoadFirstContent) and $dontAllowLoadFirstContent) ? 'false' : 'true' }};
+        var loadFirstContent = {{ (!empty($dontAllowLoadFirstContent) and $dontAllowLoadFirstContent) ? 'false' : 'true' }}; // allow to load first content when request item is empty
 
-        var courseUrl = '{{ $course->getUrl() }}';
+        var courseUrl = '{{ $subscription->getUrl() }}';
 
+        // lang
         var pleaseWaitForTheContentLang = '{{ trans('update.please_wait_for_the_content_to_load') }}';
         var downloadTheFileLang = '{{ trans('update.download_the_file') }}';
         var downloadLang = '{{ trans('home.download') }}';
@@ -198,7 +259,7 @@
     <script   src="/vendor/laravel-filemanager/js/stand-alone-button.js"></script>
 
     <script   src="{{ config('app.js_css_url') }}/assets/default/js/parts/video_player_helpers.min.js"></script>
-    <script   src="{{ config('app.js_css_url') }}/assets/learning_page/scripts.min.js"></script>
+    <script   src="{{ config('app.js_css_url') }}/assets/learning_page/scripts_subscription.min.js"></script>
 <script  >
     $('.learning-content-iframe iframe').attr('allowFullScreen', '');
 </script>
@@ -207,24 +268,24 @@
     if($('#readTogglefile'+defaultItemId).length){
 
 }else{
-
+    //  alert($('#chapter_'+defaultItemId).length);
     $('.pratul').removeClass('active');
 
-	$('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 0px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 text-dark-blue">Access Denied </h2><p class="font-14 font-weight-500 text-gray">You have an overdue installment. Please pay it to access this course!</p><a href="#" class="btn btn-primary mt-15">Pay Now</a></div> </div>');
+	$('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 mt-20 text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
 }
 function accessdenied(){
      $('.pratul').removeClass('active');
-  $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 0px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 text-dark-blue">Access Denied </h2><p class="font-14 font-weight-500 text-gray">You have an overdue installment. Please pay it to access this course!</p><a href="#" class="btn btn-primary mt-15">Pay Now</a></div> </div>');
+  $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 mt-20  text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
 
 }
 
-$(function() {
+$(function() {                       //run when the DOM is ready
   $(".accessdenied").click(function() {
        $('.pratul').removeClass('active');
        $('.accessdenied').removeClass('active');
-  $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 0px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 text-dark-blue">Access Denied </h2><p class="font-14 font-weight-500 text-gray">You have an overdue installment. Please pay it to access this course!</p><a href="#" class="btn btn-primary mt-15">Pay Now</a></div> </div>');
-
-    $(this).addClass("active");
+  $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20  mt-20  text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
+  //use a class, since your ID gets mangled
+    $(this).addClass("active");      //add the class to the clicked element
   });
 });
 </script>
@@ -284,15 +345,21 @@ $(function() {
                     console.log('Active Tab Data ID:', itemId);
                 }
 
+            //   const chapterElement = document.getElementById('chapter_');
+            //     if (chapterElement) {
+            //         const chapterId = chapterElement.id.split('_')[1]; // Splits 'chapter_1' and extracts '1'
+            //         console.log('Chapter ID:', chapterId);
+            //     }
               const chapterId = 0;
               const userId = 1244;
-              const webinarId = '{{ $course->id }}';
-              const courseUrl = '{{ $course->id }}';
+              const webinarId = '{{ $subscription->id }}';
+              const courseUrl = '{{ $subscription->id }}';
             const watchPercentage = parseInt((duration / totalVideoDuration) * 100);
 
               console.log(`Saving progress: ${watchPercentage}% watched`);
               saveCourseProgress(itemId, chapterId, webinarId, userId, duration,watchPercentage,totalVideoDuration,courseUrl);
-
+            //   previousPercentage = watchPercentage;
+            //   sessionStorage.setItem('previousPercentage', previousPercentage);
               progressSaved = true;
               getPaused = true;
               sessionStorage.setItem('progressSaved', 'true');
@@ -328,10 +395,10 @@ $(function() {
 
     function saveCourseProgress(itemId, chapterId, webinarId, userId, watchedDuration,watchPercentage,totalVideoDuration,courseUrl) {
       $.ajax({
-        url: "{{ route('store.watched.duration') }}",
+        url: "{{ route('store.watched.duration.sub') }}", // Laravel route
         method: 'POST',
         data: {
-          _token: '{{ csrf_token() }}',
+          _token: '{{ csrf_token() }}', // CSRF token for security
           item_id: itemId,
           user_id: userId,
           webinar_id: webinarId,
@@ -341,8 +408,10 @@ $(function() {
           total_duration: totalVideoDuration,
           courseUrl: courseUrl
         },
-        success: function(response) {
-          console.log('Course progress saved successfully!');
+        success: function(responsexx) {
+                  console.log('response1');
+
+          console.log('response',responsexx);
 
         },
         error: function(xhr) {
@@ -356,7 +425,10 @@ $(function() {
       if (savedDuration && sessionDuration) {
         duration = parseInt(sessionDuration);
       }
-
+    //   const savedPercentage = sessionStorage.getItem('previousPercentage');
+    //   if (savedPercentage) {
+    //     previousPercentage = parseInt(savedPercentage);
+    //   }
     };
   </script>
 

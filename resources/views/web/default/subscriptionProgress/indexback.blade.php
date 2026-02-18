@@ -6,7 +6,7 @@
 
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/video/video-js.min.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/mobile-course-detailes.css">
-    
+
     <style>
         .course-description p{
             font-family: 'main-font-family' !important;
@@ -18,19 +18,11 @@
             font-family: 'main-font-family' !important;
         }
         .course-content-sidebar .course-img.has-video .course-video-icon {
-   
+
     width: 50px;
     height: 50px;
 }
 
-
-
-
-/*******************************
-* MODAL AS LEFT/RIGHT SIDEBAR
-* Add "left" or "right" in modal parent div, after class="modal".
-* Get free snippets on bootpen.com
-*******************************/
 	.modal.left .modal-dialog,
 	.modal.right .modal-dialog {
 		position: fixed;
@@ -44,41 +36,37 @@
 		        transform: translateX(100%);
 	}
 .afterpop{
-    
+
     transition: all 2s  !important;
     transition-timing-function: ease-in  !important;
    -webkit-transform: translateX(0%) !important;
 		    -ms-transform: translateX(0%) !important;
 		     -o-transform: translateX(0%) !important;
 		        transform: translateX(0%) !important;
-		        
+
 }
 	.modal.left .modal-content,
 	.modal.right .modal-content {
 		height: 100%;
 		overflow-y: auto;
 	}
-	
+
 	.modal.left .modal-body,
 	.modal.right .modal-body {
 		padding: 15px 15px 80px;
 	}
 
-
-        
-/*Right*/
 	.modal.right.fade .modal-dialog {
-	    
+
 		right: 0px;
-		        
+
 	}
-	
+
 	.modal.right.fade.in .modal-dialog {
 		right: 0;
 		transition: all .5s;
 	}
 
-/* ----- MODAL STYLE ----- */
 	.modal-content {
 		border-radius: 0;
 		border: none;
@@ -89,11 +77,6 @@
 		background-color: #FAFAFA;
 	}
 
-/* ----- v CAN BE DELETED v ----- */
-
-
-
-
     </style>
 @endpush
 {{ session()->put('my_test_key',url()->current())}}
@@ -101,18 +84,12 @@
 @section('content')
     <section class=" course-cover-container {{ empty($activeSpecialOffer) ? 'not-active-special-offer' : '' }}">
         <img src="{{ asset('assets/default/img/course/video-banner.svg') }}" class=" course-cover-img" alt="{{ $course->title }}"/>
-        
+
         <div class="cover-content pt-40 pt-80">
             <div class="container position-relative">
-              {{--  @if(!empty($activeSpecialOffer))
-                    @include('web.default.course.special_offer')
-                @endif --}}
-                {{-- <h1 class="font-30 course-title text-center py-10">{{ clean($course->title, 't') }}</h1> --}}
+
                 <div class="row">
                     <div class="col-12 col-lg-6 course-section-top">
-                        {{-- <div class="course-img text-center {{ $course->video_demo ? 'has-video' :'' }}"> --}}
-
-                        {{-- <img src="{{ config('app.img_dynamic_url') }}{{ $course->getImage() }}" class="img-cover" alt="webinar Demo Video"> --}}
 
                         @if($course->video_demo)
                             <div id="webinarDemoVideoBtn"
@@ -135,9 +112,7 @@
                             @php
                                 $canSale = ($course->canSale() and !$hasBought);
                         @endphp
-                        {{-- @if($canSale and !empty(getFeaturesSettings('direct_classes_payment_button_status')))
-                                        <button type="button" class="btn-primary btn  buy_now mt-20 js-course-direct-payment">{{ trans('update.buy_now') }}</button>
-                        @endif --}}
+
                        </form>
                        <div class="pt-80 d-flex align-items-left align-items-start justify-content-between ">
                         <div class="">
@@ -147,7 +122,7 @@
                     <img src="{{ asset('assets/default/img/course/save-icon.svg') }}" class="img-cover save-icon" alt="webinar Demo Video">
                     </div>
                 </div>
-             {{--   @include('web.default.includes.webinar.rate3',['rate' => $course->getRate()]) --}}
+
                 @include('web.default.includes.webinar.rate4',['rate' => $course->course_rate])
                 <div class=" abouthide" id="abouthide" style=" max-height: 176px;overflow: hidden;">
                 <p class="duration course-description font-16 ml-5">
@@ -163,7 +138,7 @@
                 <div id="gradiant1" style="
     width: 100%;
     height: 80px;
-    /* background-color: white; */
+
     position: absolute;
     bottom: 134px;
     background-image: linear-gradient(#ffffff30, white);
@@ -172,21 +147,7 @@
 <div class="readmore">
             <a  id="readmore" onclick="myFunction();">Read More</a>
                         </div>
-                    <!--    <div class="mt-5">-->
-                    <!--        <div class="stars-card d-flex align-items-center pd-star">-->
-    
-                    <!--            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star active grid-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>-->
-                    <!--        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star active grid-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>-->
-                    <!--        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star active grid-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>-->
-                    <!--        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star active grid-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>-->
-                    <!--                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star grid-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>-->
-                
-                        
-                    <!--<span class="badge badge-primary ml-10 rating-course"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-star active"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> 4.9</span>-->
-                    <!--</div>-->
-                    <!--        Born brought up and educated in kolkata I am associated with Asttrolok since the past 2 years as a Student of Astrology. A keen interest to learn new things has me delving into a variety of subjects such as graphology music philisophy and spirituality. I have been also teaching meditation for the past 5 years and have been associated with the Art of Living foundation as a faculty. With a sincere will to help people with this knowledge I offer you my service. Jai Gurudev.-->
-                    <!--        <div class="read-more-Wd3" id="864:10410">Read More</div>-->
-                    <!--    </div>-->
+
                         <div class="pt-50  align-items-left align-items-start justify-content-between ">
                             <div class="d-flex frame-427322372-acu" id="1017:948">
                                 <div class="auto-group-eond-RX3" id="DPMWvH8SZiH7QxWwGEzUkM">
@@ -201,10 +162,10 @@
                                 <img class="frame-427322370-8wF" src="{{ asset('assets/default/img/course/green-video-icon (2).svg') }}" alt="green-video-icon" id="1017:939"/>
                                 <div class="on-demand-videos-XwT" id="864:10422">
                                 Certified
-                                
+
                                 <br/>
                                 Course
-                                
+
                                 </div>
                                 </div>
                                 <div class="auto-group-eond-RX3 ml-10" id="DPMX8BxG9LFjFzh6H3sZ17">
@@ -221,66 +182,28 @@
                             </div>
                             </div>
                     </div>
-                    
-                    </div>
-                    {{-- <div class="col-12 col-lg-6 text-center course-section-top">
-                        <div class="course-img {{ $course->video_demo ? 'has-video' :'' }}">
 
-                        <img src="{{ config('app.img_dynamic_url') }}{{ $course->getImageCover() }}" class="img-cover" alt="webinar Demo Video">
-                        
-                    </div> --}}
+                    </div>
+
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    
+
     <section class="container course-content-section course-content-top {{ $course->type }} {{ ($hasBought or $course->isWebinar()) ? 'has-progress-bar' : '' }}">
         <div class="row">
             <div class="col-12 col-lg-8">
                 <div class="course-content-body mt-20 user-select-none">
                     <div class="course-body-on-cover text-white">
                         @if(url()->current()!='https://lms.asttrolok.com/course/Free-Astrology-Course')
-                        
-                     {{--   <h1 class="font-30 course-title">
-                            {{ clean($course->title, 't') }}
-                        </h1>
 
-                    @if(!empty($course->category))
-                            <span class="d-block font-16 mt-20">{{ trans('public.in') }} <a href="{{ $course->category->getUrl() }}" target="_blank" class="font-weight-500 text-decoration-underline text-white">{{ $course->category->title }}</a></span>
-                        @endif
-
-                        <div class="d-flex align-items-center">
-                            @include('web.default.includes.webinar.rate',['rate' => $course->course_rate])
-                            <span class="ml-10 mt-15 font-14">({{ $course->reviews->pluck('creator_id')->count() }} {{ trans('public.ratings') }})</span>
-                        </div>
-
-                        <div class="mt-15">
-                            <span class="font-14">{{ trans('public.created_by') }}</span>
-                            <a href="{{ $course->teacher->getProfileUrl() }}" target="_blank" class="text-decoration-underline text-white font-14 font-weight-500">{{ $course->teacher->full_name }}</a>
-                        </div> 
---}}
                         @php
                             $percent = $course->getProgress();
                         @endphp
 
                         @if($hasBought or $percent)
 
-                            {{-- <div class="mt-30 d-flex align-items-center">
-                                <div class="progress course-progress flex-grow-1 shadow-xs rounded-sm">
-                                    <span class="progress-bar rounded-sm bg-warning" style="width: {{ $percent }}%"></span>
-                                </div>
-
-                                <span class="ml-15 font-14 font-weight-500">
-                                    @if($hasBought and (!$course->isWebinar() or $course->isProgressing()))
-                                        {{ trans('public.course_learning_passed',['percent' => $percent]) }}
-                                    @elseif(!is_null($course->capacity))
-                                        {{ $course->sales_count }}/{{ $course->capacity }} {{ trans('quiz.students') }}
-                                    @else
-                                        {{ trans('public.course_learning_passed',['percent' => $percent]) }}
-                                    @endif
-                                </span>
-                            </div> --}}
                         @endif
                         @else
                         <div class="course-body-on-cover text-white" style="min-height: 240px;"></div>
@@ -311,25 +234,24 @@
                                  aria-labelledby="information-tab">
                                 @include(getTemplate().'.course.tabs.information')
                             </div>
-                            
+
                             <div class="tab-pane fade {{ (empty(request()->get('tab','')) or request()->get('tab','') == 'content') ? 'show active' : '' }}" id="content" role="tabpanel" aria-labelledby="content-tab">
                                 @include(getTemplate().'.course.tabs.content')
                             </div>
-                           
+
                             <div class="tab-pane fade {{ (request()->get('tab','') == 'reviews') ? 'show active' : '' }}" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
                                 @include(getTemplate().'.course.tabs.reviews')
                             </div>
-                             
+
                         </div>
 
                     </div>
-                    
+
                 </div>
             </div>
 
             <div class="course-content-sidebar col-12 col-lg-4 mt-25 mt-lg-0 homehide">
                 <div class="rounded-lg shadow-sm">
-                    
 
                     <div class="px-20 pb-30">
                         <form action="{{ (auth()->check()) ? '/cart/store' : '/course/buy-now' }}" method="post">
@@ -422,13 +344,13 @@
                                     @endif
 
                                     @if($canSale and !empty(getFeaturesSettings('direct_classes_payment_button_status')))
-                                    
+
                                     @if(auth()->check())
                                        <button type="button" class="btn btn-outline-danger buy_now mt-20 js-course-direct-payment">
                                            {{ trans('update.buy_now') }}
                                        </button>
                                         @else
-                                   
+
                                        <button type="submit" class="btn btn-outline-danger buy_now mt-20">
                                            {{ trans('update.buy_now') }}
                                        </button>
@@ -448,10 +370,7 @@
                         </form>
 
                         @if(!empty(getOthersPersonalizationSettings('show_guarantee_text')) and getOthersPersonalizationSettings('show_guarantee_text'))
-                            <!--<div class="mt-20 d-flex align-items-center justify-content-center text-gray">-->
-                            <!--    <i data-feather="thumbs-up" width="20" height="20"></i>-->
-                            <!--    <span class="ml-5 font-14">{{ getOthersPersonalizationSettings('guarantee_text') }}</span>-->
-                            <!--</div>-->
+
                         @endif
 
                         <div class="mt-35">
@@ -485,41 +404,11 @@
                             @endif
                         </div>
 
-                        <!--<div class="mt-40 p-10 rounded-sm border row align-items-center favorites-share-box">-->
-                        <!--    @if($course->isWebinar())-->
-                        <!--        <div class="col">-->
-                        <!--            <a href="{{ $course->addToCalendarLink() }}" target="_blank" class="d-flex flex-column align-items-center text-center text-gray">-->
-                        <!--                <i data-feather="calendar" width="20" height="20"></i>-->
-                        <!--                <span class="font-12">{{ trans('public.reminder') }}</span>-->
-                        <!--            </a>-->
-                        <!--        </div>-->
-                        <!--    @endif-->
-
-                        <!--    <div class="col">-->
-                        <!--        <a href="/favorites/{{ $course->slug }}/toggle" id="favoriteToggle" class="d-flex flex-column align-items-center text-gray">-->
-                        <!--            <i data-feather="heart" class="{{ !empty($isFavorite) ? 'favorite-active' : '' }}" width="20" height="20"></i>-->
-                        <!--            <span class="font-12">{{ trans('panel.favorite') }}</span>-->
-                        <!--        </a>-->
-                        <!--    </div>-->
-
-                        <!--    <div class="col">-->
-                        <!--        <a href="#" class="js-share-course d-flex flex-column align-items-center text-gray">-->
-                        <!--            <i data-feather="share-2" width="20" height="20"></i>-->
-                        <!--            <span class="font-12">{{ trans('public.share') }}</span>-->
-                        <!--        </a>-->
-                        <!--    </div>-->
-                        <!--</div>-->
-
-                        <!--<div class="mt-30 text-center">-->
-                        <!--    <button type="button" id="webinarReportBtn" class="font-14 text-gray btn-transparent">{{ trans('webinars.report_this_webinar') }}</button>-->
-                        <!--</div>-->
                     </div>
                 </div>
 
-                {{-- Cashback Alert --}}
                 @include('web.default.includes.cashback_alert',['itemPrice' => $course->price])
 
-                {{-- Gift Card --}}
                 @if($course->canSale() and !empty(getGiftsGeneralSettings('status')) and !empty(getGiftsGeneralSettings('allow_sending_gift_for_courses')))
                     <a href="/gift/course/{{ $course->slug }}" class="d-flex align-items-center mt-30 rounded-lg border p-15">
                         <div class="size-40 d-flex-center rounded-circle bg-gray200">
@@ -561,48 +450,13 @@
                             </div>
                         @endif
 
-                        <!--<div class="mt-20 d-flex align-items-center justify-content-between text-gray">-->
-                        <!--    <div class="d-flex align-items-center">-->
-                        <!--        <i data-feather="user" width="20" height="20"></i>-->
-                        <!--        <span class="ml-5 font-14 font-weight-500">{{ trans('public.capacity') }}:</span>-->
-                        <!--    </div>-->
-                        <!--    @if(!is_null($course->capacity))-->
-                        <!--        <span class="font-14">{{ $course->capacity }} {{ trans('quiz.students') }}</span>-->
-                        <!--    @else-->
-                        <!--        <span class="font-14">{{ trans('update.unlimited') }}</span>-->
-                        <!--    @endif-->
-                        <!--</div>-->
-
-                        <!--<div class="mt-20 d-flex align-items-center justify-content-between text-gray">-->
-                        <!--    <div class="d-flex align-items-center">-->
-                        <!--        <i data-feather="clock" width="20" height="20"></i>-->
-                        <!--        <span class="ml-5 font-14 font-weight-500">{{ trans('public.duration') }}:</span>-->
-                        <!--    </div>-->
-                        <!--    <span class="font-14">{{ convertMinutesToHourAndMinute(!empty($course->duration) ? $course->duration : 0) }} {{ trans('home.hours') }}</span>-->
-                        <!--</div>-->
-
-                        <!--<div class="mt-20 d-flex align-items-center justify-content-between text-gray">-->
-                        <!--    <div class="d-flex align-items-center">-->
-                        <!--        <i data-feather="users" width="20" height="20"></i>-->
-                        <!--        <span class="ml-5 font-14 font-weight-500">{{ trans('quiz.students') }}:</span>-->
-                        <!--    </div>-->
-                        <!--    @if(url()->current()=='https://lms.asttrolok.com/course/Free-Astrology-Course')-->
-                        <!--    <span class="font-14">3200</span>-->
-                            
-                        <!--    @else-->
-                        <!--    <span class="font-14">{{ $course->sales_count }}</span>-->
-                            
-                        <!--    @endif-->
-                            
-                        <!--</div>-->
-
                         @if($course->isWebinar())
                             <div class="mt-20 d-flex align-items-center justify-content-between text-gray">
                                 <div class="d-flex align-items-center">
                                     <img src="{{ config('app.js_css_url') }}/assets/default/img/icons/sessions.svg" width="20" alt="sessions">
                                     <span class="ml-5 font-14 font-weight-500">{{ trans('public.sessions') }}:</span>
                                 </div>
-                                <!--<span class="font-14">{{ $course->sessions->count() }}</span>-->
+
                             </div>
                         @endif
 
@@ -646,11 +500,10 @@
                     </div>
                 </div>
 
-                {{-- organization --}}
                 @if($course->creator_id != $course->teacher_id)
                     @include('web.default.course.sidebar_instructor_profile', ['courseTeacher' => $course->creator])
                 @endif
-                {{-- teacher --}}
+
                 @include('web.default.course.sidebar_instructor_profile', ['courseTeacher' => $course->teacher])
 
                 @if($course->webinarPartnerTeacher->count() > 0)
@@ -658,9 +511,7 @@
                         @include('web.default.course.sidebar_instructor_profile', ['courseTeacher' => $webinarPartnerTeacher->teacher])
                     @endforeach
                 @endif
-                {{-- ./ teacher --}}
 
-                {{-- tags --}}
                 @if($course->tags->count() > 0)
                     <div class="rounded-lg tags-card shadow-sm mt-35 px-25 py-20">
                         <h3 class="sidebar-title font-16 text-secondary font-weight-bold">{{ trans('public.tags') }}</h3>
@@ -672,105 +523,14 @@
                         </div>
                     </div>
                 @endif
-                
+
                 <div class="row">
-                       
-                            <!--<div class="rounded-lg sidebar-ads mt-35 col-12">-->
-                            <!--    <a href="https://lms.asttrolok.com/course/Astromani_2023">-->
-                            <!--        <img src="/store/1/default_images/banners/Astromany-course.jpg" class="img-cover rounded-lg" alt="">-->
-                            <!--    </a>-->
-                            <!--</div>-->
-                            <!--  <div class="rounded-lg sidebar-ads mt-35 col-12">-->
-                            <!--    <a href="https://lms.asttrolok.com/course/Professional-Astrology-Course">-->
-                            <!--        <img src="/store/1/default_images/banners/Asttrology-course.jpg" class="img-cover rounded-lg" alt="">-->
-                            <!--    </a>-->
-                            <!--</div>-->
-                            
-{{--                             
-         <div class="col-12 col-lg-12 mt-20">
-             <div class="webinar-card">
-    <figure>
-        <div class="image-box">
-           <span class="badge badge-primary">Course</span>
-            
-            <a href="https://lms.asttrolok.com/course/{{ $astromani_23->slug }}">
-                <img src="{{ config('app.img_dynamic_url') }}{{ $astromani_23->thumbnail }}" class="img-cover" alt="{{ $astromani_23->slug }}">
-            </a>
 
-            </div>
-
-        <figcaption class="webinar-card-body">
-            <div class="user-inline-avatar d-flex align-items-center">
-                <div class="avatar bg-gray200">
-                    <img src="{{ config('app.img_dynamic_url') }}{{ $astromani_23->teacher->avatar }}" class="img-cover" alt="{{ $astromani_23->full_name }}">
-                </div>
-                <a href="{{ $astromani_23->teacher->getProfileUrl() }}" target="_blank" class="user-name ml-5 font-14">{{ $astromani_23->teacher->full_name }}</a>
-            </div>
-
-            <a href="https://lms.asttrolok.com/course/{{ $astromani_23->slug }}">
-                <h3 class="mt-15  font-weight-bold font-16 text-dark-blue">{{ clean($astromani_23->title,'title') }}</h3>
-            </a>
-           
-        </figcaption>
-    </figure>
-     </div>
-         </div>
-         
-         <div class="col-12 col-lg-12 mt-20">
-             <div class="webinar-card">
-    <figure>
-        <div class="image-box">
-           <span class="badge badge-primary">Course</span>
-            
-            <a href="https://lms.asttrolok.com/course/{{ $course_Professional->slug }}">
-                <img src="{{ config('app.img_dynamic_url') }}{{ $course_Professional->thumbnail }}" class="img-cover" alt="{{ $course_Professional->slug }}">
-            </a>
-
-            </div>
-
-        <figcaption class="webinar-card-body">
-            <div class="user-inline-avatar d-flex align-items-center">
-                <div class="avatar bg-gray200">
-                    <img src="{{ config('app.img_dynamic_url') }}{{ $course_Professional->teacher->avatar }}" class="img-cover" alt="{{ $course_Professional->full_name }}">
-                </div>
-                <a href="{{ $course_Professional->teacher->getProfileUrl() }}" target="_blank" class="user-name ml-5 font-14">{{ $course_Professional->teacher->full_name }}</a>
-            </div>
-
-            <a href="https://lms.asttrolok.com/course/{{ $course_Professional->slug }}">
-                <h3 class="mt-15  font-weight-bold font-16 text-dark-blue">{{ clean($course_Professional->title,'title') }}</h3>
-            </a>
-           
-        </figcaption>
-    </figure>
-     </div>
-         </div>
-         
-          --}}
-         
-         
-         
-         
-         
            </div>
-                
-                
-                {{-- ads --}}
-                <!--@if(!empty($advertisingBannersSidebar) and count($advertisingBannersSidebar))-->
-                <!--    <div class="row">-->
-                <!--        @foreach($advertisingBannersSidebar as $sidebarBanner)-->
-                <!--            <div class="rounded-lg sidebar-ads mt-35 col-{{ $sidebarBanner->size }}">-->
-                <!--                <a href="{{ $sidebarBanner->link }}">-->
-                <!--                    <img src="{{ $sidebarBanner->image }}" class="img-cover rounded-lg" alt="{{ $sidebarBanner->title }}">-->
-                <!--                </a>-->
-                <!--            </div>-->
-                <!--        @endforeach-->
-                <!--    </div>-->
 
-                <!--@endif-->
             </div>
         </div>
 
-        {{-- Ads Bannaer --}}
         @if(!empty($advertisingBanners) and count($advertisingBanners))
             <div class="mt-30 mt-md-50">
                 <div class="row">
@@ -784,7 +544,7 @@
                 </div>
             </div>
         @endif
-        {{-- ./ Ads Bannaer --}}
+
     </section>
 
     <div id="webinarReportModal" class="d-none">
@@ -818,25 +578,21 @@
         </form>
     </div>
 <div class="container demo">
-	
-	
+
 	<div class="text-center d-none">
-	
+
 		<button type="button" class="btn btn-demo" data-toggle="modal" data-target="#myModal2">
 			Right Sidebar Modal
 		</button>
 	</div>
 
-
-	
-	<!-- Modal -->
 	<div class="modal right fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" style="z-index: 52022;">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					
+
 				</div>
 
 				<div class="modal-body">
@@ -895,12 +651,11 @@
         </div>
 				</div>
 
-			</div><!-- modal-content -->
-		</div><!-- modal-dialog -->
-	</div><!-- modal -->
-	
-	
-</div><!-- container -->
+			</div>
+		</div>
+	</div>
+
+</div>
 @if($canSale and !empty(getFeaturesSettings('direct_classes_payment_button_status')))
 <button type="button" data-toggle="modal" data-target="#buynow_modal" class=" btn btn-primary btn-sm disabled px-25 buy-btn1" >
     BUY NOW
@@ -913,15 +668,15 @@
     @include('web.default.course.login_modal')
      @include('web.default.course.pop_up')
     @include('web.default.course.buynow_modal')
-   
+
 @endsection
 
 @push('scripts_bottom')
 @if(empty($authUser))
 <script>
-       
+
          function myFunction() {
-             
+
    var dots = document.getElementById("abouthide");
    var gradiant1 = document.getElementById("gradiant1");
    var moreText = document.getElementById("readmore");
@@ -934,7 +689,7 @@
      dots.style.overflow = "hidden";
      dots.style.maxHeight = "176px";
      gradiant1.style.display = "block";
-     
+
      moreText.text = "Read more";
    }
  }
@@ -954,7 +709,7 @@
         // alert('');
         $('.buy_now').click();
     }
-   
+
 </script>
 @if(Session::has('addtocart'))
 <script>
@@ -965,10 +720,10 @@ $("#myModal2").modal('show');
     // $('.modal-dialog').addClass('afterpop');
 </script>
 @endif
-@php 
-    Illuminate\Support\Facades\Session::forget('addtocart');  
+@php
+    Illuminate\Support\Facades\Session::forget('addtocart');
 @endphp
-<!--<?php   //unset($_SESSION['addtocart']); ?>-->
+
     <script>
         var webinarDemoLang = '{{ trans('webinars.webinar_demo') }}';
         var replyLang = '{{ trans('panel.reply') }}';
@@ -1018,5 +773,3 @@ $("#myModal2").modal('show');
     <script src="{{ config('app.js_css_url') }}/assets/default/js/parts/video_player_helpers.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets/default/js/parts/webinar_show.min.js"></script>
 @endpush
-
-

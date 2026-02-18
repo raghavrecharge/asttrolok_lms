@@ -4,14 +4,41 @@
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/vendors/video/video-js.min.css">
 @endpush
 @push('styles_top')
-    <style>
-.loader {
+<style>
+.form-control.is-invalid {
+    border-color: #dc3545 !important;
+}
 
+.form-control.is-valid {
+    border-color: #28a745 !important;
+}
+
+.form-control.is-invalid:focus {
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-control.is-valid:focus {
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.invalid-feedback {
+    display: none;
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.form-control.is-invalid ~ .invalid-feedback {
+    display: block;
+}
+
+.loader {
   height: 80px;
   -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
+#loader {
     position: fixed;
     left: 50%;
     top: 50%;
@@ -23,6 +50,81 @@
     pointer-events: none;
     opacity: 0.5;
 }
+
+#paymentLoader {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#paymentLoader .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 44%;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+    <style>
+.loader {
+  //border: 16px solid #f3f3f3;
+  //border-radius: 50%;
+  //border-top: 16px solid #3498db;
+
+  height: 80px;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+#loader {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+}
+
+.disabled-page {
+    pointer-events: none;
+    opacity: 0.5;
+}
+</style>
+<style>
+  #paymentLoader {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  #paymentLoader .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 44%;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
 </style>
 @endpush
 @section('content')
@@ -73,6 +175,52 @@
                             </div>
                             @enderror
                         </div>
+<!-- <div class="form-group">
+    <input name="password" id="customer_password" placeholder="Create Password" type="password" 
+           class="form-control @error('password') is-invalid @enderror">
+    @error('password')
+        <div class="invalid-feedback">
+            {{ $message }}
+        </div>
+    @enderror
+
+    <input name="password_confirmation" id="customer_password_confirmation" placeholder="Confirm Password" type="password" 
+           class="form-control @error('password_confirmation') is-invalid @enderror">
+    @error('password_confirmation')
+        <div class="invalid-feedback">
+            {{ $message }}
+        </div>
+    @enderror
+    
+</div> -->
+<div class="form-group">
+    <input name="password" id="customer_password" placeholder="Create Password" type="password" 
+           class="form-control @error('password') is-invalid @enderror" required>
+    @error('password')
+        <div class="invalid-feedback d-block">
+            {{ $message }}
+        </div>
+    @enderror
+</div>
+
+<div class="form-group">
+    <input name="password_confirmation" id="customer_password_confirmation" placeholder="Confirm Password" type="password" 
+           class="form-control @error('password_confirmation') is-invalid @enderror" required>
+    
+    <!-- Server-side Laravel error -->
+    @error('password_confirmation')
+        <div class="invalid-feedback d-block">
+            {{ $message }}
+        </div>
+    @enderror
+    
+    <!-- Client-side JavaScript error -->
+    <div class="invalid-feedback" id="password-match-error">
+        Passwords do not match!
+    </div>
+</div>
+ 
+
 
                         <div class="form-group">
                             <input name="number" id='customer_number'  placeholder="Contact Number" type="text" value="{{ auth()->check() ? auth()->user()->mobile :'' }}" class="form-control @error('number') is-invalid @enderror">
@@ -82,6 +230,9 @@
                             </div>
                             @enderror
                         </div>
+           <div class="invalid-feedback" id="password-match-error">
+        Passwords do not match!
+    </div>          
 
             <div class="row d-none">
                 @if(!empty($paymentChannels))
@@ -133,7 +284,7 @@
                 </div>
             @endif
 
-<button type="button" id="razor-pay-now"  class="btn btn-sm btn-primary loading">{{ trans('public.start_payment') }}</button>
+<button type="button" id="razor-pay-now1"  class="btn btn-sm btn-primary loading">{{ trans('public.start_payment') }}</button>
 
         </form>
         </div>
@@ -165,24 +316,152 @@
         }
         @endphp
     </div>
+    <div id="paymentLoader">
+        <div class="spinner"></div>
+        </div>
 @endsection
 
 @push('scripts_bottom')
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script src="https://www.asttrolok.com/js/unified-payment.js"></script>
+<script src="/js/unified-payment.js"></script>
 <script>
-document.getElementById('razor-pay-now').addEventListener('click', function(e) {
+
+    const loaderEl = document.getElementById('paymentLoader');
+
+    function showPaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'block';
+    }
+
+    function hidePaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'none';
+    }
+document.getElementById('razor-pay-now1').addEventListener('click', function(e) {
     e.preventDefault();
 
     const userDetails = {
         name: document.getElementById('customer_name').value,
         email: document.getElementById('customer_email').value,
         number: document.getElementById('customer_number').value,
+        password: document.getElementById('customer_password').value,
         installment_id: document.getElementById('installment_id').value,
-        discount_id: {{ session('discountCouponId') ?? 0 }}
+        discount_id: @json(session('discountCouponId'))
     };
 
+    showPaymentLoader();
+
     initiatePayment('installment', {{!empty($item) ? $item->id : null}}, userDetails);
+});
+</script>
+<script>
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Password confirmation validation
+    const passwordField = document.getElementById('customer_password');
+    const confirmPasswordField = document.getElementById('customer_password_confirmation');
+    
+    if (!passwordField || !confirmPasswordField) {
+        console.error('Password fields not found');
+        return;
+    }
+
+    function validatePasswordMatch() {
+        const password = passwordField.value;
+        const confirmPassword = confirmPasswordField.value;
+        
+        // अगर confirm password खाली है तो कुछ नहीं करो
+        if (confirmPassword === '') {
+            confirmPasswordField.classList.remove('is-invalid', 'is-valid');
+            return true;
+        }
+        
+        // तभी validate करो जब confirm password की length >= password की length हो
+        if (confirmPassword.length >= password.length) {
+            if (password === confirmPassword) {
+                confirmPasswordField.classList.remove('is-invalid');
+                confirmPasswordField.classList.add('is-valid');
+                return true;
+            } else {
+                confirmPasswordField.classList.remove('is-valid');
+                confirmPasswordField.classList.add('is-invalid');
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    // Input event - sirf tabhi check karo jab puri length match kare
+    confirmPasswordField.addEventListener('input', validatePasswordMatch);
+
+    // Blur event - jab user field se bahar jaye tab bhi check karo
+    confirmPasswordField.addEventListener('blur', function() {
+        if (confirmPasswordField.value !== '') {
+            validatePasswordMatch();
+        }
+    });
+
+    // Jab password field change ho, confirm password ko bhi revalidate karo
+    passwordField.addEventListener('input', function() {
+        if (confirmPasswordField.value !== '' && 
+            confirmPasswordField.value.length >= passwordField.value.length) {
+            validatePasswordMatch();
+        }
+    });
+
+    // Loader functions
+    const loaderEl = document.getElementById('paymentLoader');
+
+    function showPaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'flex';
+    }
+
+    function hidePaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'none';
+    }
+
+    // Payment submit with validation (SINGLE EVENT LISTENER)
+    const paymentSubmitBtn = document.getElementById('razor-pay-now1');
+    if (paymentSubmitBtn) {
+        paymentSubmitBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Get form values
+            const name = document.getElementById('customer_name').value.trim();
+            const email = document.getElementById('customer_email').value.trim();
+            const number = document.getElementById('customer_number').value.trim();
+            const password = document.getElementById('customer_password').value;
+            const confirmPassword = document.getElementById('customer_password_confirmation').value;
+            const installment_id = document.getElementById('installment_id').value;
+
+            // Check if all required fields are filled
+            if (!name || !email || !number || !password || !confirmPassword) {
+                alert('Please fill in all required fields!');
+                return false;
+            }
+
+            // Check if passwords match
+            if (password !== confirmPassword) {
+                confirmPasswordField.classList.add('is-invalid');
+                alert('Passwords do not match!');
+                return false;
+            }
+
+            const userDetails = {
+                name: name,
+                email: email,
+                number: number,
+                password: password,
+                password_confirmation: confirmPassword,
+                installment_id: installment_id,
+                discount_id: @json(session('discountCouponId'))
+            };
+
+            showPaymentLoader();
+
+            initiatePayment('installment', {{!empty($item) ? $item->id : null}}, userDetails);
+        });
+    }
 });
 </script>
 @endpush

@@ -11,8 +11,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
- <meta name="robots" content="noindex, nofollow" />
+ <meta name="robots" content="index, follow">
   <style>
+    
         .course-description p{
             font-family: 'main-font-family' !important;
         }
@@ -87,13 +88,18 @@
 		background-color: #FAFAFA;
 	}
 
+    @media (min-width: 425px) and (max-width: 660px) {
+    .webinar-card .webinar-card-body {
+        padding: 2px 10px 15px 10px !important;
+    }
+}
     </style>
 
 @endpush
 {{ session()->put('my_test_key',url()->current())}}
 
 @section('content')
-    <section class="mobile-home-slider site-top-banner search-top-banner opacity-04 position-relative"style="height: 135px !important ;">
+    {{--<section class="mobile-home-slider site-top-banner search-top-banner opacity-04 position-relative"style="height: 135px !important ;">
         <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $course->getImageCover() }}" class="banner-redius img-cover" alt="{{ $course->title }}" style="height: auto;"/>
 
         <div class="cover-content pt-40">
@@ -103,54 +109,45 @@
                 @endif
             </div>
         </div>
-    </section>
+    </section>--}}
 
-    <section class="container course-content-section {{ $course->type }} {{ ($hasBought or $course->isRemedy()) ? 'has-progress-bar' : '' }}">
-        <div class="row">
-            <div class="col-12 col-lg-12">
-                <div class="course-content-body  user-select-none">
-                <div class="mt-20">
-                <h1 class="font-30 ">
-                            {{ clean($course->title, 't') }}
-                        </h1>
-                        </div>
-                <div class="mt-20 abouthide" id="abouthide" style=" max-height: 100px;overflow: hidden;">
+ <section class="container course-content-section {{ $course->type }} {{ ($hasBought or $course->isRemedy()) ? 'has-progress-bar' : '' }}"> 
+ <div class="row g-0">
+    <div class="col-12 col-lg-12">
+        @include(getTemplate().'.remedy.tabs.content')
+        <div class="course-content-body user-select-none mt-0">
+            <div class="mt-2"> <!-- margin बहुत कम कर दिया है -->
+                <h1 class="font-30">
+                    {{ clean($course->title, 't') }}
+                </h1>
+            </div>
+            <div class="mt-20 abouthide" id="abouthide" style="max-height: 100px; overflow: hidden;">
                 <p class="duration font-14 ml-5">{!! $course->description !!}</p>
-<div id="gradiant1" style="
-    width: 100%;
-    height: 80px;
-
-    position: absolute;
-    bottom: 187px;
-    background-image: linear-gradient(#ffffff30, white);
-"></div>
-</div>
-<div class="readmore">
-            <a  id="readmore" onclick="myFunction();">Read More</a>
-                        </div>
-
-                    @include(getTemplate().'.remedy.tabs.content')
-
-                </div>
             </div>
-
+            <div class="readmore">
+                <a id="readmore" onclick="myFunction();">Read More</a>
+            </div>
         </div>
+    </div>
+</div>
 
-        @if(!empty($advertisingBanners) and count($advertisingBanners))
-            <div class="mt-30 mt-md-50">
-                <div class="row">
-                    @foreach($advertisingBanners as $banner)
-                        <div class="col-{{ $banner->size }}">
-                            <a href="{{ $banner->link }}">
-                                <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $banner->image }}" class="img-cover rounded-sm" alt="{{ $banner->title }}">
-                            </a>
-                        </div>
-                    @endforeach
-                </div>
+
+
+    @if(!empty($advertisingBanners) and count($advertisingBanners))
+        <div class="mt-10 mt-md-20"> <!-- gap कम कर दिया है -->
+            <div class="row">
+                @foreach($advertisingBanners as $banner)
+                    <div class="col-{{ $banner->size }}">
+                        <a href="{{ $banner->link }}">
+                            <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $banner->image }}" class="img-cover rounded-sm" alt="{{ $banner->title }}">
+                        </a>
+                    </div>
+                @endforeach
             </div>
-        @endif
+        </div>
+    @endif
+</section>
 
-    </section>
 
     <div id="webinarReportModal" class="d-none">
         <h3 class="section-title after-line font-20 text-dark-blue">{{ trans('product.report_the_course') }}</h3>
@@ -244,7 +241,7 @@
                             <strong class="text-primary font-weight-bold">{{ !empty($totalCartsPrice) ? handlePrice($totalCartsPrice, true, true, false, null, true) : 0 }}</strong>
                         </div>
 
-                        <a href="/cart/" class="btn btn-sm btn-primary btn-block mt-50 mt-md-15">{{ trans('cart.go_to_cart') }}</a>
+                        <a href="/cart/" class="btn btn-sm btn-primary btn-block mt-50 mt-md-15"style="font-family: 'Inter', sans-serif !important;">{{ trans('cart.go_to_cart') }}</a>
                     </div>
                 @else
                     <div class="d-flex align-items-center text-center py-50">
@@ -274,23 +271,22 @@
 <script>
 
          function myFunction() {
-
    var dots = document.getElementById("abouthide");
    var gradiant1 = document.getElementById("gradiant1");
    var moreText = document.getElementById("readmore");
+   
    if (dots.style.overflow == "hidden") {
      dots.style.overflow = "unset";
      dots.style.maxHeight = "100%";
-     gradiant1.style.display = "none";
-     moreText.text = "Read less";
+     if(gradiant1) gradiant1.style.display = "none";
+     moreText.textContent = "Read Less"; // yahan change kiya
    } else {
      dots.style.overflow = "hidden";
      dots.style.maxHeight = "100px";
-     gradiant1.style.display = "block";
-
-     moreText.text = "Read more";
+     if(gradiant1) gradiant1.style.display = "block";
+     moreText.textContent = "Read More"; // yahan change kiya
    }
- }
+}
  function view(condi){
 if(condi=='pdf'){
 $('.r-pdf').show();
@@ -307,11 +303,14 @@ $(".pdfs").removeClass("active");
      </script>
 @if(empty($authUser))
 <script>
-
+//      setTimeout(function() {
+//     $('#textpop').modal();
+// }, 5000);
 </script>
 @endif
 
 <script>
+// Get the modal
 
 function viewfile(src1,id){
 
@@ -334,7 +333,7 @@ function viewfile(src1,id){
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/video/vimeo.js"></script>
 <script>
     function buy_course(){
-
+        // alert('');
         $('.buy_now').click();
     }
 
@@ -344,7 +343,8 @@ function viewfile(src1,id){
 
 $("#myModal2").modal('show');
   $('.modal-dialog').addClass('afterpop');
-
+    // $('.btn-demo').click();
+    // $('.modal-dialog').addClass('afterpop');
 </script>
 @endif
 @php
@@ -396,7 +396,7 @@ $("#myModal2").modal('show');
 @endpush
 <style>
 @media screen and (max-width: 992px) {
-
+  #pre1 {
       width: -webkit-fill-available;
     height: 283px;
 
@@ -406,10 +406,11 @@ $("#myModal2").modal('show');
   }
 }
 @media screen and (min-width: 991px) {
-
+  #pre1 {
       width:-webkit-fill-available;
       height:450px;
   }
+  #mob1 {
 
       display:none !important;
   }

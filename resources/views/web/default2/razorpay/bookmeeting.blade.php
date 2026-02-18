@@ -3,7 +3,9 @@
 @push('styles_top')
     <style>
 .loader {
-
+  //border: 16px solid #f3f3f3;
+  //border-radius: 50%;
+  //border-top: 16px solid #3498db;
   width: 120px;
   height: 120px;
   -webkit-animation: spin 2s linear infinite;
@@ -30,15 +32,14 @@
 
                             <input type="hidden" name="order_id" value="{{ $orderid }}">
                             <input type="hidden" name="contact_no" value="{{ $contact }}">
-                            <input type="hidden" name="name" value="{{ $full_name }}">
 
                             <script src="https://checkout.razorpay.com/v1/checkout.js"
                                     data-key="{{ env('RAZORPAY_API_KEY') }}"
-                                    data-amount="{{ (int)(preg_replace('/[^\d.]/', '', handlePrice($total ))* 100) }}"
+                                    data-amount="{{ (int)($total * 100) }}"
                                     data-buttontext="product_price"
-                                    data-description="{{ $full_name }} has booked an appointment with astrologer {{ $astrologer }} via Razorpay on Asttrolok using a desktop ({{ $slotTime }})"
+                                    data-description="Rozerpay"
                                     data-currency="{{ currency() }}"
-                                    data-image="{{ $generalSettings['logo'] }}"
+                                    data-image="{{ $generalSettings['logo'] ?? '' }}"
                                     data-prefill.name="{{ $full_name }}"
                                     data-prefill.email="{{ $email }}"
                                     data-prefill.contact="{{ $contact }}"

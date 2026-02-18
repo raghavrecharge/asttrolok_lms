@@ -33,7 +33,7 @@ define('RAZOR_KEY_SECRET', 'FyiZ6gn5TDRQjzCWYAPhCbao');
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/css/app.css">
 
 <style>
-
+#header .logo img {
     max-height: none !important;
 }
 .vboutEmbedFormResponse-97949{
@@ -46,7 +46,7 @@ define('RAZOR_KEY_SECRET', 'FyiZ6gn5TDRQjzCWYAPhCbao');
 .w-100 {
     width: 85% !important;
 }
-
+#register_form .btn-get-started {
     padding: 0px 0px;
 }
 .px-md-32 img{
@@ -100,9 +100,10 @@ div#thumb_0 {
     border-radius: 0;
 }
 
+#register_form .btn-get-started {
     padding: 0px 0px !important;
 }
-
+#myBtn1{
         cursor: pointer;
     display: inline-flex;
     width: 100%;
@@ -121,7 +122,7 @@ div#thumb_0 {
     .ytp-large-play-button{
         margin-top:10px;
     }
-
+    #myBtn1{
         cursor: pointer;
     display: inline-flex;
 }
@@ -132,16 +133,16 @@ div#thumb_0 {
 
  }
 }
-
+#count1{
     font-weight: 900;
 }
-
+#count2{
     font-weight: 900;
 }
-
+#count3{
     font-weight: 900;
 }
-
+#count4{
     font-weight: 900;
 }
 .specialist-info1 h4 {
@@ -224,6 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
   cursor: pointer;
 }
 
+#register_form1 *{
     color:#000 !important;
 
 }
@@ -1356,25 +1358,25 @@ The institute's reputation is further enhanced by its association with the Found
     </script>
 
     <script>
-
+// Get the modal myModalnew
 var modal = document.getElementById("myModal");
 var myModal13 = document.getElementById("myModal13");
 var myModalnew = document.getElementById("myModalnew");
 var myModalnew1 = document.getElementById("myModalnew1");
 var myModalnew2 = document.getElementById("myModalnew2");
-
+// Get the button that opens the modal
 var btn = document.getElementById("myBtn");
 var btn1 = document.getElementById("myBtn1");
 var btn2 = document.getElementById("myBtn2");
 var btn31 = document.getElementById("myBtn31");
 var btn4 = document.getElementById("myBtn4");
-
+// Get the <span> element that closes the modal
 var span = document.getElementsByClassName("close")[0];
 var span1 = document.getElementsByClassName("close1")[0];
 var span2 = document.getElementsByClassName("close2")[0];
 var span3 = document.getElementsByClassName("close3")[0];
 var span4 = document.getElementsByClassName("close4")[0];
-
+// When the user clicks the button, open the modal
 btn.onclick = function() {
   modal.style.display = "block";
 }
@@ -1390,7 +1392,7 @@ btn31.onclick = function() {
 btn4.onclick = function() {
   modal.style.display = "block";
 }
-
+// When the user clicks on <span> (x), close the modal
 span.onclick = function() {
   modal.style.display = "none";
 }
@@ -1406,22 +1408,33 @@ span2.onclick = function() {
 span3.onclick = function() {
   modal.style.display = "none";
 }
-
+// When the user clicks anywhere outside of the modal, close it
 window.onclick = function(event) {
   if (event.target == modal) {
     modal.style.display = "none";
   }
-
+//   if (event.target == myModal13) {
+//     modal.style.display = "none";
+//   }
+//   if (event.target == myModalnew) {
+//     modal.style.display = "none";
+//   }
+//   if (event.target == myModalnew1) {
+//     modal.style.display = "none";
+//   }
+//   if (event.target == myModalnew2) {
+//     modal.style.display = "none";
+//   }
 }
 function submit_vboutcheckout(){
    var name=$('#custom-358666').val();
     var email = $('#custom-358668').val();
     var phone = $('#custom-358669').val();
-
+    // var city=$('#custom-710850').val();
     $('#billing-name1').val(name);
     $('#billing-email1').val(email);
     $('#billing-phone1').val(phone);
-
+    // $('#city1').val(city);
     $('#submit_checkout').click();
     $('#submit_vbout').click();
 
@@ -1431,11 +1444,11 @@ function submit_vboutcheckout1(){
    var name=$('.358666').val();
     var email = $('.358668').val();
     var phone = $('.358669').val();
-
+    // var city=$('#custom-710850').val();
     $('#billing-name1').val(name);
     $('#billing-email1').val(email);
     $('#billing-phone1').val(phone);
-
+    // $('#city1').val(city);
      alert(phone);
     $('#submit_checkout').click();
     $('#submit_vbout1').click();
@@ -1453,13 +1466,16 @@ function submit_vboutcheckout1(){
     <script>
 
       document.getElementById("submitBtn").addEventListener("click", myFunction);
-
+    //   document.getElementById("pay1").addEventListener("click", myFunction1);
       function myFunction() {
           if(document.getElementById("custom-358668").value != "" && document.getElementById("custom-358665").value != "" && document.getElementById("custom-358669").value != "" && document.getElementById("custom-701452").value != ""){
-
+        // document.getElementById("submitBtn").style.display="none";
         document.getElementById("pay2").style.display="block";
         document.getElementById("pay1").style.display="block";}
       }
+    //   function myFunction1() {
+    //     window.location.href="http://www.asttrolok.com";
+    //   }
 
     </script>
 
@@ -1472,7 +1488,7 @@ function submit_vboutcheckout1(){
             function loadScript(url, callback) {
                 var script = document.createElement("script");
                 script.type = "text/javascript";
-                if (script.readyState) {
+                if (script.readyState) { //IE
                     script.onreadystatechange = function() {
                         if (script.readyState == "loaded" || script.readyState == "complete") {
                             script.onreadystatechange = null;
@@ -1480,7 +1496,7 @@ function submit_vboutcheckout1(){
                             callback();
                         }
                     };
-                } else {
+                } else { //Others
                     script.onload = function() {
                         callback();
                     };
@@ -1521,6 +1537,8 @@ function submit_vboutcheckout1(){
                     var date = moment(workshop_date, "Do MMM, YYYY").format("Do MMM, Y");
                     $('#workshop_date').html(date);
 
+                    //var video_link = 'https://www.youtube.com/embed/ADpoFKUSSHo';
+                    //$('#banner-videos').prop('src', video_link);
                 });
 
             }
@@ -1585,7 +1603,7 @@ function submit_vboutcheckout1(){
         }
 
         function isOnScreen(elem) {
-
+            // if the element doesn't exist, abort
             if (elem.length == 0) {
                 return;
             }

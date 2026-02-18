@@ -6,6 +6,7 @@
 #navbarShopingCart.btn.btn-transparent {
     background: transparent !important;
     border: none !important;
+    margin-right: 5px ;
 }
 
 #navbarShopingCart svg {
@@ -81,7 +82,7 @@
                             <strong class="text-primary font-weight-bold">{{ !empty($totalCartsPrice) ? handlePrice($totalCartsPrice, true, true, false, null, true) : 0 }}</strong>
                         </div>
 
-                        <a href="/cart" class="btn btn-sm btn-primary btn-block mt-50 mt-md-15">{{ trans('cart.go_to_cart') }}</a>
+                        <a href="/cart" class="btn btn-sm btn-primary btn-block mt-50 mt-md-15" style="font-family: 'Inter', sans-serif !important;">{{ trans('cart.go_to_cart') }}</a>
                     </div>
                 @else
                     <div class="d-flex align-items-center text-center py-50">

@@ -1,13 +1,13 @@
 @extends('web.default2'.'.layouts.app')
 
 @push('styles_top')
-
+<link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/css/app.css">
 @endpush
 
 @section('content')
-    @if((!empty($webinars) and count($webinars)) or (!empty($blogs) and count($blogs)) or (!empty($products) and count($products)) or (!empty($teachers) and count($teachers)) or (!empty($organizations) and count($organizations) ) or (!empty($remedies) and count($remedies) ))
-        <section class="site-top-banner search-top-banner opacity-04 position-relative">
-            <img src="{{ config('app.img_dynamic_url') }}{{ getPageBackgroundSettings('search') }}" class="img-cover" alt=""/>
+    @if((!empty($webinars) and count($webinars)) or (!empty($products) and count($products)) or (!empty($teachers) and count($teachers)) or (!empty($organizations) and count($organizations) ) or (!empty($remedies) and count($remedies) ) or (!empty($subscriptions) and count($subscriptions) ))
+    
+        <section class="site-top-banner search-top-banner opacity-04 position-relative" style="background-color: var(--secondary);">
 
             <div class="container h-100">
                 <div class="row h-100 align-items-center justify-content-center text-center">
@@ -30,19 +30,16 @@
         </section>
 
         <div class="container">
-            @if(!empty($blogs) and count($blogs))
-                <section class="mt-50">
-                    <h2 class="font-24 font-weight-bold text-secondary">{{ trans('update.blogs') }}</h2>
+       @foreach($subscriptions as $subscription)
+    @if(!empty($subscription))
+    @if($subscription->private == 0)
+        <div class="col-12 col-lg-4 mt-20">
+            @include('web.default2.includes.subscription.grid-card',['subscription' => $subscription])
+        </div>
+    @endif
+    @endif
+@endforeach
 
-                    <div class="row">
-                         @foreach($blogs as $post)
-                            <div class="col-md-6 col-lg-4 mt-30">
-                                @include('web.default.blog.grid-list',['post' => $post])
-                            </div>
-                        @endforeach
-                    </div>
-                </section>
-            @endif
             @if(!empty($webinars) and count($webinars))
                 <section class="mt-50">
                     <h2 class="font-24 font-weight-bold text-secondary">{{ trans('webinars.webinars') }}</h2>
@@ -50,7 +47,7 @@
                     <div class="row">
                         @foreach($webinars as $webinar)
                             <div class="col-md-6 col-lg-4 mt-30">
-                                @include(getTemplate().'.includes.webinar.grid-card',['webinar' => $webinar])
+                                @include('web.default2.includes.webinar.grid-card',['webinar' => $webinar])
                             </div>
                         @endforeach
                     </div>
@@ -87,11 +84,12 @@
 
             @if(!empty($teachers) and count($teachers))
                 <section class="mt-50">
-                    <h2 class="font-24 font-weight-bold text-secondary">{{ trans('panel.users') }}</h2>
+
+                    <h2 class="font-24 font-weight-bold text-secondary">Instructors</h2>
 
                     <div class="row">
                         @foreach($teachers as $teacher)
-                            <div class="col-6 col-md-3 col-lg-2 mt-30">
+                            <div class="col-6 col-md-3 col-lg-2 mt-30 mx-10" style="background-color: #fff;padding: 25px;border-radius: 10px;">
                                 <div class="user-search-card text-center d-flex flex-column align-items-center justify-content-center">
                                     <div class="user-avatar">
                                         <img src="{{ config('app.img_dynamic_url') }}{{ $teacher->getAvatar() }}" class="img-cover rounded-circle" alt="{{ $teacher->full_name }}">
@@ -107,29 +105,6 @@
                 </section>
             @endif
 
-            @if(!empty($organizations) and count($organizations))
-                <section class="mt-50">
-                    <h2 class="font-24 font-weight-bold text-secondary">{{ trans('home.organizations') }}</h2>
-
-                    <div class="row">
-
-                        @foreach($organizations as $organization)
-                            <div class="col-md-6 col-lg-3 mt-30">
-                                <a href="{{ $organization->getProfileUrl() }}" class="home-organizations-card d-flex flex-column align-items-center justify-content-center">
-                                    <div class="home-organizations-avatar">
-                                        <img src="{{ config('app.img_dynamic_url') }}{{ $organization->getAvatar() }}" class="img-cover rounded-circle" alt="{{ $organization->full_name }}">
-                                    </div>
-                                    <div class="mt-25 d-flex flex-column align-items-center justify-content-center">
-                                        <h3 class="home-organizations-title">{{ $organization->full_name }}</h3>
-                                        <p class="home-organizations-desc mt-10">{{ $organization->bio }}</p>
-                                        <span class="home-organizations-badge badge mt-15">{{ $organization->getActiveWebinars(true) }} {{ trans('product.courses') }}</span>
-                                    </div>
-                                </a>
-                            </div>
-                        @endforeach
-                    </div>
-                </section>
-            @endif
         </div>
     @else
 

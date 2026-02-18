@@ -1,9 +1,11 @@
 @extends(getTemplate().'.layouts.app')
 
+
 @push('scripts_top')
 
 @endpush
 @section('content')
+
 
     @if(!empty($order) && $order->status === \App\Models\Order::$paid)
         <div class="no-result default-no-result my-50 d-flex align-items-center justify-content-center flex-column">
@@ -30,5 +32,6 @@
             </div>
         </div>
     @endif
+
 
 @endsection

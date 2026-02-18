@@ -10,7 +10,7 @@
                     <div class="col mt-25 mt-lg-0 cats">
                         <div class="stats-item d-flex flex-column align-items-center text-center py-10 px-5 w-100">
                             <div class="stat-icon-box teacher mt-10">
-                                <img src="{{ config('app.js_css_url') }}/assets/default/img/stats/teacher.svg" alt="" loading="lazy" class="img-fluid"/>
+                                <img src="{{ config('app.js_css_url') }}/assets/default/img/stats/teacher.svg" alt="" class="img-fluid"/>
                             </div>
 
                             <h4 class="stat-title my-25">Astrology</h4>
@@ -21,7 +21,7 @@
                     <div class="col mt-25 mt-lg-0 cats">
                         <div class="stats-item d-flex flex-column align-items-center text-center py-10 px-5 w-100">
                             <div class="stat-icon-box student mt-10">
-                                <img src="{{ config('app.js_css_url') }}/assets/default/img/stats/student.svg" alt="" loading="lazy" class="img-fluid"/>
+                                <img src="{{ config('app.js_css_url') }}/assets/default/img/stats/student.svg" alt="" class="img-fluid"/>
                             </div>
 
                             <h4 class="stat-title my-25">{{ trans('home.happy_students') }}</h4>
@@ -32,7 +32,7 @@
                     <div class="col mt-25 mt-lg-0 cats">
                         <div class="stats-item d-flex flex-column align-items-center text-center py-10 px-5 w-100">
                             <div class="stat-icon-box video mt-10">
-                                <img src="{{ config('app.js_css_url') }}/assets/default/img/stats/video.svg" alt="" loading="lazy" class="img-fluid"/>
+                                <img src="{{ config('app.js_css_url') }}/assets/default/img/stats/video.svg" alt="" class="img-fluid"/>
                             </div>
 
                             <h4 class="stat-title my-25">{{ trans('home.live_classes') }}</h4>
@@ -43,7 +43,7 @@
                     <div class="col mt-25 mt-lg-0 cats">
                         <div class="stats-item d-flex flex-column align-items-center text-center py-10 px-5 w-100">
                             <div class="stat-icon-box course mt-10">
-                                <img src="{{ config('app.js_css_url') }}/assets/default/img/stats/course.svg" alt="" loading="lazy" class="img-fluid"/>
+                                <img src="{{ config('app.js_css_url') }}/assets/default/img/stats/course.svg" alt="" class="img-fluid"/>
                             </div>
 
                             <h4 class="stat-title my-25">{{ trans('home.offline_courses') }}</h4>
@@ -53,7 +53,7 @@
                     <div class="col mt-25 mt-lg-0 cats">
                         <div class="stats-item d-flex flex-column align-items-center text-center py-10 px-5 w-100">
                             <div class="stat-icon-box course mt-10">
-                                <img src="{{ config('app.js_css_url') }}/assets/default/img/stats/course.svg" alt=""  loading="lazy" class="img-fluid"/>
+                                <img src="{{ config('app.js_css_url') }}/assets/default/img/stats/course.svg" alt="" class="img-fluid"/>
                             </div>
 
                             <h4 class="stat-title my-25">{{ trans('home.offline_courses') }}</h4>
@@ -68,7 +68,7 @@
             <div class="container">
                 <div class="row categories">
                     <?php $i=1;
-
+                //   echo $categories[2]->title;
                 $cate123[1]="/classes";
                 $cate123[2]="/instructors";
                 $cate123[3]="https://asttroveda.asttrolok.com/asttrolok/personalizedkundali";
@@ -77,13 +77,16 @@
                     @foreach($homeCustomStatistics as $homeCustomStatistic)
                     <?php
 
+                    // $urls_cat=$cate123[$i]->getUrl();
+
                     $urls_cat=$cate123[$i];
 
+                    //  $urls_cat='#';
                     ?>
                        <a>   <div class="mx-10 px-20 mt-lg-0 mt-lg-0 cats mobile{{ $i }} ">
                             <div class="stats-item d-flex flex-column align-items-center text-center py-20 px-0 " style="width:100%;">
                                <a >   <div class="stat-icon-box" style="background-color: {{ $homeCustomStatistic->color }};padding: 0;">
-                                    <img src="{{ config('app.img_dynamic_url') }}{{ $homeCustomStatistic->icon }}" alt="{{ $homeCustomStatistic->title }}" loading="lazy" class="img-fluid"/>
+                                    <img src="{{ config('app.js_css_url') }}{{ $homeCustomStatistic->icon }}" alt="{{ $homeCustomStatistic->title }}" class="img-fluid"/>
                                 </div></a>
                                 <a  class=" mt-15">
 

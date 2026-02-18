@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Jenssegers\Agent\Agent;
+use App\Models\Subscription;
 
 class ClassesController extends Controller
 {
@@ -105,6 +106,10 @@ class ClassesController extends Controller
                 'hindi_classes' => $hindi_classes,
                 'englishclasses' => $englishclasses,
                 'hasBoughtCourse' => $hasBoughtCourse,
+                'subscriptions' => Subscription::select('id', 'slug', 'price', 'status', 'thumbnail', 'creator_id')
+                    ->where('status', 'active')
+                    ->orderBy('created_at', 'desc')
+                    ->get(),
             ];
 
             Cache::put($cacheKey, $data, now()->addMinutes($this->cacheDuration));

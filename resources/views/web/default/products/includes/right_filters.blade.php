@@ -25,6 +25,7 @@
     <button type="submit" class="btn btn-sm btn-primary btn-block mt-30">{{ trans('site.filter_items') }}</button>
 </div>
 
+
 <div class="mt-20 p-20 rounded-sm shadow-lg border border-gray300 filters-container">
     <div class="">
         <h3 class="category-filter-title font-20 font-weight-bold text-dark-blue">{{ trans('update.options') }}</h3>

@@ -6,23 +6,52 @@
 @push('styles_top')
     <style>
 .loader {
+  //border: 16px solid #f3f3f3;
+  //border-radius: 50%;
+  //border-top: 16px solid #3498db;
 
   height: 80px;
   -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
-    /* position: fixed;
+#loader {
+    position: fixed;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
     display: none;
-} */
+}
 
 .disabled-page {
     pointer-events: none;
     opacity: 0.5;
 }
+</style>
+<style>
+  #paymentLoader {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  #paymentLoader .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 44%;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
 </style>
 @endpush
 @section('content')
@@ -44,7 +73,7 @@
 
         @endphp
 
-         <center><div class="loader mt-50" id="loader" style="display:none ">
+         <center><div class="loader mt-50" id="loader" style="dispay:none ">
             <img width= '80px' height= '80px' src="{{ asset('assets/default/img/loading.gif')}}">
             <br>
             <h3>Please do not refresh or close the page while your payment is being processed...</h3>
@@ -60,7 +89,7 @@
             <input type="hidden" name="item" value="{{!empty($item) ? $item->id : null}}"  placeholder="Contact Number" class="form-control mt-25 mb-25 " required>
             <input type="hidden" name="item_type" value="{{!empty($itemType) ? $itemType : null}}"  placeholder="Contact Number" class="form-control mt-25 mb-25 " required>
             <input type="hidden" name="payment_type" value="part"  placeholder="Contact Number" class="form-control mt-25 mb-25 " required>
-            <!-- <input type="hidden" name="amount" id="razorpay_payment_amount" value="{{!empty($amount) ? $amount : null}}"> -->
+            <input type="hidden" name="amount" id="razorpay_payment_amount">
             <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
             <input type="hidden" name="razorpay_signature"  id="razorpay_signature" >
             <input type="hidden" name="installment_id" id="installment_id" value="{{ $installment->id ?? null }}">
@@ -74,13 +103,25 @@
         }
         @endphp
     </div>
+    <div id="paymentLoader">
+        <div class="spinner"></div>
+        </div>
 @endsection
 
 @push('scripts_bottom')
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script src="https://www.asttrolok.com/js/unified-payment.js"></script>
+<script src="{{ asset('js/unified-payment.js') }}"></script>
 <script>
+    const loaderEl = document.getElementById('paymentLoader');
+
+    function showPaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'block';
+    }
+
+    function hidePaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'none';
+    }
 
 document.getElementById('amount').addEventListener('input', function() {
         var button = document.getElementById('paymentSubmit');
@@ -90,34 +131,17 @@ document.getElementById('amount').addEventListener('input', function() {
 document.getElementById('paymentSubmit').addEventListener('click', function(e) {
     e.preventDefault();
 
-    const amountField = document.getElementById('amount');
-    const amount = amountField.value.trim();
-
-    // ✅ Amount required validation
-    if (amount === '' || isNaN(amount) || Number(amount) <= 0) {
-        amountField.classList.add('is-invalid');
-        amountField.focus();
-        alert('Please enter a valid amount');
-        return;
-    } else {
-        amountField.classList.remove('is-invalid');
-    }
-
     const userDetails = {
         name: document.getElementById('customer_name').value,
         email: document.getElementById('customer_email').value,
         number: document.getElementById('customer_number').value,
         amount: document.getElementById('amount').value,
         installment_id: {{ $installment->id ?? null }},
-        discount_id: {{ session('discountCouponId') ?? 'null' }}
+        discount_id: @json(session('discountCouponId'))
     };
+    showPaymentLoader();
 
     initiatePayment('part' , '{{!empty($item) ? $item->id : null}}' , userDetails);
-});
-</script>
-  <script>
-document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('paymentSubmit').classList.remove('d-none');
 });
 </script>
 @endpush

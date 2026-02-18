@@ -42,6 +42,7 @@
                         </div>
                     </div>
 
+
                     <div class="col-12 col-md-3">
                         @include('web.default.products.includes.right_filters')
                     </div>

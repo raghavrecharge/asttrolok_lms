@@ -6,12 +6,16 @@
 @push('styles_top')
     <style>
 .loader {
+  //border: 16px solid #f3f3f3;
+  //border-radius: 50%;
+  //border-top: 16px solid #3498db;
 
   height: 80px;
   -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
+#loader {
     position: fixed;
     left: 50%;
     top: 50%;
@@ -187,20 +191,20 @@
          $('.textdanger').remove();
         if(name ===''){
             $('#paymentSubmit').prop('disabled', false);
-
+            // $("input:radio").attr("checked", false);
             var namevalidation ='Name field is required';
             $(document).find('#customer_name').after('<span class="text-strong textdanger " style="color:red;">' +namevalidation+ '</span>');
 
         }
         if(email ===''){
             $('#paymentSubmit').prop('disabled', false);
-
+            // $("input:radio").attr("checked", false);
             var emailvalidation ='Email field is required';
             $(document).find('#customer_email').after('<span class="text-strong textdanger " style="color:red;">' +emailvalidation+ '</span>');
         }
         if(mobile ===''){
             $('#paymentSubmit').prop('disabled', false);
-
+            // $("input:radio").attr("checked", false);
             var mobilevalidation ='Mobile field is required';
             $(document).find('#customer_number').after('<span class="text-strong textdanger " style="color:red;">' +mobilevalidation+ '</span>');
         }else{
@@ -244,15 +248,15 @@
             mobile: dataprefillcontact,
             course_title: "{{ $webinar->title ?? null }}",
           }
-
+        // webhook url sent data
           $.ajax({
                 method: 'post',
                 url: url,
                 data: data,
             }).done(function(response, status){
-
+                //
             }).fail(function(jqXHR, textStatus, errorThrown){
-
+                //
             });
 
         var razorpay_options = {
@@ -261,7 +265,7 @@
             name: storename,
             description: datadescription,
             image: dataimage,
-
+            // netbanking: true,
             currency: datacurrency,
             prefill: {
                 name: dataprefillname,
@@ -275,14 +279,26 @@
                 color: "#43d477",
             },
             handler: function (transaction) {
-
+                // jQuery.ajax({
+                //     url:'callback.php',
+                //     type: 'post',
+                //     data: {razorpay_payment_id: transaction.razorpay_payment_id, merchant_order_id: merchant_order_id, merchant_surl_id: merchant_surl_id, merchant_furl_id: merchant_furl_id, card_holder_name_id: card_holder_name_id, merchant_total: merchant_total, merchant_amount: merchant_amount, currency_code_id: currency_code_id},
+                //     dataType: 'json',
+                //     success: function (res) {
+                //         if(res.msg){
+                //             alert(res.msg);
+                //             return false;
+                //         }
+                //         window.location = res.redirectURL;
+                //     }
+                // });
                 $("#loader").removeClass('d-none');
-
+                 // loader
             document.body.classList.add('disabled-page');
             document.getElementById('loader').style.display = 'block';
             document.documentElement.style.overflow = 'hidden';
                 document.getElementById('razorpay_payment_id').value =transaction.razorpay_payment_id;
-
+                // document.getElementById('razorpay_signature').value = transaction.razorpay_signature;
                 document.getElementById('razorpayview').submit();
             },
             "modal": {
@@ -291,7 +307,7 @@
                 }
             }
         };
-
+        // obj
         var objrzpv1 = new Razorpay(razorpay_options);
         objrzpv1.open();
             e.preventDefault();
@@ -301,11 +317,156 @@
 </script>
 
 <script>
+//     document.getElementById("input1").oninput = () => {
+//   const input1 = document.getElementById('input1');
+//   const output1 = document.getElementById('output1');
 
+// document.getElementById('myScript').setAttribute('data-prefill.name', input1.value);
+
+//   // Trying to insert text into 'output'.
+//   output1.value = input1.value;
+// };
+// document.getElementById("input2").oninput = () => {
+//   const input2 = document.getElementById('input2');
+//   const output2 = document.getElementById('output2');
+
+// document.getElementById('myScript').setAttribute('data-prefill.email', input2.value);
+
+//   // Trying to insert text into 'output'.
+//   output2.value = input2.value;
+// };
+// document.getElementById("input3").oninput = () => {
+//   const input3 = document.getElementById('input3');
+//   const output3 = document.getElementById('output3');
+
+// document.getElementById('myScript').setAttribute('data-prefill.contact', input3.value);
+
+//   // Trying to insert text into 'output'.
+//   output3.value = input3.value;
+// };
+
+//   function addscript(){
+
+//         var name = '';
+//         var email = '';
+//         var mobile = '';
+//          name = document.getElementById("customer_name").value ;
+//          email = document.getElementById("customer_email").value;
+//          mobile = document.getElementById("customer_number").value;
+//          $('.invalid-feedback').remove();
+//         $('.textdanger').remove();
+//         if(name ===''){
+//             $('#paymentSubmit').prop('disabled', false);
+//             $("input:radio").attr("checked", false);
+//             var namevalidation ='Name field is required';
+//             $(document).find('#customer_name').after('<span class="text-strong textdanger " style="color:red;">' +namevalidation+ '</span>');
+
+//         }
+//          if(email ===''){
+//             $('#paymentSubmit').prop('disabled', false);
+//             $("input:radio").attr("checked", false);
+//             var emailvalidation ='Email field is required';
+//             $(document).find('#customer_email').after('<span class="text-strong textdanger " style="color:red;">' +emailvalidation+ '</span>');
+//         }
+//          if(mobile ===''){
+//             $('#paymentSubmit').prop('disabled', false);
+//             $("input:radio").attr("checked", false);
+//             var mobilevalidation ='Mobile field is required';
+//             $(document).find('#customer_number').after('<span class="text-strong textdanger " style="color:red;">' +mobilevalidation+ '</span>');
+//         }else{
+//             var regex = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+//             if(!regex.test(email)) {
+//                 $("input:radio").attr("checked", false);
+//                 document.getElementById("customer_email").value =email;
+//                 var emailvalidation ='Enter Valid Email Address';
+//                 $(document).find('#customer_email').after('<span class="text-strong textdanger " style="color:red;">' +emailvalidation+ '</span>');
+//               return false;
+//             }
+//              if (mobile.length < 9) {
+//                   $('#paymentSubmit').prop('disabled', false);
+//                     $("input:radio").attr("checked", false);
+//                     var mobilevalidation ='Enter Valid Mobile Number';
+//                     $(document).find('#customer_number').after('<span class="text-strong textdanger " style="color:red;">' +mobilevalidation+ '</span>');
+//                 return false;
+//               }
+//               $("input:radio").attr("checked", true);
+//               var  datakey="<?php echo  env('RAZORPAY_API_KEY'); ?>";
+//               var   dataamount="<?php echo (int)(((($installments->first()->upfront)*$itemPrice) /100) * 100); ?>";
+//               var   databuttontext="product_price";
+//               var   datadescription="Rozerpay";
+//               var    datacurrency="<?php echo currency(); ?>";
+//               var    dataimage="<?php echo  $generalSettings['logo']; ?>";
+//               var    dataprefillname=name;
+//               var   dataprefillemail=email;
+//               var   dataprefillcontact=mobile;
+//               var   storename='Asttrolok';
+
+//     //  var s = document.createElement( 'script' );
+//     //     s.setAttribute( 'src', "https://checkout.razorpay.com/v1/checkout.js" );
+//     //     s.setAttribute( 'id', "razorpay_script" );
+//     //     s.setAttribute( 'data-key',datakey );
+//     //     s.setAttribute( 'data-amount', dataamount );
+//     //     s.setAttribute( 'data-buttontext', databuttontext );
+//     //     s.setAttribute( 'data-currency', datacurrency );
+//     //     s.setAttribute( 'data-name', 'Asttrolok' );
+//     //     s.setAttribute( 'data-description', datadescription );
+//     //     s.setAttribute( 'data-image', dataimage);
+//     //     s.setAttribute( 'data-theme.color', "#43d477" );
+//     //     s.setAttribute( 'data-prefill.name', dataprefillname );
+//     //     s.setAttribute( 'data-prefill.email', dataprefillemail );
+//     //     s.setAttribute( 'data-prefill.contact', dataprefillcontact );
+//     //     document.querySelector("#razorpayview").appendChild( s );
+
+//      var razorpay_options = {
+//         key: datakey,
+//         amount: dataamount,
+//         name: storename,
+//         description: datadescription,
+//         image: dataimage,
+//         // netbanking: true,
+//         currency: datacurrency,
+//         prefill: {
+//             name: dataprefillname,
+//             email: dataprefillemail,
+//             contact: dataprefillcontact
+//         },
+//         notes: {
+//             soolegal_order_id: '2345',
+//         },
+//         theme: {
+//             color: "#43d477",
+//         },
+//         handler: function (transaction) {
+//             // jQuery.ajax({
+//             //     url:'callback.php',
+//             //     type: 'post',
+//             //     data: {razorpay_payment_id: transaction.razorpay_payment_id, merchant_order_id: merchant_order_id, merchant_surl_id: merchant_surl_id, merchant_furl_id: merchant_furl_id, card_holder_name_id: card_holder_name_id, merchant_total: merchant_total, merchant_amount: merchant_amount, currency_code_id: currency_code_id},
+//             //     dataType: 'json',
+//             //     success: function (res) {
+//             //         if(res.msg){
+//             //             alert(res.msg);
+//             //             return false;
+//             //         }
+//             //         window.location = res.redirectURL;
+//             //     }
+//             // });
+//         },
+//         "modal": {
+//             "ondismiss": function () {
+//               alert('payment cancelled');
+//             }
+//         }
+//     };
+//     // obj
+//     var objrzpv1 = new Razorpay(razorpay_options);
+//     objrzpv1.open();
+//         e.preventDefault();
+//         }
+//         }
     $(document).ready(function(){
 
          $('body').on('click', '.paymentSubmit', function (e) {
-
+            //  addscript();
          });
 
        $('body').on('change paste keyup', '#customer_name', function (e) {
@@ -332,7 +493,7 @@ $('#customer_number').on('keypress', function(e) {
  var $this = $(this);
  var regex = new RegExp("^[0-9\b]+$");
  var str = String.fromCharCode(!e.charCode ? e.which : e.charCode);
-
+ // for 10 digit number only
  if ($this.val().length > 9) {
     e.preventDefault();
     return false;

@@ -69,7 +69,7 @@
                         @endif
 
                         <div class="form-group">
-                            <label class="input-label" for="password">{{ trans('auth.create_password') }}:</label>
+                            <label class="input-label" for="password">{{ trans('auth.password') }}:</label>
                             <input name="password" type="password" maxlength="40"
                                    class="form-control @error('password') is-invalid @enderror" id="password"
                                    aria-describedby="passwordHelp">

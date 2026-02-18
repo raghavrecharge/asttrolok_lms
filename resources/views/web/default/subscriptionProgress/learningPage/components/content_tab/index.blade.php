@@ -1,10 +1,9 @@
-
 <div class="content-tab p-15 pb-50">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css">
     <style>
-      
+
  body {
-           
+
             background: #f4f6f9;
             min-height: 100vh;
             padding: 40px 20px;
@@ -202,19 +201,18 @@
  <div class="header">
             <h1>Astrology Pathshala</h1>
             <p>Course Progress</p>
-        </div>    
+        </div>
     <div class="course-grid">
     @php
-    
+
     $userId = request()->segment(3);
           $access_content = DB::table('subscription_access')
             ->where('subscription_id',  $subscription->id)
             ->where('user_id', $userId)
             ->first();
-            
-            $video_limit=($access_content->access_content_count)+5;
-            
-            
+
+            $video_limit=($access_content->access_content_count)+3;
+
     $limit1=$limit;
     @endphp
 
@@ -235,31 +233,15 @@
         @foreach($chapterItems as $chapterItem)
         @php
     $limit1--;
-   
-    @endphp
-    
 
-         {{--   @if(!empty($sessionsWithoutChapter) and count($sessionsWithoutChapter))
-                @foreach($sessionsWithoutChapter as $session)
-                    @include('web.default.subscription.learningPage.components.content_tab.content',['item' => $session, 'type' => \App\Models\WebinarChapter::$chapterSession])
-                @endforeach
-            @endif
-    
-            @if(!empty($textLessonsWithoutChapter) and count($textLessonsWithoutChapter))
-                @foreach($textLessonsWithoutChapter as $textLesson)
-                    @include('web.default.subscription.learningPage.components.content_tab.content',['item' => $textLesson, 'type' => \App\Models\WebinarChapter::$chapterTextLesson])
-                @endforeach
-            @endif--}}
-    
+    @endphp
+
             @if(!empty($chapterItem->file) && $video_limit>0)
-              {{--  @foreach($filesWithoutChapter as $file) --}}
+
                     @include('web.default.subscriptionProgress.learningPage.components.content_tab.content',['item' => $chapterItem->file, 'type' => \App\Models\WebinarChapter::$chapterFile])
-               {{-- @endforeach --}}
+
             @endif
-    
-           {{-- @if(!empty($subscription->chapters) and count($subscription->chapters))
-                @include('web.default.subscription.learningPage.components.content_tab.chapter')
-            @endif --}}
+
             @php
              $video_limit--;
              @endphp

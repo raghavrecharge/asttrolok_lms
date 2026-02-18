@@ -58,7 +58,7 @@
     aria-haspopup="true"
     aria-expanded="false"
 >
-    <img src="{{ asset('Vector (4).png') }}" class="cart-icon-img" alt="Cart">
+    <img src="{{ asset('Vector.svg') }}" class="cart-icon-img" alt="Cart">
 
     @if(!empty($userCarts) and count($userCarts))
         <span class="badge badge-circle-primary d-flex align-items-center justify-content-center">
@@ -127,7 +127,7 @@
                             <strong class="text-primary font-weight-bold">{{ !empty($totalCartsPrice) ? handlePrice($totalCartsPrice, true, true, false, null, true) : 0 }}</strong>
                         </div>
 
-                        <a href="/cart" class="btn btn-sm btn-primary btn-block mt-50 mt-md-15">{{ trans('cart.go_to_cart') }}</a>
+                        <a href="/cart" class="btn btn-sm btn-primary btn-block mt-50 mt-md-15" style="font-family: 'Inter', sans-serif !important;">{{ trans('cart.go_to_cart') }}</a>
                     </div>
                 @else
                     <div class="d-flex align-items-center text-center py-50">

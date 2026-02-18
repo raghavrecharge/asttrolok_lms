@@ -37,6 +37,7 @@ define('RAZOR_KEY_SECRET', 'FyiZ6gn5TDRQjzCWYAPhCbao');
     @stack('scripts_top')
 <style>
 
+#header .logo img {
     max-height: none !important;
 }
 .vboutEmbedFormResponse-97949{
@@ -49,7 +50,7 @@ define('RAZOR_KEY_SECRET', 'FyiZ6gn5TDRQjzCWYAPhCbao');
 .w-100 {
     width: 85% !important;
 }
-
+#register_form .btn-get-started {
     padding: 0px 0px;
 }
 .px-md-32 img{
@@ -103,9 +104,10 @@ div#thumb_0 {
     border-radius: 0;
 }
 
+#register_form .btn-get-started {
     padding: 0px 0px !important;
 }
-
+#myBtn1{
         cursor: pointer;
     display: inline-flex;
     width: 100%;
@@ -124,7 +126,7 @@ div#thumb_0 {
     .ytp-large-play-button{
         margin-top:10px;
     }
-
+    #myBtn1{
         cursor: pointer;
     display: inline-flex;
 }
@@ -135,16 +137,16 @@ div#thumb_0 {
 
  }
 }
-
+#count1{
     font-weight: 900;
 }
-
+#count2{
     font-weight: 900;
 }
-
+#count3{
     font-weight: 900;
 }
-
+#count4{
     font-weight: 900;
 }
 .specialist-info1 h4 {
@@ -227,6 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
   cursor: pointer;
 }
 
+#register_form1 *{
     color:#000 !important;
 
 }
@@ -291,8 +294,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   setTimeout(function() {
         $("[href='https://elfsight.com/google-reviews-widget/?utm_source=websites&utm_medium=clients&utm_content=google-reviews&utm_term=www.asttrolok.com&utm_campaign=free-widget']").hide();
+    //   $('.WidgetBackground__Content-sc-1ho7q3r-2 > a').find('.inline').last().attr("style", "display:none !important");
 
 }, 2000);
+//   setTimeout(function() {
+//         $("[href='https://elfsight.com/google-reviews-widget/?utm_source=websites&utm_medium=clients&utm_content=google-reviews&utm_term=www.asttrolok.com&utm_campaign=free-widget']").hide();
+//     //   $('.WidgetBackground__Content-sc-1ho7q3r-2 > a').find('.inline').last().attr("style", "display:none !important");
+
+// }, 4000);
 
   setTimeout(function() {
 
@@ -1506,8 +1515,16 @@ The institute's reputation is further enhanced by its association with the Found
     <script src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/js/main_rzp.js" ></script>
 
     <script>
-
+    // document.getElementById("FormsubmitBtn").addEventListener("click", contantFormSubmit);
      $('#FormsubmitBtnsd').click(function(){
+    //   if(document.getElementsByName("name").value == "" || document.getElementsByName("email").value == "" || document.getElementsByName("phone").value == "" ){
+
+    //     $('#validation').html('<div class="alert alert-danger my-25 d-flex align-items-center"><i data-feather="check-square" width="50" height="50" class="mr-2"></i>All Field is Requierd!<div>');
+
+    //   }else{
+    //       alert(document.getElementsByName("name").value);
+    //     //   $('.sb').click();
+    //   }
 
 var formData = $("#formVal12345").serialize();
   name = document.getElementById("customer_name").value ;
@@ -1529,6 +1546,21 @@ var formData = $("#formVal12345").serialize();
              subject: subject,
           }
 
+//   $.ajax({
+//     async: true,
+//     type:'POST',
+//     url:'/contact/course',
+//     data: data,
+//     cache: false,
+//     processData: false,
+//     contentType: false,
+//     success: function (data) {
+//       console.log(data)
+//     },
+//     error: function(request, status, error) {
+//       console.log("error")
+//     }
+//   });
           $.ajax({
                 method: 'post',
                  headers: {'X-CSRF-TOKEN': $('meta[name="csrf_token"]').attr('content')},
@@ -1544,13 +1576,16 @@ var formData = $("#formVal12345").serialize();
      })
 
       document.getElementById("submitBtn").addEventListener("click", myFunction);
-
+    //   document.getElementById("pay1").addEventListener("click", myFunction1);
       function myFunction() {
           if(document.getElementById("custom-358668").value != "" && document.getElementById("custom-358665").value != "" && document.getElementById("custom-358669").value != "" && document.getElementById("custom-701452").value != ""){
-
+        // document.getElementById("submitBtn").style.display="none";
         document.getElementById("pay2").style.display="block";
         document.getElementById("pay1").style.display="block";}
       }
+    //   function myFunction1() {
+    //     window.location.href="http://www.asttrolok.com";
+    //   }
 
     </script>
 
@@ -1563,7 +1598,7 @@ var formData = $("#formVal12345").serialize();
             function loadScript(url, callback) {
                 var script = document.createElement("script");
                 script.type = "text/javascript";
-                if (script.readyState) {
+                if (script.readyState) { //IE
                     script.onreadystatechange = function() {
                         if (script.readyState == "loaded" || script.readyState == "complete") {
                             script.onreadystatechange = null;
@@ -1571,7 +1606,7 @@ var formData = $("#formVal12345").serialize();
                             callback();
                         }
                     };
-                } else {
+                } else { //Others
                     script.onload = function() {
                         callback();
                     };
@@ -1612,6 +1647,8 @@ var formData = $("#formVal12345").serialize();
                     var date = moment(workshop_date, "Do MMM, YYYY").format("Do MMM, Y");
                     $('#workshop_date').html(date);
 
+                    //var video_link = 'https://www.youtube.com/embed/ADpoFKUSSHo';
+                    //$('#banner-videos').prop('src', video_link);
                 });
 
             }
@@ -1676,7 +1713,7 @@ var formData = $("#formVal12345").serialize();
         }
 
         function isOnScreen(elem) {
-
+            // if the element doesn't exist, abort
             if (elem.length == 0) {
                 return;
             }

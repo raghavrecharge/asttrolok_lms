@@ -43,13 +43,13 @@
             </div>
 
         </div>
-
+      
     </div>
 </div>
 
 <section class="mt-40">
     <h2 class="section-title after-line">{{ trans('product.reviews') }} ({{ $course->reviews->pluck('creator_id')->count() }})</h2>
-
+  
     <form action="/reviews/store" class="mt-20" method="post">
         {{ csrf_field() }}
         <input type="hidden" name="webinar_id" value="{{ $course->id }}"/>
@@ -109,7 +109,7 @@
     </form>
 
     <div class="mt-45">
-
+        
         @if($course->reviews->count() > 0)
             @foreach($course->reviews as $review)
 
@@ -121,8 +121,9 @@
                             </div>
                             <div class="d-flex flex-column ml-5">
                                 <span class="font-weight-500 text-secondary">{{ $review->creator->full_name }}</span>
-<?php
-
+<?php 
+//       print_r($review);
+//     die();
   ?>
                                 @include(getTemplate() . '.includes.webinar.rate',[
                                         'rate' => $review->rates,

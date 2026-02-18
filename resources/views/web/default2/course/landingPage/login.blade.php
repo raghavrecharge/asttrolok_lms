@@ -43,7 +43,6 @@
                         <div class="form-group">
                             <label class="input-label" for="password">{{ trans('auth.password') }}:</label>
                             <input name="password" maxlength="40" type="password" class="form-control @error('password')  is-invalid @enderror" id="password" aria-describedby="passwordHelp">
-<input name="slug" type="hidden" id="slug" value="learn-free-vedic-astrology-course-online" >
 
                             @error('password')
                             <div class="invalid-feedback">

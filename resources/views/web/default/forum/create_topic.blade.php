@@ -33,7 +33,8 @@
                             @error('title')
                             <div class="invalid-feedback">
                                 {{ $message }}
-
+                                
+                               
                             </div>
                             @enderror
                             @if(!empty($error125))

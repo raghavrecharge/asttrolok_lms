@@ -11,7 +11,7 @@
 <section class="container forums-featured-section mt-30 mt-md-50">
 
             <div class="text-center mb-30">
-                <h1 class="font-36 font-weight-bold text-secondary">How can we help you ?</h1>
+                <h1 class="font-36 font-weight-bold text-secondary">How can we help you?</h1>
                 <p class="font-14 text-gray">Follow simple steps and video tutorials to easily navigate and use the site effectively.</p>
             </div>
 
@@ -19,11 +19,11 @@
                 <div class="col-12 col-lg-6">
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img src="/store/1/default_images/forums/icons/How to Login.svg" alt="What is social media ?" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/marketing.svg" alt="What is social media?" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import" class="">
-                                <h4 class="font-16 font-weight-bold text-dark">How to Login ?</h4>
+                                <h4 class="font-16 font-weight-bold text-dark">How to Login?</h4>
                             </a>
 
                         </div>
@@ -31,29 +31,29 @@
 
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img src="/store/1/default_images/forums/icons/How to Reset Your Password.svg" alt="How do you put a Group Link in a note card" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/forum_music.svg" alt="How do you put a Group Link in a note card" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import1" class="">
-                                <h4 class="font-16 font-weight-bold text-dark">How to Reset Your Password ?</h4>
+                                <h4 class="font-16 font-weight-bold text-dark">How to Reset Your Password?</h4>
                             </a>
                         </div>
                     </div>
 
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img src="/store/1/default_images/forums/icons/How to Purchase an Online Course.svg" alt="The best texture quality settings for makeup" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/forum_makeup.svg" alt="The best texture quality settings for makeup" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import2" class="">
-                                <h4 class="font-16 font-weight-bold text-dark">How to Purchase an Online Course ?</h4>
+                                <h4 class="font-16 font-weight-bold text-dark">How  to Purchase an Online Course ?</h4>
                             </a>
                         </div>
                     </div>
 
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img src="/store/1/default_images/forums/icons/How to See Access Course Content.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/food_forum.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import3" class="">
@@ -64,11 +64,11 @@
 
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img src="/store/1/default_images/forums/icons/How to View Quiz Results and Answers.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/food_forum.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import4" class="">
-                                <h4 class="font-16 font-weight-bold text-dark">How to View Quiz Results and Answers ?</h4>
+                                <h4 class="font-16 font-weight-bold text-dark">How to View Quiz Results and Answers?</h4>
                             </a>
                         </div>
                     </div>
@@ -78,7 +78,7 @@
 
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img src="/store/1/default_images/forums/icons/How to give a second attempt for Quiz.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/food_forum.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import5" class="">
@@ -89,7 +89,7 @@
 
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img src="/store/1/default_images/forums/icons/How to set a meeting time for the instructor.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/food_forum.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import6" class="">
@@ -100,7 +100,7 @@
 
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img src="/store/1/default_images/forums/icons/How to download a ppt file.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/food_forum.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import7" class="">
@@ -111,7 +111,7 @@
 
                     <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
                         <div class="forums-featured-card-icon">
-                            <img src="/store/1/default_images/forums/icons/How to Complete the Quiz in Waiting.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
+                            <img src="{{ config('app.img_dynamic_url') }}/store/1/default_images/forums/icons/food_forum.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
                         </div>
                         <div class="ml-15">
                             <a href="#" data-toggle="modal" data-target="#import8" class="">
@@ -120,16 +120,6 @@
                         </div>
                     </div>
 
-                    <div class="forums-featured-card d-flex align-items-center bg-white p-20 p-md-35 rounded-lg mt-15">
-                        <div class="forums-featured-card-icon">
-                            <img src="/store/1/default_images/forums/icons/QUIZ.svg" alt="What favorite food and or beverage do you enjoy" class="img-cover">
-                        </div>
-                        <div class="ml-15">
-                            <a href="#" data-toggle="modal" data-target="#import9" class="">
-                                <h4 class="font-16 font-weight-bold text-dark">How to attempt the Quiz ? </h4>
-                            </a>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -141,7 +131,7 @@
             <div class="col-12 col-md-7">
                 <div class="px-10 px-md-25 py-25 p-md-50">
                     <h2 class="font-36 font-weight-bold text-secondary mt-50">
-                        <span class="">Still Have Questions ?</span>
+                        <span class="">Still Have Questions?</span>
                         <span class="d-block">Our support team is here for you!</span>
                     </h2>
 
@@ -197,7 +187,7 @@
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
-                            <h2 class=" font-weight-bold text-dark">How to Login ?</h2>
+                            <h2 class=" font-weight-bold text-dark">How to Login?</h2>
 
                                                 <p class="mt-10">1. Click on the <a href="/login" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;-weight: 800;">Login</a> option from right corner
                                                 </p>
@@ -229,7 +219,7 @@
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
-                             <h2 class=" font-weight-bold text-dark">How to Login ?</h2>
+                             <h2 class=" font-weight-bold text-dark">How to Login?</h2>
 
                                                 <p class="mt-10">1. Click on the <a href="/login" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;-weight: 800;">Login</a> option from right corner
                                                 </p>
@@ -595,7 +585,7 @@
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
-                            <h2 class=" font-weight-bold text-dark">How to View Quiz Results and Answers ?</h2>
+                            <h2 class=" font-weight-bold text-dark">How to View Quiz Results and Answers?</h2>
 
                                                 <p class="mt-10">1. <p class="mt-10">1. Login with your credentials from <a href="/login" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;-weight: 800;">Login</a> page.
                                                 </p>
@@ -630,7 +620,7 @@
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
-                             <h2 class=" font-weight-bold text-dark">How to View Quiz Results and Answers ?</h2>
+                             <h2 class=" font-weight-bold text-dark">How to View Quiz Results and Answers?</h2>
 
                                                 <p class="mt-10">1. <p class="mt-10">1. Login with your credentials from <a href="/login" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;-weight: 800;">Login</a> page.
                                                 </p>
@@ -918,7 +908,7 @@
                                                 </p>
                                                 <p class="mt-10">6. Now click on the <b>download</b> button
                                                 </p>
-                                                <p class="mt-10">7. now click on the <b>save</b> button PPt  file will be saved in your system.
+                                                <p class="mt-10">6. now click on the <b>save</b> button PPt  file will be saved in your system.
                                                 </p>
 
                         </div>
@@ -943,17 +933,17 @@
 
                                                 <p class="mt-10">1. Login with your credentials from login page
                                                 </p>
-                                                <p class="mt-10">2. Find Courses in my purchase section
+                                                 <p class="mt-10">2. Find Courses in my purchase section
                                                 </p>
-                                                <p class="mt-10">3. Click on the <b>learning</b> page button
+                                                 <p class="mt-10 ">3. Click on the <b>learning</b> page button
                                                 </p>
-                                                <p class="mt-10">4. On this page, you can see various course materials, including PPT files
+                                                 <p class="mt-10">4. On this page, you can see various course materials, including PPT files
                                                 </p>
-                                                <p class="mt-10">5. now click on the <b>ppt files</b>
+                                                 <p class="mt-10">5. now click on the <b>ppt files</b>
                                                 </p>
                                                 <p class="mt-10">6. Now click on the <b>download</b> button
                                                 </p>
-                                                <p class="mt-10">7. now click on the <b>save</b> button PPt  file will be saved in your system.
+                                                <p class="mt-10">6. now click on the <b>save</b> button PPt  file will be saved in your system.
                                                 </p>
                         </div>
                     </div>
@@ -1110,29 +1100,29 @@
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
-                            <h2 class=" font-weight-bold text-dark">How to attempt the Quiz  ?</h2>
+                            <h2 class=" font-weight-bold text-dark">How to Login?</h2>
 
-                                                <p class="mt-10">1. Log in with your credentials on the Login page (Skip if already login)
+                                                <p class="mt-10">1. To log in, click the "Login" menu text, which is the second last option on the home page
                                                 </p>
-                                                 <p class="mt-10">2. Click to the Quizzes tab from the dashboard.
+                                                 <p class="mt-10">2. Or use this link <a href="/login" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;-weight: 800;">Login</a>.
                                                 </p>
-                                                 <p class="mt-10 ">3. Select Quiz Option.
+                                                 <p class="mt-10 ">3. On the login screen, you will see:
+                                                 <p class="ml-5">A. Email ID</p>
+                                                 <p class="ml-5">B. Password</p>
                                                 </p>
 
-                                                 <p class="mt-10">4. Click on the Quiz button
+                                                 <p class="mt-10">4. Enter your email ID and password and click the "Login" button.
                                                 </p>
-                                                 <p class="mt-10">5. Go through the quiz and answer each question as it appears.
+                                                 <p class="mt-10">5. If the email ID and password are correct, you will be redirected to your user dashboard.
                                                 </p>
-                                                <p class="mt-10">6. After answering the question, click Next button to proceed to the next question
-                                                </p>
-                                                <p class="mt-10">7. Once you have Answered all the questions then click on the Finish button to submit your answers and complete the quiz.
+                                                <p class="mt-10">6. If you have not registered yet, you can click the <a href="/register" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;">Register</a> this link available on the login screen.
                                                 </p>
 
                         </div>
                     </div>
 
                     <div class="col-12 col-lg-6 mt-20 mt-lg-0">
-                        <iframe width="-webkit-fill-available" id="videoiframe" width="100%" allow="autoplay" title="YouTube video player" frameborder="0" allowfullscreen="" src="https://www.youtube.com/embed/VJK9SxcNs1Y?si=wrcS4k62elYtGDBk?autoplay=1" style="width:100%; height:300px;"></iframe>
+                        <iframe width="-webkit-fill-available" id="videoiframe" width="100%" allow="autoplay" title="YouTube video player" frameborder="0" allowfullscreen="" src="https://www.youtube.com/embed/IAC39vtGa3E?si=fOt5vH7gzWlt5e7K?autoplay=1" style="width:100%; height:300px;"></iframe>
                     </div>
                 </div>
             </section>
@@ -1146,28 +1136,28 @@
                 <div class="row align-items-center">
                     <div class="col-12 col-lg-6">
                         <div class="">
-                             <h2 class=" font-weight-bold text-dark">How to attempt the Quiz  ?</h2>
+                             <h2 class="font-weight-bold text-dark">How to Login?</h2>
 
-                                                <p class="mt-10">1. Log in with your credentials on the Login page (Skip if already login)
+                                                <p class="mt-10">1. To log in, click the Menu icon <img src="https://static.thenounproject.com/png/5238032-200.png" style="width: 20px;"> next to it
                                                 </p>
-                                                 <p class="mt-10">2. Click to the Quizzes tab from the dashboard.
+                                                <p class="mt-10">2. Click the "Login" menu,  or use this link <a href="/login" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;">Login</a>.
                                                 </p>
-                                                 <p class="mt-10 ">3. Select Quiz Option.
+                                                 <p class="mt-10">3. On the login screen, you will see:
+                                                 <p class="ml-5">A. Email ID</p>
+                                                 <p class="ml-5">B. Password</p>
                                                 </p>
 
-                                                 <p class="mt-10">4. Click on the Quiz button
+                                                 <p class="mt-10">4. Enter your email ID and password and click the "Login" button.
                                                 </p>
-                                                 <p class="mt-10">5. Go through the quiz and answer each question as it appears.
+                                                 <p class="mt-10">5. If the email ID and password are correct, you will be redirected to your user dashboard.
                                                 </p>
-                                                <p class="mt-10">6. After answering the question, click Next button to proceed to the next question
-                                                </p>
-                                                <p class="mt-10">7. Once you have Answered all the questions then click on the Finish button to submit your answers and complete the quiz.
+                                                 <p class="mt-10">6. If you have not registered yet, you can click the <a href="/register" target="_blank" class="font-14" style="font-weight: 800;color: #1c0e97;text-decoration-line: underline;">Register</a> this link available on the login screen.
                                                 </p>
                         </div>
                     </div>
 
                   <div class="col-12 col-lg-6 mt-20 mt-lg-0">
-                        <iframe width="-webkit-fill-available" id="videoiframe" width="100%" allow="autoplay" title="YouTube video player" frameborder="0" allowfullscreen="" src="https://www.youtube.com/embed/VJK9SxcNs1Y?si=wrcS4k62elYtGDBk?autoplay=1" style="width:100%; height:300px;"></iframe>
+                        <iframe width="-webkit-fill-available" id="videoiframe" width="100%" allow="autoplay" title="YouTube video player" frameborder="0" allowfullscreen="" src="https://www.youtube.com/embed/IAC39vtGa3E?si=fOt5vH7gzWlt5e7K?autoplay=1" style="width:100%; height:300px;"></iframe>
                     </div>
                 </div>
             </section>

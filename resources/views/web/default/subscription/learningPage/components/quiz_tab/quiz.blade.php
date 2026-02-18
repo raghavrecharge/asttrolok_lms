@@ -1,6 +1,8 @@
 @php
-
+   // $checkSequenceContent = $item->checkSequenceContent();
+   //$sequenceContentHasError = (!empty($checkSequenceContent) and (!empty($checkSequenceContent['all_passed_items_error']) or !empty($checkSequenceContent['access_after_day_error'])));
 @endphp
+
 
 <div class="1 pratul d-flex align-items-start p-10 cursor-pointer {{ (!empty($limit1) and $limit1<=0) ? 'js-sequence-content-error-modal' : 'tab-item' }}"
      data-type="{{ $type }}"

@@ -10,6 +10,12 @@
 }
     </style>
 
+<script>
+  gtag('event', 'conversion', {
+      'send_to': 'AW-795191608/8cYUCN3vt5cZELjSlvsC',
+      'transaction_id': ''
+  });
+</script>
 @endpush
 
 {{session()->put('my_test_key',url()->full())}}
@@ -18,7 +24,7 @@
 
     @push('scripts_top')
     <script>
-
+       // window.location.href = "/login";
     </script>
     @endpush
 

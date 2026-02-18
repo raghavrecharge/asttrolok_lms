@@ -34,6 +34,7 @@
             <a href="{{ $upcomingCourse->teacher->getProfileUrl() }}" target="_blank" class="user-name ml-5 font-14">{{ $upcomingCourse->teacher->full_name }}</a>
         </div>
 
+
         <div class="d-flex justify-content-between mt-auto">
             <div class="d-flex align-items-center">
 

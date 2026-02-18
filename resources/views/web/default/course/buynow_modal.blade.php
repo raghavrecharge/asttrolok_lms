@@ -99,7 +99,7 @@
                     @endif
 
                     @if($canSale and !empty(getFeaturesSettings('direct_classes_payment_button_status')))
-                        <button type="button" class="btn btn-outline-danger buy_now mt-20 js-course-direct-payment">
+                        <button type="button" class="btn btn-outline-danger buy_now mt-20 js-course-direct-payment text-white">
 
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 10px !important;">
 <path d="M15.7143 11.985V14.8386C15.7143 15.4692 15.212 15.98 14.5918 15.98H1.12245C0.502296 15.98 0 15.4692 0 14.8386V11.985H1.68367V14.2679H14.0306V11.985H15.7143Z" fill="white"/>
@@ -119,7 +119,7 @@
    {{ trans('update.pay_with_installments') }}
                         </a>
                     @endif
-                     <button type="button" class="mt-20 btn btn-primary {{ $canSale ? 'js-course-add-to-cart-btn' : ($course->cantSaleStatus($hasBought) .' disabled ') }}" >
+                     <button type="button" class="mt-20 btn btn-primary text-white {{ $canSale ? 'js-course-add-to-cart-btn' : ($course->cantSaleStatus($hasBought) .' disabled ') }}" >
                         @if(!$canSale)
                             {{ trans('update.disabled_add_to_cart') }}
                         @else

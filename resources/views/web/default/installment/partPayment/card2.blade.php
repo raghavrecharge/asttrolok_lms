@@ -34,7 +34,7 @@
                         <span class="valid-feedback">{{ trans('cart.coupon_valid') }}</span>
                     </div>
                     </div><div class="col-5 col-lg-3 botton-1" style="position: absolute;margin-top: 3px;margin-right: -231px;">
-                    <button type="submit" id="checkCoupon1" style="height: 35px !important; border-radius: 20px !important;" class="btn btn-sm btn-primary mt-25">{{ trans('cart.validate') }}</button></div></div>
+                    <button type="submit" id="checkCoupon1" style="height: 35px !important; border-radius: 20px !important;" class="btn btn-sm btn-primary mt-25" style="font-family: 'Inter', sans-serif !important;">{{ trans('cart.validate') }}</button></div></div>
                     </section></div>
                 </form>
                 @endif

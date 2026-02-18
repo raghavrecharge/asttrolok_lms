@@ -6,7 +6,9 @@
 @push('styles_top')
     <style>
 .loader {
-
+  //border: 16px solid #f3f3f3;
+  //border-radius: 50%;
+  //border-top: 16px solid #3498db;
   width: 120px;
   height: 120px;
   -webkit-animation: spin 2s linear infinite;
@@ -166,6 +168,7 @@
 
 document.getElementById('myScript').setAttribute('data-prefill.name', input1.value);
 
+  // Trying to insert text into 'output'.
   output1.value = input1.value;
 };
 document.getElementById("input2").oninput = () => {
@@ -174,6 +177,7 @@ document.getElementById("input2").oninput = () => {
 
 document.getElementById('myScript').setAttribute('data-prefill.email', input2.value);
 
+  // Trying to insert text into 'output'.
   output2.value = input2.value;
 };
 document.getElementById("input3").oninput = () => {
@@ -182,6 +186,7 @@ document.getElementById("input3").oninput = () => {
 
 document.getElementById('myScript').setAttribute('data-prefill.contact', input3.value);
 
+  // Trying to insert text into 'output'.
   output3.value = input3.value;
 };
 

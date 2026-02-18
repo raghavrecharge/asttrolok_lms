@@ -2,23 +2,16 @@
 
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/vendors/leaflet/leaflet.css">
+    <link rel="canonical" href="https://www.asttrolok.com/contact" />
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/css/app.css">
 
+        <link rel="stylesheet" href="{{ config('app.js_css_url') }}/asttroloknew/assets/design_1/css/parts/profile.min.css">
 @endpush
 
 @section('content')
-
-    <section class="cart-banner search-top-banner opacity-04 position-relative">
-
-        <div class="container h-100">
-            <div class="row h-100 justify-content-center text-center">
-                <div class="col-12 col-md-9 col-lg-7">
-                    <div class="top-search-categories-form">
-                        <h1 class="text-white font-30 mb-15">{{ trans('site.contact_us') }}</h1>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+<div class="profile-cover-card">
+        <img src="https://storage.googleapis.com/astrolok/webp/store/1/banner/Contact-min.webp" class="img-cover" alt="">
+</div>
 
     <div class="container">
         <section class="">
@@ -62,7 +55,7 @@
                 </div>
 
                 <div class="col-12 col-md-4">
-                    <a href="mailto:astrolok.vedic@gmail.com">
+                    <a href="mailto:admission_1@asttrolok.com">
                     <div class="contact-items mt-30 rounded-lg py-20 py-md-40 px-15 px-md-30 text-center">
                         <div class="contact-icon-box box-red p-20 d-flex align-items-center justify-content-center mx-auto">
                             <i data-feather="mail" width="50" height="50" class="text-white"></i>
@@ -81,7 +74,7 @@
         </section>
 
         <section class="mt-30 mb-80 mt-md-50">
-            <h2 class="font-16 font-weight-bold text-secondary">{{ trans('site.send_your_message_directly') }}</h2>
+            <h1 class="font-16 font-weight-bold text-secondary">{{ trans('site.send_your_message_directly') }}</h1>
 
             @if(!empty(session()->has('msg')))
                 <div class="alert alert-success my-25 d-flex align-items-center">

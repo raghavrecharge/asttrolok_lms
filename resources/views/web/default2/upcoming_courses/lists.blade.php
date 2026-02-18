@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/select2/select2.min.css">
 @endpush
 
+
 @section('content')
     <section class="site-top-banner search-top-banner opacity-04 position-relative">
         <img src="{{ config('app.img_dynamic_url') }}{{ getPageBackgroundSettings('upcoming_courses_lists') }}" class="img-cover" alt=""/>
@@ -57,6 +58,7 @@
                         @endif
 
                     </div>
+
 
                     <div class="col-12 col-lg-4">
                         @include('web.default.upcoming_courses.includes.right_filters')

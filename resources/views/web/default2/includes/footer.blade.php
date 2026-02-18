@@ -111,7 +111,7 @@
                                                                     <h3 class="mt-16 font-44 text-white mr-0 mr-lg-48">Take the First Step Towards Cosmic</h3>
                                 
                                                                 <div class="footer-logo mt-10" style="width: 215px; height: 57px;">
-                        <a href="{{ config('app.manual_base_url') }}/"><img loading="lazy" decoding="async" src="/public/public/Asttolok-White-Logo 1.png" class="img-cover" alt="footer logo" style="
+                        <a href="/"><img loading="lazy" decoding="async" src="/public/public/Asttolok-White-Logo 1.png" class="img-cover" alt="footer logo" style="
     border-radius: 0;
 "/></a>
                     </div>
@@ -122,11 +122,11 @@
                             <div class="mt-20"> 
                                @guest
     {{-- Login/Register buttons for guests --}}
-    <a href="/login" target="_blank" class="d-block font-16 text-white opacity-70 mt-16" data-text="Login">
+    <a href="{{ config('app.manual_base_url') }}/login" target="_blank" class="d-block font-16 text-white opacity-70 mt-16" data-text="Login">
         <span class="btn-flip-effect__text">Login</span>
     </a>
     
-    <a href="/register" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Register">
+    <a href="{{ config('app.manual_base_url') }}/register" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Register">
         <span class="btn-flip-effect__text">Register</span>
     </a>
 @else
@@ -139,21 +139,23 @@
         <span class="btn-flip-effect__text">Logout</span>
     </a>
 @endguest
-                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/contact" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Contact">
+                                                                                                                                                <a href="/contact" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Contact">
                                             <span class="btn-flip-effect__text">Contact</span>
                                         </a>
-                                                                                                                                              
+                                                   <a href="/blog" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="About">
+                                            <span class="btn-flip-effect__text">Blog</span>
+                                        </a>                                                                                               
                                             
-                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/about" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="About">
+                                                                                                                                                <a href="/about" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="About">
                                             <span class="btn-flip-effect__text">About</span>
                                         </a>
-                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/pages/terms" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Terms and Policies">
+                                                                                                                                                <a href="/pages/terms" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Terms and Policies">
                                             <span class="btn-flip-effect__text">Terms and Conditions</span>
                                         </a>
-                                                                                                                                            <a href="{{ config('app.manual_base_url') }}/pages/cancellation-and-refund-policy" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Become Instructor">
+                                                                                                                                            <a href="/pages/cancellation-and-refund-policy" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Become Instructor">
                                             <span class="btn-flip-effect__text">Cancellation &amp; Refund Policy</span>
                                         </a>
-                                         <a href="{{ config('app.manual_base_url') }}/tutorial-guide" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Become Instructor">
+                                         <a href="/tutorial-guide" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Become Instructor">
                                             <span class="btn-flip-effect__text">Tutorial Guide</span>
                                         </a>
                                        
@@ -163,25 +165,25 @@
             <div class=" col-md-2 mt-10"> 
                 <span class="header d-block text-white font-weight-bold d-none" style="font-size: 20px !important;">Popular Categories</span>
                 
-                     <a href="{{ config('app.manual_base_url') }}/categories/astrology" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-16" data-text="Development">
+                     <a href="/categories/astrology" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-16" data-text="Development">
                                             <span class="btn-flip-effect__text">Astrology</span>
                                         </a>
-                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/categories/ayurveda" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Business">
+                                                                                                                                                <a href="/categories/ayurveda" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Business">
                                             <span class="btn-flip-effect__text">Ayurveda</span>
                                         </a>
-                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/categories/numerology" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Marketing">
+                                                                                                                                                <a href="/categories/numerology" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Marketing">
                                             <span class="btn-flip-effect__text">Numerology</span>
                                         </a>
-                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/categories/palmistry" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Lifestyle">
+                                                                                                                                                <a href="/categories/palmistry" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Lifestyle">
                                             <span class="btn-flip-effect__text">Palmistry</span>
                                         </a>
-                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/categories/vastu" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Health">
+                                                                                                                                                <a href="/categories/vastu" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Health">
                                             <span class="btn-flip-effect__text">Vastu</span>
                                         </a>
-                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/classes?hindi=on" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Academics">
+                                                                                                                                                <a href="/classes?hindi=on" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Academics">
                                             <span class="btn-flip-effect__text">Hindi</span>
                                         </a>
-                                                                                                                                                <a href="{{ config('app.manual_base_url') }}/classes?english=on" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Design">
+                                                                                                                                                <a href="/classes?english=on" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Design">
                                             <span class="btn-flip-effect__text">English</span>
                                         </a>
                         </div>
@@ -216,22 +218,12 @@
   <path stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.5" d="M17 20.5H7c-3 0-5-1.5-5-5v-7c0-3.5 2-5 5-5h10c3 0 5 1.5 5 5v7c0 3.5-2 5-5 5z"></path>
   <path stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.5" d="M17 9l-3.13 2.5c-1.03.82-2.72.82-3.75 0L7 9"></path>
 </svg>                                        </div>
-                                        <a href="mailto:info@asttrolok.com" class="font-16 text-white opacity-70 email-link">
+                                        <a href="mailto:admission_1@asttrolok.com" class="font-16 text-white opacity-70 email-link">
     <i class="fas fa-envelope me-2"></i>
-    info@asttrolok.com
+    admission_1@asttrolok.com
 </a>
                                     </div>
-            </div>
-                    </div>
-                    
-                 
-                    
-                    
-
-        <div class="mt-40 border-blue py-25 d-flex align-items-center justify-content-between">
-            <div class="font-14 text-white opacity-70"> All copyrights reserved 2023 Asttrolok.com.</div>
-                    
-                    <div class="d-flex align-items-center justify-content-center gap-16 gap-lg-24">
+                                    <div class="d-flex align-items-center justify-content-center gap-16 gap-lg-24 mt-20" style="margin-left: -35px !important;">
                                                     
                                                                                                                                         <a href="https://www.instagram.com/asttrolok" target="_blank" rel="nofollow" title="Instagram" class="d-flex-center size-24">
                                             <img src="/public/public/instagram.svg" alt="Instagram" class="img-cover">
@@ -249,13 +241,26 @@
                                             <img src="/public/public/pinterest.svg" alt="Pinterest" class="img-cover">
                                         </a>
 
-                                          <a href="hhttps://youtube.com/@asttrolokchannel" target="_blank" rel="nofollow" title="Youtube" class="d-flex-center size-24">
+                                          <a href="https://www.youtube.com/channel/UCpTpt23TwNia1DV831JZgDg" target="_blank" rel="nofollow" title="Youtube" class="d-flex-center size-24">
                                             <img src="/public/public/youtube.svg" alt="Youtube"  class="img-cover">
                                             
                                         </a>
                                                                                                                         
 
                     </div>
+                                     
+            </div>
+            
+                    </div>
+                    
+                 
+                    
+                    
+
+        <div class="mt-40 border-blue py-25 d-flex align-items-center justify-content-between">
+            <div class="font-14 text-white opacity-70"> All copyrights reserved 2023 Asttrolok.com.</div>
+                    
+                   
         </div>
         
     </div>

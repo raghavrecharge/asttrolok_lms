@@ -1,7 +1,7 @@
 <div class="blog-grid-card">
      <a href="{{ $post->getUrl() }}">
     <div class="blog-grid-image">
-        <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $post->image }}" class="img-cover" alt="{{ $post->title }}">
+        <img src="{{ config('app.img_dynamic_url') }}{{ $post->image }}" class="img-cover" alt="{{ $post->title }}">
 
         <span class="badge created-at d-flex align-items-center">
             <i data-feather="calendar" width="20" height="20" class="mr-5"></i>

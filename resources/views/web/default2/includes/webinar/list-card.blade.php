@@ -17,7 +17,7 @@
         @endif
 
         <a href="{{ $webinar->getUrl() }}">
-            <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $webinar->getImage() }}" class="img-cover" alt="{{ $webinar->title }}">
+            <img src="{{ config('app.img_dynamic_url') }}{{ $webinar->getImage() }}" class="img-cover" alt="{{ $webinar->title }}">
         </a>
 
         <div class="progress-and-bell d-flex align-items-center">
@@ -49,12 +49,12 @@
 
         <div class="user-inline-avatar d-flex align-items-center mt-10">
             <div class="avatar bg-gray200">
-                <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $webinar->teacher->getAvatar() }}" class="img-cover" alt="{{ $webinar->teacher->full_name }}">
+                <img src="{{ config('app.img_dynamic_url') }}{{ $webinar->teacher->getAvatar() }}" class="img-cover" alt="{{ $webinar->teacher->full_name }}">
             </div>
             <a href="{{ $webinar->teacher->getProfileUrl() }}" target="_blank" class="user-name ml-5 font-14">{{ $webinar->teacher->full_name }}</a>
         </div>
 
-        @include(getTemplate() . '.includes.webinar.rate',['rate' => $webinar->getRate()])
+        @include(getTemplate() . '.includes.webinar.rate',['rate' => 5])
 
         <div class="d-flex justify-content-between mt-auto">
             <div class="d-flex align-items-center">

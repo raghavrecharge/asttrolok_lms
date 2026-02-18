@@ -2,7 +2,7 @@
 
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/css-stars.css">
-    <meta name="robots" content="noindex, nofollow" />.
+   <meta name="robots" content="index, follow">
 @endpush
 
 @section('content')

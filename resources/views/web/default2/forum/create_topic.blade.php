@@ -1,4 +1,4 @@
-@extends('web.default2.layouts.app')
+@extends('web.default.layouts.app')
 
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/vendors/summernote/summernote-bs4.min.css">
@@ -33,7 +33,8 @@
                             @error('title')
                             <div class="invalid-feedback">
                                 {{ $message }}
-
+                                
+                               
                             </div>
                             @enderror
                             @if(!empty($error125))

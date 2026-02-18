@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -6,6 +6,7 @@
 
     <style type="text/css">
 
+        #outlook a {
             padding: 0;
         }
 
@@ -63,9 +64,11 @@
             font-family: Tahoma, Geneva, sans-serif !important;
         }
 
+        #bodyCell {
             padding: 0;
         }
 
+        #templateContainer {
             width: 600px;
         }
 
@@ -73,9 +76,11 @@
             background-color: #F5F6F7;
         }
 
+        #bodyCell {
             border-top: 5px solid #43d477;
         }
 
+        #templateContainer {
             border: 1px solid #BBBBBB;
         }
 
@@ -137,6 +142,8 @@
             text-align: left;
         }
 
+        #templatePreheader {
+
         }
 
         .preheaderContent {
@@ -152,6 +159,7 @@
             font-weight: normal;
         }
 
+        #templateHeader {
             border-top: 1px solid #FFFFFF;
             border-bottom: 1px solid #CCCCCC;
         }
@@ -175,9 +183,12 @@
             font-weight: normal;
         }
 
+        #headerImage {
             height: auto;
             max-width: 600px;
         }
+
+        #templateBody {
 
         }
 
@@ -204,6 +215,8 @@
             height: auto;
             max-width: 560px;
         }
+
+        #templateFooter {
 
         }
 
@@ -236,9 +249,11 @@
                 min-width: 100% !important;
             }
 
+            #bodyCell {
                 padding: 0px !important;
             }
 
+            #templateContainer {
                 max-width: 600px !important;
                 width: 100% !important;
             }
@@ -262,6 +277,7 @@
                 line-height: 100% !important;
             }
 
+            #headerImage {
                 height: auto !important;
                 max-width: 600px !important;
                 width: 100% !important;
@@ -324,6 +340,7 @@
             margin: 20px;
         }
 
+        #templateContainer {
             border: none;
         }
 

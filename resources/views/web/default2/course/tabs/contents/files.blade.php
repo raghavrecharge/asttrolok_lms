@@ -23,6 +23,7 @@
             <span class="font-weight-bold text-secondary font-14 file-title">{{ $file->title }}</span>
         </div>
 <div class="">
+
                     @if(!empty($checkSequenceContent) and $sequenceContentHasError)
 
                         <button
@@ -78,6 +79,7 @@
                                 </button>
 
                                 @else
+
                                 <button type="button" data-toggle="modal" data-target="#textpop" class=" course-content-btns btn btn-sm btn-primary not-login-toast">
                                     {{ trans('public.play') }}
                                 </button>
@@ -90,6 +92,7 @@
                                     {{ trans('public.play') }}
                                 </button>
                             @else
+
                                 <button type="button" data-toggle="modal" data-target="#textpop" class=" course-content-btns btn btn-sm btn-primary not-login-toast">
                                     {{ trans('public.play') }}
                                 </button>

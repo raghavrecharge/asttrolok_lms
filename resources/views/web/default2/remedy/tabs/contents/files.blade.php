@@ -1,58 +1,33 @@
-
 @php
     $checkSequenceContent = $file->checkSequenceContent();
     $sequenceContentHasError = (!empty($checkSequenceContent) and (!empty($checkSequenceContent['all_passed_items_error']) or !empty($checkSequenceContent['access_after_day_error'])));
 
 @endphp
 
-@if( $file->file_type != "video")
+@if($file->file_type == "pdf")
+     <div class="d-flex-center flex-column text-center px-16">
 
-<div id="mob1" class="col-6 col-md-6 col-lg-3 pt-30 " >
-    <div class="webinar-card ">
-    <a href="{{ $file->file }}" target="_blank">
-    <figure>
-        <div class="image-box">
+                            <div class="profile-avatar-card size-150  mt-32 " style="width:248px;height:218px;">
+                                <img src="{{ config('app.js_css_url') }}/assets/default/img/pdf.png" alt="Ricardo Dave" class="img-cover " style="border-radius: 7px;">
+                            </div>
 
-                       @php
-print_r('mayank');
-@endphp
-            <a href="{{ $file-> file }}" >
-                <img src="https://play-lh.googleusercontent.com/1EgLFchHT9oQb3KME8rzIab7LrOIBfC14DSfcK_Uzo4vuK-WYFs9dhI-1kDI7J0ZNTDr=w240-h480-rw" class=" img-cover" alt="{{ $file->title }}">
-            </a>
-
-        </div>
-
-        <figcaption class="webinar-card-body">
-
-            <a href="{{ $file->file }}"  class="viewfile1" >
-                <h3 class="mt-5 webinar-title font-weight-bold font-16 text-dark-blue " >{{  $file->title }}</h3>
-            </a>
-
-        </figcaption>
-    </figure>
-
+                            <h4 class="mt-16 font-18 font-weight-bold">{{ $file->title }}</h4>
+                                    <a href="{{ url('/free-download') }}?url={{ urlencode(config('app.img_dynamic_url') . $file->file) }}&title={{ urlencode($file->title . '.pdf') }}"
+   class="btn bookbtn btn-primary my-20 ">
+   <span class="ml-5" style="font-family: 'Inter', sans-serif !important;">Download Now</span>
 </a>
-</div></div>
-@endIf
-<div  class="col-6 col-md-6 col-lg-2 pt-30 {{ $file->file_type }}" onclick="viewfile('{{ $file->file }}','{{ $file->id }}')" >
-    <div class="webinar-card ">
-    <figure>
-        <div class="image-box">
+                        </div>
 
-            <span src="{{ $file->file }}"   >
-                <img src="{{ ($file->file_type == 'video')?'https://media.istockphoto.com/id/1266094665/vector/white-online-play-video-icon-isolated-with-long-shadow-film-strip-with-play-sign-red-circle.jpg?s=170667a&w=0&k=20&c=TbML_QZ2oG9c6qqJKSoJERkMVjbAANFnatTlcqOAnsY=':'https://play-lh.googleusercontent.com/1EgLFchHT9oQb3KME8rzIab7LrOIBfC14DSfcK_Uzo4vuK-WYFs9dhI-1kDI7J0ZNTDr=w240-h480-rw' }}" class=" img-cover" alt="{{ $file->title }}">
-            </span>
+<script >
+function downloadFile(url, filename) {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.target = '_blank'; // optional
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
 
-        </div>
-
-        <figcaption class="webinar-card-body">
-
-            <span src="{{ $file->file }}"  class="viewfile1" >
-                <h3 class="mt-5 webinar-title font-weight-bold font-16 text-dark-blue " >{{  $file->title }}</h3>
-            </span>
-
-        </figcaption>
-    </figure>
-</div>
-</div>
-
+@endif

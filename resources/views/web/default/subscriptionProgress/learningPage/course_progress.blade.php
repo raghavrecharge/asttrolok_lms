@@ -3,10 +3,10 @@
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/learning_page/styles.css"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.10.2/video-js.min.css" rel="stylesheet">
-    <!--<link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/mobile-courses.css">-->
+
    <style>
        .learning-page .learning-content {
-  
+
     overflow-y: unset !important;
 }
 .learning-page .learning-content-iframe iframe {
@@ -33,15 +33,15 @@
         color: #ffffff;
         pointer-events: none !important;
     }
-    
+
 .webinar-card.list-card .image-box {
         position: relative;
         min-width: 146px !important;
-        /* height: 100% !important; */
+
         height: 130px !important;
         min-height: 130px !important;
     }
-    
+
     .hide {
         display: none !important;
     }
@@ -66,7 +66,7 @@
         font-family: "Inter", sans-serif;
     }
         .btn {
-        
+
         padding-right: 10px;
         padding-left: 10px;
         height: 37px;
@@ -123,22 +123,20 @@
     overflow-y: auto;
 ">
             <div class=" bg-info-whight p-15">
-                {{--@include('web.default.subscriptionProgress.learningPage.components.content')--}}
+
                    @include('web.default.subscriptionProgress.learningPage.components.content_tab.index')
-                   
 
             </div>
         </div>
     </div>
-    
-    {{--@include('web.default2.subscriptionProgress.consultation_popup')--}}
+
 @endsection
 
 @push('scripts_bottom')
 
 <script  >
                     // $('#myModal21').modal();
-                    
+
                 //      setTimeout(function() {
                 //     $('#consultationModal').modal();
                 // }, 30000);
@@ -151,7 +149,7 @@
     <script  >
         var defaultItemType = '{{ request()->get('type') }}'
         var defaultItemId = '{{ request()->get('item') }}'
-        
+
         var loadFirstContent = {{ (!empty($dontAllowLoadFirstContent) and $dontAllowLoadFirstContent) ? 'false' : 'true' }}; // allow to load first content when request item is empty
 
         var courseUrl = '{{ $subscription->getUrl() }}';
@@ -204,17 +202,17 @@
 <script  >
 
     if($('#readTogglefile'+defaultItemId).length){
-	 
+
 }else{
     //  alert($('#chapter_'+defaultItemId).length);
     $('.pratul').removeClass('active');
-   
+
 	$('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 mt-20 text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
 }
 function accessdenied(){
      $('.pratul').removeClass('active');
   $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 mt-20  text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
-  
+
 }
 
 $(function() {                       //run when the DOM is ready
@@ -228,16 +226,14 @@ $(function() {                       //run when the DOM is ready
 });
 </script>
 
-
  <script  >
     let getPaused = false;
-    let duration = 0; 
+    let duration = 0;
     let intervalId = null;
-    let progressSaved = false; 
-    let totalVideoDuration = 0; 
+    let progressSaved = false;
+    let totalVideoDuration = 0;
     let previousPercentage = sessionStorage.getItem('previousPercentage') || 0;
-    
-   
+
     function pauseAndFetchDuration() {
       const iframe = document.getElementsByTagName('iframe')[0];
       if (iframe) {
@@ -245,7 +241,7 @@ $(function() {                       //run when the DOM is ready
           context: 'player.js',
           method: 'getCurrentTime'
         }, '*');
-        
+
          iframe.contentWindow.postMessage({
           context: 'player.js',
           method: 'getDuration'
@@ -267,24 +263,24 @@ $(function() {                       //run when the DOM is ready
 
       if (jsonData && jsonData.event) {
         if (jsonData.event === 'getCurrentTime') {
-          duration = jsonData.value; 
+          duration = jsonData.value;
          sessionStorage.setItem('duration', duration);
         }
         if (jsonData.event === 'getDuration') {
-              totalVideoDuration = parseInt(jsonData.value); 
+              totalVideoDuration = parseInt(jsonData.value);
         }
 
         if (jsonData.event === 'getPaused') {
           if (jsonData.value === true) {
             if (!progressSaved && duration > 0) {
-                
+
                 const activeElement = document.querySelector('.tab-item.active');
               let itemId = 0;
                 if (activeElement) {
                      itemId = activeElement.getAttribute('data-id');
                     console.log('Active Tab Data ID:', itemId);
                 }
-            
+
             //   const chapterElement = document.getElementById('chapter_');
             //     if (chapterElement) {
             //         const chapterId = chapterElement.id.split('_')[1]; // Splits 'chapter_1' and extracts '1'
@@ -296,27 +292,24 @@ $(function() {                       //run when the DOM is ready
               const courseUrl = '{{ $subscription->id }}';
             const watchPercentage = parseInt((duration / totalVideoDuration) * 100);
 
-           
               console.log(`Saving progress: ${watchPercentage}% watched`);
               saveCourseProgress(itemId, chapterId, webinarId, userId, duration,watchPercentage,totalVideoDuration,courseUrl);
             //   previousPercentage = watchPercentage;
             //   sessionStorage.setItem('previousPercentage', previousPercentage);
               progressSaved = true;
-              getPaused = true; 
+              getPaused = true;
               sessionStorage.setItem('progressSaved', 'true');
               sessionStorage.setItem('duration', duration);
-            
+
             }
-            
+
           } else {
-            getPaused = false; 
-            progressSaved = false; 
+            getPaused = false;
+            progressSaved = false;
           }
         }
       }
     });
-
-   
 
       intervalId = setInterval(() => {
     const iframe = document.getElementsByTagName('iframe')[0];
@@ -329,8 +322,6 @@ $(function() {                       //run when the DOM is ready
         pauseAndFetchDuration();
     }
       }, 1000);
-  
-  
 
     window.addEventListener('beforeunload', () => {
       if (intervalId) {
@@ -357,7 +348,7 @@ $(function() {                       //run when the DOM is ready
                   console.log('response1');
 
           console.log('response',responsexx);
-         
+
         },
         error: function(xhr) {
           console.error('Error saving progress:', xhr.responseText);
@@ -376,7 +367,6 @@ $(function() {                       //run when the DOM is ready
     //   }
     };
   </script>
-
 
     @if((!empty($isForumPage) and $isForumPage) or (!empty($isForumAnswersPage) and $isForumAnswersPage))
         <script   src="{{ config('app.js_css_url') }}/assets/learning_page/forum.min.js"></script>

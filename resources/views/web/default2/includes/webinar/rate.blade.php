@@ -5,7 +5,7 @@
 
     @if((!empty($rate) and $rate > 0) or !empty($showRateStars))
         @while(--$i >= 5 - $rate)
-            <i data-feather="star" width="15" height="15" class="active"></i>
+            <i data-feather="star" width="15" height="15" class="active" style="margin-top:2px;"></i>
         @endwhile
         @while($i-- >= 0)
             <i data-feather="star" width="15" height="15" class=""></i>

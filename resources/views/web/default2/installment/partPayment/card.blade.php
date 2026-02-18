@@ -25,7 +25,7 @@
                 @else
 
                 <div class="default-package-icon mt-20">
-                <img src="/assets2/default/img/become-instructor/default.png" class="img-cover" alt="{{ trans('update.installment_overview') }}" width="176" height="144">
+                <img src="{{ config('app.js_css_url') }}/assets2/default/img/become-instructor/default.png" class="img-cover" alt="{{ trans('update.installment_overview') }}" width="176" height="144">
             </div>
             @endif
 
@@ -74,7 +74,7 @@
                         <span class="valid-feedback">{{ trans('cart.coupon_valid') }}</span>
                     </div>
                     </div><div class="col-12 col-lg-3 ">
-                    <button type="submit" id="checkCoupon1" class="btn btn-sm btn-primary mt-25">{{ trans('cart.validate') }}</button></div></div>
+                    <button type="submit" id="checkCoupon1" class="btn btn-sm btn-primary mt-25" style="font-family: 'Inter', sans-serif !important;">{{ trans('cart.validate') }}</button></div></div>
                 </form>
                 @endif
                 <div id="Payment-Option" class=" bg-gray200 mt-30 rounded-lg border p-15">
@@ -117,30 +117,11 @@
                             @enderror
                         </div>
 
-                       @php
-                        $finalAmount = null;
-
-                        if(isset($amount)){
-                            $finalAmount = $amount;
-                        } elseif($item->slug == 'astrology-basic-level' || $item->slug == '3-days-astrology-workshop'){
-                            $finalAmount = $totalPayments ?? null;
-                        }
-                    @endphp
-
-
                         <div class="form-group">
                             @if($item->slug=='astrology-basic-level' || $item->slug=='3-days-astrology-workshop')
-                            <input name="amount" id='amount'  placeholder="Amount" type="text" value="{{ $finalAmount }}" class="form-control @error('number') is-invalid @enderror"  readonly >
+                            <input name="amount" id='amount'  placeholder="Amount" type="text" value="{{$item->slug=='astrology-basic-level' || $item->slug=='3-days-astrology-workshop'?$totalPayments:null}}" class="form-control @error('number') is-invalid @enderror"  readonly >
                             @else
-                            <input
-                                name="amount"
-                                id="amount"
-                                type="text"
-                                placeholder="Amount"
-                                value="{{ request()->get('amount') }}"
-                                class="form-control @error('amount') is-invalid @enderror"
-                            >
-                            <!-- <input name="amount" id='amount'  placeholder="Amount" type="text" value="" class="form-control @error('number') is-invalid @enderror"   > -->
+                            <input name="amount" id='amount'  placeholder="Amount" type="text" value="" class="form-control @error('number') is-invalid @enderror"   >
                             @endif
                             @error('amount')
                             <div class="invalid-feedback">
@@ -178,7 +159,7 @@
                 </div>
             @endif
 
-<button type="button" id="paymentSubmit"  class="{{$item->slug=='astrology-basic-level' || $item->slug=='3-days-astrology-workshop'?'':'d-none'}} btn btn-sm btn-primary loading">{{ trans('public.start_payment') }}</button>
+<button type="button" id="paymentSubmit"  class="{{$item->slug=='astrology-basic-level' || $item->slug=='3-days-astrology-workshop'?'':'d-none'}} btn btn-sm btn-primary loading"style="font-family: 'Inter', sans-serif !important;">{{ trans('public.start_payment') }}</button>
 
         </form>
         </div>

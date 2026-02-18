@@ -1,5 +1,4 @@
-@extends('web.default.layouts.app')
-
+@extends('web.default2'.'.layouts.app')
 @section('content')
     <div class="container">
         <div class="course-private-content text-center w-100 border rounded-lg">

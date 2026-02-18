@@ -2,24 +2,27 @@
     <figure>
         <div class="image-box">
             @if($webinar->bestTicket() < $webinar->price)
-                <span class="badge badge-danger">{{ trans('public.offer',['off' => number_format($webinar->bestTicket(true)['percent'])]) }}</span>
+                {{--<span class="badge badge-danger">{{ trans('public.offer',['off' => number_format($webinar->bestTicket(true)['percent'])]) }}</span>--}}
             @elseif(empty($isFeature) and !empty($webinar->feature))
-                <span class="badge badge-warning">{{ trans('home.featured') }}</span>
+                {{--<span class="badge badge-warning">{{ trans('home.featured') }}</span>--}}
             @elseif($webinar->type == 'webinar')
                 @if($webinar->start_date > time())
-                    <span class="badge badge-primary">{{  trans('panel.not_conducted') }}</span>
+                    {{--<span class="badge badge-primary">{{  trans('panel.not_conducted') }}</span>--}}
                 @elseif($webinar->isProgressing())
-                    <span class="badge badge-secondary">{{ trans('webinars.in_progress') }}</span>
+                    {{--<span class="badge badge-secondary">{{ trans('webinars.in_progress') }}</span>--}}
                 @else
-                    <span class="badge badge-secondary">{{ trans('public.finished') }}</span>
+                    {{--<span class="badge badge-secondary">{{ trans('public.finished') }}</span>--}}
                 @endif
             @elseif(!empty($webinar->type))
-                <span class="badge badge-primary">{{ trans('webinars.'.$webinar->type) }}</span>
+               {{-- <span class="badge badge-primary">{{ trans('webinars.'.$webinar->type) }}</span>--}}
             @endif
 
+            @if($webinar->slug == "astromani-2024" or $webinar->slug == "astroshiromani-2024" or $webinar->slug == "astrology-basic-level")
+            <a href="/landingpage/{{ $webinar->slug }}">
+            @else
             <a href="{{ $webinar->getUrl() }}">
-
-                <img loading="lazy" decoding="async" src="{{ getOptimizedImage($webinar->getImage()) }}" class="img-cover" alt="{{ $webinar->title }}">
+            @endif
+                <img src="{{ config('app.img_dynamic_url') }}{{ $webinar->getImage() }}" class="img-cover" alt="{{ $webinar->title }}">
             </a>
 
             @if($webinar->checkShowProgress())
@@ -38,7 +41,7 @@
         <figcaption class="webinar-card-body">
             <div class="user-inline-avatar d-flex align-items-center">
                 <div class="avatar bg-gray200">
-                    <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $webinar->teacher->getAvatar() }}" class="img-cover" alt="{{ $webinar->teacher->full_name }}">
+                    <img src="{{ config('app.img_dynamic_url') }}{{ $webinar->teacher->getAvatar() }}" class="img-cover" alt="{{ $webinar->teacher->full_name }}">
                 </div>
                 <a href="{{ $webinar->teacher->getProfileUrl() }}" target="_blank" class="user-name ml-5 font-14">{{ $webinar->teacher->full_name }}</a>
             </div>
@@ -52,7 +55,7 @@
                 <span class="d-block font-14 mt-5">{{ trans('public.in') }} <a href="{{ $webinar->category->getUrl() }}" target="_blank" class="text-decoration-underline">{{ $webinar->category->title }}</a></span>
             @endif
 
-            @include(getTemplate() . '.includes.webinar.rate',['rate' => $webinar->course_rate])
+            @include(getTemplate() . '.includes.webinar.rate',['rate' => 5])
 
             <div class="webinar-price-box mt-5">
             @if(!empty($isRewardCourses) and !empty($webinar->points))

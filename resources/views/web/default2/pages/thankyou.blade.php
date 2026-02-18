@@ -2,6 +2,7 @@
 
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/vendors/select2/select2.min.css">
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/css/app.css">
 @endpush
 
 @section('content')

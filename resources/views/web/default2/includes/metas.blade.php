@@ -1,25 +1,18 @@
 <meta charset="utf-8">
 
 <meta name="csrf-token" content="{{ csrf_token() }}">
-
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
 @if (isset($robots) and !empty($robots))
 <meta name='robots' content="'follow,'{{$robots ?? ""}}">
 @else
 <meta name='robots' content="{{ $pageRobot ?? 'follow, index' }}">
 @endif
-
 @if (isset($pageDescription) and !empty($pageDescription))
     <meta name="description" content="{{ $pageDescription }}">
 
 @endif
-@if (isset($pagekeyword) and !empty($pagekeyword))
-    <meta name="keywords" content="{{ $pagekeyword }}">
-@endif
-
-<link rel='shortcut icon' type='image/x-icon' href="{{ url(!empty($generalSettings['fav_icon']) ? $generalSettings['fav_icon'] : '') }}">
+<link rel='shortcut icon' type='image/x-icon' href="{{ url(!empty($generalSettings['fav_icon']) ? $generalSettings['fav_icon'] : 'https://storage.googleapis.com/astrolok/webp/store/1/logo121.webp') }}">
 <link rel="manifest" href="/mix-manifest.json?v=4">
 <meta name="theme-color" content="#FFF">
 
@@ -27,13 +20,13 @@
 <meta name="msapplication-TileColor" content="#FFF">
 <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 
-<meta name="apple-mobile-web-app-title" content="{{ !empty($generalSettings['site_name']) ? $generalSettings['site_name'] : '' }}">
+<meta name="apple-mobile-web-app-title" content="{{ !empty($generalSettings['site_name']) ? $generalSettings['site_name'] : 'https://storage.googleapis.com/astrolok/webp/store/1/logo121.webp' }}">
 <link rel="apple-touch-icon" href="{{ url(!empty($generalSettings['fav_icon']) ? $generalSettings['fav_icon'] : '') }}">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
 <link rel='icon' href='{{ url(!empty($generalSettings['fav_icon']) ? $generalSettings['fav_icon'] : '') }}'>
-<meta name="application-name" content="{{ !empty($generalSettings['site_name']) ? $generalSettings['site_name'] : '' }}">
+<meta name="application-name" content="{{ !empty($generalSettings['site_name']) ? $generalSettings['site_name'] : 'https://storage.googleapis.com/astrolok/webp/store/1/logo121.webp' }}">
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="layoutmode" content="fitscreen/standard">
@@ -48,6 +41,16 @@
 @if (isset($pageDescription) and !empty($pageDescription))
 <meta property="og:description" content="{{ (!empty($ogDescription)) ? $ogDescription : $pageDescription }}">
 @endif
+<script >
+    setTimeout(function() {
+    var headID = document.getElementsByTagName("head")[0];
+    var newScript = document.createElement('script');
+    newScript.type = 'text/javascript';
+    newScript.src = '//code.jivosite.com/widget/0vDO9nN5Jy';
+    headID.appendChild(newScript);
+}, 20000);
+
+</script>
 <?php
 $main_url =  $_SERVER['REQUEST_URI'];
 
@@ -55,18 +58,18 @@ $url_array=explode("/",$main_url);
 ?>
 <meta property="og:url" content="https://www.asttrolok.com{{$main_url}}">
 <?php
-
+//	echo $main_url;
 if(isset($url_array[2])){
 if($url_array[1]=="blog")
 {
 ?>
 <meta property="og:image" content="{{ url(!empty($post->image) ? config('app.img_dynamic_url') . $post->image : '') }}">
 <?php }else{	?>
-<meta property="og:image" content="https://storage.googleapis.com/astrolok/store/1/Home/asttroloklogo-min_converted.webp">
+<meta property="og:image" content="https://storage.googleapis.com/astrolok/store/1/Home/Asttrolok-Logo.png">
 <?php }}
 else{
     ?>
-    <meta property="og:image" content="https://storage.googleapis.com/astrolok/store/1/Home/asttroloklogo-min_converted.webp">
+    <meta property="og:image" content="https://storage.googleapis.com/astrolok/store/1/Home/Asttrolok-Logo.png">
     <?php
 }
 ?>
@@ -78,52 +81,29 @@ else{
 <meta property="twitter:description" content="{{ (!empty($ogDescription)) ? $ogDescription : $pageDescription }}">
 @endif
 	<?php
-
+//	echo $main_url;
 if(isset($url_array[2])){
 if($url_array[1]=="blog")
 {
 ?>
 <meta name="twitter:image" content="{{ url(!empty($post->image) ? config('app.img_dynamic_url') . $post->image : '') }}">
 <?php }else{	?>
-<meta name="twitter:image" content="https://storage.googleapis.com/astrolok/store/1/Home/asttroloklogo-min_converted.webp">
+<meta name="twitter:image" content="https://storage.googleapis.com/astrolok/store/1/Home/Asttrolok-Logo.png">
 <?php }}
 else{
 ?>
-<meta name="twitter:image" content="https://storage.googleapis.com/astrolok/store/1/Home/asttroloklogo-min_converted.webp">
+<meta name="twitter:image" content="https://storage.googleapis.com/astrolok/store/1/Home/Asttrolok-Logo.png">
 <?php
 }?>
 
 {!! getSeoMetas('extra_meta_tags') !!}
-
-<script defer>
-
- </script>
-
- <script defer>
-    window.addEventListener('load', () => {
-      let jivoLoaded = false;
-      function loadJivo() {
-        if (jivoLoaded) return;
-        jivoLoaded = true;
-        const script = document.createElement('script');
-        script.src = 'https://code.jivosite.com/widget/0vDO9nN5Jy';
-        script.async = true;
-        document.head.appendChild(script);
-      }
-
-      setTimeout(loadJivo, 10000);
-      ['scroll', 'mousemove', 'touchstart', 'click'].forEach(evt => {
-        window.addEventListener(evt, loadJivo, { once: true });
-      });
-    });
-</script>
 
 <?php
 
 $main_url =  $_SERVER['REQUEST_URI'];
 
 	$url_array=explode("/",$main_url);
-
+ //	echo $main_url;
 if(isset($url_array[1])){
 	if($url_array[1]=="instructors")
 	{	?>
@@ -146,10 +126,3 @@ if(isset($url_array[1])){
 	<?php
 	}
 	?>
-<?php
-$host = $_SERVER['HTTP_HOST'];
-
-$canonical = "https://" . $host . $main_url;
-?>
-
-<link rel="canonical" href="<?php echo $canonical; ?>" />

@@ -1,35 +1,10 @@
-<style>
-    .navbar-auth-user-dropdown .custom-dropdown-body{
-        top:10px !important;
-    }
-    .custom-dropdown-body {
-    z-index: 1050 !important; /* Bootstrap ke fixed navbar se upar */
-}
- .navbar-user img {
-        width: 40px !important;
-        height: 40px !important;
-        object-fit: cover;
-    }
-    
-    /* Agar size-40 class nahi hai to yeh add karein */
-    .size-40 {
-        width: 40px !important;
-        height: 40px !important;
-    }
-    
-    .img-cover {
-        object-fit: cover;
-    }
-</style>
-
-
 @if(!isset($_GET['ad']))
 @if(!empty($authUser))
 
     <div class="custom-dropdown navbar-auth-user-dropdown position-relative ml-50">
         <div class="custom-dropdown-toggle d-flex align-items-center navbar-user cursor-pointer">
             <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $authUser->getAvatar() }}" class="rounded-circle" alt="{{ $authUser->full_name }}">
-            <span class="font-16 user-name ml-10 text-dark-blue font-14" style="color:white !important;">{{ $authUser->full_name }}</span>
+            <span class="font-16 user-name ml-10 text-dark-blue font-14">{{ $authUser->full_name }}</span>
         </div>
 
         <div class="custom-dropdown-body pb-10">
@@ -67,6 +42,7 @@
                             <span class="ml-5">{{ trans('panel.dashboard') }}</span>
                         </a>
                     </li>
+
 
                     <li class="navbar-auth-user-dropdown-item">
                         <a href="{{ ($authUser->isUser()) ? '/panel/webinars/purchases' : '/panel/webinars' }}" class="d-flex align-items-center w-100 px-15 py-10 text-gray font-14 bg-transparent">
@@ -121,8 +97,8 @@
     </div>
 @else
     <div class="d-flex align-items-center ml-md-50">
-        <a href="/login" class="py-5 px-10 mr-10 text-dark-blue font-14" style="font-weight: 800;">{{ trans('auth.login') }}</a>
-        <a href="/register" class="py-5 px-10 text-dark-blue font-14" style="font-weight: 800;">{{ trans('auth.register') }}</a>
+        <a href="https://lms.asttrolok.com/login" class="py-5 px-10 mr-10 text-dark-blue font-14" style="font-weight: 800;">{{ trans('auth.login') }}</a>
+        <a href="https://lms.asttrolok.com/register" class="py-5 px-10 text-dark-blue font-14" style="font-weight: 800;">{{ trans('auth.register') }}</a>
     </div>
 @endif
 @endif

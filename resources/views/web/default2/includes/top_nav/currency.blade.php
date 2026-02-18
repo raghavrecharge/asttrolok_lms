@@ -2,19 +2,45 @@
     @php
         $userCurrency = currency();
     @endphp
+<style>
 
-    <div class="js-currency-select custom-dropdown position-relative" style="display: none;">
+    .custom-dropdown-body__item {
+        background-color: #ffffff !important;
+    }
+
+    .custom-dropdown-body__item span,
+    .custom-dropdown-body__item div {
+        color: #000000 !important;
+    }
+
+    .custom-dropdown-body__item.active span,
+    .custom-dropdown-body__item.active div {
+        color: #43d477 !important;
+    }
+
+    .custom-dropdown-body__item:hover span,
+    .custom-dropdown-body__item:hover div {
+        color: #43d477 !important;
+    }
+    .custom-dropdown .custom-dropdown-body__item.active {
+    border-left: 2px solid #43d477 !important;
+    color: #43d477 !important;
+}
+</style>
+    <div class="js-currency-select custom-dropdown position-relative">
         <form action="/set-currency" method="post">
             {{ csrf_field() }}
-            <input type="hidden" name="currency" value="{{ $userCurrency }}">
+            <input type="hidden" name="currency"
+ value="{{ $userCurrency }}">
 
             @foreach($currencies as $currencyItem)
                 @if($userCurrency == $currencyItem->currency)
-                    <div class="custom-dropdown-toggle d-flex align-items-center cursor-pointer">
-                        <div class="mr-5 text-secondary">
+                    <div class="custom-dropdown-toggle d-flex align-items-center cursor-pointer" >
+
+                        <div class="mr-5 text-white">
                             <span class="js-lang-title font-14">{{ $currencyItem->currency }} ({{ currencySign($currencyItem->currency) }})</span>
                         </div>
-                        <i data-feather="chevron-down" class="icons" width="14px" height="14px"></i>
+<i data-feather="chevron-down" class="icons" width="14px" height="14px" style="stroke:#fff;"></i>
                     </div>
                 @endif
             @endforeach
@@ -36,4 +62,7 @@
 
         </div>
     </div>
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
 @endif

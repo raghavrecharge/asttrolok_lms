@@ -14,9 +14,9 @@
                     <i data-feather="video" width="20" height="20" class="text-gray"></i>
                     @else
                     <i data-feather="{{ $file->getIconByType() }}" width="20" height="20" class="text-gray"></i>
-                    
+
                     @endif
-                
+
                 </span>
             </span>
 
@@ -24,7 +24,7 @@
         </div>
 <div class="">
                     @if(!empty($checkSequenceContent) and $sequenceContentHasError)
-                    
+
                         <button
                             type="button"
                             class="course-content-btns btn btn-sm btn-gray flex-grow-1 disabled js-sequence-content-error-modal"
@@ -43,9 +43,7 @@
                                 </a>
                             @endif
                         @else
-                        <!--<button type="button" class="btn btn-outline-danger mt-20 js-course-direct-payment">-->
-                        <!--                    Buy now!-->
-                        <!--                </button>-->
+
                             <button type="button"  data-toggle="modal" data-target="#buynow_modal" class="course-content-btns btn btn-sm btn-gray disabled {{ ((empty($user)) ? 'not-login-toast' : (!$hasBought ? 'not-access-toast' : '')) }}" >
                                 @if($file->downloadable)
                                     {{ trans('home.download') }}
@@ -55,39 +53,31 @@
                             </button>
                         @endif
                     @else
-                    
+
                         @if($file->downloadable)
-                        
+
                             <a href="{{ $course->getUrl() }}/file/{{ $file->id }}/download" class="course-content-btns btn btn-sm btn-primary">
                                 {{ trans('home.download') }}
                             </a>
-                            <!--<a href="{{ $course->getLearningPageUrl() }}?type=file&item={{ $file->id }}" class="course-content-btns btn btn-sm btn-primary">-->
-                            <!--    {{ trans('home.download') }}-->
-                            <!--</a>-->
+
                         @else
                             @if(!empty($user) and $hasBought)
-                             
+
                                 <a href="{{ $course->getLearningPageUrl() }}?type=file&item={{ $file->id }}" target="_blank" class="course-content-btns btn btn-sm btn-primary">
                                     {{ trans('public.play') }}
                                 </a>
                             @elseif($file->storage == 'upload_archive')
-                            
+
                                 <a href="/course/{{ $course->slug }}/file/{{ $file->id }}/showHtml" target="_blank" class="course-content-btns btn btn-sm btn-primary">
                                     {{ trans('public.play') }}
                                 </a>
                             @elseif(in_array($file->storage, ['iframe', 'google_drive', 'dropbox']))
                             @if(!empty($authUser))
-                          
-                            <!--<a href="{{ $course->getLearningPageUrl() }}?type=file&item={{ $file->id }}" target="_blank" class="course-content-btns btn btn-sm btn-primary ">-->
-                            <!--        {{ trans('public.play') }}-->
-                            <!--    </a>-->
+
                             <button type="button" data-id="{{ $file->id }}" data-title="{{ $file->title }}" class="js-play-video 1 course-content-btns btn btn-sm btn-primary">
                                     Play
                                 </button>
-                                <!--<a href="/course/{{ $course->slug }}/file/{{ $file->id }}/play" target="_blank" class="course-content-btns btn btn-sm btn-primary ">-->
-                                <!--    {{ trans('public.play') }}-->
-                                <!--</a>-->
-                                
+
                                 @else
                                 <button type="button" data-toggle="modal" data-target="#textpop" class=" course-content-btns btn btn-sm btn-primary not-login-toast">
                                     {{ trans('public.play') }}
@@ -96,28 +86,23 @@
 
                             @elseif($file->isVideo())
                             @if(!empty($authUser))
-                            
+
                               <button type="button" data-id="{{ $file->id }}" data-title="{{ $file->title }}" class="js-play-video 1 course-content-btns btn btn-sm btn-primary">
                                     {{ trans('public.play') }}
                                 </button>
                             @else
 
-                                {{-- <button type="button" data-toggle="modal" data-target="#textpop" class=" course-content-btns btn btn-sm btn-primary not-login-toast">
-                                    {{ trans('public.play') }}
-                                </button> --}}
                                  @endif
                             @else
                             <a href="{{ $course->getLearningPageUrl() }}?type=file&item={{ $file->id }}" target="_blank" class="course-content-btns btn btn-sm btn-primary">
                                     {{ trans('home.download') }}
                                 </a>
-                                <!--<a href="{{ $file->file }}" target="_blank" class="course-content-btns btn btn-sm btn-primary">-->
-                                <!--    {{ trans('home.download') }}-->
-                                <!--</a>-->
+
                             @endif
                         @endif
                     @endif
                 </div>
-        <!--<i class="collapse-chevron-icon" data-feather="chevron-down" height="20" href="#collapseFiles{{ !empty($file) ? $file->id :'record' }}" aria-controls="collapseFiles{{ !empty($file) ? $file->id :'record' }}" data-parent="#{{ $accordionParent }}" role="button" data-toggle="collapse" aria-expanded="true"></i>-->
+
     </div>
 
     <div id="collapseFiles{{ $file->id }}" aria-labelledby="files_{{ $file->id }}" class=" collapse" role="tabpanel">
@@ -165,9 +150,7 @@
                                 </a>
                             @endif
                         @else
-                        <!--<button type="button" class="btn btn-outline-danger mt-20 js-course-direct-payment">-->
-                        <!--                    Buy now!-->
-                        <!--                </button>-->
+
                             <button type="button"  data-toggle="modal" data-target="#buynow_modal" class="course-content-btns btn btn-sm btn-gray disabled {{ ((empty($user)) ? 'not-login-toast' : (!$hasBought ? 'not-access-toast' : '')) }}" >
                                 @if($file->downloadable)
                                     {{ trans('home.download') }}
@@ -178,7 +161,7 @@
                         @endif
                     @else
                         @if($file->downloadable)
-                        
+
                             <a href="{{ $course->getUrl() }}/file/{{ $file->id }}/download" class="course-content-btns btn btn-sm btn-primary">
                                 {{ trans('home.download') }}
                             </a>
@@ -193,21 +176,20 @@
                                 </a>
                             @elseif(in_array($file->storage, ['iframe', 'google_drive', 'dropbox']))
                             @if(!empty($authUser))
-                            
-                            
+
                                 <a href="/course/{{ $course->slug }}/file/{{ $file->id }}/play" target="_blank" class="course-content-btns btn btn-sm btn-primary ">
                                     {{ trans('public.play') }}
                                 </a>
-                                
+
                                 @else
                                 <button type="button" data-toggle="modal" data-target="#textpop" class=" course-content-btns btn btn-sm btn-primary not-login-toast">
                                     {{ trans('public.play') }}
                                 </button>
                                  @endif
-                                
+
                             @elseif($file->isVideo())
                             @if(!empty($authUser))
-                            
+
                               <button type="button" data-id="{{ $file->id }}" data-title="{{ $file->title }}" class="js-play-video 1 course-content-btns btn btn-sm btn-primary">
                                     {{ trans('public.play') }}
                                 </button>
@@ -228,8 +210,3 @@
         </div>
     </div>
 </div>
-<!--<script>-->
-<!--    function buy_now(){-->
-<!--        $('.buy_now').click();-->
-<!--    }-->
-<!--</script>-->

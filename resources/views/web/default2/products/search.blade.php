@@ -1,4 +1,4 @@
-@extends('web.default2.layouts.app')
+@extends('web.default.layouts.app')
 
 @section('content')
     <section class="site-top-banner search-top-banner opacity-04 position-relative">
@@ -41,6 +41,7 @@
                             @endforeach
                         </div>
                     </div>
+
 
                     <div class="col-12 col-md-3">
                         @include('web.default.products.includes.right_filters')

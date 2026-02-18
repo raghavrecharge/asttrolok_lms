@@ -185,14 +185,12 @@ button.btn.btn-primary.rounded-pill.buynow {
             </div>
         </div>
     </section>
-
-        <section class="container course-content-section {{ $bundle->type }} {{ ($hasBought) ? 'has-progress-bar' : '' }}">
-        <div class="row">
-            <div class="col-12 col-lg-8">
-                <div class="course-content-body  user-select-none">
-
-<div class=" p-20 course-teacher-card d-flex align-items-center flex-column">
-<div class=" mt-lg-40 row align-items-center font-14">
+<section class="container course-content-section {{ $bundle->type }} {{ ($hasBought) ? 'has-progress-bar' : '' }}">
+  <div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="course-content-body  user-select-none">
+            <div class=" p-20 course-teacher-card d-flex align-items-center flex-column">
+            <div class=" mt-lg-40 row align-items-center font-14">
             <a href="https://www.youtube.com/@ASTTROLOKChannel?sub_confirmation=1" target="_blank" class="col text-center " style="width:500px;">
                 <img src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/img/Icon/icon1/youtube-icon.png" width="50" height="50" alt="telegram">
                 <span class="mt-10 d-block">192k <br/>Subscribers</span>
@@ -213,21 +211,16 @@ button.btn.btn-primary.rounded-pill.buynow {
                 <span class="mt-10 d-block">52 <br/>Countries</span>
             </a>
         </div>
-
 </div>
-                    <div class="mt-35">
-
+<div class="mt-35">
 @include('web.default2'.'.bundle.tabs.information')
+</div>
 
-                    </div>
-
-                </div>
-            </div>
-
-           <div class="course-content-sidebar col-12 col-lg-4 mt-25 mt-lg-0">
+    </div>
+    </div>
+    <div class="course-content-sidebar col-12 col-lg-4 mt-25 mt-lg-0">
                 <div class="register_desktop1">
-                <div class="rounded-lg shadow-sm">
-
+                  <div class="rounded-lg shadow-sm">
                    <div class="px-20 pb-30">
                         <form action="/cart/store" method="post">
                             {{ csrf_field() }}
@@ -346,11 +339,10 @@ button.btn.btn-primary.rounded-pill.buynow {
 
                     </div>
                 </div>
-</div>
+                </div>
                 <div class="register_desktop">
-                <div class="rounded-lg shadow-sm">
-
-               <div class="px-20 pb-30">
+                   <div class="rounded-lg shadow-sm">
+                     <div class="px-20 pb-30">
                         <form action="/cart/store" method="post">
                             {{ csrf_field() }}
                             <input type="hidden" name="item_id" value="{{ $bundle->id }}">
@@ -468,7 +460,7 @@ button.btn.btn-primary.rounded-pill.buynow {
 
                     </div>
                 </div>
-</div>
+                </div>
 
                 @include('web.default2.includes.cashback_alert',['itemPrice' => $bundle->price])
 
@@ -548,7 +540,7 @@ button.btn.btn-primary.rounded-pill.buynow {
            </div>
 
             </div>
-        </div>
+  </div>
 
         @if(!empty($advertisingBanners) and count($advertisingBanners))
             <div class="mt-30 mt-md-50  d-none ">
@@ -572,19 +564,20 @@ button.btn.btn-primary.rounded-pill.buynow {
 
 @push('scripts_bottom')
 <script>
-
+        // Select all "Read More" links and add event listeners
         document.querySelectorAll('.show_hide').forEach(function (link) {
             link.addEventListener('click', function (e) {
-                e.preventDefault();
+                e.preventDefault(); // Prevent the default link behavior
 
+                // Find the corresponding hidden content for this link
                 const moreContent = this.nextElementSibling;
 
                 if (moreContent.style.display === "none" || moreContent.style.display === "") {
                     moreContent.style.display = "block";
-                    this.textContent = "Read Less";
+                    this.textContent = "Read Less"; // Change the link text
                 } else {
                     moreContent.style.display = "none";
-                    this.textContent = "Read More";
+                    this.textContent = "Read More"; // Change back to "Read More"
                 }
             });
         });
@@ -622,7 +615,11 @@ button.btn.btn-primary.rounded-pill.buynow {
 
     </script>
 <script>
-
+// $('#myModal21').modal();
+// $("#myModal21").modal('show');
+//   $('.modal-dialog').addClass('afterpop');
+    // $('.btn-demo').click();
+    // $('.modal-dialog').addClass('afterpop');
     $(document).scroll(function() {
                     var y = $(this).scrollTop();
                      var y1 = $(this).scrollTop($(this)[0].scrollHeight);

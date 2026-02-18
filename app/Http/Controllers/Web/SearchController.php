@@ -14,6 +14,7 @@ use App\User;
 use App\Models\Blog;
 use Illuminate\Http\Request;
 use Jenssegers\Agent\Agent;
+use App\Models\Subscription;
 class SearchController extends Controller
 {
     public function index(Request $request)
@@ -95,6 +96,7 @@ class SearchController extends Controller
                     'teachers' => $teachers,
                     'organizations' => $organizations,
                     'products' => $products,
+                    'subscriptions' => Subscription::select('id', 'slug', 'price', 'status', 'thumbnail', 'creator_id')->where('status', 'active')->orderBy('created_at', 'desc')->get(),
                 ];
             }
             $agent = new Agent();

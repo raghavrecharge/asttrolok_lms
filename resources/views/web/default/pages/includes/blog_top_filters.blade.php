@@ -84,7 +84,7 @@
                                     <img loading="lazy"  width="25" height="25" src="https://img.icons8.com/sf-ultralight/25/000000/search.png" alt="search"/>
                                     <input type="text" name="search" class="form-control border-0" placeholder="Search ..."/>
 
-                                    <a href="{{$page}}" ><img loading="lazy"  width="25" height="25" src="/assets/default/img/icons/close.png" alt="search"/></a>
+                                    <a href="{{$page}}" ><img loading="lazy"  width="25" height="25" src="/public/assets/default/img/icon/close.png" alt="search"/></a>
                                 </div>
                             </form>
                         </div>

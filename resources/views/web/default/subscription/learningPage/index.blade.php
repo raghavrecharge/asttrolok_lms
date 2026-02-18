@@ -109,16 +109,6 @@
     font-size: 10.992px !important;
 }
 }
-.pay-now-container {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    text-align: center;
-    z-index: 999;
-    background: #fff; /* Optional: background color for better visibility */
-    padding: 10px 0;
-}
-
    </style>
 @endpush
 
@@ -205,20 +195,17 @@
         </div>
     </div>
 
-@if(isset($subscription) && $subscription)
-    <div class="pay-now-container">
-        <a href="{{ config('app.manual_base_url') }}{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px; padding: 20px 10px;">Pay Now</a>
-    </div>
-@endif
-
-
     @include('web.default2.subscription.consultation_popup')
 @endsection
 
 @push('scripts_bottom')
 
 <script  >
+                    // $('#myModal21').modal();
 
+                //      setTimeout(function() {
+                //     $('#consultationModal').modal();
+                // }, 30000);
                 </script>
 
     <script   src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.10.2/video.min.js"></script>
@@ -229,10 +216,11 @@
         var defaultItemType = '{{ request()->get('type') }}'
         var defaultItemId = '{{ request()->get('item') }}'
 
-        var loadFirstContent = {{ (!empty($dontAllowLoadFirstContent) and $dontAllowLoadFirstContent) ? 'false' : 'true' }};
+        var loadFirstContent = {{ (!empty($dontAllowLoadFirstContent) and $dontAllowLoadFirstContent) ? 'false' : 'true' }}; // allow to load first content when request item is empty
 
         var courseUrl = '{{ $subscription->getUrl() }}';
 
+        // lang
         var pleaseWaitForTheContentLang = '{{ trans('update.please_wait_for_the_content_to_load') }}';
         var downloadTheFileLang = '{{ trans('update.download_the_file') }}';
         var downloadLang = '{{ trans('home.download') }}';
@@ -282,24 +270,24 @@
     if($('#readTogglefile'+defaultItemId).length){
 
 }else{
-
+    //  alert($('#chapter_'+defaultItemId).length);
     $('.pratul').removeClass('active');
 
-	$('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 mt-20 text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{ config('app.manual_base_url') }}{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
+	$('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 mt-20 text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
 }
 function accessdenied(){
      $('.pratul').removeClass('active');
-  $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 mt-20  text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{ config('app.manual_base_url') }}{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
-  $('.learning-page-tabs').removeClass('show');
+  $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20 mt-20  text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
+
 }
 
-$(function() {
+$(function() {                       //run when the DOM is ready
   $(".accessdenied").click(function() {
        $('.pratul').removeClass('active');
        $('.accessdenied').removeClass('active');
-  $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20  mt-20  text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{ config('app.manual_base_url') }}{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
-  $('.learning-page-tabs').removeClass('show');
-    $(this).addClass("active");
+  $('#learningPageContent').html('<div class="course-private-content text-center w-100 border rounded-lg" style="  margin: 0px 0;  padding: 20px 0;"><div class="course-private-content-icon m-auto"><img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/course/private_content_icon.svg" alt="private content icon" class="img-cover"></div><div class="mt-30"><h2 class="font-20  mt-20  text-dark-blue">Access Denied </h2><p class="font-20 mt-20  font-weight-500 text-gray">To unlock the videos, pay {{$subscription->price}} now</p><a href="{{$install_url}}" class="btn btn-primary mt-15" style="font-size: 22px;padding: 20px 130px;">Pay Now</a></div> </div>');
+  //use a class, since your ID gets mangled
+    $(this).addClass("active");      //add the class to the clicked element
   });
 });
 </script>
@@ -359,6 +347,11 @@ $(function() {
                     console.log('Active Tab Data ID:', itemId);
                 }
 
+            //   const chapterElement = document.getElementById('chapter_');
+            //     if (chapterElement) {
+            //         const chapterId = chapterElement.id.split('_')[1]; // Splits 'chapter_1' and extracts '1'
+            //         console.log('Chapter ID:', chapterId);
+            //     }
               const chapterId = 0;
               const userId = 1244;
               const webinarId = '{{ $subscription->id }}';
@@ -367,7 +360,8 @@ $(function() {
 
               console.log(`Saving progress: ${watchPercentage}% watched`);
               saveCourseProgress(itemId, chapterId, webinarId, userId, duration,watchPercentage,totalVideoDuration,courseUrl);
-
+            //   previousPercentage = watchPercentage;
+            //   sessionStorage.setItem('previousPercentage', previousPercentage);
               progressSaved = true;
               getPaused = true;
               sessionStorage.setItem('progressSaved', 'true');
@@ -403,10 +397,10 @@ $(function() {
 
     function saveCourseProgress(itemId, chapterId, webinarId, userId, watchedDuration,watchPercentage,totalVideoDuration,courseUrl) {
       $.ajax({
-        url: "{{ route('store.watched.duration.sub') }}",
+        url: "{{ route('store.watched.duration.sub') }}", // Laravel route
         method: 'POST',
         data: {
-          _token: '{{ csrf_token() }}',
+          _token: '{{ csrf_token() }}', // CSRF token for security
           item_id: itemId,
           user_id: userId,
           webinar_id: webinarId,
@@ -433,7 +427,10 @@ $(function() {
       if (savedDuration && sessionDuration) {
         duration = parseInt(sessionDuration);
       }
-
+    //   const savedPercentage = sessionStorage.getItem('previousPercentage');
+    //   if (savedPercentage) {
+    //     previousPercentage = parseInt(savedPercentage);
+    //   }
     };
   </script>
 

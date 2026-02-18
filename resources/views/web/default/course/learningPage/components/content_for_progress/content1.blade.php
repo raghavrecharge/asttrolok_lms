@@ -1,8 +1,8 @@
 @php
     $icon = '';
     $hintText = '';
-    $totalVideos = 10;
-    $watchedVideos = 4;
+    $totalVideos = 10; // Example: Total number of videos
+    $watchedVideos = 4; // Example: Number of videos watched by the user
     $Progress = 0;
 
     if ($type == \App\Models\WebinarChapter::$chapterFile) {
@@ -12,6 +12,7 @@
         $chapter_id = $item->chapter_id;
         $userId = request()->route('id');
 
+        // Fetch the course progress for the current item and user
         $CourseProgress = \App\Models\CourseProgress::where('item_id', (int) $itemId)
             ->where('user_id', (int) $userId)
             ->first();
@@ -19,7 +20,7 @@
 
 @if($CourseProgress)
     @php
-
+        // Assign watch percentage from CourseProgress
         $Progress = $CourseProgress->watch_percentage;
     @endphp
 @endif
@@ -83,6 +84,6 @@
 
 <script>
     function showProgressBar() {
-
+        // Logic to update the progress bar dynamically can go here
     }
 </script>

@@ -90,10 +90,10 @@
         <img loading="lazy"  src="{{ config('app.img_dynamic_url') }}/store/1/about/Frame 427322271.webp" class="banner-redius img-cover" alt="Instructors">
 
         <div class="container h-100">
-            <div class="row h-100 align-items-center justify-content-center text-center">
+            <div class="row h-100 align-items-center justify-content-center text-center mt-0">
                 <div class="col-12 col-md-9 col-lg-7">
                     <div class="top-search-categories-form">
-                        <h1 class="text-white font-30 "style="text-align: center;">About Us</h1>
+                        <h1 class="text-white font-30 mt-0 "style="text-align: center;">About Us</h1>
 
                     </div>
                 </div>

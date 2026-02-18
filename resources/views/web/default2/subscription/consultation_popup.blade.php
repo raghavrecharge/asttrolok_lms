@@ -11,7 +11,7 @@
 
             <div class="mt-5 position-relative">
 
-                <img src="{{ config('app.img_dynamic_url') }}/store/1/Consultation NEW Final ADS-1.jpg" width="100%">
+                <img src="{{ config('app.img_dynamic_url') }}/store/1/Consultation NEW Final ADS-1.webp" width="100%">
 
             </div>
             <div class="mt-5 position-relative" >

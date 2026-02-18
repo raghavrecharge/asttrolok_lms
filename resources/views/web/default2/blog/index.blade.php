@@ -1,37 +1,18 @@
 @extends('web.default2'.'.layouts.app')
-@section('head')
-    @if($blog->lastPage() > 1)
-        @if($blog->currentPage() > 1)
-            <link rel="prev" href="{{ $blog->previousPageUrl() }}">
-        @endif
+@push('styles_top')
 
-        @if($blog->hasMorePages())
-            <link rel="next" href="{{ $blog->nextPageUrl() }}">
-        @endif
-    @endif
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/css/app.css">
+        <link rel="stylesheet" href="{{ config('app.js_css_url') }}/asttroloknew/assets/design_1/css/parts/profile.min.css">
+@endpush
 
-    <link rel="canonical" href="{{ $blog->url($blog->currentPage()) }}">
-@endsection
 @section('content')
-
-    <section class="site-top-banner search-top-banner opacity-04 position-relative" >
-        <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ getPageBackgroundSettings('blog') }}" class="img-cover" alt="{{ $pageTitle }}"/>
-
-        <div class="container h-100">
-            <div class="row h-100 align-items-center justify-content-center text-center">
-                <div class="col-12 col-md-9 col-lg-7">
-                    <div class="top-search-categories-form">
-
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+<div class="profile-cover-card">
+        <img src="https://storage.googleapis.com/astrolok/webp/store/1/banner/1-min.webp" class="img-cover" alt="">
+</div>
 
     <section class="container mt-10 mt-md-40">
         <div class="row">
             <div class="col-12 col-lg-8">
-                <h1 class=" font-30 mb-15">{{ $pageTitle }}</h1>
                 <div class="row">
                     @foreach($blog as $post)
                         <div class="col-12 col-md-4 col-lg-6">
@@ -52,7 +33,6 @@
                         @foreach($blogCategories as $blogCategory)
                             <a href="{{ route('blog.category', ['category' => $blogCategory->slug]) }}" class="font-14 text-dark-blue d-block mt-15">{{ $blogCategory->title }}</a>
                         @endforeach
-
                     </div>
                 </div>
 
@@ -64,7 +44,7 @@
                         @foreach($popularPosts as $popularPost)
                             <div class="popular-post d-flex align-items-start mt-20">
                                 <div class="popular-post-image rounded">
-                                    <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{ $popularPost->image }}" class="img-cover rounded" alt="{{ $popularPost->title }}">
+                                    <img src="{{ config('app.img_dynamic_url') }}{{ $popularPost->image }}" class="img-cover rounded" alt="{{ $popularPost->title }}">
                                 </div>
                                 <div class="popular-post-content d-flex flex-column ml-10">
                                     <a href="{{ $popularPost->getUrl() }}">
@@ -92,7 +72,7 @@
                             @if(in_array($popularWebinar->id, $courses))
                             <div class="popular-post d-flex align-items-start mt-20">
                                 <div class="popular-post-image rounded">
-                                    <img loading="lazy" decoding="async" src="{{ config('app.img_dynamic_url') }}{{$popularWebinar->thumbnail}}" class="img-cover rounded" alt="{{$popularWebinar->title}}">
+                                    <img src="{{ config('app.img_dynamic_url') }}{{$popularWebinar->thumbnail}}" class="img-cover rounded" alt="{{$popularWebinar->title}}">
                                 </div>
                                 <div class="popular-post-content d-flex flex-column ml-10">
                                     <a href="/course/{{$popularWebinar->slug}}">

@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="col-12 mt-20">
+    <div class="col-12 mt-10">
         <div class="accordion-content-wrapper" id="chaptersAccordion" role="tablist" aria-multiselectable="true">
             @foreach($course->chapters as $chapter)
 

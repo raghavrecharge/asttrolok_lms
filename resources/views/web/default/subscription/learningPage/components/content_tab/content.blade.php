@@ -1,6 +1,7 @@
 @php
     $icon = '';
     $hintText= '';
+    //$limit1=$limit1-1;
 
     if ($type == \App\Models\WebinarChapter::$chapterSession) {
         $icon = 'video';

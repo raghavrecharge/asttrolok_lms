@@ -68,7 +68,7 @@
             <div class="container">
                 <div class="row categories">
                     <?php $i=1;
-
+                //   echo $categories[2]->title;
                 $cate123[1]="/classes";
                 $cate123[2]="/instructors";
                 $cate123[3]="https://asttroveda.asttrolok.com/asttrolok/personalizedkundali";
@@ -77,8 +77,11 @@
                     @foreach($homeCustomStatistics as $homeCustomStatistic)
                     <?php
 
+                    // $urls_cat=$cate123[$i]->getUrl();
+
                     $urls_cat=$cate123[$i];
 
+                    //  $urls_cat='#';
                     ?>
                        <a>   <div class="mx-10 px-20 mt-lg-0 mt-lg-0 cats mobile{{ $i }} ">
                             <div class="stats-item d-flex flex-column align-items-center text-center py-20 px-0 " style="width:100%;">

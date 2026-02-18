@@ -38,7 +38,7 @@
                                     {{ trans('home.download') }}
                                 </a>
                             @else
-                                <a href="{{ $course->getLearningPageUrl() }}?type=file&item={{ $file->id }}" target="_blank" class="course-content-btns btn btn-sm btn-primary">
+                                <a href="{{ $course->getLearningPageUrl1() }}?type=file&item={{ $file->id }}" target="_blank" class="course-content-btns btn btn-sm btn-primary">
                                     {{ trans('public.play') }}
                                 </a>
                             @endif
@@ -63,7 +63,7 @@
                         @else
                             @if(!empty($user) and $hasBought)
 
-                                <a href="{{ $course->getLearningPageUrl() }}?type=file&item={{ $file->id }}" target="_blank" class="course-content-btns btn btn-sm btn-primary">
+                                <a href="{{ $course->getLearningPageUrl1() }}?type=file&item={{ $file->id }}" target="_blank" class="course-content-btns btn btn-sm btn-primary">
                                     {{ trans('public.play') }}
                                 </a>
                             @elseif($file->storage == 'upload_archive')
@@ -94,7 +94,7 @@
 
                                  @endif
                             @else
-                            <a href="{{ $course->getLearningPageUrl() }}?type=file&item={{ $file->id }}" target="_blank" class="course-content-btns btn btn-sm btn-primary">
+                            <a href="{{ $course->getLearningPageUrl1() }}?type=file&item={{ $file->id }}" target="_blank" class="course-content-btns btn btn-sm btn-primary">
                                     {{ trans('home.download') }}
                                 </a>
 
@@ -145,7 +145,7 @@
                                     {{ trans('home.download') }}
                                 </a>
                             @else
-                                <a href="{{ $course->getLearningPageUrl() }}?type=file&item={{ $file->id }}" target="_blank" class="course-content-btns btn btn-sm btn-primary">
+                                <a href="{{ $course->getLearningPageUrl1() }}?type=file&item={{ $file->id }}" target="_blank" class="course-content-btns btn btn-sm btn-primary">
                                     {{ trans('public.play') }}
                                 </a>
                             @endif
@@ -167,7 +167,7 @@
                             </a>
                         @else
                             @if(!empty($user) and $hasBought)
-                                <a href="{{ $course->getLearningPageUrl() }}?type=file&item={{ $file->id }}" target="_blank" class="course-content-btns btn btn-sm btn-primary">
+                                <a href="{{ $course->getLearningPageUrl1() }}?type=file&item={{ $file->id }}" target="_blank" class="course-content-btns btn btn-sm btn-primary">
                                     {{ trans('public.play') }}
                                 </a>
                             @elseif($file->storage == 'upload_archive')

@@ -29,6 +29,11 @@
 	<priority>0.8</priority>
 </url>
 <url>
+	<loc>https://www.asttrolok.com/subscriptions/asttrolok-pathshala</loc>
+	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
+	<priority>0.8</priority>
+</url>
+<url>
 	<loc>https://www.asttrolok.com/categories/Ayurveda</loc>
 	<lastmod>2024-06-27T10:00:20+01:00</lastmod>
 	<priority>0.8</priority>
@@ -99,5 +104,5 @@
             <priority>0.8</priority>
         </url>
     @endforeach
-
+    
 </urlset>

@@ -2,8 +2,6 @@
 $free_video=0;
 @endphp
 
-{{-- Sessions --}}
-
 @if(!empty($course->chapters) and count($course->chapters))
     <section class="">
         @include('web.default.course.tabs.contents.chapter')
@@ -24,23 +22,21 @@ $free_video=0;
     </section>
 @endif
 
-{{-- Files --}}
-
 @if(!empty($filesWithoutChapter) and count($filesWithoutChapter))
     <section class="mt-20">
         <div class="row">
             <div class="col-12">
                 <div class="accordion-content-wrapper" id="filesAccordion" role="tablist" aria-multiselectable="true">
                     @foreach($filesWithoutChapter as $file)
-                    
+
                                 @php
                                  if( $chapterItem->file->getIconByType() == 'film'){
                                                       $free_video++;
                                                     }else{
-                                                  
+
                                                     }
                                 @endphp
-                                
+
                         @include('web.default.course.tabs.contents.files' , ['file' => $file, 'accordionParent' => 'filesAccordion'])
                     @endforeach
                 </div>
@@ -48,8 +44,6 @@ $free_video=0;
         </div>
     </section>
 @endif
-
-{{-- TextLessons --}}
 
 @if(!empty($textLessonsWithoutChapter) and count($textLessonsWithoutChapter))
     <section class="mt-20">
@@ -65,11 +59,8 @@ $free_video=0;
     </section>
 @endif
 
-
-{{-- Quizzes --}}
 @if(!empty($quizzes) and $quizzes->count() > 0)
     <section class="mt-20">
-        {{--<h2 class="section-title after-line">{{ trans('update.quiz_and_certificates') }}</h2>--}}
 
         <div class="row">
             <div class="col-12">
@@ -82,12 +73,9 @@ $free_video=0;
         </div>
     </section>
 
-    {{-- Certificates --}}
-
     <section class="">
         @include('web.default.course.tabs.contents.certificate' , ['quizzes' => $course->quizzes])
     </section>
 @endif
-
 
 @include('web.default.course.tabs.play_modal.play_modal')

@@ -17,12 +17,12 @@
                 <img src="{{ config('app.js_css_url') }}/assets/default/img/social/whatsapp.svg" width="50" height="50" alt="whatsapp">
                 <span class="mt-10 d-block">{{ trans('public.whatsapp') }}</span>
             </a>
-
+            
             <a href="{{ $course->getShareLink('twitter') }}" target="_blank" class="col text-center">
                 <img src="{{ config('app.js_css_url') }}/assets/default/img/social/twitter.svg" width="50" height="50" alt="twitter">
                 <span class="mt-10 d-block">{{ trans('public.twitter') }}</span>
             </a>
-
+            
             <a href="{{ $course->getShareLink('facebook') }}" target="_blank" class="col text-center">
                 <img src="{{ config('app.js_css_url') }}/assets/default/img/social/facebook.svg" width="50" height="50" alt="facebook">
                 <span class="mt-10 d-block">{{ trans('public.facebook') }}</span>
@@ -32,7 +32,7 @@
                 <img src="{{ config('app.js_css_url') }}/assets/default/img/social/telegram.svg" width="50" height="50" alt="telegram">
                 <span class="mt-10 d-block">{{ trans('public.telegram') }}</span>
             </a>
-
+            
         </div>
     </div>
 

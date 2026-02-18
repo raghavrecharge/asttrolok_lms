@@ -32,6 +32,7 @@
                     {!! nl2br($textLesson->content) !!}
                 </div>
 
+
                 <div class="mt-30 row align-items-center">
                     <div class="col-12 col-md-5">
                         @if(auth()->check())

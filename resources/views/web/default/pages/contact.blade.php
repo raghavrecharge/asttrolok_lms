@@ -5,17 +5,89 @@
 
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/mobile-contact.css">
 @endpush
-canonical
+<style>
+    .contact-items {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;          /* कंटेंट को बाहर निकलने से रोके */
+    box-sizing: border-box;
+}
 
+/* Address text को wrap और limit करो */
+.contact-items p {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    margin-bottom: 0;
+}
+
+/* अगर बहुत लंबा text हो तो max-height + scroll */
+.contact-items p {
+    max-height: 80px;          /* जरूरत के हिसाब से बदलें */
+    overflow-y: auto;
+}
+/* col-6 col-md-4 mobilegrid1 के लिए */
+.mobilegrid1 {
+    padding: 10px;              /* columns के बीच थोड़ा gap */
+    box-sizing: border-box;
+}
+
+/* column को height auto रहने दो और card को अंदर fit कराओ */
+.mobilegrid1 > a {
+    display: block;
+    height: 100%;
+}
+
+.mobilegrid1 .contact-items {
+    height: 100%;
+    overflow: hidden;           /* card से बाहर नहीं निकलेगा */
+}
+
+/* text wrapping ताकि लंबा address/phone टूटकर अंदर ही रहे */
+.mobilegrid1 .contact-items p {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    margin-bottom: 0;
+}
+.contact-email {
+    text-align: center;          /* text को center में लाएगा */
+    word-break: break-word;      /* लंबा शब्द हो तो टूट जाएगा */
+    overflow-wrap: break-word;   /* extra safety */
+    white-space: normal;         /* line normal तरीके से wrap हो */
+}
+.back-button {
+    position: relative;
+    z-index: 1000;
+    cursor: pointer;
+}
+.banner-contact {
+    height: auto !important;
+    min-height: 120px; /* आप अपने हिसाब से कम ज़्यादा कर सकते हैं */
+    padding: 10px 0;
+}
+
+@media (max-width: 576px) {
+    .mobilegrid1 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+
+</style>
 @section('content')
-    <section class="site-top-banner search-top-banner opacity-04 position-relative">
+    <section class="site-top-banner search-top-banner opacity-04">
         <img  loading="lazy"  src="{{ config('app.img_dynamic_url') }}{{ $contactSettings['background'] }}" class="homehide img-cover" alt="{{ $pageTitle ?? 'contact' }}"/>
 
         <div class="container h-100 banner-contact ">
 
             <div class="pt-20 d-flex align-items-left align-items-start justify-content-between ">
                 <div class="col-md-6 ">
-                   <a href="/" class="back-button"><img  loading="lazy"  src="/assets/default/img/profile/left-arrow.svg" alt="Left Arrow Icon - Asttrolok" class="verify-img1  back-button1 py-10 px-10"></a> <h1 class="ml-50 pt-5 text-white font-30 mb-15">Contact Us</h1>
+<a href="/" class="back-button">
+    <img loading="lazy" src="/assets/default/img/profile/left-arrow.svg" 
+         alt="Left Arrow Icon - Asttrolok" 
+         class="verify-img1 back-button1 py-10 px-10">
+</a><h1 class="ml-50 pt-5 text-white font-30 mb-15">Contact Us</h1>
                 </div>
                 <div class="ft-right mr-30">
                     <svg width="35" height="39" viewBox="0 0 35 39" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -48,7 +120,7 @@ canonical
         </div>
     </section>
 
-    <div class="container">
+    <div class="container mt-0">
         <section class=" ">
             @if(!empty($contactSettings['latitude']) and !empty($contactSettings['longitude']))
 
@@ -74,7 +146,7 @@ canonical
 
                         <h3 class="mt-10 font-16 font-weight-bold text-dark-blue">{{ trans('site.our_address') }}</h3>
                         @if(!empty($contactSettings['address']))
-                            <p class="font-weight-500 font-12 text-gray mt-10">{!! nl2br($contactSettings['address']) !!}</p>
+                            <p class="font-weight-500 font-12 text-gray ">{!! nl2br($contactSettings['address']) !!}</p>
                         @else
                             <p class="font-weight-500 text-gray font-12 mt-10">{{ trans('site.not_defined') }}</p>
                         @endif
@@ -111,7 +183,7 @@ canonical
                 </div>
 
                 <div class="col-6 col-md-4 mobilegrid1">
-                    <a href="mailto:astrolok.vedic@gmail.com">
+                    <a href="mailto:admission_1@asttrolok.com">
                     <div class="contact-items mt-30 rounded-lg py-20 py-md-40 px-15 px-md-30 text-center">
 
                         <svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -137,7 +209,7 @@ canonical
                 </div>
 
                 <div class="col-6 col-md-4 mobilegrid1">
-                    <a href="mailto:astrolok.vedic@gmail.com">
+                    <a href="mailto:admission_1@asttrolok.com">
                     <div class="contact-items mt-30 rounded-lg py-20 py-md-40 px-15 px-md-30 text-center">
 
                         <svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">

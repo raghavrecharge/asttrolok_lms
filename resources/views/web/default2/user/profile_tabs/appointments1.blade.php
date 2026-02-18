@@ -21,7 +21,9 @@
 }
 
 .loader {
-
+  //border: 16px solid #f3f3f3;
+  //border-radius: 50%;
+  //border-top: 16px solid #3498db;
   width: 120px;
   height: 120px;
   -webkit-animation: spin 2s linear infinite;
@@ -160,9 +162,7 @@
             </div>
         </div>
 
-<script>
 
-</script>
 
     </div>
 
@@ -391,11 +391,12 @@
         <script src="{{ config('app.js_css_url') }}/assets/vendors/wrunner-html-range-slider-with-2-handles/js/wrunner-jquery.js"></script>
         <script>
 $(document).ready(function() {
-
+    // Attach change event listener to radio buttons
     $('#slotsTime input[type="radio"]').change(function() {
-
+        // Remove 'date-active' class from all elements
         $('.available-times1').removeClass('date-active');
 
+        // Add 'date-active' class to the selected radio button's parent element
         $(this).closest('.available-times1').addClass('date-active');
         $('#PickTimeBody').addClass('d-none');
 

@@ -13,7 +13,7 @@
         </div>
 
         <div class="d-flex align-items-center justify-content-center">
-            <img src="{{ config('app.img_dynamic_url') }}{{ $advertisingModalSettings['image'] ?? '' }}" class="img-fluid rounded-lg" loading="lazy" alt="{{ $advertisingModalSettings['title'] ?? 'ads' }}">
+            <img src="{{ config('app.img_dynamic_url') }}{{ $advertisingModalSettings['image'] ?? '' }}" class="img-fluid rounded-lg" alt="{{ $advertisingModalSettings['title'] ?? 'ads' }}">
         </div>
 
         <p class="font-14 text-gray mt-20">{!! $advertisingModalSettings['description'] ?? '' !!}</p>

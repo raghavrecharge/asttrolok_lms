@@ -6,12 +6,16 @@
 @endpush
 <style>
     .loader {
+      //border: 16px solid #f3f3f3;
+      //border-radius: 50%;
+      //border-top: 16px solid #3498db;
 
       height: 80px;
       -webkit-animation: spin 2s linear infinite;
       animation: spin 2s linear infinite;
     }
 
+    #loader {
     position: fixed;
     left: 50%;
     top: 50%;
@@ -24,6 +28,33 @@
     opacity: 0.5;
 }
     </style>
+
+    <style>
+  #paymentLoader {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  #paymentLoader .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 44%;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+
 @section('content')
     <section class="cart-banner position-relative text-center homehide">
         <h1 class="font-30 text-white font-weight-bold">{{ trans('cart.checkout') }}</h1>
@@ -94,6 +125,33 @@
 
            <input type="text" name="name" value="{{ auth()->check() ? auth()->user()->full_name :'' }}" id="customer_name" placeholder="Name" class="form-control mt-25 " >
             <input type="email" name="email" value="{{ auth()->check() ? auth()->user()->email  :'' }}" id="customer_email" placeholder="Email" class="form-control mt-25 " >
+           <input type="password"
+       name="password"
+       id="customer_password"
+       placeholder="Create Password"
+       class="form-control mt-25 @error('password') is-invalid @enderror">
+
+@error('password')
+<div class="invalid-feedback d-block">
+    {{ $message }}
+</div>
+@enderror
+
+
+<input type="password"
+       name="password_confirmation"
+       id="customer_password_confirmation"
+       placeholder="Confirm Password"
+       class="form-control mt-25 @error('password_confirmation') is-invalid @enderror">
+
+@error('password_confirmation')
+<div class="invalid-feedback d-block">
+    {{ $message }}
+</div>
+@enderror
+<div class="invalid-feedback">
+    Passwords do not match!
+</div>
             <input type="number" name="number" value="{{ auth()->check() ? auth()->user()->mobile :'' }}" id="customer_number" placeholder="Contact Number" class="form-control mt-25 mb-25" >
              <h2 class="section-title d-none">Payment Option</h2>
              <br>
@@ -174,13 +232,18 @@
                  <input type="hidden" name="razorpay_signature" value="" id="razorpay_signature" class="form-control mt-25 mb-25">
 
             </form>
-
+<div id="paymentLoader">
+        <div class="spinner"></div>
+        </div>
     </section>
+
+    
 
 @endsection
 
 @push('scripts_bottom')
     <script >
+        
         var couponInvalidLng = '{{ trans('cart.coupon_invalid') }}';
         var selectProvinceLang = '{{ trans('update.select_province') }}';
         var selectCityLang = '{{ trans('update.select_city') }}';
@@ -188,8 +251,19 @@
     </script>
 
 <script  src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script  src="https://www.asttrolok.com/js/unified-payment.js"></script>
+<script  src="/js/unified-payment.js"></script>
 <script  >
+
+    const loaderEl = document.getElementById('paymentLoader');
+
+    function showPaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'block';
+    }
+
+    function hidePaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'none';
+    }
+
 document.getElementById('paymentSubmit').addEventListener('click', function(e) {
     e.preventDefault();
 
@@ -197,8 +271,97 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
         name: document.getElementById('customer_name').value,
         email: document.getElementById('customer_email').value,
         number: document.getElementById('customer_number').value,
-        discount_id: {{ session('discountCouponId') ?? null }}
+        password: document.getElementById('customer_password').value,
+        discount_id: @json(session('discountCouponId'))
     };
+
+    showPaymentLoader();
+
+    initiatePayment('webinar', {{ $webinar->id }}, userDetails);
+});
+</script>
+<script>
+// Password confirmation validation
+const passwordField = document.getElementById('customer_password');
+const confirmPasswordField = document.getElementById('customer_password_confirmation');
+
+function validatePasswordMatch() {
+    const password = passwordField.value;
+    const confirmPassword = confirmPasswordField.value;
+    
+    // अगर confirm password खाली है तो कुछ नहीं करो
+    if (confirmPassword === '') {
+        confirmPasswordField.classList.remove('is-invalid', 'is-valid');
+        return true;
+    }
+    
+    // तभी validate करो जब confirm password की length >= password की length हो
+    if (confirmPassword.length >= password.length) {
+        if (password === confirmPassword) {
+            confirmPasswordField.classList.remove('is-invalid');
+            confirmPasswordField.classList.add('is-valid');
+            return true;
+        } else {
+            confirmPasswordField.classList.remove('is-valid');
+            confirmPasswordField.classList.add('is-invalid');
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+// Input event - sirf tabhi check karo jab puri length match kare
+confirmPasswordField.addEventListener('input', validatePasswordMatch);
+
+// Blur event - jab user field se bahar jaye tab bhi check karo
+confirmPasswordField.addEventListener('blur', function() {
+    if (confirmPasswordField.value !== '') {
+        validatePasswordMatch();
+    }
+});
+
+// Jab password field change ho, confirm password ko bhi revalidate karo
+passwordField.addEventListener('input', function() {
+    if (confirmPasswordField.value !== '' && 
+        confirmPasswordField.value.length >= passwordField.value.length) {
+        validatePasswordMatch();
+    }
+});
+
+// Validation before payment
+document.getElementById('paymentSubmit').addEventListener('click', function(e) {
+    e.preventDefault();
+
+    const password = document.getElementById('customer_password').value;
+    const confirmPassword = document.getElementById('customer_password_confirmation').value;
+    const name = document.getElementById('customer_name').value;
+    const email = document.getElementById('customer_email').value;
+    const number = document.getElementById('customer_number').value;
+
+    // Check if all fields are filled
+    if (!name || !email || !number || !password || !confirmPassword) {
+        alert('Please fill in all required fields!');
+        return;
+    }
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
+        confirmPasswordField.classList.add('is-invalid');
+        alert('Passwords do not match!');
+        return;
+    }
+
+    const userDetails = {
+        name: name,
+        email: email,
+        number: number,
+        password: password,
+        password_confirmation: confirmPassword,
+        discount_id: @json(session('discountCouponId'))
+    };
+
+    showPaymentLoader();
 
     initiatePayment('webinar', {{ $webinar->id }}, userDetails);
 });

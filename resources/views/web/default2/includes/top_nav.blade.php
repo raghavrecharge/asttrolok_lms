@@ -35,15 +35,15 @@
                         </div>
 
                                   <div class="d-flex align-items-center gap-8 opacity-75 ml-40">
-    <a href="mailto:astrolok.vedic@gmail.com" class="mail-icon" target="_blank">
+    <a href="mailto:admission_1@asttrolok.com" class="mail-icon" target="_blank">
         <svg width="16px" height="16px" class="icons text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.5" d="M17 20.5H7c-3 0-5-1.5-5-5v-7c0-3.5 2-5 5-5h10c3 0 5 1.5 5 5v7c0 3.5-2 5-5 5z"></path>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.5" d="M17 9l-3.13 2.5c-1.03.82-2.72.82-3.75 0L7 9"></path>
         </svg>
     </a>
 
-    <a href="mailto:astrolok.vedic@gmail.com" class="mail-text" target="_blank">
-        <span class="text-white">astrolok.vedic@gmail.com</span>
+    <a href="mailto:admission_1@asttrolok.com" class="mail-text" target="_blank">
+        <span class="text-white">admission_1@asttrolok.com</span>
     </a>
 </div>
 
@@ -67,9 +67,8 @@
 
                             <button type="submit" class="btn-transparent d-flex-center search-icon">
                                 <svg width="16px" height="16px" class="icons text-white opacity-75" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 20a9 9 0 100-18 9 9 0 000 18zM18.93 20.69c.53 1.6 1.74 1.76 2.67.36.85-1.28.29-2.33-1.25-2.33-1.14-.01-1.78.88-1.42 1.97z"></path>
-                                                        </svg>                            
-                                                    </button>
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 20a9 9 0 100-18 9 9 0 000 18zM18.93 20.69c.53 1.6 1.74 1.76 2.67.36.85-1.28.29-2.33-1.25-2.33-1.14-.01-1.78.88-1.42 1.97z"></path>
+</svg>                            </button>
                         </form>
 
                     </div>

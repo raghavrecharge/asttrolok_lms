@@ -19,7 +19,7 @@
 
     @push('scripts_top')
     <script>
-
+       // window.location.href = "/login";
     </script>
     @endpush
 

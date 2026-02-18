@@ -1,4 +1,5 @@
 <style>
+    
    .available-times label {
     color: #161716 !important;
     font-size: 12px !important;
@@ -20,12 +21,37 @@
 }
 
 </style>
+<style>
+  #paymentLoader {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  #paymentLoader .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 44%;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
 @if(!empty($meeting) and !empty($meeting->meetingTimes) and $meeting->meetingTimes->count() > 0)
     @push('styles_top')
         <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/vendors/wrunner-html-range-slider-with-2-handles/css/wrunner-default-theme.css">
     @endpush
 
-    <div class="mt-20 align-items-center">
+   <div class="mt-20 align-items-center px-0">
         <h3 class="mt-40 font-16 font-weight-bold text-dark-blue align-items-center" >Select Time Slot</h3>
         <div id="slotsTime" class="d-flex flex-wrap align-items-center mt-20" style="justify-content: center !important;">
 
@@ -48,24 +74,14 @@
             </div>
         </div>
     </div>
-  <h3 class="font-16 font-weight-bold text-dark-blue mt-20">Please validate any coupon code before use</h3>
-      <form  id="cartForm15" method="Post">
-                    {{ csrf_field() }}
-                    <div class="row" style="display: flex;justify-content: space-evenly;align-items: flex-start;flex-wrap: nowrap;flex-direction: row;">
-                    <div class="col-11 col-lg-9">
-                    <div class="form-group">
-                        <input type="text" name="coupon" id="coupon_input" class="form-control mt-10 {{ session('discountCoupon') ? (session('discountCoupon')=='no' ? 'is-invalid' : 'is-valid') : '' }}" value="{{ session('discountCoupon') ? (session('discountCoupon')=='no' ? '' : session('discountCoupon')) : '' }}"
-                         style="border-radius: 20px !important;" placeholder="{{ trans('cart.enter_your_code_here') }}">
-
-                        <span class="invalid-feedback">{{ trans('cart.coupon_invalid') }}</span>
-                        <span class="valid-feedback">{{ trans('cart.coupon_valid') }}</span>
-                        <input type='hidden' name='user_id' value='{{ $user["id"] }}'>
-                    </div>
-                    </div>
-                    <div class="col-5 col-lg-3 botton-1" style="margin-top: 3px;margin-right: -295px;position: absolute;">
-                    <button type="submit" id="checkCoupon15" class="btn btn-sm btn-primary mt-10" style="height: 35px !important; border-radius: 20px !important; ">{{ trans('cart.validate') }}</button>
-                    </div></div>
-                </form>
+  <h3 class="font-15 font-weight-bold text-dark-blue mt-20">Please validate any coupon code before use</h3>
+           
+<form id="couponForm">
+    <input type="text" id="couponCode" placeholder="Enter Coupon Code" class="form-control">
+    <input type="hidden" id="coupon_hidden" name="coupon_id" value="">
+    <button type="button" id="validateCoupon" class="btn btn-primary mt-10">Validate</button>
+    <div id="result" class="mt-10"></div>
+</form>
     <div class="pick-a-time d-none" id="PickTimeContainer" data-user-id="{{ $user["id"] }}">
 
         @include('web.default.includes.cashback_alert',['itemPrice' => $meeting->amount, 'classNames' => 'mt-0 mb-40', 'itemType' => 'meeting'])
@@ -144,9 +160,9 @@
                 </div>
 
                 <div class="mt-25 d-none js-finalize-reserve  align-items-center" style="text-align: center;">
-                <div class=" align-items-center justify-content-end mt-30" id="Confirm">
-                    <button type="button" onclick="pop();" class="btn bookbtn btn-primary  bookb">Confirm</button>
-                </div>
+               <div class="align-items-center justify-content-end mt-30" id="Confirm" style="margin-right: 45px;">
+    <button type="button" onclick="pop();" class="btn bookbtn btn-primary bookb">Confirm</button>
+</div>
                     <h3 class="font-16  d-none font-weight-bold text-dark-blue">{{ trans('update.finalize_your_meeting') }}</h3>
                     <span class="selected-date-time   d-none font-14 text-gray font-weight-500">{{ trans('update.meeting_time') }}: <span></span></span>
 
@@ -214,7 +230,7 @@
                     @endif
                 </div>
                 <div class="modal fade" id="textpop" tabindex="-1" aria-labelledby="textpop" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-centered mt-50">
         <div class="modal-content py-20">
             <div class="d-flex align-items-center justify-content-between px-20">
                 <h3 class="section-title after-line"></h3>
@@ -254,6 +270,38 @@
                                     </div>
                                     @enderror
                 </div>
+                <div class="form-group mt-15">
+    <label class="input-label">Create Password*</label>
+    <input name="password" 
+           type="password" 
+           maxlength="60" 
+           class="form-control @error('password') is-invalid @enderror" 
+           id="password" 
+           required>
+
+    @if($errors->has('password'))
+        <div class="invalid-feedback">
+            {{ $errors->first('password') }}
+        </div>
+    @endif
+</div>
+
+<div class="form-group mt-15">
+    <label class="input-label">Confirm Password*</label>
+    <input name="password_confirmation" 
+           type="password" 
+           maxlength="60" 
+           class="form-control @error('password_confirmation') is-invalid @enderror" 
+           id="password_confirmation" 
+           required>
+
+    @if($errors->has('password_confirmation'))
+        <div class="invalid-feedback">
+            {{ $errors->first('password_confirmation') }}
+        </div>
+    @endif
+</div>
+
 
                 <div class="  form-group mt-15">
                     <label class="input-label">Contact*</label>
@@ -263,6 +311,47 @@
                                         {{ $errors->first('mobile') }}
                                     </div>
                                     @enderror
+                </div>
+
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label class="input-label" for="birthdate">Birth Date*:</label>
+                            <input name="birthdate" type="date" required
+                                   class="form-control @error('birthdate') is-invalid @enderror" id="birthdate"
+                                   aria-describedby="passwordHelp">
+                            @error('birthdate')
+                            <div class="invalid-feedback">
+                                {{ $message }}
+                            </div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label class="input-label" for="birthtime">Birth Time*:</label>
+                            <input name="birthtime" type="time" required
+                                   class="form-control @error('birthtime') is-invalid @enderror" id="birthtime"
+                                   aria-describedby="passwordHelp">
+                            @error('birthtime')
+                            <div class="invalid-feedback">
+                                {{ $message }}
+                            </div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="input-label" for="amount">Birth Place*:</label>
+                    <input name="birthplace" type="text" required
+                           class="form-control @error('birthplace') is-invalid @enderror" id="birthplace"
+                           aria-describedby="passwordHelp">
+                    @error('birthplace')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
                 </div>
 
                 <div class=" align-items-center justify-content-end mt-15" style="text-align:center;">
@@ -285,6 +374,9 @@
             @endif
         </form>
     </div>
+    <div id="paymentLoader">
+        <div class="spinner"></div>
+        </div>
 
     @push('scripts_bottom')
     <script   src="{{ config('app.js_css_url') }}/assets/default/js/parts/cart.min.js"></script>
@@ -305,11 +397,12 @@
 
          <script>
 $(document).ready(function() {
-
+    // Attach change event listener to radio buttons
     $('#slotsTime input[type="radio"]').change(function() {
-
+        // Remove 'date-active' class from all elements
         $('.available-times1').removeClass('date-active');
 
+        // Add 'date-active' class to the selected radio button's parent element
         $(this).closest('.available-times1').addClass('date-active');
         $('#PickTimeBody').addClass('d-none');
 
@@ -318,11 +411,57 @@ $(document).ready(function() {
 </script>
 
 <script   src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script   src="https://www.asttrolok.com/js/unified-payment.js"></script>
+
 <script  >
+ document.getElementById('validateCoupon').addEventListener('click', function() {
+    const couponCode = document.getElementById('couponCode').value;
+    
+    if (!couponCode) {
+        $('#result').html('<span class="invalid-feedback d-block">Please enter a coupon code</span>');
+        return;
+    }
+
+    $.ajax({
+        url: '{{ url("/cart/coupon/validate") }}',  
+        type: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+            coupon: couponCode
+        },
+        success: function(response) {
+            if (response.status === 200 && response.valid === true) {
+                $('#result').html('<span class="valid-feedback d-block">Coupon is valid! Discount will be applied.</span>');
+                $('#coupon_hidden').val(response.discount_id);
+            } else {
+                $('#result').html('<span class="invalid-feedback d-block">Invalid coupon code.</span>');
+                $('#coupon_hidden').val('');
+            }
+        },
+        error: function(xhr) {
+            $('#result').html('<span class="invalid-feedback d-block">Something went wrong.</span>');
+            $('#result').find('.valid-feedback').remove();
+            $('#coupon_hidden').val('');
+        }
+    });
+});
+
+
+    const loaderEl = document.getElementById('paymentLoader');
+
+    function showPaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'block';
+    }
+
+    function hidePaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'none';
+    }
+    
 document.getElementById('paymentSubmit').addEventListener('click', function(e) {
     e.preventDefault();
 
+    // const meetingTimeId = document.querySelector('input[name="meeting_time"]:checked')?.value;
     const selectedTime = document.querySelector('input[name="time"]:checked')?.value;
 
     if (!selectedTime) {
@@ -334,13 +473,166 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
         name: document.getElementById('full_name').value,
         email: document.getElementById('email').value,
         number: document.getElementById('mobile').value,
+        birthdate: document.getElementById('birthdate').value,
+        birthtime: document.getElementById('birthtime').value,
+        birthplace: document.getElementById('birthplace').value,
         selectedDay: document.getElementById('selectedDay').value,
-
-        discount_id: {{ session('meeting_discount_id') ?? 'null' }}
+        password: document.getElementById('password').value,
+        // selectedTime: selectedTime,
+        discount_id: @json(session('meeting_discount_id'))
     };
+    showPaymentLoader();
 
     initiatePayment('meeting' , selectedTime, userDetails);
 });
+
+// jscode
+
+    class UnifiedPaymentHandler {
+        constructor() {
+            this.loader = document.getElementById('loader');
+        }
+
+        async initiatePayment(paymentType, itemId, userDetails) {
+            try {
+                if (!this.validateInputs(userDetails)) {
+                    return false;
+                }
+
+                // this.showLoader();
+
+                const response = await fetch('/payments/initiate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        payment_type: paymentType,
+                        item_id: itemId,
+                        name: userDetails.name,
+                        email: userDetails.email,
+                        number: userDetails.number,
+                        password: userDetails.password,
+                        discount_id: @json(session('meeting_discount_id')) || null,
+                        installment_id: userDetails.installment_id || null,
+                        Country: userDetails.Country || null,
+                        StateProvince: userDetails.StateProvince || null,
+                        City: userDetails.City || null,
+                        pin_code: userDetails.pin_code || null,
+                        address: userDetails.address || null,
+                        message: userDetails.message || null,
+                        amount: userDetails.amount || null,
+                        selectedDay: userDetails.selectedDay || null,
+                        birthdate: userDetails.birthdate || null,
+                        birthtime: userDetails.birthtime || null,
+                        birthplace: userDetails.birthplace || null
+                    })
+                });
+
+                // console.log(response);
+
+                if (!response.ok) {
+                    hidePaymentLoader();
+                    throw new Error('Failed to initiate payment');
+                }
+
+                const data = await response.json();
+                this.openRazorpayCheckout(data, userDetails);
+                hidePaymentLoader();
+
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('Payment failed. Please try again.');
+                this.hideLoader();
+                hidePaymentLoader();
+            }
+        }
+
+        openRazorpayCheckout(orderData, userDetails) {
+            const options = {
+                key: orderData.key,
+                amount: orderData.amount,
+                currency: orderData.currency,
+                name: 'Asttrolok',
+                order_id: orderData.razorpay_order_id,
+
+                handler: (response) => {
+                    this.handleSuccess(response, orderData.order_id);
+                },
+
+                prefill: {
+                    name: userDetails.name,
+                    email: userDetails.email,
+                    contact: userDetails.number
+                },
+
+                theme: {
+                    color: '#43d477'
+                },
+
+                modal: {
+                    ondismiss: () => {
+                        this.hideLoader();
+                        alert('Payment cancelled');
+                    }
+                }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.open();
+        }
+
+        handleSuccess(response, orderId) {
+            const form = document.createElement('form');
+            form.method = 'GET';
+            form.action = '/payments/callback';
+
+            const fields = {
+                'razorpay_payment_id': response.razorpay_payment_id,
+                'razorpay_order_id': response.razorpay_order_id,
+                'razorpay_signature': response.razorpay_signature,
+                'order_id': orderId
+            };
+
+            for (const [key, value] of Object.entries(fields)) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value;
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        validateInputs(userDetails) {
+            if (!userDetails.name || !userDetails.email || !userDetails.number) {
+                alert('Please fill all required fields');
+                hidePaymentLoader();
+                return false;
+            }
+            return true;
+        }
+
+        showLoader() {
+            if (this.loader) this.loader.style.display = 'block';
+            document.body.classList.add('disabled-page');
+        }
+
+        hideLoader() {
+            if (this.loader) this.loader.style.display = 'none';
+            document.body.classList.remove('disabled-page');
+        }
+    }
+
+    window.paymentHandler = new UnifiedPaymentHandler();
+
+    function initiatePayment(type, itemId, userDetails) {
+        return window.paymentHandler.initiatePayment(type, itemId, userDetails);
+    }
 </script>
     @endpush
 @else

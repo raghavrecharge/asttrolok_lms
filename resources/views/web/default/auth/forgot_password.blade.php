@@ -1,13 +1,5 @@
-@php
-$agent = new \Jenssegers\Agent\Agent;
-$layout = $agent->isMobile() ? 'web.default.layouts.app' : 'web.default2.layouts.app';
-@endphp
+@extends(getTemplate().'.layouts.app')
 
-@extends($layout)
-<style>
-
-
-</style>
 @section('content')
     <div class="container">
         <div class="row login-container1">
@@ -37,6 +29,7 @@ $layout = $agent->isMobile() ? 'web.default.layouts.app' : 'web.default2.layouts
                         @if(!empty(getGeneralSecuritySettings('captcha_for_forgot_pass')))
                             @include('web.default.includes.captcha_input')
                         @endif
+
 
                         <button type="submit" class="btn btn-primary btn-block mt-20">{{ trans('auth.reset_password') }}</button>
                     </form>

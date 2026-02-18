@@ -1,5 +1,6 @@
 @extends(getTemplate().'.layouts.app')
 
+
 @section('content')
     <div class="container">
 
@@ -104,6 +105,7 @@
                                 @endforeach
                             @endif
                         </div>
+
 
                         <div class="form-group">
                             <label class="js-instructor-label font-weight-500 text-dark-blue {{ !$isInstructorRole ? 'd-none' : '' }}">{{ trans('update.instructor_identity_scan') }}</label>

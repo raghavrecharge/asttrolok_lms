@@ -5,7 +5,7 @@
 @section('content')
 
     <section class="mobile-home-slider site-top-banner search-top-banner opacity-04 position-relative" >
-        <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ getPageBackgroundSettings('blog') }}" class="img-cover blog-br" alt="{{ $pageTitle }}"/>
+        <img loading="lazy" src="{{ config('app.img_dynamic_url') }}/store/1/banner/1-min.webp" class="img-cover blog-br" alt="{{ $pageTitle }}"/>
 
         <div class="container h-100">
             <div class="row h-100 align-items-center justify-content-center text-center">

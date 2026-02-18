@@ -206,7 +206,7 @@
 @endpush
 <style>
 @media screen and (max-width: 992px) {
-
+  #pre1 {
       width: -webkit-fill-available;
     height: 283px;
 
@@ -216,10 +216,11 @@
   }
 }
 @media screen and (min-width: 991px) {
-
+  #pre1 {
       width:-webkit-fill-available;
       height:450px;
   }
+  #mob1 {
 
       display:none !important;
   }

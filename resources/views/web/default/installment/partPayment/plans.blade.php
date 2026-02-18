@@ -6,12 +6,16 @@
 @push('styles_top')
     <style>
 .loader {
+  //border: 16px solid #f3f3f3;
+  //border-radius: 50%;
+  //border-top: 16px solid #3498db;
 
   height: 80px;
   -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
+#loader {
     position: fixed;
     left: 50%;
     top: 50%;
@@ -23,6 +27,31 @@
     pointer-events: none;
     opacity: 0.5;
 }
+</style>
+<style>
+  #paymentLoader {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  #paymentLoader .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 44%;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
 </style>
 @endpush
 @section('content')
@@ -59,8 +88,6 @@
             <input type="hidden" name="razorpay_signature"  id="razorpay_signature" >
             <input type="hidden" name="installment_id" value="{{ $installment->id ?? null }}">
 
-                <script   id="myScript" src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
                 <button type="submit" id="razorpayauto" style="display:none;">ok</button>
 </form>
 
@@ -68,13 +95,25 @@
         }
         @endphp
     </div>
+    <div id="paymentLoader">
+        <div class="spinner"></div>
+        </div>
 @endsection
 
 @push('scripts_bottom')
 
 <script   src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script   src="https://www.asttrolok.com/js/unified-payment.js"></script>
+<script   src="{{ asset('js/unified-payment.js') }}"></script>
 <script  >
+    const loaderEl = document.getElementById('paymentLoader');
+
+    function showPaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'block';
+    }
+
+    function hidePaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'none';
+    }
 
 document.getElementById('amount').addEventListener('input', function() {
         var button = document.getElementById('paymentSubmit');
@@ -88,10 +127,12 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
         name: document.getElementById('customer_name').value,
         email: document.getElementById('customer_email').value,
         number: document.getElementById('customer_number').value,
+        // password: document.getElementById('customer_password').value,
         amount: document.getElementById('amount').value,
         installment_id: {{ $installment->id ?? null }},
-        discount_id: {{ session('discountCouponId') ?? 'null' }}
+        discount_id: @json(session('discountCouponId'))
     };
+    showPaymentLoader();
 
     initiatePayment('part' , '{{!empty($item) ? $item->id : null}}' , userDetails);
 });

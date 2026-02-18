@@ -3,684 +3,1659 @@
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/css/css-stars.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.10.2/video-js.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/css/app-ast.css">
+           <link rel="stylesheet" href="{{ config('app.js_css_url') }}/asttroloknew/assets/vendors/wrunner-html-range-slider-with-2-handles/css/wrunner-default-theme.css">
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/asttroloknew/assets/default/vendors/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/asttroloknew/assets/design_1/css/parts/swiperjs.min.css">
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/asttroloknew/assets/design_1/css/parts/products_lists.min.css">
+
 <meta name=”robots” content=”noindex”>
 
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/vendors/video/video-js.min.css">
-    <style>
-        .course-description p{
-            font-family: 'main-font-family' !important;
-        }
-        .course-description p span{
-            font-family: 'main-font-family' !important;
-        }
-        .course-description span{
-            font-family: 'main-font-family' !important;
-        }
-        .course-content-sidebar .course-img.has-video .course-video-icon {
 
-    width: 50px;
-    height: 50px;
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/animate.css@4.1.1/animate.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
 
+<style>
+  body{
+     font-family: "Inter", sans-serif  !important;
+  }
+*[style] {
+  font-family: "Inter", sans-serif  !important;
 }
- .register_desktop{
-        position: fixed;
 
-    top: 110px;
-    width: 27%;
-    right: 6.5%;
-    display: block;
-        background-color: white;
-        display:none;
+.swiper-slide {
+    margin-right: 0 !important;
+    padding: 0 !important;
+}
+.frame427322615usp .frame427322615-certification {
+    padding: 6px 10px !important;
+    transform: scale(0.85);   /* Box overall छोटा */
+    transform-origin: top left;
+    align-items: center;
+}
+
+.frame427322615usp .frame427322615-text113 {
+    font-size: 20px !important; /* Text छोटा */
+}
+
+.frame427322615-certification .frame427322615-text113 {
+    display: block;        /* Normal block */
+    overflow: visible;     /* Text fully visible */
+    text-overflow: unset;  /* No ... */
+    white-space: normal;   /* Allow multiple lines */
+    line-height: 20px;     /* Optional: better readability */
+    min-height: auto;      /* Auto height */
+    max-height: none;      /* No clamp */
+}
+
+.frame427322615-item4 {
+  display: flex;
+  align-items: flex-start;  /* Image top pe rahe */
+  gap: 10px;
+}
+
+.frame427322615-text147 {
+  white-space: nowrap;   /* Second span line break nahi lega */
+  display: inline-flex;
+  gap: 5px;
+}
+
+/* Second span ka font weight 400 */
+.frame427322615-text147 span:last-child {
+  font-weight: 400 !important;
+}
+/* Second span ka font weight fix */
+.frame427322615-text147 span:last-child {
+  font-weight: 400 !important;
+}
+ .navbar-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 0;         /* same padding for both */
+        border-bottom: 2px solid transparent; /* default underline invisible */
     }
 
-	.modal.left .modal-dialog,
-	.modal.right .modal-dialog {
-		position: fixed;
-		right: -100%;
-		margin: auto;
-		width: 320px;
-		height: 100%;
-		-webkit-transform: translateX(100%);
-		    -ms-transform: translateX(100%);
-		     -o-transform: translateX(100%);
-		        transform: translateX(100%);
-	}
-.afterpop{
-
-    transition: all 2s  !important;
-    transition-timing-function: ease-in  !important;
-   -webkit-transform: translateX(0%) !important;
-		    -ms-transform: translateX(0%) !important;
-		     -o-transform: translateX(0%) !important;
-		        transform: translateX(0%) !important;
-
+    .navbar-item.active {
+        border-bottom: 2px solid rgba(50,160,40,1); /* green underline */
+    }
+ .roadmap-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #E5E7EB;
+    background: #FFFFFF;
+    font-size: 16px;                         /* thoda bada text */
+    color: #111827;
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.06);
 }
-	.modal.left .modal-content,
-	.modal.right .modal-content {
-		height: 100%;
-		overflow-y: auto;
-	}
 
-	.modal.left .modal-body,
-	.modal.right .modal-body {
-		padding: 15px 15px 80px;
-	}
 
-	.modal.right.fade .modal-dialog {
 
-		right: 0px;
+.roadmap-table tbody td {
+    padding: 24px 24px;                      /* row height ~ Figma jaisi */
+    border-bottom: 1px solid #E5E7EB;
+    vertical-align: top;
+    font-weight: 400;
+    color: #374151;
+}
 
-	}
+.roadmap-table tbody tr:last-child td {
+    border-bottom: none;
+}
 
-	.modal.right.fade.in .modal-dialog {
-		right: 0;
-		transition: all .5s;
-	}
+.roadmap-table tbody td.month {
+    white-space: nowrap;
+    font-weight: 600;
+}
 
-	.modal-content {
-		border-radius: 0;
-		border: none;
-	}
 
-	.modal-header {
-		border-bottom-color: #EEEEEE;
-		background-color: #FAFAFA;
-	}
+.roadmap-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 16px;                 /* rounded corners */
+    overflow: hidden;                    /* radius apply hone ke लिए */
+    border: 1px solid #E5E7EB;
+    background: #FFFFFF;
+    font-size: 15px;
+    color: #111827;
 
-    </style>
+    /* halka shadow – card feel */
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.06);
+}
+.roadmap-table tbody td {
+    padding: 22px 20px;                  /* pehle 18px tha, ab 22px */
+    border-bottom: 1px solid #E5E7EB;
+    vertical-align: top;
+    font-weight: 400;
+    color: #374151;
+}
+.roadmap-table tbody td {
+    padding: 28px 20px;
+}
+
+.roadmap-table-wrapper {
+    margin-top: 16px;
+    margin-bottom: 24px;
+}
+.roadmap-table thead th {
+    text-align: left;
+    padding: 16px 24px;                      /* header height */
+    font-weight: 600;
+    color: #6B7280;
+    background: #F9FAFB;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.frame427322615-text189 {
+    top: 23px !important;
+    left: auto !important;
+}
+.frame427322615-background-shadow1 {
+    height: 316px !important;
+}
+.frame427322615-background-border2 {
+    height: 316px !important;
+}
+
+.frame427322615-text183 {
+    top: 8px !important;
+}
+
+.roadmap-table tbody tr {
+    background: #FFFFFF;         /* rows pure white */
+}
+
+.roadmap-table tbody td {
+    padding: 18px 20px;
+    border-bottom: 1px solid #E5E7EB;  /* row separator same grey */
+    vertical-align: top;
+    font-weight: 400;
+    color: #374151;                     /* gray-700 body text */
+}
+
+.roadmap-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.roadmap-table tbody td.month {
+    white-space: nowrap;
+    font-weight: 600;                    /* bold month */
+}
+.frame427322615-astrology-learning-program1 {
+    height: auto !important;
+}
+
+  </style>
+
 @endpush
 {{ session()->put('my_test_key',url()->current())}}
 
 @section('content')
-    <section class="course-cover-container {{ empty($activeSpecialOffer) ? 'not-active-special-offer' : '' }}">
-        <img src="{{ config('app.img_dynamic_url') }}/store/1/Courses/Cover/Background.webp" class="img-cover course-cover-img" alt="{{ $subscription->title }}"/>
-
-        <div class="cover-content pt-40">
-            <div class="container position-relative">
-
-                <h2 class="font-30 course-title text-center py-10">{{ clean($subscription->title, 't') }}</h2>
-                <div class="row">
-                    <div class="col-12 col-lg-6 course-section-top">
-                        <div class="course-img text-center {{ $subscription->video_demo ? 'has-video' :'' }}">
-
-                        @if($subscription->video_demo)
-                        <iframe style="border-radius: 30px; cursor:pointer; text-align: center; width:100%; height:280px" src="{{ $subscription->video_demo_source == 'upload' ?  url($subscription->video_demo) : $subscription->video_demo }}" title="Asttrolok" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"  allowfullscreen=""></iframe>
-
-                            @else
-                              <img src="{{ config('app.img_dynamic_url') }}{{ $subscription->getImage() }}" class="img-cover" alt="webinar Demo Video">
-                        @endif
-                        <form action="/cart/store" method="post">
-                            {{ csrf_field() }}
-                            <input type="hidden" name="item_id" value="{{ $subscription->id }}">
-                            <input type="hidden" name="item_name" value="webinar_id">
-                            @php
-                                $canSale = ($subscription->canSale() and !$hasBought);
-                        @endphp
-                        @if($canSale and !empty(getFeaturesSettings('direct_classes_payment_button_status')))
-                        @if($subscription->price > 0)
-
-                        <a href="/subscriptions/direct-payment/{{$subscription->slug}}" class="mt-10 btn btn-primary">Register Now</a>
-
-                         @else
-                                    @if($subscription->slug == 'learn-free-vedic-astrology-course-online' )
-                                    <a href="/register-free" class=" btn btn-primary {{ (!$canSale) ? (' disabled ' . $subscription->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
-                                    @else
-                                    <a href="{{ $canSale ? '/subscription/'. $subscription->slug .'/free' : '#' }}" class=" btn btn-primary {{ (!$canSale) ? (' disabled ' . $subscription->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
-                                    @endif
-                                @endif
-                                            @endif
-                       </form>
-                    </div>
-                    </div>
-                    <div class="col-12 col-lg-6 text-center course-section-top">
-                        <div class="course-img {{ $subscription->video_demo ? 'has-video' :'' }}">
-
-                        <img src="{{ config('app.img_dynamic_url') }}{{ $subscription->getImageCover() }}" class="img-cover" alt="webinar Demo Video">
-
-                    </div>
-                    </div>
+<h1 class="d-none">Asttrolok Pathshala</h1>
+   <div class="cover-content pt-40">
+      <link href="{{ config('app.js_css_url') }}/asttroloknew/index.css" rel="stylesheet" />
+{{-- @foreach($subscription as $subscriptions) --}}
+      <div class="container">
+        <div class="frame427322615-frame427322615">
+          <div class="frame427322615-frame427322614">
+            <div class="frame427322615-header1">
+              <div class="frame427322615-header2">
+                <div class="frame427322615-text100">
+                  <div class="frame427322615-head">
+                    <span class="frame427322615-text101">
+                      {{$subscription->extraDetails->subtitle	}}
+                    </span>
+                  </div>
+                  <span class="frame427322615-text102">
+                    <span class="frame427322615-text103">
+                      {{$subscription->extraDetails->heading_main	}}
+                    </span>
+                    <span style="color: #32A128;font-size:34px">{{$subscription->extraDetails->heading_sub	}}</span>
+                    <br />
+                    <span style="font-size:20px;font-weight:400;">{{$subscription->extraDetails->heading_extra	}}</span>
+                  </span>
+                  {{--<span class="frame427322615-text107">
+                   {{$subscription->extraDetails->subdescription}}
+                  </span>--}}
+                  <span class="frame427322615-text108" >
+                    <span class="frame427322615-text109 mt-10"style="font-weight:400;">
+                     {{ $subscription->extraDetails->additional_description	 }}
+                    </span>
+                    <br />
+                    <span style="color: #32A128;">{{ $subscription->extraDetails->extra_description }}</span>
+                  </span>
+                  @if($hasBought)
+                       <a href="{{ $subscription->getLearningPageUrl1() }}" style="text-decoration: none;">
+                  <button class="frame427322615-button1">
+                    <span class="frame427322615-text112">
+                                                Start Learning
+&nbsp;
+                    </span>
+                  </button>
+</a>
+                  
+                  
+             @else     
+                  <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}" style="text-decoration: none;">
+                  <button class="frame427322615-button1">
+                    <span class="frame427322615-text112">
+                                                 {{ $subscription->extraDetails->cta_text }}
+&nbsp;
+                    </span>
+                  </button>
+</a>
+@endif
                 </div>
+                <div class="frame427322615-frame427322616">
+                  <img
+                    src="{{ config('app.img_dynamic_url') }}{{ $subscription->getImage() }}"
+                    alt="{{$subscription->title}}"
+                    class="frame427322615-astrology-learning-program1"
+                  />
+                </div>
+              </div>
             </div>
-        </div>
-    </section>
-
-    <section class="container course-content-section {{ $subscription->type }} {{ ($hasBought ) ? 'has-progress-bar' : '' }}">
-        <div class="row">
-            <div class="col-12 col-lg-8">
-                <div class="course-content-body  user-select-none">
-                    <div class="course-body-on-cover text-white">
-                        @if(url()->current()!='https://lms.asttrolok.com/subscription/Free-Astrology-Course')
-
-                        @else
-                        <div class="course-body-on-cover text-white" style="min-height: 240px;"></div>
-                        @endif
-                    </div>
-                    <div class=" p-20 course-teacher-card d-flex align-items-center flex-column">
-                     <div class=" mt-lg-40 row align-items-center font-14">
-            <a href="https://www.youtube.com/@ASTTROLOKChannel?sub_confirmation=1" target="_blank" class="col text-center " style="width:500px;">
-                <img src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/img/Icon/icon1/youtube-icon.png" width="50" height="50" alt="telegram">
-                <span class="mt-10 d-block">196K<br/>Subscribers</span>
-            </a>
-
-             <a href="https://www.facebook.com/Asttrolok/" target="_blank" class="col text-center">
-                <img src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/img/Icon/icon1/facebook-icon.png" width="50" height="50" alt="telegram">
-                <span class="mt-10 d-block">125K<br/>Likes</span>
-            </a>
-
-             <a href="#" target="_blank" class="col text-center">
-                <img src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/img/Icon/icon1/Happy-Customer.png" width="50" height="50" alt="telegram">
-                <span class="mt-10 d-block">50000+ <br/>Happy Students</span>
-            </a>
-
-             <a href="#" target="_blank" class="col text-center">
-                <img src="{{ config('app.js_css_url') }}/assets/default/css/landingPage/resources/img/Icon/icon1/global-icon.png" width="50" height="50" alt="telegram">
-                <span class="mt-10 d-block">70+ <br/>Countries</span>
-            </a>
-        </div>
-                    </div>
-                    <div class="mt-35">
-
-                       <h1 class="font-30 course-h1 text-left py-10">{{ clean($pageH1, 't') }}</h1>
-@include('web.default2'.'.subscription.tabs.information')
-
-                    </div>
-                </div>
-            </div>
-
-            <div class="course-content-sidebar col-12 col-lg-4 mt-25 mt-lg-0">
-                <div class="register_desktop1">
-                <div class="rounded-lg shadow-sm">
-
-                    <div class="px-20 pb-30">
-                        <form action="/cart/store" method="post">
-                            {{ csrf_field() }}
-                            <input type="hidden" name="item_id" value="{{ $subscription->id }}">
-                            <input type="hidden" name="item_name" value="webinar_id">
-
-                            @if(!empty($subscription->tickets))
-                                @foreach($subscription->tickets as $ticket)
-
-                                    <div class="form-check mt-20">
-                                        <input class="form-check-input" @if(!$ticket->isValid()) disabled @endif type="radio" data-discount="{{ $ticket->discount }}" value="{{ ($ticket->isValid()) ? $ticket->id : '' }}"
-                                               name="ticket_id"
-                                               id="subscriptionOff{{ $ticket->id }}">
-                                        <label class="form-check-label d-flex flex-column cursor-pointer" for="subscriptionOff{{ $ticket->id }}">
-                                            <span class="font-16 font-weight-500 text-dark-blue">{{ $ticket->title }} @if(!empty($ticket->discount))
-                                                    ({{ $ticket->discount }}% {{ trans('public.off') }})
-                                                @endif</span>
-                                            <span class="font-14 text-gray">{{ $ticket->getSubTitle() }}</span>
-                                        </label>
-                                    </div>
-                                @endforeach
-                            @endif
-
-                            @if($subscription->price > 0)
-                                <div id="priceBox" class="d-flex align-items-center justify-content-center mt-20 pt-20{{ !empty($activeSpecialOffer) ? ' flex-column ' : '' }}">
-                                    <div class="text-center">
-                                        @php
-                                            $realPrice = handleCoursePagePrice($subscription->price);
-                                        @endphp
-                                        <span id="realPrice" data-value="{{ $subscription->price }}"
-                                              data-special-offer="{{ !empty($activeSpecialOffer) ? $activeSpecialOffer->percent : ''}}"
-                                              class=" @if(!empty($activeSpecialOffer)) font-16 text-gray text-decoration-line-through @else font-30 text-primary @endif">
-                                            {{ $realPrice['price'] }} / Month
-                                        </span>
-
-                                        @if(!empty($realPrice['tax']) and empty($activeSpecialOffer))
-                                            <span class=" font-14 text-gray">+ {{ $realPrice['tax'] }} {{ trans('cart.tax') }}</span>
-                                        @endif
-                                    </div>
-
-                                    @if(!empty($activeSpecialOffer))
-                                        <div class="text-center">
-                                            @php
-                                                $priceWithDiscount = handleCoursePagePrice($subscription->getPrice());
-                                            @endphp
-                                            <span id="priceWithDiscount"
-                                                  class=" font-30 text-primary">
-                                                {{ $priceWithDiscount['price'] }}
-                                            </span>
-
-                                            @if(!empty($priceWithDiscount['tax']))
-                                                <span class="font-14 text-gray">+ {{ $priceWithDiscount['tax'] }} {{ trans('cart.tax') }}</span>
-                                            @endif
-                                        </div>
-                                    @endif
-                                </div>
-                            @else
-                                <div class="d-flex align-items-center justify-content-center mt-20">
-                                    <span class="font-36 text-primary">{{ trans('public.free') }}</span>
-                                </div>
-                            @endif
-
-                            @php
-                                $canSale = ($subscription->canSale() and !$hasBought);
-                            @endphp
-
-                            <div class=" d-flex flex-column">
-                                @if(!$canSale and $subscription->canJoinToWaitlist())
-                                    <button type="button" data-slug="{{ $subscription->slug }}" class="btn btn-primary {{ (!empty($authUser)) ? 'js-join-waitlist-user' : 'js-join-waitlist-guest' }}">{{ trans('update.join_waitlist') }}</button>
-                                @elseif($hasBought or !empty($subscription->getInstallmentOrder()))
-                                    <a href="{{ $subscription->getLearningPageUrl() }}" class="btn btn-primary">{{ trans('update.go_to_learning_page') }}</a>
-                                @elseif($subscription->price > 0)
-
-                                    @if($canSale and $subscription->subscribe)
-                                        <a href="/subscribes/apply/{{ $subscription->slug }}" class="btn btn-outline-primary btn-subscribe mt-20 @if(!$canSale) disabled @endif">{{ trans('public.subscribe') }}</a>
-                                    @endif
-
-                                    @if($canSale and !empty($subscription->points))
-                                        <a href="{{ !(auth()->check()) ? '/login' : '#' }}" class="{{ (auth()->check()) ? 'js-buy-with-point' : '' }} btn btn-outline-warning mt-20 {{ (!$canSale) ? 'disabled' : '' }}" rel="nofollow">
-                                            {!! trans('update.buy_with_n_points',['points' => $subscription->points]) !!}
-                                        </a>
-                                    @endif
-
-                                    @if($canSale and !empty(getFeaturesSettings('direct_classes_payment_button_status')))
-                                    <a href="/subscriptions/direct-payment/{{$subscription->slug}}" class="mt-10 btn btn-primary">Register Now</a>
-
-                                    @endif
-
-                                    @if(!empty($installments) and count($installments) and getInstallmentsSettings('display_installment_button'))
-                                        <a href="/subscription/{{ $subscription->slug }}/installments" class="btn btn-outline-primary mt-20">
-                                            {{ trans('update.pay_with_installments') }}
-                                        </a>
-                                    @endif
-
-                                    @else
-                                    @if($subscription->slug == 'learn-free-vedic-astrology-subscription-online' )
-                                    <a href="/register-free" class=" btn btn-primary {{ (!$canSale) ? (' disabled ' . $subscription->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
-                                    @else
-                                    <a href="{{ $canSale ? '/subscription/'. $subscription->slug .'/free' : '#' }}" class=" btn btn-primary {{ (!$canSale) ? (' disabled ' . $subscription->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
-                                    @endif
-                                @endif
-                            </div>
-
-                        </form>
-
-                        @if(!empty(getOthersPersonalizationSettings('show_guarantee_text')) and getOthersPersonalizationSettings('show_guarantee_text'))
-
-                        @endif
-
-                        <div class="mt-35">
-
-                           <strong class="d-block text-secondary font-weight-bold">Become an Astrologer for Just ₹2,100/Month</strong>
-                              <div class="mt-20 d-flex align-items-center text-gray">
-                                <i data-feather="download-cloud" width="20" height="20"></i>
-                                <span class="ml-5 font-14 font-weight-500">714+ Students already learning</span>
-                              </div>
-                              <div class="mt-20 d-flex align-items-center text-gray">
-                                <i data-feather="award" width="20" height="20"></i>
-                                <span class="ml-5 font-14 font-weight-500">Beginner to Expert Journey</span>
-                              </div>
-                               <div class="mt-20 d-flex align-items-center text-gray">
-                                    <i data-feather="file-text" width="20" height="20"></i>
-                                    <span class="ml-5 font-14 font-weight-500">Affordable Monthly Subscription</span>
-                                </div>
-
-                            @if($subscription->support)
-                                <div class="mt-20 d-flex align-items-center text-gray">
-                                    <i data-feather="headphones" width="20" height="20"></i>
-                                    <span class="ml-5 font-14 font-weight-500">{{ trans('webinars.instructor_support') }}</span>
-                                </div>
-                            @endif
-                        </div>
-
-                    </div>
-                </div>
-</div>
-                <div class="register_desktop">
-                <div class="rounded-lg shadow-sm">
-
-                    <div class="px-20 pb-30">
-                        <form action="/cart/store" method="post">
-                            {{ csrf_field() }}
-                            <input type="hidden" name="item_id" value="{{ $subscription->id }}">
-                            <input type="hidden" name="item_name" value="webinar_id">
-
-                            @if(!empty($subscription->tickets))
-                                @foreach($subscription->tickets as $ticket)
-
-                                    <div class="form-check mt-20">
-                                        <input class="form-check-input" @if(!$ticket->isValid()) disabled @endif type="radio" data-discount="{{ $ticket->discount }}" value="{{ ($ticket->isValid()) ? $ticket->id : '' }}"
-                                               name="ticket_id"
-                                               id="subscriptionOff{{ $ticket->id }}">
-                                        <label class="form-check-label d-flex flex-column cursor-pointer" for="subscriptionOff{{ $ticket->id }}">
-                                            <span class="font-16 font-weight-500 text-dark-blue">{{ $ticket->title }} @if(!empty($ticket->discount))
-                                                    ({{ $ticket->discount }}% {{ trans('public.off') }})
-                                                @endif</span>
-                                            <span class="font-14 text-gray">{{ $ticket->getSubTitle() }}</span>
-                                        </label>
-                                    </div>
-                                @endforeach
-                            @endif
-
-                            @if($subscription->price > 0)
-                                <div id="priceBox" class="d-flex align-items-center justify-content-center mt-20 pt-20 {{ !empty($activeSpecialOffer) ? ' flex-column ' : '' }}">
-                                    <div class="text-center">
-                                        @php
-                                            $realPrice = handleCoursePagePrice($subscription->price);
-                                        @endphp
-                                        <span id="realPrice" data-value="{{ $subscription->price }}"
-                                              data-special-offer="{{ !empty($activeSpecialOffer) ? $activeSpecialOffer->percent : ''}}"
-                                              class=" @if(!empty($activeSpecialOffer)) font-16 text-gray text-decoration-line-through @else font-30 text-primary @endif">
-                                            {{ $realPrice['price'] }}/ Month
-                                        </span>
-
-                                        @if(!empty($realPrice['tax']) and empty($activeSpecialOffer))
-                                            <span class=" font-14 text-gray">+ {{ $realPrice['tax'] }} {{ trans('cart.tax') }}</span>
-                                        @endif
-                                    </div>
-
-                                    @if(!empty($activeSpecialOffer))
-                                        <div class="text-center">
-                                            @php
-                                                $priceWithDiscount = handleCoursePagePrice($subscription->getPrice());
-                                            @endphp
-                                            <span id="priceWithDiscount"
-                                                  class=" font-30 text-primary">
-                                                {{ $priceWithDiscount['price'] }}
-                                            </span>
-
-                                            @if(!empty($priceWithDiscount['tax']))
-                                                <span class="font-14 text-gray">+ {{ $priceWithDiscount['tax'] }} {{ trans('cart.tax') }}</span>
-                                            @endif
-                                        </div>
-                                    @endif
-                                </div>
-                            @else
-                                <div class="d-flex align-items-center justify-content-center mt-20">
-                                    <span class="font-36 text-primary">{{ trans('public.free') }}</span>
-                                </div>
-                            @endif
-
-                            @php
-                                $canSale = ($subscription->canSale() and !$hasBought);
-                            @endphp
-
-                            <div class=" d-flex flex-column">
-                                @if(!$canSale and $subscription->canJoinToWaitlist())
-                                    <button type="button" data-slug="{{ $subscription->slug }}" class="btn btn-primary {{ (!empty($authUser)) ? 'js-join-waitlist-user' : 'js-join-waitlist-guest' }}">{{ trans('update.join_waitlist') }}</button>
-                                @elseif($hasBought or !empty($subscription->getInstallmentOrder()))
-                                    <a href="{{ $subscription->getLearningPageUrl() }}" class="btn btn-primary">{{ trans('update.go_to_learning_page') }}</a>
-                                @elseif($subscription->price > 0)
-
-                                    @if($canSale and $subscription->subscribe)
-                                        <a href="/subscribes/apply/{{ $subscription->slug }}" class="btn btn-outline-primary btn-subscribe mt-20 @if(!$canSale) disabled @endif">{{ trans('public.subscribe') }}</a>
-                                    @endif
-
-                                    @if($canSale and !empty($subscription->points))
-                                        <a href="{{ !(auth()->check()) ? '/login' : '#' }}" class="{{ (auth()->check()) ? 'js-buy-with-point' : '' }} btn btn-outline-warning mt-20 {{ (!$canSale) ? 'disabled' : '' }}" rel="nofollow">
-                                            {!! trans('update.buy_with_n_points',['points' => $subscription->points]) !!}
-                                        </a>
-                                    @endif
-
-                                    @if(!empty($installments) and count($installments) and getInstallmentsSettings('display_installment_button'))
-                                        <a href="/subscription/{{ $subscription->slug }}/installments" class="btn btn-outline-primary mt-20">
-                                            {{ trans('update.pay_with_installments') }}
-                                        </a>
-                                    @endif
-                                 @if($subscription->price > 0)
-
-                        <a href="/subscriptions/direct-payment/{{$subscription->slug}}" class="mt-10 btn btn-primary">Register Now</a>
-                    @endif
-
-                                    @else
-                                    @if($subscription->slug == 'learn-free-vedic-astrology-subscription-online' )
-                                    <a href="/register-free" class=" btn btn-primary {{ (!$canSale) ? (' disabled ' . $subscription->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
-                                    @else
-                                    <a href="{{ $canSale ? '/subscription/'. $subscription->slug .'/free' : '#' }}" class=" btn btn-primary {{ (!$canSale) ? (' disabled ' . $subscription->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
-                                    @endif
-                                @endif
-                            </div>
-
-                        </form>
-
-                        @if(!empty(getOthersPersonalizationSettings('show_guarantee_text')) and getOthersPersonalizationSettings('show_guarantee_text'))
-
-                        @endif
-
-                        <div class="mt-35">
-
-                            <strong class="d-block text-secondary font-weight-bold">Become an Astrologer for Just ₹2,100/Month</strong>
-                            <div class="mt-20 d-flex align-items-center text-gray">
-                                <i data-feather="download-cloud" width="20" height="20"></i>
-                                <span class="ml-5 font-14 font-weight-500">714+ Students already learning</span>
-                              </div>
-                              <div class="mt-20 d-flex align-items-center text-gray">
-                                <i data-feather="award" width="20" height="20"></i>
-                                <span class="ml-5 font-14 font-weight-500">Beginner to Expert Journey</span>
-                              </div>
-                               <div class="mt-20 d-flex align-items-center text-gray">
-                                    <i data-feather="file-text" width="20" height="20"></i>
-                                    <span class="ml-5 font-14 font-weight-500">Affordable Monthly Subscription</span>
-                                </div>
-
-                            @if($subscription->support)
-                                <div class="mt-20 d-flex align-items-center text-gray">
-                                    <i data-feather="headphones" width="20" height="20"></i>
-                                    <span class="ml-5 font-14 font-weight-500">{{ trans('webinars.instructor_support') }}</span>
-                                </div>
-                            @endif
-                        </div>
-
-                    </div>
-                </div>
-</div>
-
-                @include('web.default2.includes.cashback_alert',['itemPrice' => $subscription->price])
-
-                @if($subscription->canSale() and !empty(getGiftsGeneralSettings('status')) and !empty(getGiftsGeneralSettings('allow_sending_gift_for_subscriptions')))
-                    <a href="/gift/subscription/{{ $subscription->slug }}" class="d-flex d-none align-items-center mt-30 rounded-lg border p-15">
-                        <div class="size-40 d-flex-center rounded-circle bg-gray200">
-                            <i data-feather="gift" class="text-gray" width="20" height="20"></i>
-                        </div>
-                        <div class="ml-5">
-                            <h4 class="font-14 font-weight-bold text-gray">{{ trans('update.gift_this_subscription') }}</h4>
-                            <p class="font-12 text-gray">{{ trans('update.gift_this_subscription_hint') }}</p>
-                        </div>
-                    </a>
-                @endif
-
-                @if($subscription->teacher->offline)
-                    <div class="rounded-lg shadow-sm mt-35 d-flex d-none ">
-                        <div class="offline-icon offline-icon-left d-flex align-items-stretch">
-                            <div class="d-flex align-items-center">
-                                <img src="{{ config('app.js_css_url') }}/assets2/default/img/profile/time-icon.png" alt="offline">
-                            </div>
-                        </div>
-
-                        <div class="p-15">
-                            <h3 class="font-16 text-dark-blue">{{ trans('public.instructor_is_not_available') }}</h3>
-                            <p class="font-14 font-weight-500 text-gray mt-15">{{ $subscription->teacher->offline_message }}</p>
-                        </div>
-                    </div>
-                @endif
-
-                <div class="rounded-lg shadow-sm mt-35 px-25 py-20 d-none ">
-                    <h3 class="sidebar-title font-16 text-secondary font-weight-bold">{{ trans('webinars.'.$subscription->type) .' '. trans('webinars.specifications') }}</h3>
-
-                    <div class="mt-30">
-
-                        @if(!empty($subscription->access_days))
-                            <div class="mt-20 d-flex align-items-center justify-content-between text-gray">
-                                <div class="d-flex align-items-center">
-                                    <i data-feather="alert-circle" width="20" height="20"></i>
-                                    <span class="ml-5 font-14 font-weight-500">{{ trans('update.access_period') }}:</span>
-                                </div>
-                                <span class="font-14">{{ $subscription->access_days }} {{ trans('public.days') }}</span>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-
-                @if($subscription->creator_id != $subscription->teacher_id && 1==2)
-                    @include('web.default2.subscription.sidebar_instructor_profile', ['subscriptionTeacher' => $subscription->creator])
-                @endif
-
-                 @if(1==2)
-                @include('web.default2.subscription.sidebar_instructor_profile', ['subscriptionTeacher' => $subscription->teacher])
- @endif
-    @if(1==2)
-                @if($subscription->webinarPartnerTeacher->count() > 0)
-                    @foreach($subscription->webinarPartnerTeacher as $webinarPartnerTeacher)
-                        @include('web.default2.subscription.sidebar_instructor_profile', ['subscriptionTeacher' => $webinarPartnerTeacher->teacher])
-                    @endforeach
-                @endif
-                @endif
-
-                @if($subscription->tags->count() > 0)
-                    <div class="rounded-lg tags-card shadow-sm mt-35 px-25 py-20  d-none ">
-                        <h3 class="sidebar-title font-16 text-secondary font-weight-bold">{{ trans('public.tags') }}</h3>
-
-                        <div class="d-flex flex-wrap mt-10">
-                            @foreach($subscription->tags as $tag)
-                                <a href="" class="tag-item bg-gray200 p-5 font-14 text-gray font-weight-500 rounded">{{ $tag->title }}</a>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
-
-                <div class="row  d-none ">
-
-           </div>
-
-            </div>
-        </div>
-
-        @if(!empty($advertisingBanners) and count($advertisingBanners))
-            <div class="mt-30 mt-md-50  d-none ">
-                <div class="row">
-                    @foreach($advertisingBanners as $banner)
-                        <div class="col-{{ $banner->size }}">
-                            <a href="{{ $banner->link }}">
-                                <img src="{{ config('app.img_dynamic_url') }}{{ $banner->image }}" class="img-cover rounded-sm" alt="{{ $banner->title }}">
-                            </a>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
+            <div class="frame427322615usp">
+                  @php
+    $materialTexts = json_decode($subscription->extraDetails->material_text ?? '[]', true);
+    $materialIcons = json_decode($subscription->extraDetails->material_icon ?? '[]', true);
+@endphp
+
+@foreach(array_map(null, $materialTexts, $materialIcons) as [$text, $icon])
+    <div class="frame427322615-certification usp-box">
+    <span class="frame427322615-text113 usp-text">
+
+        @if(is_array($text))
+            <span>{{ $text[0] }}</span><br>
+            <span>{{ $text[1] }}</span>
+        @else
+            {{ $text }}
         @endif
 
-    </section>
+    </span>
 
-    <div id="webinarReportModal" class="d-none">
-        <h3 class="section-title after-line font-20 text-dark-blue">{{ trans('product.report_the_subscription') }}</h3>
-
-        <form action="/subscription/{{ $subscription->id }}/report" method="post" class="mt-25">
-
-            <div class="form-group">
-                <label class="text-dark-blue font-14">{{ trans('product.reason') }}</label>
-                <select id="reason" name="reason" class="form-control">
-                    <option value="" selected disabled>{{ trans('product.select_reason') }}</option>
-
-                    @foreach(getReportReasons() as $reason)
-                        <option value="{{ $reason }}">{{ $reason }}</option>
-                    @endforeach
-                </select>
-                <div class="invalid-feedback"></div>
-            </div>
-
-            <div class="form-group">
-                <label class="text-dark-blue font-14" for="message_to_reviewer">{{ trans('public.message_to_reviewer') }}</label>
-                <textarea name="message" id="message_to_reviewer" class="form-control" rows="10"></textarea>
-                <div class="invalid-feedback"></div>
-            </div>
-            <p class="text-gray font-16">{{ trans('product.report_modal_hint') }}</p>
-
-            <div class="mt-30 d-flex align-items-center justify-content-end">
-                <button type="button" class="js-subscription-report-submit btn btn-sm btn-primary">{{ trans('panel.report') }}</button>
-                <button type="button" class="btn btn-sm btn-danger ml-10 close-swl">{{ trans('public.close') }}</button>
-            </div>
-        </form>
-    </div>
-<div class="container demo  d-none ">
-
-	<div class="text-center d-none">
-
-		<button type="button" class="btn btn-demo" data-toggle="modal" data-target="#myModal2">
-			Right Sidebar Modal
-		</button>
-	</div>
-
-	<div class="modal right fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-
-				</div>
-
-				<div class="modal-body">
-					<div class="h-100">
-            <div class="navbar-shopping-cart h-100" data-simplebar>
-                @if(!empty($userCarts) and count($userCarts) > 0)
-                    <div class="mb-auto">
-                        @foreach($userCarts as $cart)
-                            @php
-                                $cartItemInfo = $cart->getItemInfo();
-                            @endphp
-
-                            @if(!empty($cartItemInfo))
-                                <div class="navbar-cart-box d-flex align-items-center">
-
-                                    <a href="{{ $cartItemInfo['itemUrl'] }}" target="_blank" class="navbar-cart-img">
-                                        <img src="{{ config('app.img_dynamic_url') }}{{ $cartItemInfo['imgPath'] }}" alt="product title" class="img-cover"/>
-                                    </a>
-
-                                    <div class="navbar-cart-info">
-                                        <a href="{{ $cartItemInfo['itemUrl'] }}" target="_blank">
-                                            <h4>{{ $cartItemInfo['title'] }}</h4>
-                                        </a>
-                                        <div class="price mt-10">
-                                            @if(!empty($cartItemInfo['discountPrice']))
-                                                <span class="text-primary font-weight-bold">{{ handlePrice($cartItemInfo['discountPrice'], true, true, false, null, true) }}</span>
-                                                <span class="off ml-15">{{ handlePrice($cartItemInfo['price'], true, true, false, null, true) }}</span>
-                                            @else
-                                                <span class="text-primary font-weight-bold">{{ handlePrice($cartItemInfo['price'], true, true, false, null, true) }}</span>
-                                            @endif
-
-                                            @if(!empty($cartItemInfo['quantity']))
-                                                <span class="font-12 text-warning font-weight-500 ml-10">({{ $cartItemInfo['quantity'] }} {{ trans('update.product') }})</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-                        @endforeach
-                    </div>
-                    <div class="navbar-cart-actions">
-                        <div class="navbar-cart-total mt-15 border-top d-flex align-items-center justify-content-between">
-                            <strong class="total-text">{{ trans('cart.total') }}</strong>
-                            <strong class="text-primary font-weight-bold">{{ !empty($totalCartsPrice) ? handlePrice($totalCartsPrice, true, true, false, null, true) : 0 }}</strong>
-                        </div>
-
-                        <a href="/cart/" class="btn btn-sm btn-primary btn-block mt-50 mt-md-15">{{ trans('cart.go_to_cart') }}</a>
-                    </div>
-                @else
-                    <div class="d-flex align-items-center text-center py-50">
-                        <i data-feather="shopping-cart" width="20" height="20" class="mr-10"></i>
-                        <span class="">{{ trans('cart.your_cart_empty') }}</span>
-                    </div>
-                @endif
-            </div>
-        </div>
-				</div>
-
-			</div>
-		</div>
-	</div>
-
+    <img
+        src="{{ asset($icon) }}"
+        alt="Material Icon"
+        class="frame427322615-vector10 usp-icon"
+    />
 </div>
 
-   @include('web.default2.subscription.buynow_modal')
+@endforeach
+
+            </div>
+          </div>
+
+          <div class="frame427322615-frame427322613">
+
+            <div class="frame427322615-frame427322612">
+           <div class="frame427322615-border1"
+     style="text-align: center; display: flex; flex-direction: column; align-items: center;">
+
+    <div class="frame427322615-background10"
+         style="display: flex; flex-direction: column; align-items: center;">
+
+        <img
+            src="/public/public/svg1615-3n7t.svg"
+            alt="SVG1615"
+            class="frame427322615svg10"
+        />
+
+        <span class="frame427322615-text120">
+            <span>{{ $subscription->extraDetails->plan_duration_option}}</span>
+            <br />
+            <span>{{ $subscription->extraDetails->plan_movie}}</span>
+        </span>
+
+        <span class="frame427322615-text124">
+           {{ $subscription->extraDetails->price_suffix}}+
+        </span>
+
+        <img
+            src="{{ asset($subscription->extraDetails->plan_icon) }}"
+            alt="Vector1615"
+            class="frame427322615-vector14"
+        />
+    </div>
+
+    <div class="frame427322615-background-border-shadow"
+         style="display: flex; flex-direction: column; align-items: center; margin-top: 8px;">
+
+        <img
+            src="/public/public/svg1616-uv3f.svg"
+            alt="SVG1616"
+            class="frame427322615svg11"
+        />
+
+        <span class="frame427322615-text125" style="align-items: center;">{{ $subscription->extraDetails->plan_duration}}</span>
+        <span class="frame427322615-text126"style="align-items: center;">{{ $subscription->extraDetails->plan_cancel_text}}</span>
+        <span class="frame427322615-text127"style="align-items: center;">{{ $subscription->extraDetails->plan_type}}</span>
+        <span class="frame427322615-text128"style="margin-left:-10px">₹{{ $subscription->extraDetails->plan_price}}</span>
+
+        <div class="frame427322615-background11"
+             style="display: flex; flex-direction: column; align-items: center;">
+
+            <span class="frame427322615-text129">Lifetime Saving</span>
+            <img
+              src="/public/public/border1616-0awh-200h.png"
+              alt="Border1616"
+              class="frame427322615-border2"
+            />
+            <img
+              src="/public/public/border1616-pz1i-200h.png"
+              alt="Border1616"
+              class="frame427322615-border3"
+            />
+        </div>
+    </div>
+
+    <div class="frame427322615-background-border1"
+         style="display: flex; justify-content: center; margin-top: 8px;">
+        <span class="frame427322615-text130">VS</span>
+    </div>
+
+    <span class="frame427322615-text131" style="display: block; margin-top: 8px;">
+        {{ $subscription->extraDetails->comparison_text}}
+    </span>
+</div>
+
+
+  <div class="custom-tabs mt-16 ">
+     <div class="frame427322615-frame427322536 mb-10">
+                    <div class="frame427322615-frame427322535">
+                      <div class="frame427322615-frame427322535">
+    <span class="frame427322615-text194" style="white-space: nowrap; width: auto; display: inline-block;">
+        About This Course
+    </span>
+  
+</div>
+                    
+                    </div>
+                   
+                  </div>
+    <div class="course-tabs-card position-relative">
+        <div class="course-tabs-card__mask"></div>
+
+        <div class="position-relative d-flex align-items-center gap-20 gap-lg-40 flex-wrap  px-16 px-lg-20 rounded-12 z-index-2 w-100"style="margin-left: -20px;">
+          <style>
+    /* Active tab ki underline ko niche shift karne ke liye */
+    .navbar-item.active {
+        border-bottom: 1px solid rgba(50,160,40,1); /* green line */
+        padding-bottom: 8px; /* jitna niche chahiye utna badha sakte ho */
+    }
+</style>
+
+<div class="navbar-item d-flex-center cursor-pointer active" data-tab-toggle data-tab-href="#aboutCourseTab">
+   
+    <img src="/public/public/svg1628-kat.svg" alt="SVG1628" class="mr-10">
+    <span class="frame427322615-text133z" style="
+        color: rgba(50, 160, 40, 1);
+        font-size: 14px;
+        text-align: center;
+        font-family: Inter;
+        font-weight: 700;
+        line-height: 20px;
+        font-stretch: normal;
+        text-decoration: none;
+    ">About the Course</span>
+</div>
+
+            <div class="navbar-item d-flex-center cursor-pointer " data-tab-toggle data-tab-href="#contentTab">
+             <img src="/public/public/svg1628-fn5.svg" alt="SVG1628" class="mr-10">   <span class="frame427322615-text134z" style="
+    color: rgba(50, 160, 40, 1);
+    font-size: 14px;
+    text-align: center;
+    font-family: Inter;
+    font-weight: 700;
+    line-height: 20px;
+    font-stretch: normal;
+    text-decoration: none;
+">WHY CHOOSE THIS</span>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="custom-tabs-body mt-16">
+
+        <div class="custom-tabs-content active" id="aboutCourseTab">
+          <div class="mt-20">
+
+        <div class="mt-15 course-description">
+            <span class="frame427322615-text135">
+                  <span class="frame427322615-text136">
+                   {!! $subscription->description !!}
+                  </span>
+
+                 
+                </span>
+        </div>
+    </div>
+
+        </div>
+
+        <div class="custom-tabs-content " id="contentTab">
+          <h3 class="mb-5px">Why Opt for the Monthly Subscription:</h3>
+          <p class="mt-10">Enjoy affordable, flexible learning with ongoing access to updated content and personalized mentorship, all without long-term commitment. Learn at your own pace while progressing from beginner to expert</p>
+       <div class="frame427322615-item4">
+                  <img
+                    src="/public/public/svg2312-c95b.svg"
+                    alt="SVG2312"
+                    class="frame427322615svg17"
+                  />
+                  <span class="frame427322615-text147">
+                    <span class="frame427322615-text148">Affordable & Flexible:</span>
+                    <span>Pay monthly, with no large upfront fees.</span>
+                  </span>
+        </div>
+               <div class="frame427322615-item4">
+                  <img
+                    src="/public/public/svg2312-c95b.svg"
+                    alt="SVG2312"
+                    class="frame427322615svg17"
+                  />
+                  <span class="frame427322615-text147">
+                    <span class="frame427322615-text148">Ongoing Learning:</span>
+                    <span>Access updated content and new modules regularly.</span>
+                  </span>
+        </div>
+                <div class="frame427322615-item4">
+                  <img
+                    src="/public/public/svg2312-c95b.svg"
+                    alt="SVG2312"
+                    class="frame427322615svg17"
+                  />
+                  <span class="frame427322615-text147">
+                    <span class="frame427322615-text148">Self-paced:</span>
+                    <span>Learn at your own speed with no pressure</span>
+                  </span>
+        </div>
+                <div class="frame427322615-item4">
+                  <img
+                    src="/public/public/svg2312-c95b.svg"
+                    alt="SVG2312"
+                    class="frame427322615svg17"
+                  />
+                  <span class="frame427322615-text147">
+                    <span class="frame427322615-text148">Scalable:</span>
+                    <span>Progress from beginner to advanced at your own pace.</span>
+                  </span>
+        </div>
+          <div class="frame427322615-item4">
+                  <img
+                    src="/public/public/svg2312-c95b.svg"
+                    alt="SVG2312"
+                    class="frame427322615svg17"
+                  />
+                  <span class="frame427322615-text147">
+                    <span class="frame427322615-text148">No Long-Term Commitment:</span>
+                    <span>Pause or cancel anytime</span>
+                  </span>
+        </div>
+         <div class="frame427322615-item4">
+                  <img
+                    src="/public/public/svg2312-c95b.svg"
+                    alt="SVG2312"
+                    class="frame427322615svg17"
+                  />
+                  <span class="frame427322615-text147">
+                    <span class="frame427322615-text148">Exclusive Mentorship:</span>
+                    <span>Continuous access to personalized guidance.</span>
+                  </span>
+        </div>
+        </div>
+
+    </div>
+</div>
+<div style="width:100%;">
+    @include('web.default2'.'.subscription.newtab.freecontent')
+  </div>
+                    <div class="frame427322615-frame427322544">
+            <div class="frame427322615-frame427322539">
+              <div class="frame427322615-frame427322538">
+                <div class="frame427322615-frame427322537">
+                  <div class="frame427322615-frame427322536">
+                    <div class="frame427322615-frame427322535">
+                      <span class="frame427322615-text194">
+                        What you will get
+                      </span>
+                      <!-- <img
+                        src="/public/public/vector2863-cnc.svg"
+                        alt="Vector2863"
+                        class="frame427322615-vector15"
+                      /> -->
+                    </div>
+                    <img
+                      src="/public/public/horizontaldivider2863-fyl2-200h.png"
+                      alt="HorizontalDivider2863"
+                      class="frame427322615-horizontal-divider3"
+                    />
+                  </div>
+                  <span class="frame427322615-text195">
+                    What You’ll Learn &amp; Receive Each Month
+                  </span>
+                </div>
+                <span class="frame427322615-text196">
+                  <span class="frame427322615-text197">
+                    Every month unlocks a new set of lessons, assignments, and
+                    real-chart practices.
+                  </span>
+                  <span>You’ll receive:</span>
+                </span>
+              </div>
+              
+
+  @include('web.default2'.'.subscription.newtab.content')
+
+          </div>
+                    <div class="frame427322615-border4">
+            <div class="frame427322615-frame427322558">
+              <div class="frame427322615-frame427322545">
+                <img
+                  src="/public/public/image22871-und-200h.png"
+                  alt="image22871"
+                  class="frame427322615-image26"
+                />
+                <span class="frame427322615-text239">
+                  Why Students Across 70 Countries Trust Asttrolok
+                </span>
+              </div>
+              <div class="frame427322615-frame427322557">
+                <div class="frame427322615-frame427322556">
+                  <div class="frame427322615">
+                    <div class="frame427322615-frame427322549">
+                      <div class="frame427322615-container13">
+                        <img
+                          src="/public/public/svg2871-if4v.svg"
+                          alt="SVG2871"
+                          class="frame427322615svg21"
+                        />
+                      </div>
+                      <div class="frame427322615-frame427322548">
+                        <span class="frame427322615-text242">
+                         Affordable & Flexible
+                        </span>
+                        <span class="frame427322615-text243">
+                          Study under Alok Khandelwal and gain authentic, practical astrology knowledge.
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="frame427322615-horizontal-border4">
+                    <div class="frame427322615-frame427322551">
+                      <div class="frame427322615-container14">
+                        <img
+                          src="/public/public/svg2872-zls6.svg"
+                          alt="SVG2872"
+                          class="frame427322615svg22"
+                        />
+                      </div>
+                      <div class="frame427322615-frame427322550">
+                        <span class="frame427322615-text244">
+                          Structured Learning
+                        </span>
+                        <span class="frame427322615-text245">
+                          Step-by-step modules that build your confidence
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="frame427322615-horizontal-border5">
+                    <div class="frame427322615-frame427322553">
+                      <div class="frame427322615-container15">
+                        <img
+                          src="/public/public/svg2872-kdgf.svg"
+                          alt="SVG2872"
+                          class="frame427322615svg23"
+                        />
+                      </div>
+                      <div class="frame427322615-frame427322552">
+                        <span class="frame427322615-text246">
+                          Expert Mentorship&nbsp;
+                        </span>
+                        <span class="frame427322615-text247">
+                          &nbsp;Direct guidance from Alok Khandelwal and team
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="frame427322615-horizontal-border6">
+                    <div class="frame427322615-frame427322555">
+                      <div class="frame427322615-container16">
+                        <img
+                          src="/public/public/svg2872-i4.svg"
+                          alt="SVG2872"
+                          class="frame427322615svg24"
+                        />
+                      </div>
+                      <div class="frame427322615-frame427322554">
+                        <span class="frame427322615-text248">
+                          Global Community &nbsp;
+                        </span>
+                        <span class="frame427322615-text249">
+                          Learn alongside 700 + active students worldwide.
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="frame427322615-horizontal-border3">
+                    <div class="frame427322615-frame427322549">
+                      <div class="frame427322615-container13">
+                        <img
+                          src="/public/public/svg2871-if4v.svg"
+                          alt="SVG2871"
+                          class="frame427322615svg21"
+                        />
+                      </div>
+                      <div class="frame427322615-frame427322548">
+                        <span class="frame427322615-text242">
+                        Career Ready 
+                        </span>
+                        <span class="frame427322615-text243">
+                          Start consulting professionally within 6 months.
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="frame427322615-link24">
+                @if($hasBought)
+                      <a href="{{ $subscription->getLearningPageUrl1() }}" style="text-decoration: none;">
+              <span class="frame427322615-text250">
+                                 Start Learning
+
+              </span>
+</a>
+@else
+                
+                
+                 <a href="/subscriptions/direct-payment/{{ $subscription->slug }}" style="text-decoration: none;">
+              <span class="frame427322615-text250">
+                                   {{ $subscription->extraDetails->cta_text }}
+
+              </span>
+</a>
+@endif
+            </div>
+          </div>
+          <div class="frame427322615-frame427322568">
+            <div class="frame427322615-frame427322567">
+              <div class="frame427322615-frame427322559">
+                <span class="frame427322615-text251">
+                  <span class="frame427322615-text252">Meet Your Mentor:</span>
+                  <span>Alok Khandelwal</span>
+                </span>
+                <img
+                  src="/public/public/horizontaldivider2873-3bip-200h.png"
+                  alt="HorizontalDivider2873"
+                  class="frame427322615-horizontal-divider4"
+                />
+                <span class="frame427322615-text254">
+                  <span class="frame427322615-text255">
+                   Founder of Asttrolok and a renowned Vedic Astrologer, Alok Khandelwal has taught 50,000+ students across 70+ countries. With degrees in Psychology and Economics and two decades of teaching experience, he transforms ancient wisdom into modern, applicable science.
+                  </span>
+                  <br />
+                  <br />
+                  <span>
+                    Astrology is not prediction it’s self-discovery through data
+                    and consciousness.
+                  </span>
+                  <br />
+                  <span>- Alok Khandelwal</span>
+                  <br />
+                  <br />
+                </span>
+              </div>
+              <div class="frame427322615-frame427322566">
+                <div class="frame427322615-frame427322565">
+                  <div class="frame427322615-frame427322561">
+                    <div class="frame427322615-background17">
+                      <img
+                        src="/public/public/svg2873-376o.svg"
+                        alt="SVG2873"
+                        class="frame427322615svg25"
+                      />
+                    </div>
+                    <div class="frame427322615-frame427322560">
+                      <span class="frame427322615-text263">
+                        MBA (Marketing)
+                      </span>
+                      <span class="frame427322615-text264">MA (Economics)</span>
+                    </div>
+                  </div>
+                  <div class="frame427322615-frame427322564">
+                    <div class="frame427322615-background18">
+                      <img
+                        src="/public/public/svg2873-8823.svg"
+                        alt="SVG2873"
+                        class="frame427322615svg26"
+                      />
+                    </div>
+                    <span class="frame427322615-text265">
+                      Founder : Asttrolok
+                    </span>
+                  </div>
+                </div>
+                <div class="frame427322615-frame427322563">
+                  <img
+                    src="/public/public/vector2873-r6nf.svg"
+                    alt="Vector2873"
+                    class="frame427322615-vector25"
+                  />
+                  <div class="frame427322615-frame427322562">
+                    <span class="frame427322615-text266">Jyotish Bhushan</span>
+                    <span class="frame427322615-text267">Jyotish Ratna</span>
+                    <span class="frame427322615-text268">Jyotish Rishi</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="frame427322615-group28">
+              <img
+                src="/public/public/ellipse102873-dm1-300h.png"
+                alt="Ellipse102873"
+                class="frame427322615-ellipse10"
+              />
+              <img
+                src="/public/public/ellipse112873-jw8-300h.png"
+                alt="Ellipse112873"
+                class="frame427322615-ellipse11"
+              />
+              <img
+                src="/public/public/bgremove9ad4f42e00bgremoved176035772783712873-1988-300w.png"
+                alt="bgremove9ad4f42e00bgremoved176035772783712873"
+                class="frame427322615-bgremove9ad4f42e00bgremoved17603577278371"
+              />
+            </div>
+          </div>
+          <div class="frame427322615-border5">
+            <div class="frame427322615-frame427322576">
+              <div class="frame427322615-frame427322577">
+                <div class="frame427322615-frame427322572">
+                  <div class="frame427322615-frame427322571">
+                    <div class="frame427322615-frame427322570">
+                      <img
+                        src="/public/public/svg2876-lynq.svg"
+                        alt="SVG2876"
+                        class="frame427322615svg27"
+                      />
+                      <span class="frame427322615-text269">Risk Meter</span>
+                    </div>
+                    <div class="frame427322615-background19">
+                      <img
+                        src="/public/public/background2876-1i0h-200h.png"
+                        alt="Background2876"
+                        class="frame427322615-background20"
+                      />
+                    </div>
+                  </div>
+                  <span class="frame427322615-text270">~ Zero</span>
+                </div>
+                <div class="frame427322615-frame427322574">
+                  <div class="frame427322615-frame427322573">
+                    <img
+                      src="/public/public/svg2876-ecf.svg"
+                      alt="SVG2876"
+                      class="frame427322615svg28"
+                    />
+                    <span class="frame427322615-text271">Risk Level: Zero</span>
+                  </div>
+                  <span class="frame427322615-text272">Cancel anytime</span>
+                </div>
+              </div>
+              <div class="frame427322615-frame427322470">
+                <div class="frame427322615-frame427322575">
+                  <span class="frame427322615-text273">
+                   {{$subscription->extradetails->risk_title}}
+                  </span>
+                  <span class="frame427322615-text274">{{$subscription->extradetails->risk_description}}</span>
+                </div>
+              </div>
+              <div class="frame427322615-link25">
+                  @if($hasBought)
+                  <a href="{{ $subscription->getLearningPageUrl1() }}" style="text-decoration: none;">
+                <span class="frame427322615-text297">
+               Start Learning
+                </span>
+</a>
+  @else                
+                  
+                 <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}" style="text-decoration: none;">
+                <span class="frame427322615-text297">
+                 {{ $subscription->extraDetails->cta_text }}
+                </span>
+</a>
+@endif
+              </div>
+            </div>
+          </div>
+  @php
+    // Raw values
+    $monthsRaw   = $subscription->extraDetails->certification_time ?? '[]';
+    $focusRaw    = $subscription->extraDetails->certification_focus ?? '[]';
+    $outcomeRaw  = $subscription->extraDetails->certification_outcome ?? '[]';
+
+    // Function to remove extra quotes and brackets
+    $clean = function ($value) {
+        return trim($value, "[]\"'");
+    };
+
+    // Function to decode or fallback to comma explode
+    $parse = function ($raw) use ($clean) {
+        $data = json_decode($raw, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
+            $data = array_filter(array_map('trim', explode(',', $raw)));
+        }
+
+        // Clean each value
+        return array_values(array_map($clean, $data));
+    };
+
+    // Parse all fields
+    $months  = $parse($monthsRaw);
+    $focus   = $parse($focusRaw);
+    $outcome = $parse($outcomeRaw);
+
+    // Determine table row count
+    $rows = max(count($months), count($focus), count($outcome));
+@endphp
+
+
+<div class="frame427322615-frame427322580">
+    <div class="frame427322615-frame427322578">
+        <span class="frame427322615-text275">
+            {{ $subscription->extraDetails->certificate_title }}
+        </span>
+
+        <table class="roadmap-table">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Focus</th>
+                    <th>Outcome</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for($i = 0; $i < $rows; $i++)
+                    <tr>
+                        <td class="month">
+                            {{ $months[$i] ?? '' }}
+                        </td>
+                        <td>
+                            {{ $focus[$i] ?? '' }}
+                        </td>
+                        <td>
+                            {{ $outcome[$i] ?? '' }}
+                        </td>
+                    </tr>
+                @endfor
+            </tbody>
+        </table>
+     </div>
+            <div class="frame427322615-frame427322579">
+              <div class="frame427322615-link25">
+                  @if($hasBought)
+                   <a href="{{ $subscription->getLearningPageUrl1() }}" style="text-decoration: none;">
+                <span class="frame427322615-text297">
+                                     Start Learning
+
+                </span>
+              </a>
+                  @else
+                  
+                  
+                 <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}" style="text-decoration: none;">
+                <span class="frame427322615-text297">
+                                       {{ $subscription->extraDetails->cta_text }}
+
+                </span>
+              </a>
+              @endif
+              </div>
+              <div class="frame427322615-group56">
+                <div class="frame427322615-background21">
+                  <div class="frame427322615-paragraph-background">
+                    <img
+                      src="/public/public/image32878-z0u9-200h.png"
+                      alt="image32878"
+                      class="frame427322615-image3"
+                    />
+                  </div>
+                </div>
+                <div class="frame427322615-background22">
+                  <div class="frame427322615-overlay">
+                    <span class="frame427322615-text298">
+                      Carrer in 6 Months
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+  </div>
+            @include('web.default2'.'.subscription.tabs.information')
+          <div class="frame427322615-frame427322595">
+            <div class="frame427322615-frame427322594">
+              <span class="frame427322615-text306">Reviews</span>
+              <img
+                src="/public/public/horizontaldivider2881-zbc4-200h.png"
+                alt="HorizontalDivider2881"
+                class="frame427322615-horizontal-divider6"
+              />
+            </div>
+            <div class="frame427322615-container19">
+              <div class="frame427322615-frame427322600">
+                <div class="frame427322615-frame427322500">
+                  <span class="frame427322615-text307">
+                    by 7,438 learners for course quality, clarity & mentor support. 
+                  </span>
+                  <span class="frame427322615-text308">{{ $subscription?->review_number }}</span>
+                  <img
+                    src="/public/public/vector2882-7x6.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector26"
+                  />
+                  <img
+                    src="/public/public/vector2882-py7.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector27"
+                  />
+                  <img
+                    src="/public/public/vector2882-69t.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector28"
+                  />
+                  <img
+                    src="/public/public/vector2882-hk1.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector29"
+                  />
+                  <img
+                    src="/public/public/vector2882-f5i8.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector30"
+                  />
+                  <img
+                    src="/public/public/vector2882-5tq.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector31"
+                  />
+                  <img
+                    src="/public/public/vector2882-a17.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector32"
+                  />
+                  <img
+                    src="/public/public/vector2882-46bk.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector33"
+                  />
+                  <img
+                    src="/public/public/vector2882-t8c4.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector34"
+                  />
+                  <img
+                    src="/public/public/vector2882-h03t.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector35"
+                  />
+                  <img
+                    src="/public/public/vector2882-afbf.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector36"
+                  />
+                  <img
+                    src="/public/public/vector2882-6nyh.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector37"
+                  />
+                  <img
+                    src="/public/public/vector2882-hle9.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector38"
+                  />
+                  <img
+                    src="/public/public/vector2882-433k.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector39"
+                  />
+                  <img
+                    src="/public/public/vector2882-flh.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector40"
+                  />
+                  <img
+                    src="/public/public/vector2882-oey.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector41"
+                  />
+                  <img
+                    src="/public/public/vector2882-rvmb.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector42"
+                  />
+                  <img
+                    src="/public/public/vector2882-tb69.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector43"
+                  />
+                  <img
+                    src="/public/public/vector2882-dp0j.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector44"
+                  />
+                  <img
+                    src="/public/public/vector2882-tpjh.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector45"
+                  />
+                  <img
+                    src="/public/public/vector2882-9yf.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector46"
+                  />
+                  <img
+                    src="/public/public/vector2882-hm8p.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector47"
+                  />
+                  <img
+                    src="/public/public/vector2882-szq.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector48"
+                  />
+                  <img
+                    src="/public/public/vector2882-nqkf.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector49"
+                  />
+                  <img
+                    src="/public/public/vector2882-mzd.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector50"
+                  />
+                  <img
+                    src="/public/public/vector2882-m399.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector51"
+                  />
+                  <img
+                    src="/public/public/vector2882-qduf.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector52"
+                  />
+                  <img
+                    src="/public/public/vector2882-srxj.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector53"
+                  />
+                  <img
+                    src="/public/public/vector2882-klx.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector54"
+                  />
+                  <img
+                    src="/public/public/vector2882-1eek.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector55"
+                  />
+                  <img
+                    src="/public/public/vector2882-211.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector56"
+                  />
+                  <img
+                    src="/public/public/vector2882-3hhp.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector57"
+                  />
+                  <img
+                    src="/public/public/vector2882-htze.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector58"
+                  />
+                  <img
+                    src="/public/public/vector2882-u6ia.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector59"
+                  />
+                  <img
+                    src="/public/public/vector2882-6xm.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector60"
+                  />
+                  <img
+                    src="/public/public/vector2882-6rqk.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector61"
+                  />
+                  <img
+                    src="/public/public/vector2882-18ef.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector62"
+                  />
+                  <img
+                    src="/public/public/vector2882-2zeg.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector63"
+                  />
+                  <img
+                    src="/public/public/vector2882-7c63.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector64"
+                  />
+                  <img
+                    src="/public/public/vector2882-k49d.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector65"
+                  />
+                  <img
+                    src="/public/public/vector2882-jd1r.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector66"
+                  />
+                  <img
+                    src="/public/public/vector2882-lbw.svg"
+                    alt="Vector2882"
+                    class="frame427322615-vector67"
+                  />
+                  <div class="frame427322615-background23">
+                    <span class="frame427322615-text309">Outstanding</span>
+                  </div>
+                </div>
+                <div class="frame427322615-group53">
+                  <div class="frame427322615-frame427322599">
+                    <span class="frame427322615-text310">
+                            {{$subscription->extraDetails->rate_title	}}
+                    </span>
+                    <div class="frame427322615-frame427322598">
+                      <div class="frame427322615-container20">
+                        <img
+                          src="/public/public/svg2882-yzp.svg"
+                          alt="SVG2882"
+                          class="frame427322615svg29"
+                        />
+                        <span class="frame427322615-text311">
+                          User-Friendly
+                        </span>
+                      </div>
+                       <div class="frame427322615-container20">
+                        <img
+                          src="/public/public/svg2882-v80e.svg"
+                          alt="SVG2882"
+                          class="frame427322615svg30"
+                        />
+                            <span class="frame427322615-text311">Easy to Follow</span>
+                      </div>
+                      <div class="frame427322615-frame427322597">
+                        <img
+                          src="/public/public/vector2882-vhyq.svg"
+                          alt="Vector2882"
+                          class="frame427322615-vector68"
+                        />
+                        <span class="frame427322615-text313">On Time</span>
+                      </div>
+                    </div>
+                    <div class="frame427322615-frame427322596">
+                      <div class="frame427322615-container22">
+                        <img
+                          src="/public/public/svg2882-ki1o.svg"
+                          alt="SVG2882"
+                          class="frame427322615svg31"
+                        />
+                        <span class="frame427322615-text314">
+                          Customer Support
+                        </span>
+                      </div>
+                      <div class="frame427322615-container23">
+                        <img
+                          src="/public/public/svg2882-aixv.svg"
+                          alt="SVG2882"
+                          class="frame427322615svg32"
+                        />
+                        <span class="frame427322615-text315">
+                          Knowledge Base
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="frame427322615-background24">
+            <div class="frame427322615-frame427322601"></div>
+            <div class="frame427322615-frame427322603">
+              <div class="frame427322615-frame427322602">
+                <span class="frame427322615-text316">
+                 <span class="frame427322615-text317 ad-subtitle-fix">
+    {{$subscription->extraDetails->ad_subtitle}}
+</span>
+                <span class="frame427322615-text319 mt-20">
+                  {{$subscription->extraDetails->ad_title}}
+                </span>
+                <div class="frame427322615-group57 mt-20">
+                  <div class="frame427322615-link26">
+                      @if($hasBought)
+                              <a href="{{ $subscription->getLearningPageUrl1() }}" style="text-decoration: none;">
+                    <span class="frame427322615-text320">Start Learning</span>
+</a>
+  @else                    
+                      
+                     <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}" style="text-decoration: none;">
+                    <span class="frame427322615-text320">Enroll Now</span>
+</a>
+@endif
+                  </div>
+                  
+                    <a href="/contact" style="text-decoration: none;">
+                      <div class="frame427322615-link27"style="@if($hasBought) left: 130px; @endif">
+                    <span class="frame427322615-text321">Know more</span>
+                    
+                  </div>
+                  </a>
+                </div>
+              </div>
+              <span class="frame427322615-text322 mt-10">
+               {{$subscription->extraDetails->ad_description}}
+              </span>
+            </div>
+            <div class="frame427322615-call-to-action-section"></div>
+          </div>
+            </div>
+<div class="beni">
+    <div class="frame427322615-frame427322611">
+        <div class="frame427322615-background-shadow" style="background-color: transparent !important;">
+            <div class="frame427322615-background-border2">
+                <div class="frame427322615-container11">
+                    <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}" style="text-decoration: none;">
+                        <button class="frame427322615-button6" style="display: none;">
+                            <span class="frame427322615-text183">
+                            {{ $subscription->extraDetails->cta_text }}
+                  </span>
+                        </button>
+                    </a>
+                </div>
+
+                <span class="frame427322615-text184">Price</span>
+                <img src="/public/public/svg1624-qvkc.svg" alt="SVG1624" class="frame427322615svg18"/>
+
+                @php
+                    $displayPrice = handleCoursePagePrice($subscription->price);  
+                @endphp
+
+                <span class="frame427322615-text185">{{ $displayPrice['price'] }}</span>
+
+                <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}" style="text-decoration: none;">
+                    <span class="frame427322615-text186">Pay Now</span>
+                </a>
+
+                <img src="/public/public/background1625-5hl-200h.png" alt="Background1625" class="frame427322615-background13"/>
+                <img src="/public/public/horizontaldivider1625-gews-400w.png" alt="HorizontalDivider1625" class="frame427322615-horizontal-divider2"/>
+
+                <span class="frame427322615-text187">Total Amount</span>
+                <span class="frame427322615-text188">{{ $displayPrice['price'] }}</span>
+
+                <div class="frame427322615-background14">
+                   <span class="mt-5" style="display:block; text-align:center !important;margin:auto;color:#1964B9;">
+   Start at your Ease and Cancel Anytime
+</span>
+                </div>
+            </div>
+<style>
+                .old-price {
+                      font-style: italic;
+                      font-weight: normal;
+                      font-size: 18px;
+                      text-decoration: line-through;
+                      color: #fff; 
+                      opacity: 0.85;
+                      margin-left: 15px;
+                  }
+                  .new-price {
+                      font-weight: 600;
+                  }
+              </style>
+              @if($hasBought)
+              <a href="{{ $subscription->getLearningPageUrl1() }}" style="text-decoration: none;">
+            <div class="frame427322615-background15" style="
+    justify-content: center;
+">
+                <img src="/public/public/svg1626-2g57.svg" alt="SVG1626" class="frame427322615svg19" style="display:none;"/>
+                <span class="frame427322615-text189" style="width: auto; ">
+                  
+
+                   <span class="frame427322615-text190" >Start Learning</span>
+                    <br/>
+
+                </span>
+            </div>
+                </a>
+                @else
+              <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}" style="text-decoration: none;">
+            <div class="frame427322615-background15" style="
+    justify-content: center;
+">
+                <img src="/public/public/svg1626-2g57.svg" alt="SVG1626" class="frame427322615svg19" style="display:none;"/>
+                <span class="frame427322615-text189" style="width: auto; ">
+                    {{-- <span class="frame427322615-text190">{{ $displayPrice['price'] }} Per Month  <span class="old-price">₹5999 /-</span></span> --}} 
+
+                   <span class="frame427322615-text190" >Start Free Trial</span>
+                    <br/>
+
+                </span>
+            </div>
+                </a>
+                @endif
+        </div>
+    </div>
+</div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+<div class="modal fade " id="playVideo" tabindex="-1" aria-labelledby="playVideoLabel" aria-modal="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content py-20">
+            <div class="d-flex align-items-center justify-content-between px-20">
+                <h3 class="section-title after-line">Class 1 - Complete Guide to Aries</h3>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+
+            <div class="mt-25 position-relative">
+                <div class="px-20">
+
+                    <div class="js-modal-video-content">
+                      <!-- <iframe src="https://iframe.mediadelivery.net/embed/759/eb1c4f77-0cda-46be-b47d-1118ad7c2ffe?autoplay=true" style="width:100%;height:400px;">  -->
+
+                      </iframe></div>
+                </div>
+
+                <div class="modal-video-lists mt-15">
+
+                                    </div>
+            </div>
+        </div>
+    </div>
+   {{-- @endforeach --}}
+</div>
+
 @endsection
 
 @push('scripts_bottom')
-@if(empty($authUser))
-<script>
 
-</script>
-@endif
+    <script src="{{ config('app.js_css_url') }}/assets2/default/vendors/swiper/swiper-bundle.min.js"></script>
+    <script src="{{ config('app.js_css_url') }}/assets2/default/vendors/owl-carousel2/owl.carousel.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets2/default/js/parts/time-counter-down.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets2/default/vendors/barrating/jquery.barrating.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.10.2/video.min.js"></script>
@@ -688,20 +1663,13 @@
      <script src="{{ config('app.js_css_url') }}/assets2/default/vendors/video/1212youtube.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets2/default/vendors/video/vimeo.js"></script>
 <script>
-    function buy_subscription(){
-
-        $('.buy_now').click();
+    function playVideo(){
+        // alert('');
+       $("#playVideo").modal('show')
     }
 
 </script>
-@if(Session::has('addtocart'))
-<script>
 
-$("#myModal2").modal('show');
-  $('.modal-dialog').addClass('afterpop');
-
-</script>
-@endif
 @php
     Illuminate\Support\Facades\Session::forget('addtocart');
 @endphp
@@ -746,22 +1714,55 @@ $("#myModal2").modal('show');
     </script>
 <script>
 
-    $(document).scroll(function() {
-                    var y = $(this).scrollTop();
-                     var y1 = $(this).scrollTop($(this)[0].scrollHeight);
-                    if (y > 480 ) {
-                        $('.register_desktop').fadeIn();
-                        $('.register_desktop').css("display", "block");
-                         $('.register_desktop1').css("display", "none");
-                    } else {
-                        $('.register_desktop').fadeOut();
-                        $('.register_desktop').css("display", "none");
-                        $('.register_desktop1').css("display", "block");
-                    }
-
-                });
 </script>
+<script>
+    $('#playVideo').on('hidden.bs.modal', function () {
+    let iframe = $(this).find('iframe');
+    let src = iframe.attr('src');
+    iframe.attr('src', '');
+    iframe.attr('src', src); // reset so video stops
+});
+<!-- Swiper CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+<!-- Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        new Swiper('.swiper', {
+            slidesPerView: 3,
+            spaceBetween: 0, // Gap remove karta hai
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            breakpoints: {
+                320: { slidesPerView: 1 },
+                768: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 }
+            }
+        });
+    });
+</script>
+</script>
+<script>
+    $('#playVideo').on('hidden.bs.modal', function () {
+    let iframe = $(this).find('iframe');
+    let src = iframe.attr('src');
+    iframe.attr('src', '');
+    iframe.attr('src', src); // reset so video stops
+});
+</script>
+
+</script>
+
     <script src="{{ config('app.js_css_url') }}/assets2/default/js/parts/comment.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets2/default/js/parts/video_player_helpers.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets2/default/js/parts/webinar_show.min.js"></script>
+    <script type="text/javascript" src="https://asttrolok.in/asttroloknew/assets/design_1/js/app.min.js"></script>
+        <script src="https://asttrolok.in/asttroloknew/assets/vendors/wrunner-html-range-slider-with-2-handles/js/wrunner-jquery.js"></script>
+    <script src="https://asttrolok.in/asttroloknew/assets/default/vendors/swiper/swiper-bundle.min.js"></script>
+    <script src="https://asttrolok.in/asttroloknew/assets/design_1/js/parts/range_slider_helpers.min.js"></script>
+    <script src="https://asttrolok.in/asttroloknew/assets/design_1/js/parts/swiper_slider.min.js"></script>
 @endpush

@@ -46,7 +46,7 @@
                                         @php
                                             $cartItemInfo = $cart->getItemInfo();
                                         @endphp
-                                        <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $cartItemInfo['imgPath'] }}" class="img-cover" alt="user avatar">
+                                        <img loading="lazy" src="{{ config('app.manual_base_url') }}{{ $cartItemInfo['imgPath'] }}" class="img-cover" alt="user avatar">
                                     </div>
                                 </div>
 

@@ -35,6 +35,7 @@
             <span class="font-12 text-gray d-block">{{ $hintText }}</span>
         </div>
 
+
         <div class="tab-item-info mt-15">
             <p class="font-12 text-gray d-block">
                 @php

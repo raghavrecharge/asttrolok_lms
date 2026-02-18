@@ -3,15 +3,18 @@
 @push('styles_top')
 
 <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/css/mobile-course-payment.css">
-@endpush
 <style>
     .loader {
+      //border: 16px solid #f3f3f3;
+      //border-radius: 50%;
+      //border-top: 16px solid #3498db;
 
       height: 80px;
       -webkit-animation: spin 2s linear infinite;
       animation: spin 2s linear infinite;
     }
 
+    #loader {
     position: fixed;
     left: 50%;
     top: 50%;
@@ -24,6 +27,33 @@
     opacity: 0.5;
 }
     </style>
+    <style>
+  #paymentLoader {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  #paymentLoader .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 44%;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+@endpush
+
 @section('content')
     <section class="cart-banner position-relative text-center homehide">
         <h1 class="font-30 text-white font-weight-bold">{{ trans('cart.checkout') }}</h1>
@@ -78,6 +108,7 @@
 
            <input type="text" name="name" value="{{ auth()->check() ? auth()->user()->full_name :'' }}" id="customer_name" placeholder="Name" class="form-control mt-25 " >
             <input type="email" name="email" value="{{ auth()->check() ? auth()->user()->email  :'' }}" id="customer_email" placeholder="Email" class="form-control mt-25 " >
+           
             <input type="number" name="number" value="{{ auth()->check() ? auth()->user()->mobile :'' }}" id="customer_number" placeholder="Contact Number" class="form-control mt-25 mb-25" >
              <h2 class="section-title d-none">Payment Option</h2>
              <br>
@@ -158,15 +189,26 @@
                  <input type="hidden" name="razorpay_signature" value="" id="razorpay_signature" class="form-control mt-25 mb-25">
 
             </form>
-
+<div id="paymentLoader">
+        <div class="spinner"></div>
+        </div>
     </section>
 
 @endsection
 
 @push('scripts_bottom')
 <script defer src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script defer src="https://www.asttrolok.com/js/unified-payment.js"></script>
+<script defer src="/js/unified-payment.js"></script>
 <script defer>
+    const loaderEl = document.getElementById('paymentLoader');
+
+    function showPaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'block';
+    }
+
+    function hidePaymentLoader() {
+        if (loaderEl) loaderEl.style.display = 'none';
+    }
 document.getElementById('paymentSubmit').addEventListener('click', function(e) {
     e.preventDefault();
 
@@ -174,10 +216,13 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
         name: document.getElementById('customer_name').value,
         email: document.getElementById('customer_email').value,
         number: document.getElementById('customer_number').value,
-        discount_id: {{ session('discountCouponId') ?? 0 }}
+        discount_id: @json(session('discountCouponId'))
     };
 
-    initiatePayment('subscription', {{ $subscription->id }}, userDetails);
+    showPaymentLoader();
+
+    // Call unified payment handler
+    initiatePayment('subscription_one_time', {{ $subscription->id }}, userDetails);
 });
 </script>
 @endpush

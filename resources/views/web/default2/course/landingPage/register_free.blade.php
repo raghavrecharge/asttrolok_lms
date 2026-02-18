@@ -69,18 +69,10 @@
                         @endif
 
                         <div class="form-group">
-                            <label class="input-label" for="password">{{ trans('auth.create_password') }}:</label>
-                            <div class="input-group">
-                                <input name="password" type="password" maxlength="40"
-                                       class="form-control @error('password') is-invalid @enderror" id="password"
-                                       aria-describedby="passwordHelp">
-                                <div class="input-group-append">
-                                   <button type="button" class="toggle-password" data-toggle="#password">
-                                    <i class="fa fa-eye"></i>
-                                </button>
-                                </div>
-                            </div>
-                            <small class="form-text text-muted">Password must be at least 6 characters.</small>
+                            <label class="input-label" for="password">{{ trans('auth.password') }}:</label>
+                            <input name="password" type="password" maxlength="40"
+                                   class="form-control @error('password') is-invalid @enderror" id="password"
+                                   aria-describedby="passwordHelp">
                             @error('password')
                             <div class="invalid-feedback">
                                 {{ $message }}
@@ -88,19 +80,11 @@
                             @enderror
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group ">
                             <label class="input-label" for="confirm_password">{{ trans('auth.retype_password') }}:</label>
-                            <div class="input-group">
-                                <input name="password_confirmation" type="password" maxlength="40"
-                                       class="form-control @error('password_confirmation') is-invalid @enderror" id="confirm_password">
-                                <div class="input-group-append">
-                                     <button type="button" class="toggle-password" data-toggle="#confirm_password">
-                                        <i class="fa fa-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <small id="password-match-error" style="color:red; display:none;">Passwords do not match.</small>
-                            <small id="password-match-success" style="color:green; display:none;">Passwords match.</small>
+                            <input name="password_confirmation" maxlength="40" type="password"
+                                   class="form-control @error('password_confirmation') is-invalid @enderror" id="confirm_password"
+                                   aria-describedby="confirmPasswordHelp">
                             @error('password_confirmation')
                             <div class="invalid-feedback">
                                 {{ $message }}
@@ -195,47 +179,5 @@
 @endsection
 
 @push('scripts_bottom')
-<script>
-$(document).ready(function() {
-
-    $(".toggle-password").click(function() {
-        let input = $($(this).data("toggle"));
-        if(input.attr("type") === "password") {
-            input.attr("type", "text");
-            $(this).find("i").removeClass("fa-eye").addClass("fa-eye-slash");
-        } else {
-            input.attr("type", "password");
-            $(this).find("i").removeClass("fa-eye-slash").addClass("fa-eye");
-        }
-    });
-
-    function checkPasswordMatch() {
-        let password = $("#password").val();
-        let confirmPassword = $("#confirm_password").val();
-
-        if(confirmPassword === '') {
-            $("#password-match-error").hide();
-            $("#password-match-success").hide();
-            $("#confirm_password").css('border-color', '');
-            return;
-        }
-
-        if(password === confirmPassword) {
-            $("#password-match-error").hide();
-            $("#password-match-success").show();
-            $("#confirm_password").css('border-color', 'green');
-        } else {
-            $("#password-match-success").hide();
-            $("#password-match-error").show();
-            $("#confirm_password").css('border-color', 'red');
-        }
-    }
-
-    $("#password, #confirm_password").on('input', checkPasswordMatch);
-});
-</script>
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/select2/select2.min.js"></script>
-@endpush
-@push('styles_top')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 @endpush

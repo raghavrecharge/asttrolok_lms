@@ -4,6 +4,7 @@ $layout = $agent->isMobile() ? 'web.default.layouts.app' : 'web.default2.layouts
 @endphp
 
 @extends($layout)
+
 @section('content')
     <div class="container">
         <div class="course-private-content text-center w-100 border rounded-lg">

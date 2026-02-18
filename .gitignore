@@ -55,4 +55,4 @@ public/store/support-payments/*
 
 # Uploaded media/assets (too large for git)
 public/store/*
-!public/store/.gitkeep
+!public/store/.gitkeepmarketing_asttrolok

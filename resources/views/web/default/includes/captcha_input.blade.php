@@ -10,7 +10,6 @@
             @enderror
         </div>
         <div class="col-5 d-flex align-items-center">
-            <img loading="lazy" id="captchaImageComment" class="captcha-image" src="{{ captcha_src() }}">
 
             <button type="button" id="refreshCaptcha" class="btn-transparent ml-10">
                 <i data-feather="refresh-ccw" width="24" height="24" class=""></i>
@@ -18,8 +17,3 @@
         </div>
     </div>
 </div>
-<script  >
-    $('#refreshCaptcha').click(function(){
-        $('#captchaImageComment').attr('src', '{{ captcha_src() }}' + '?' + Math.random());
-    });
-</script>

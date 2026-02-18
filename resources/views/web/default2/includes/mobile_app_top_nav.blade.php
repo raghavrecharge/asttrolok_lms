@@ -3,7 +3,7 @@
     <div class="container d-flex justify-content-between flex-column flex-lg-row">
         <a class="navbar-brand navbar-order mr-0 d-flex align-items-center justify-content-center" href="/">
             @if(!empty($generalSettings['logo']))
-                <img src="{{ config('app.img_dynamic_url') }}{{ $generalSettings['logo'] }}" class="img-cover" alt="site logo">
+                <img src="{{ config('app.img_dynamic_url') }}{{ $generalSettings['logo'] ?? '' }}" class="img-cover" alt="site logo">
             @endif
         </a>
 

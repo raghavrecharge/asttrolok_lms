@@ -13,14 +13,16 @@
   a.active-tab-mobile.bloc-icon span {
     font-weight: 800;
 }
+.font-12 {
+    
+    line-height: 1.9;
+}
 </style>
- <div class="footermobile">
 
-</div>
 
  <div class="mainfooter border-top" >
       <nav class="mobile-nav text-center">
-        <a href="{{ config('app.manual_base_url') }}/" class="bloc-icon {{ Request::path() == '/' ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
+        <a href="{{isset($_GET['ad'])?'#':'/'}}" class="bloc-icon {{ Request::path() == '/' ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
 
              @if(Request::path() == '/')
              <svg width="29" height="28" viewBox="0 0 61 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -36,7 +38,7 @@
 
              <br><span class="font-12">Home</span>
          </a>
-         <a href="{{ config('app.manual_base_url') }}/classes?sort=newest" class="bloc-icon {{ (Request::path() == 'classes' or (isset($course)? $course->type == 'course': false )) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
+         <a href="{{isset($_GET['ad'])?'#':'/classes?sort=newest'}}" class="bloc-icon {{ (Request::path() == 'classes' or (isset($course)? $course->type == 'course': false )) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
 
                 @if((Request::path() == 'classes' or (isset($course)? $course->type == 'course': false )))
                              <svg width="28" height="28" viewBox="0 0 66 67" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -56,7 +58,7 @@
                 @endif
              <br><span class="font-12">Courses</span>
          </a>
-         <a href="{{ config('app.manual_base_url') }}/consult-with-astrologers" class="bloc-icon {{ (Request::path() == 'consult-with-astrologers' or isset($meeting)) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
+         <a href="{{isset($_GET['ad'])?'#':'/consult-with-astrologers'}}" class="bloc-icon {{ (Request::path() == 'consult-with-astrologers' or isset($meeting)) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
 
                 @if(Request::path() == 'consult-with-astrologers' or isset($meeting))
                             <svg width="29" height="28" viewBox="0 0 68 56" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -79,9 +81,9 @@
                 <br><span class="font-12">Consultation</span>
          </a>
 
-         <a href="{{ config('app.manual_base_url') }}/remedies" class="bloc-icon {{ (Request::path() == 'blog' or (isset($course)? $course->type == 'remedy': false )) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
+         <a href="{{isset($_GET['ad'])?'#':'/remedies'}}" class="bloc-icon {{ (Request::path() == 'remedies' or (isset($course)? $course->type == 'remedies': false )) ? 'active-tab-mobile' : '' }}" style="text-align:center !important;">
 
-                 @if((Request::path() == 'blog' or (isset($course)? $course->type == 'remedy': false )))
+                 @if((Request::path() == 'remedies' or (isset($course)? $course->type == 'remedies': false )))
                           <svg width="29" height="28" viewBox="0 0 63 62" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" clip-rule="evenodd" d="M0.97193 43.0192C1.53712 48.2167 3.99872 53.0234 7.88577 56.5198C11.7728 60.0162 16.8125 61.9567 22.0406 61.9702H40.884C46.1183 61.9655 51.1668 60.0289 55.0614 56.5317C58.956 53.0345 61.4226 48.2229 61.9885 43.0192C61.962 43.0727 61.9211 43.1179 61.8704 43.1496C61.8197 43.1812 61.7612 43.1982 61.7014 43.1987H39.7354C39.2143 44.9994 38.1222 46.5822 36.6236 47.7085C35.125 48.8349 33.3011 49.4439 31.4264 49.4439C29.5517 49.4439 27.7278 48.8349 26.2292 47.7085C24.7306 46.5822 23.6386 44.9994 23.1174 43.1987H0.97193V43.0192ZM61.9885 41.1887V21.9505C61.9698 16.349 59.7437 10.9807 55.7929 7.00982C51.8422 3.03889 46.4853 0.78548 40.884 0.738281H22.0406C16.4239 0.757249 11.0432 2.99933 7.07495 6.97432C3.10669 10.9493 0.873714 16.3338 0.864258 21.9505V38.1738C8.90409 38.1738 16.9798 38.1738 25.1632 38.1738C25.7853 38.1832 26.3786 38.4369 26.8151 38.8801C27.2516 39.3234 27.4963 39.9205 27.4962 40.5426C27.5897 41.5202 28.0442 42.4278 28.7709 43.0883C29.4976 43.7488 30.4444 44.1148 31.4264 44.1148C32.4084 44.1148 33.3552 43.7488 34.0819 43.0883C34.8086 42.4278 35.2631 41.5202 35.3566 40.5426C35.3658 39.9173 35.6184 39.3201 36.0607 38.8778C36.5029 38.4356 37.1001 38.183 37.7255 38.1738C45.9089 38.1738 54.0205 38.1738 62.0603 38.1738V40.6862C62.0438 40.8533 62.0438 41.0216 62.0603 41.1887H61.9885Z" fill="#32BA7C"/>
                         </svg>

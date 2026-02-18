@@ -20,49 +20,10 @@ $query = \App\Models\SubscriptionCourseProgress::where('subscription_id', $subsc
     ->where('item_id', $item->id)
      ->first();
 
-
-
-
-
-
-
-    
     $checkSequenceContent = $item->checkSequenceContent();
     $sequenceContentHasError = (!empty($checkSequenceContent) and (!empty($checkSequenceContent['all_passed_items_error']) or !empty($checkSequenceContent['access_after_day_error'])));
 @endphp
-{{--
-<div class="1" >
 
-        <span class="chapter-icon bg-gray300 mr-10">
-            <i data-feather="{{ $icon }}" class="text-gray" width="16" height="16"></i>
-        </span>
-
-    <div>
-        <div class="">
-            <span class="font-weight-500 font-14 text-dark-blue d-block">{{ $item->title }}</span>
-            <span class="font-12 text-gray d-block">{{ $hintText }}</span>
-            <div class="mt-20">
-            <label for="videoProgress" class="font-12 text-gray">Progress</label>
-            <progress id="videoProgress" value="{{ optional($query)->watch_percentage ?? 0 }}" max="100" class="progress-bar"></progress>
-            <span id="progressValue" class="font-12 text-gray">{{ optional($query)->watch_percentage ?? 0 }}%</span> 
-        </div>
-        </div>
-
-
-        <div class="tab-item-info mt-15">
-            <p class="font-12 text-gray d-block">
-                @php
-                    $description = !empty($item->description) ? $item->description : (!empty($item->summary) ? $item->summary : '');
-                @endphp
-
-                {!! truncate($description, 150) !!}
-            </p>
-
-     
-        </div>
-    </div>
-</div>
---}}
             <div class="course-card" >
                 <div class="card-header">
                     <div class="video-icon">
@@ -70,7 +31,7 @@ $query = \App\Models\SubscriptionCourseProgress::where('subscription_id', $subsc
                     </div>
                     <div class="card-title">
                         <div class="class-number">{{ $item->title }}</div>
-                        <!--<div class="class-name">Difference between Jyotish & Astrology</div>-->
+
                     </div>
                 </div>
                 <div class="card-content">
@@ -82,6 +43,6 @@ $query = \App\Models\SubscriptionCourseProgress::where('subscription_id', $subsc
                         </div>
                         <div class="progress-percentage">{{ optional($query)->watch_percentage ?? 0 }}</div>
                     </div>
-                   
+
                 </div>
             </div>
