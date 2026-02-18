@@ -46,7 +46,8 @@ class RewardCoursesController extends Controller
                 'sortFormAction' => '/reward-courses',
                 'category' => null,
                 'featureWebinars' => null,
-                'isRewardCourses' => true
+                'isRewardCourses' => true,
+                'page' => 'reward-courses'
             ];
 
             return view(getTemplate() . '.pages.categories', $data);

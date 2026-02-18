@@ -271,7 +271,7 @@ $cover_img['Numerology']="/store/1/Category/Numerology-mobile.jpg";
             <div class="row h-100 align-items-center justify-content-center text-center">
                 <div class="col-12 col-md-9 col-lg-7">
                     <div class="top-search-categories-form">
-                        <h1 class="text-white font-30 mb-15">{{ !empty($pageTitle1) ? $pageTitle1: $category->title}}</h1>
+                        <h1 class="text-white font-30 mb-15">{{ !empty($pageTitle1) ? $pageTitle1 : ($category->title ?? $pageTitle ?? '') }}</h1>
 
                     </div>
                 </div>

@@ -166,9 +166,9 @@ class CategoriesController extends Controller
 
                     $data = [
 
-                        'pageTitle' => $seotitle[$category->title],
-                        'pageTitle1' => $seoh1[$category->title],
-                        'pageDescription' => !empty($seodata[$category->title]) ? $seodata[$category->title] : $pageDescription,
+                        'pageTitle' => $seotitle[$category->title] ?? $category->title,
+                        'pageTitle1' => $seoh1[$category->title] ?? $category->title,
+                        'pageDescription' => $seodata[$category->title] ?? $pageDescription,
                         'pageRobot' => $pageRobot,
                         'category' => $category,
                         'webinars' => $webinars,

@@ -453,7 +453,7 @@
 @section('content')
 <h1 class="d-none">Asttrolok Pathshala</h1>
    <div class="cover-content pt-40">
-      <link href="{{ config('app.js_css_url') }}/asttroloknew/index.css" rel="stylesheet" />
+      <link href="/asttroloknew/index.css" rel="stylesheet" />
 {{-- @foreach($subscription as $subscriptions) --}}
       <div class="container">
         <div class="frame427322615-frame427322615">
@@ -517,8 +517,10 @@
             </div>
             <div class="frame427322615usp">
                   @php
-    $materialTexts = json_decode($subscription->extraDetails->material_text ?? '[]', true);
-    $materialIcons = json_decode($subscription->extraDetails->material_icon ?? '[]', true);
+    $rawMatText = $subscription->extraDetails->material_text ?? [];
+    $materialTexts = is_array($rawMatText) ? $rawMatText : (json_decode($rawMatText, true) ?? []);
+    $rawMatIcon = $subscription->extraDetails->material_icon ?? [];
+    $materialIcons = is_array($rawMatIcon) ? $rawMatIcon : (json_decode($rawMatIcon, true) ?? []);
 @endphp
 
 @foreach(array_map(null, $materialTexts, $materialIcons) as [$text, $icon])
@@ -1104,9 +1106,9 @@
 
     // Function to decode or fallback to comma explode
     $parse = function ($raw) use ($clean) {
-        $data = json_decode($raw, true);
+        $data = is_array($raw) ? $raw : json_decode($raw, true);
 
-        if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
+        if (!is_array($data)) {
             $data = array_filter(array_map('trim', explode(',', $raw)));
         }
 

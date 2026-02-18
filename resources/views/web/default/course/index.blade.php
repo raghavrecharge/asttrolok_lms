@@ -40,6 +40,43 @@
   width: 100% !important ;
 }
 
+/* ── Free-content + locked-content card containers ── */
+.frame1000001692-frame1000001680,
+.frame1000001692-frame1000001684 {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+}
+.frame1000001692-frame1000001680::-webkit-scrollbar,
+.frame1000001692-frame1000001684::-webkit-scrollbar {
+  height: 4px;
+}
+.frame1000001692-frame1000001680::-webkit-scrollbar-thumb,
+.frame1000001692-frame1000001684::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+/* Individual video cards inside the containers */
+.frame1000001692-frame1000001680 > div,
+.frame1000001692-frame1000001684 > .frame1000001692-img3 {
+  flex: 0 0 45%;
+  min-width: 140px;
+  max-width: 200px;
+  scroll-snap-align: start;
+  position: relative;
+}
+@media (min-width: 480px) {
+  .frame1000001692-frame1000001680 > div,
+  .frame1000001692-frame1000001684 > .frame1000001692-img3 {
+    flex: 0 0 35%;
+    max-width: 220px;
+  }
+}
+
 .course-detail-back {
     position: fixed;
     top: 15%;
@@ -981,8 +1018,10 @@
               </span>
             </div>
              @php
-                $learnTexts = $course->extraDetails ? json_decode($course->extraDetails->learn_text, true) ?? [] : [];
-                $learnIcons = $course->extraDetails ? json_decode($course->extraDetails->learn_icon, true) ?? [] : [];
+                $rawLearnText = $course->extraDetails->learn_text ?? null;
+                $learnTexts = $course->extraDetails ? (is_array($rawLearnText) ? $rawLearnText : (json_decode($rawLearnText, true) ?? [])) : [];
+                $rawLearnIcon = $course->extraDetails->learn_icon ?? null;
+                $learnIcons = $course->extraDetails ? (is_array($rawLearnIcon) ? $rawLearnIcon : (json_decode($rawLearnIcon, true) ?? [])) : [];
             @endphp
             <div class="frame1000001692-group40182" style="width: 100% !important;">
               <img
@@ -1412,9 +1451,9 @@
 
             // Function to decode or fallback to comma explode
             $parse = function ($raw) use ($clean) {
-                $data = json_decode($raw, true);
+                $data = is_array($raw) ? $raw : json_decode($raw, true);
 
-                if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
+                if (!is_array($data)) {
                     $data = array_filter(array_map('trim', explode(',', $raw)));
                 }
 
@@ -1583,8 +1622,10 @@
               </span>
               <div class="frame1000001692-frame427322598">
                                 @php
-              $rateTexts = $course->extraDetails ? json_decode($course->extraDetails->rate_options, true) ?? [] : [];
-              $rateIcons = $course->extraDetails ? json_decode($course->extraDetails->rate_icon, true) ?? [] : [];
+              $rawRateTexts = $course->extraDetails->rate_options ?? null;
+              $rateTexts = $course->extraDetails ? (is_array($rawRateTexts) ? $rawRateTexts : (json_decode($rawRateTexts, true) ?? [])) : [];
+              $rawRateIcons = $course->extraDetails->rate_icon ?? null;
+              $rateIcons = $course->extraDetails ? (is_array($rawRateIcons) ? $rawRateIcons : (json_decode($rawRateIcons, true) ?? [])) : [];
 
               // sirf pehle 3 items
               $rateTexts = array_slice($rateTexts, 0, 5);

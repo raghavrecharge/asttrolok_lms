@@ -186,8 +186,10 @@ class RemedyController extends Controller
             $slug;
             $category =null;
             if (!empty($slug)) {
-                $categoryQuery = Category::where('slug', $slug)->get();
-                $category = $categoryQuery[0]->id;
+                $categoryObj = Category::where('slug', $slug)->first();
+                $category = $categoryObj ? $categoryObj->id : null;
+            }
+            if (!empty($slug) && $category) {
 
                 $remediesQuery = Remedy::where('remedies.status', 'active')
                 ->where('private', false)

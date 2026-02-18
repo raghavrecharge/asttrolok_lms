@@ -52,6 +52,9 @@
             "App\\Models\\Translation\\": "app/Models/Translation/"
 
         },
+        "classmap": [
+                "app/Mixins/Geo/Geo.php"
+            ],
         "files": [
                 "app/Helpers/helper.php"
             ]

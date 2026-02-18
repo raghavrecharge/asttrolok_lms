@@ -509,7 +509,7 @@
 @section('content')
 
    <div class="cover-content pt-40">
-      <link href="{{ config('app.js_css_url') }}/asttroloknew/index.css" rel="stylesheet" />
+      <link href="/asttroloknew/index.css" rel="stylesheet" />
  {{--@foreach($course as $courses) --}}
       <div class="container">
         <div class="frame427322615-frame427322615">
@@ -596,8 +596,10 @@ $imagePath = str_replace('webp/', '', $imagePath);
             </div>
             <div class="frame427322615usp">
                   @php
-    $materialTexts = json_decode($course->extraDetails->material_text ?? '[]', true);
-    $materialIcons = json_decode($course->extraDetails->material_icon ?? '[]', true);
+    $rawMatText = $course->extraDetails->material_text ?? [];
+    $materialTexts = is_array($rawMatText) ? $rawMatText : (json_decode($rawMatText, true) ?? []);
+    $rawMatIcon = $course->extraDetails->material_icon ?? [];
+    $materialIcons = is_array($rawMatIcon) ? $rawMatIcon : (json_decode($rawMatIcon, true) ?? []);
 @endphp
 
 @foreach(array_map(null, $materialTexts, $materialIcons) as [$text, $icon])
@@ -810,8 +812,10 @@ $imagePath = str_replace('webp/', '', $imagePath);
               </div>
               <div class="frame427322615-group64">
  @php
-$learnTexts = $course->extraDetails ? json_decode($course->extraDetails->learn_text, true) ?? [] : [];
-$learnIcons = $course->extraDetails ? json_decode($course->extraDetails->learn_icon, true) ?? [] : [];
+$rawLT = $course->extraDetails->learn_text ?? null;
+$learnTexts = $course->extraDetails ? (is_array($rawLT) ? $rawLT : (json_decode($rawLT, true) ?? [])) : [];
+$rawLI = $course->extraDetails->learn_icon ?? null;
+$learnIcons = $course->extraDetails ? (is_array($rawLI) ? $rawLI : (json_decode($rawLI, true) ?? [])) : [];
 @endphp
 
 @foreach(array_map(null, $learnTexts, $learnIcons) as [$text, $icon])
@@ -984,9 +988,9 @@ $learnIcons = $course->extraDetails ? json_decode($course->extraDetails->learn_i
 
     // Function to decode or fallback to comma explode
     $parse = function ($raw) use ($clean) {
-        $data = json_decode($raw, true);
+        $data = is_array($raw) ? $raw : json_decode($raw, true);
 
-        if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
+        if (!is_array($data)) {
             $data = array_filter(array_map('trim', explode(',', $raw)));
         }
 
@@ -1328,8 +1332,10 @@ $learnIcons = $course->extraDetails ? json_decode($course->extraDetails->learn_i
                     </span>
                     <div class="frame427322615-frame427322598">
 @php
-$rateTexts = $course->extraDetails ? json_decode($course->extraDetails->rate_options, true) ?? [] : [];
-$rateIcons = $course->extraDetails ? json_decode($course->extraDetails->rate_icon, true) ?? [] : [];
+$rawRT = $course->extraDetails->rate_options ?? null;
+$rateTexts = $course->extraDetails ? (is_array($rawRT) ? $rawRT : (json_decode($rawRT, true) ?? [])) : [];
+$rawRI = $course->extraDetails->rate_icon ?? null;
+$rateIcons = $course->extraDetails ? (is_array($rawRI) ? $rawRI : (json_decode($rawRI, true) ?? [])) : [];
 
 // sirf pehle 3 items
 $rateTexts = array_slice($rateTexts, 0, 3);

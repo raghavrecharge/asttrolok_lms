@@ -571,7 +571,7 @@
     <link rel="stylesheet" href="/public/course_detail/style.css" />
     <div>
       <link href="/public/course_detail/index.css" rel="stylesheet" />
-       <link href="{{ config('app.js_css_url') }}/asttroloknew/index.css" rel="stylesheet" />
+       <link href="/asttroloknew/index.css" rel="stylesheet" />
       
 
       <div class="frame1000001692-container10 px-10">
@@ -1354,9 +1354,9 @@
 
             // Function to decode or fallback to comma explode
             $parse = function ($raw) use ($clean) {
-                $data = json_decode($raw, true);
+                $data = is_array($raw) ? $raw : json_decode($raw, true);
 
-                if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
+                if (!is_array($data)) {
                     $data = array_filter(array_map('trim', explode(',', $raw)));
                 }
 
@@ -1756,8 +1756,10 @@
               </span>
               <div class="frame1000001692-frame427322598">
                                 @php
-        $rateTexts = $subscription->extraDetails ? json_decode($subscription->extraDetails->rate_options, true) ?? [] : [];
-        $rateIcons = $subscription->extraDetails ? json_decode($subscription->extraDetails->rate_icon, true) ?? [] : [];
+        $rawRT = $subscription->extraDetails->rate_options ?? null;
+        $rateTexts = $subscription->extraDetails ? (is_array($rawRT) ? $rawRT : (json_decode($rawRT, true) ?? [])) : [];
+        $rawRI = $subscription->extraDetails->rate_icon ?? null;
+        $rateIcons = $subscription->extraDetails ? (is_array($rawRI) ? $rawRI : (json_decode($rawRI, true) ?? [])) : [];
 
         // sirf pehle 3 items
         $rateTexts = array_slice($rateTexts, 0, 5);

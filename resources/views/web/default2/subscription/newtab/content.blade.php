@@ -1,7 +1,9 @@
 <div class="frame427322615-group64">
     @php
-        $learnTexts = $subscription->extraDetails ? json_decode($subscription->extraDetails->learn_text, true) ?? [] : [];
-        $learnIcons = $subscription->extraDetails ? json_decode($subscription->extraDetails->learn_icon, true) ?? [] : [];
+        $rawLT = $subscription->extraDetails->learn_text ?? null;
+        $learnTexts = $subscription->extraDetails ? (is_array($rawLT) ? $rawLT : (json_decode($rawLT, true) ?? [])) : [];
+        $rawLI = $subscription->extraDetails->learn_icon ?? null;
+        $learnIcons = $subscription->extraDetails ? (is_array($rawLI) ? $rawLI : (json_decode($rawLI, true) ?? [])) : [];
     @endphp
 
     @foreach(array_map(null, $learnTexts, $learnIcons) as [$text, $icon])

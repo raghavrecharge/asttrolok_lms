@@ -746,6 +746,13 @@ public function whyChooseUsItems()
         return url('/course/learning/' . $this->slug);
     }
 
+    public function getLearningPageUrl1()
+    {
+        $baseUrl = config('app.manual_base_url');
+
+        return $baseUrl . '/course/learning/' . $this->slug;
+    }
+
     public function getNoticeboardsPageUrl()
     {
         return $this->getLearningPageUrl() . '/noticeboards';

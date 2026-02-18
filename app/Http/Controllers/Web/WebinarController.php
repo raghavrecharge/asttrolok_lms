@@ -326,6 +326,7 @@ class WebinarController extends Controller
                 'cashbackRules' => $cashbackRules ?? null,
                 'astromani_23' =>$course_Astromani_2023,
                 'course_Professional' =>$course_Professional,
+                'whyChooseUs' => $course->faqs ? $course->faqs->where('type', 'why_choose_us')->sortBy('order') : collect(),
 
             ];
 
