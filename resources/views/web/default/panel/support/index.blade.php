@@ -93,13 +93,13 @@
                                     <small class="text-gray">{{ $request->webinar?->creator?->full_name }}</small>
                                 </td>
                                 <td>
-                                    <span class="badge badge-{{ $request->getStatusBadgeClass() }}" style="background-color: #4b9702;">
-                                        {{ ucfirst($request->status) }}
+                                    <span class="badge badge-{{ $request->getStatusBadgeClass() }}">
+                                        {{ ucfirst(str_replace('_', ' ', $request->status)) }}
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="d-block">{{ $request->created_at }}</span>
-                                    <small class="text-gray">{{ $request->created_at }}</small>
+                                    <span class="d-block">{{ $request->created_at->format('d M Y') }}</span>
+                                    <small class="text-gray">{{ $request->created_at->diffForHumans() }}</small>
                                 </td>
                                 <td>
                                     <a href="{{ route('newsuportforasttrolok.show', $request->ticket_number) }}" 

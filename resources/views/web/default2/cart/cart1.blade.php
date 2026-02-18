@@ -580,7 +580,7 @@ echo session('discount_id');
 
 @push('scripts_bottom')
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script src="{{ asset('js/unified-payment.js') }}"></script>
+<script src="/assets/design_1/js/unified-payment.js"></script>
 <script>
      const loaderEl = document.getElementById('paymentLoader');
 

@@ -97,7 +97,7 @@ class NewSupportForAsttrolok extends Model
         parent::boot();
 
          static::creating(function ($model) {
-        $model->ticket_number = 'AST-' . time() . rand(100,999);
+        $model->ticket_number = 'AST-' . now()->format('ymdHis') . rand(1000,9999);
     });
     }
 

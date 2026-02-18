@@ -590,7 +590,7 @@ session()->forget('discountCouponId');
 
 @push('scripts_bottom')
 <script defer src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script defer src="{{ asset('js/unified-payment.js') }}"></script>
+<script defer src="/assets/design_1/js/unified-payment.js"></script>
 <script defer>
 
     const loaderEl = document.getElementById('paymentLoader');

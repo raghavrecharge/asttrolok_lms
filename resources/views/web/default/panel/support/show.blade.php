@@ -27,7 +27,7 @@
                         </div>
                         <div class="flex-grow-1">
                             <h5 class="alert-heading mb-1">Payment Successful! 🎉</h5>
-                            <p class="mb-2">Your offline cash payment of <strong>₹{{ number_format($supportRequest->cash_amount, 2) }}</strong> has been verified and approved.</p>
+                            <p class="mb-2">Your offline cash payment of <strong>₹{{ number_format($supportRequest->cash_amount ?? 0, 2) }}</strong> has been verified and approved.</p>
                             <p class="mb-0">You now have full access to <strong>{{ $supportRequest->webinar?->title }}</strong>. You can start learning immediately!</p>
                         </div>
                     </div>
@@ -58,8 +58,8 @@
                     </p>
                 </div>
                 <div>
-                    <span class="btn btn-sm btn-primary mt-3 mt-md-0">
-                        {{ ucfirst($supportRequest->status) }}
+                    <span class="badge badge-{{ $supportRequest->getStatusBadgeClass() }}" style="font-size: 14px; padding: 8px 16px;">
+                        {{ ucfirst(str_replace('_', ' ', $supportRequest->status)) }}
                     </span>
                 </div>
             </div>
@@ -105,10 +105,57 @@
 
                     <div class="mb-4">
                         <label class="font-weight-500 text-dark-blue d-block mb-2">Date</label>
-                        <p class="mb-0">{{ $supportRequest->created_at }}</p>
+                        <p class="mb-0">{{ $supportRequest->created_at->format('d M Y, h:i A') }}</p>
+                        <small class="text-gray">{{ $supportRequest->created_at->diffForHumans() }}</small>
                     </div>
                 </div>
             </div>
+
+            {{-- Status Updates Section --}}
+            @if(in_array($supportRequest->status, ['rejected', 'approved', 'executed', 'closed', 'verified']))
+            <div class="mt-4 p-3 border rounded" style="background-color: {{ $supportRequest->status === 'rejected' ? '#fff5f5' : ($supportRequest->status === 'approved' || $supportRequest->status === 'executed' ? '#f0fff4' : '#f0f4ff') }};">
+                <h5 class="mb-3">
+                    @if($supportRequest->status === 'rejected')
+                        <i class="fa fa-times-circle text-danger mr-1"></i> Request Rejected
+                    @elseif($supportRequest->status === 'approved')
+                        <i class="fa fa-check-circle text-success mr-1"></i> Request Approved
+                    @elseif($supportRequest->status === 'executed')
+                        <i class="fa fa-check-double text-primary mr-1"></i> Request Executed
+                    @elseif($supportRequest->status === 'verified')
+                        <i class="fa fa-shield text-info mr-1"></i> Request Verified
+                    @else
+                        <i class="fa fa-lock text-secondary mr-1"></i> Request Closed
+                    @endif
+                </h5>
+                @if($supportRequest->status === 'rejected' && $supportRequest->rejection_reason)
+                    <div class="mb-2">
+                        <strong>Reason:</strong>
+                        <p class="mb-0">{{ $supportRequest->rejection_reason }}</p>
+                    </div>
+                    @if($supportRequest->rejected_at)
+                        <small class="text-gray">Rejected on {{ $supportRequest->rejected_at->format('d M Y, h:i A') }}</small>
+                    @endif
+                @endif
+                @if(in_array($supportRequest->status, ['approved', 'executed']) && $supportRequest->approval_remarks)
+                    <div class="mb-2">
+                        <strong>Approval Remarks:</strong>
+                        <p class="mb-0">{{ $supportRequest->approval_remarks }}</p>
+                    </div>
+                    @if($supportRequest->approved_at)
+                        <small class="text-gray">Approved on {{ $supportRequest->approved_at->format('d M Y, h:i A') }}</small>
+                    @endif
+                @endif
+                @if($supportRequest->status === 'executed' && $supportRequest->execution_notes)
+                    <div class="mb-2 mt-2">
+                        <strong>Execution Notes:</strong>
+                        <p class="mb-0">{{ $supportRequest->execution_notes }}</p>
+                    </div>
+                    @if($supportRequest->executed_at)
+                        <small class="text-gray">Executed on {{ $supportRequest->executed_at->format('d M Y, h:i A') }}</small>
+                    @endif
+                @endif
+            </div>
+            @endif
 
             {{-- Scenario Specific Data --}}
 
@@ -132,7 +179,7 @@
                 @if($supportRequest->support_scenario === 'temporary_access')
                     <!-- <div class="row">
                         <div class="col-md-6">
-                            <strong>Pending Amount:</strong> ₹{{ number_format($supportRequest->pending_amount, 2) }}
+                            <strong>Pending Amount:</strong> ₹{{ number_format($supportRequest->pending_amount ?? 0, 2) }}
                         </div>
                         <div class="col-md-6">
                             <strong>Expected Payment:</strong> {{ $supportRequest->expected_payment_date }}
@@ -183,7 +230,7 @@
                 @if($supportRequest->support_scenario === 'offline_cash_payment')
                     <div class="row">
                         <div class="col-md-3">
-                            <strong>Amount:</strong> ₹{{ number_format($supportRequest->cash_amount, 2) }}
+                            <strong>Amount:</strong> ₹{{ number_format($supportRequest->cash_amount ?? 0, 2) }}
                         </div>
                         <div class="col-md-3">
                             <strong>Date:</strong> {{ $supportRequest->payment_date }}
@@ -203,7 +250,7 @@
                             <strong>Installments:</strong> {{ $supportRequest->requested_installments }}
                         </div>
                         <div class="col-md-4">
-                            <strong>Per Installment:</strong> ₹{{ number_format($supportRequest->installment_amount, 2) }}
+                            <strong>Per Installment:</strong> ₹{{ number_format($supportRequest->installment_amount ?? 0, 2) }}
                         </div> -->
                         <div class="col-md-12 mt-2">
                             <strong>Reason:</strong> {{ $supportRequest->restructure_reason }}

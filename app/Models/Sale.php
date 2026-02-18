@@ -574,8 +574,8 @@ curl_close($webhookcurl);
                 'uuid' => (string) \Illuminate\Support\Str::uuid(),
                 'user_id' => $userId,
                 'product_id' => $upeProduct->id,
-                'sale_type' => 'new',
-                'pricing_mode' => 'one_time',
+                'sale_type' => 'paid',
+                'pricing_mode' => 'full',
                 'base_fee_snapshot' => $amount,
                 'status' => 'active',
                 'valid_from' => $validFrom,
@@ -583,15 +583,17 @@ curl_close($webhookcurl);
                 'metadata' => json_encode(['legacy_sale_id' => $sale->id, 'source' => 'createSales_hook']),
             ]);
 
-            app(\App\Services\PaymentEngine\PaymentLedgerService::class)->appendEntry($upeSale->id, [
-                'entry_type' => \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_PAYMENT,
-                'direction' => \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
-                'amount' => $amount,
-                'currency' => 'INR',
-                'payment_method' => $sale->payment_method ?? 'payment_channel',
-                'description' => "Payment via createSales for webinar {$webinar->id}",
-                'idempotency_key' => "legacy_sale_{$sale->id}",
-            ]);
+            app(\App\Services\PaymentEngine\PaymentLedgerService::class)->append(
+                $upeSale->id,
+                \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_PAYMENT,
+                \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
+                $amount,
+                $sale->payment_method ?? 'razorpay',
+                null, null, null, null,
+                "Payment via createSales for webinar {$webinar->id}",
+                null,
+                "legacy_sale_{$sale->id}"
+            );
 
             \Illuminate\Support\Facades\Cache::forget(\App\Services\PaymentEngine\AccessEngine::CACHE_PREFIX . "{$userId}_{$upeProduct->id}");
 
@@ -619,8 +621,8 @@ curl_close($webhookcurl);
                 'uuid' => (string) \Illuminate\Support\Str::uuid(),
                 'user_id' => $userId,
                 'product_id' => $upeProduct->id,
-                'sale_type' => 'new',
-                'pricing_mode' => 'one_time',
+                'sale_type' => 'paid',
+                'pricing_mode' => 'full',
                 'base_fee_snapshot' => $amount,
                 'status' => 'active',
                 'valid_from' => $validFrom,
@@ -628,15 +630,17 @@ curl_close($webhookcurl);
                 'metadata' => json_encode(['legacy_sale_id' => $sale->id, 'source' => 'createSales_hook']),
             ]);
 
-            app(\App\Services\PaymentEngine\PaymentLedgerService::class)->appendEntry($upeSale->id, [
-                'entry_type' => \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_PAYMENT,
-                'direction' => \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
-                'amount' => $amount,
-                'currency' => 'INR',
-                'payment_method' => $sale->payment_method ?? 'payment_channel',
-                'description' => "Payment via createSales for bundle {$bundle->id}",
-                'idempotency_key' => "legacy_sale_{$sale->id}",
-            ]);
+            app(\App\Services\PaymentEngine\PaymentLedgerService::class)->append(
+                $upeSale->id,
+                \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_PAYMENT,
+                \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
+                $amount,
+                $sale->payment_method ?? 'razorpay',
+                null, null, null, null,
+                "Payment via createSales for bundle {$bundle->id}",
+                null,
+                "legacy_sale_{$sale->id}"
+            );
 
             \Illuminate\Support\Facades\Cache::forget(\App\Services\PaymentEngine\AccessEngine::CACHE_PREFIX . "{$userId}_{$upeProduct->id}");
 
@@ -657,7 +661,7 @@ curl_close($webhookcurl);
                 'uuid' => (string) \Illuminate\Support\Str::uuid(),
                 'user_id' => $userId,
                 'product_id' => $upeProduct->id,
-                'sale_type' => 'new',
+                'sale_type' => 'paid',
                 'pricing_mode' => 'subscription',
                 'base_fee_snapshot' => $amount,
                 'status' => 'active',
@@ -689,15 +693,17 @@ curl_close($webhookcurl);
                 ]);
             }
 
-            app(\App\Services\PaymentEngine\PaymentLedgerService::class)->appendEntry($upeSale->id, [
-                'entry_type' => \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_PAYMENT,
-                'direction' => \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
-                'amount' => $amount,
-                'currency' => 'INR',
-                'payment_method' => $sale->payment_method ?? 'payment_channel',
-                'description' => "Subscription payment via createSales for {$subscription->id}",
-                'idempotency_key' => "legacy_sale_{$sale->id}",
-            ]);
+            app(\App\Services\PaymentEngine\PaymentLedgerService::class)->append(
+                $upeSale->id,
+                \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_PAYMENT,
+                \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
+                $amount,
+                $sale->payment_method ?? 'razorpay',
+                null, null, null, null,
+                "Subscription payment via createSales for {$subscription->id}",
+                null,
+                "legacy_sale_{$sale->id}"
+            );
 
             \Illuminate\Support\Facades\Cache::forget(\App\Services\PaymentEngine\AccessEngine::CACHE_PREFIX . "{$userId}_{$upeProduct->id}");
 
@@ -730,15 +736,17 @@ curl_close($webhookcurl);
 
             if ($existingSale) {
                 // Subsequent payment — add ledger entry
-                app(\App\Services\PaymentEngine\PaymentLedgerService::class)->appendEntry($existingSale->id, [
-                    'entry_type' => \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
-                    'direction' => \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
-                    'amount' => $amount,
-                    'currency' => 'INR',
-                    'payment_method' => $sale->payment_method ?? 'payment_channel',
-                    'description' => "Installment payment via createSales",
-                    'idempotency_key' => "legacy_sale_{$sale->id}",
-                ]);
+                app(\App\Services\PaymentEngine\PaymentLedgerService::class)->append(
+                    $existingSale->id,
+                    \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
+                    \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
+                    $amount,
+                    $sale->payment_method ?? 'razorpay',
+                    null, null, null, null,
+                    "Installment payment via createSales",
+                    null,
+                    "legacy_sale_{$sale->id}"
+                );
             } else {
                 // New installment purchase
                 $validFrom = now();
@@ -748,7 +756,7 @@ curl_close($webhookcurl);
                     'uuid' => (string) \Illuminate\Support\Str::uuid(),
                     'user_id' => $userId,
                     'product_id' => $upeProduct->id,
-                    'sale_type' => 'new',
+                    'sale_type' => 'paid',
                     'pricing_mode' => 'installment',
                     'base_fee_snapshot' => $webinar->price ?? $amount,
                     'status' => 'pending_payment',
@@ -760,27 +768,29 @@ curl_close($webhookcurl);
                 $plan = \App\Models\PaymentEngine\UpeInstallmentPlan::create([
                     'sale_id' => $upeSale->id,
                     'total_amount' => $installmentOrder->item_price ?? $webinar->price ?? $amount,
-                    'total_installments' => ($installmentOrder->installment->steps_count ?? 1) + 1,
+                    'num_installments' => ($installmentOrder->installment->steps_count ?? 1) + 1,
                     'status' => 'active',
                 ]);
 
                 \App\Models\PaymentEngine\UpeInstallmentSchedule::create([
                     'plan_id' => $plan->id,
-                    'installment_number' => 1,
+                    'sequence' => 1,
                     'due_date' => now(),
                     'amount_due' => $amount,
                     'status' => 'paid',
                 ]);
 
-                app(\App\Services\PaymentEngine\PaymentLedgerService::class)->appendEntry($upeSale->id, [
-                    'entry_type' => \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
-                    'direction' => \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
-                    'amount' => $amount,
-                    'currency' => 'INR',
-                    'payment_method' => $sale->payment_method ?? 'payment_channel',
-                    'description' => "Installment upfront via createSales",
-                    'idempotency_key' => "legacy_sale_{$sale->id}",
-                ]);
+                app(\App\Services\PaymentEngine\PaymentLedgerService::class)->append(
+                    $upeSale->id,
+                    \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
+                    \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
+                    $amount,
+                    $sale->payment_method ?? 'razorpay',
+                    null, null, null, null,
+                    "Installment upfront via createSales",
+                    null,
+                    "legacy_sale_{$sale->id}"
+                );
             }
 
             \Illuminate\Support\Facades\Cache::forget(\App\Services\PaymentEngine\AccessEngine::CACHE_PREFIX . "{$userId}_{$upeProduct->id}");

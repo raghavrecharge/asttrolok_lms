@@ -156,6 +156,19 @@ class NewSupportForAsttrolokController extends Controller
                     }
                 
                 
+                // Build extension counts per course for JS limit check
+                $extensionCounts = [];
+                if (Auth::check()) {
+                    $extensionRows = NewSupportForAsttrolok::where('user_id', $user->id)
+                        ->where('support_scenario', 'course_extension')
+                        ->whereIn('status', ['approved', 'executed'])
+                        ->select('webinar_id', DB::raw('count(*) as cnt'))
+                        ->groupBy('webinar_id')
+                        ->pluck('cnt', 'webinar_id')
+                        ->toArray();
+                    $extensionCounts = $extensionRows;
+                }
+
                 $data = [
                     'pageTitle' => trans('panel.create_support_message'),
                     'webinars' => $webinars,
@@ -164,7 +177,8 @@ class NewSupportForAsttrolokController extends Controller
                     'overdueCourses' => $overdueCourses,
                     'userPurchasedCourses' => $userPurchases,
                     'userPurchases' => $userPurchases,
-                    'installmentList' => $installmentList
+                    'installmentList' => $installmentList,
+                    'extensionCounts' => $extensionCounts,
                 ];
                 
                 return view(getTemplate() . '.panel.support.new-suport', $data);
@@ -425,8 +439,8 @@ class NewSupportForAsttrolokController extends Controller
         $validated = $request->validate($rules);
 
         
-        if (empty($request->webinar_id)) {
-            $request->webinar_id = $request->selected_webinar_id;
+        if (empty($request->webinar_id) && $request->selected_webinar_id) {
+            $request->merge(['webinar_id' => $request->selected_webinar_id]);
         }
 
     if (
