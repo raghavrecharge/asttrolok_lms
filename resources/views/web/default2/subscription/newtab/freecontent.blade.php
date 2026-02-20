@@ -60,7 +60,7 @@
                                         $imgNum = 10 + ($videoIndex % 3);
                                         
                                         // Enrollment URL
-                                        $enrollUrl = "/subscriptions/direct-payment-enroll/{$subscription->slug}";
+                                        $enrollUrl = "/subscriptions/direct-payment/{$subscription->slug}";
                                     @endphp
 
                                     <div class="frame427322615-{{ $frameClass }}" style="width:calc(33.333% - 11px);flex-shrink:0;">

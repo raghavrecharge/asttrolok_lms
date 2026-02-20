@@ -1150,14 +1150,20 @@ class WebinarController extends Controller
                     ->where('status', 'active')
                     ->first();
 
-                $DiscountCourse = DiscountCourse::where('course_id', $webinarId)
-                    ->first();
+                $Discount = null;
 
-                    if($DiscountCourse){
+                // First check if user applied a coupon via session
+                if ($discountCouponId > 0) {
+                    $Discount = Discount::where('id', $discountCouponId)->where('status', 'active')->first();
+                }
 
-                $Discount = Discount::where('id', $DiscountCourse->discount_id )->where('status', 'active' )
-                    ->first();
+                // Fallback: check if course has a linked discount
+                if (!$Discount) {
+                    $DiscountCourse = DiscountCourse::where('course_id', $webinarId)->first();
+                    if ($DiscountCourse) {
+                        $Discount = Discount::where('id', $DiscountCourse->discount_id)->where('status', 'active')->first();
                     }
+                }
 
                 $item = $this->getItem($webinarId, 'course');
 
@@ -1168,8 +1174,18 @@ class WebinarController extends Controller
 
                 if (isset($Discount) && $Discount) {
                     $percent = $Discount->percent ?? 0;
-                    $totalDiscount = ($price > 0) ? $price * $percent / 100 : 0;
+                    if ($Discount->discount_type == 'fixed_amount') {
+                        $totalDiscount = min($Discount->amount, $price);
+                    } else {
+                        $totalDiscount = ($price > 0) ? round($price * $percent / 100, 2) : 0;
+                        if (!empty($Discount->max_amount) && $totalDiscount > $Discount->max_amount) {
+                            $totalDiscount = $Discount->max_amount;
+                        }
+                    }
                     $itemPrice1 = $itemPrice - $totalDiscount;
+                    if ($itemPrice1 < 0) {
+                        $itemPrice1 = 0;
+                    }
                 }
 
                     $data = [

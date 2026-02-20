@@ -74,20 +74,18 @@ class Discount extends Model
 
         $user = auth()->user();
 
-         $discountWebinarsIds = $this->discountCourses()->pluck('course_id')->toArray();
+        if ($this->source == self::$discountSourceAll) {
+            return 'ok';
+        }
 
-            $hasSpecialWebinars = false;
+        $discountWebinarsIds = $this->discountCourses()->pluck('course_id')->toArray();
 
-            ;
-    if (in_array($id, $discountWebinarsIds)) {
-
-                    return 'ok';
-            }else{
-
-                return trans('update.discount_code_is_for_courses_error');
-            }
-
-            }
+        if (in_array($id, $discountWebinarsIds)) {
+            return 'ok';
+        } else {
+            return trans('update.discount_code_is_for_courses_error');
+        }
+    }
 
     public function checkValidDiscount()
     {
@@ -105,7 +103,9 @@ class Discount extends Model
             $carts = Cart::where('id',session('cart_id'))->orwhere('cart_id',session('cart_id'))->get();
       }
 
-        if ($this->source == self::$discountSourceCourse or $this->source == self::$discountSourceCategory) {
+        if ($this->source == self::$discountSourceAll) {
+            // "all" source coupons apply to any cart content — skip source-specific checks
+        } elseif ($this->source == self::$discountSourceCourse or $this->source == self::$discountSourceCategory) {
             $webinarCount = array_filter($carts->pluck('webinar_id')->toArray());
 
             if (empty($webinarCount) or count($webinarCount) < 1) {
@@ -231,6 +231,18 @@ class Discount extends Model
                 $usedCount += 1;
             }
         }
+
+        // Also count usage from direct payment Sales that used this discount
+        $directSaleCount = Sale::where('discount_id', $this->id)
+            ->whereNull('refund_at')
+            ->count();
+        $usedCount = max($usedCount, $directSaleCount);
+
+        // Also count UPE ledger-based usage (most accurate)
+        $upeLedgerCount = \App\Models\PaymentEngine\UpeLedgerEntry::where('reference_type', 'discount')
+            ->where('reference_id', $this->id)
+            ->count();
+        $usedCount = max($usedCount, $upeLedgerCount);
 
         if ($usedCount >= $this->count) {
             return trans('update.discount_code_used_count_error');

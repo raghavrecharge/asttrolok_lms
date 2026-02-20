@@ -280,6 +280,14 @@ class InstallmentsController extends Controller
                     }
                   $paidAmount = $totalSaleAmount  + (isset($WebinarPartPayment)?$WebinarPartPayment->total_amount:0);
 
+                // Reconcile upfront payment status if payment was actually made
+                $upfrontPayment = $orderPayments->where('type', 'upfront')->first();
+                if ($upfrontPayment && $upfrontPayment->status !== 'paid' && $paidAmount > 0) {
+                    $upfrontAmount = $order->installment ? $order->installment->getUpfront($order->getItemPrice()) : 0;
+                    if ($upfrontAmount > 0 && $paidAmount >= $upfrontAmount) {
+                        $upfrontPayment->update(['status' => 'paid']);
+                    }
+                }
                   
             if (!empty($order) and !in_array($order->status, ['refunded', 'canceled'])) {
 

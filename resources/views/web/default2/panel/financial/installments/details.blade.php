@@ -131,7 +131,7 @@
                                                 </button>
 
                                                 <div class="dropdown-menu menu-lg">
-                                                    <a href="/register-course/{{$webinar_title}}" target="_blank"
+                                                    <a href="/register-course/{{$webinar_title}}?amount={{ $installment->getUpfront($itemPrice) - $paidAmount }}" target="_blank"
                                                        class="webinar-actions d-block mt-10 font-weight-normal">Pay Upcomming Part</a>
                                                 </div>
                                             </div>
@@ -218,7 +218,7 @@
                                                     </button>
 
                                                     <div class="dropdown-menu menu-lg">
-                                                        <a href="{{ config('app.manual_base_url')}}/register-course/{{$webinar_title}}" target="_blank"
+                                                        <a href="{{ config('app.manual_base_url')}}/register-course/{{$webinar_title}}?amount={{ $stepPrice }}" target="_blank"
                                                            class="webinar-actions d-block mt-10 font-weight-normal">Pay Upcomming Part</a>
                                                     </div>
                                                 </div>
@@ -289,7 +289,7 @@
                                                             </button>
 
                                                             <div class="dropdown-menu menu-lg">
-                                                                <a href="{{ config('app.manual_base_url')}}/register-course/{{$webinar_title}}" target="_blank"
+                                                                <a href="{{ config('app.manual_base_url')}}/register-course/{{$webinar_title}}?amount={{ $halfPrice }}" target="_blank"
                                                                    class="webinar-actions d-block mt-10 font-weight-normal">Pay This Part</a>
                                                             </div>
                                                         </div>

@@ -542,8 +542,15 @@ class AdminSupportController extends Controller
                 'rejection_reason' => 'required_if:status,rejected|string|nullable',
             ];
 
-            if ($user->role_name === 'Support Role' || $user->role_name === 'admin') {
+            if ($user->role_name === 'Support Role') {
                 $rules['support_remarks'] = 'required|string';
+            } elseif ($user->role_name === 'admin') {
+                // Admin: support_remarks optional on completion/execution, required on review/approval
+                if (in_array($request->status, ['completed', 'executed', 'closed', 'rejected'])) {
+                    $rules['support_remarks'] = 'nullable|string';
+                } else {
+                    $rules['support_remarks'] = 'nullable|string';
+                }
             }
 
             // Only require temporary_access_percentage on approval (not rejection)
@@ -558,6 +565,7 @@ class AdminSupportController extends Controller
             // On rejection, support_remarks is optional
             if ($request->status === 'rejected') {
                 $rules['support_remarks'] = 'nullable|string';
+                $rules['admin_remarks'] = 'nullable|string';
             }
 
             $validated = $request->validate($rules);
@@ -611,21 +619,30 @@ class AdminSupportController extends Controller
                     $updateData['support_handler_id'] = $user->id;
                 }
 
-                if ($supportRequest->support_scenario === 'post_purchase_coupon' && $user->role_name === 'Support Role'){
-                     $couponCode = strtoupper(trim($request->input('coupon_code')));
-                
+                if ($supportRequest->support_scenario === 'post_purchase_coupon') {
+                    if ($user->role_name === 'Support Role') {
+                        $couponCode = strtoupper(trim($request->input('coupon_code')));
+                    
                         if (empty($couponCode)) {
-                        
                             return back()->with([
-                                    'toast' => [
-                                        'title' => 'apply coupon code',
-                                        'msg' => 'Please enter a coupon code',
-                                        'status' => 'error'
-                                    ]
-                                ]);
+                                'toast' => [
+                                    'title' => 'apply coupon code',
+                                    'msg' => 'Please enter a coupon code',
+                                    'status' => 'error'
+                                ]
+                            ]);
                         }
-                         $updateData['coupon_code'] = $request->coupon_code;
+                        $updateData['coupon_code'] = $request->coupon_code;
                     }
+
+                    // Auto-execute coupon on admin approval so it doesn't stay "Pending Processing"
+                    if ($user->role_name === 'admin' && !empty($supportRequest->coupon_code)) {
+                        $this->ApplyCouponCode($supportRequest);
+                        $updateData['status'] = 'completed';
+                        $updateData['executed_at'] = now();
+                        $updateData['sub_admin_id'] = $user->id;
+                    }
+                }
                
 
                 $updateData['approved_at'] = now();
@@ -912,10 +929,30 @@ class AdminSupportController extends Controller
                  }
                  /* ---------- offline_cash_payment ---------- */
                 if ($supportRequest->support_scenario === 'offline_cash_payment') {
-                     $this->offlineCashPayment($supportRequest);
+                     $cashAmount = (float) ($supportRequest->cash_amount ?? 0);
+                     $coursePrice = 0;
+                     $webinar = \App\Models\Webinar::find($supportRequest->webinar_id);
+                     if ($webinar) {
+                         $coursePrice = $webinar->getPrice();
+                     }
+
+                     // Only grant full access if cash covers the full course price
+                     if ($cashAmount > 0 && $cashAmount >= $coursePrice) {
+                         $this->offlineCashPayment($supportRequest);
+                     } else {
+                         // Partial payment: record as part payment, do NOT grant full access
+                         if ($cashAmount > 0 && $supportRequest->webinar_id) {
+                             \App\Models\WebinarPartPayment::create([
+                                 'user_id' => $supportRequest->user_id,
+                                 'webinar_id' => $supportRequest->webinar_id,
+                                 'installment_id' => $supportRequest->installment_id ?? null,
+                                 'amount' => $cashAmount,
+                                 'created_at' => now(),
+                             ]);
+                         }
+                     }
 
                      // UPE: Record the actual cash amount (not full course price)
-                     $cashAmount = (float) ($supportRequest->cash_amount ?? 0);
                      if ($cashAmount > 0 && $supportRequest->webinar_id) {
                          $bridge = app(SupportUpeBridge::class);
                          $bridge->recordOfflinePayment(

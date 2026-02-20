@@ -496,7 +496,7 @@
                   
                   
              @else     
-                  <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}" style="text-decoration: none;">
+                  <a href="/subscriptions/direct-payment/{{ $subscription->slug }}" style="text-decoration: none;">
                   <button class="frame427322615-button1">
                     <span class="frame427322615-text112">
                                                  {{ $subscription->extraDetails->cta_text }}
@@ -1084,7 +1084,7 @@
 </a>
   @else                
                   
-                 <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}" style="text-decoration: none;">
+                 <a href="/subscriptions/direct-payment/{{ $subscription->slug }}" style="text-decoration: none;">
                 <span class="frame427322615-text297">
                  {{ $subscription->extraDetails->cta_text }}
                 </span>
@@ -1169,7 +1169,7 @@
                   @else
                   
                   
-                 <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}" style="text-decoration: none;">
+                 <a href="/subscriptions/direct-payment/{{ $subscription->slug }}" style="text-decoration: none;">
                 <span class="frame427322615-text297">
                                        {{ $subscription->extraDetails->cta_text }}
 
@@ -1507,7 +1507,7 @@
 </a>
   @else                    
                       
-                     <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}" style="text-decoration: none;">
+                     <a href="/subscriptions/direct-payment/{{ $subscription->slug }}" style="text-decoration: none;">
                     <span class="frame427322615-text320">Enroll Now</span>
 </a>
 @endif
@@ -1533,7 +1533,7 @@
         <div class="frame427322615-background-shadow" style="background-color: transparent !important;">
             <div class="frame427322615-background-border2">
                 <div class="frame427322615-container11">
-                    <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}" style="text-decoration: none;">
+                    <a href="/subscriptions/direct-payment/{{ $subscription->slug }}" style="text-decoration: none;">
                         <button class="frame427322615-button6" style="display: none;">
                             <span class="frame427322615-text183">
                             {{ $subscription->extraDetails->cta_text }}
@@ -1551,7 +1551,7 @@
 
                 <span class="frame427322615-text185">{{ $displayPrice['price'] }}</span>
 
-                <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}" style="text-decoration: none;">
+                <a href="/subscriptions/direct-payment/{{ $subscription->slug }}" style="text-decoration: none;">
                     <span class="frame427322615-text186">Pay Now</span>
                 </a>
 
@@ -1597,7 +1597,7 @@
             </div>
                 </a>
                 @else
-              <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}" style="text-decoration: none;">
+              <a href="/subscriptions/direct-payment/{{ $subscription->slug }}" style="text-decoration: none;">
             <div class="frame427322615-background15" style="
     justify-content: center;
 ">

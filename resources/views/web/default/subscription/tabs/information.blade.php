@@ -17,7 +17,7 @@
 @if($canSale and !empty(getFeaturesSettings('direct_classes_payment_button_status')))
 @if($subscription->price > 0)
 
-    <a href="/subscriptions/direct-payment-enroll/{{$subscription->slug}}" class="btn btn-primary btn-sm px-25 mt-20">Subscribe Now</a>
+    <a href="/subscriptions/direct-payment/{{$subscription->slug}}" class="btn btn-primary btn-sm px-25 mt-20">Subscribe Now</a>
 
     @else
 
@@ -66,7 +66,7 @@
 @if($canSale and !empty(getFeaturesSettings('direct_classes_payment_button_status')))
 @if($subscription->price > 0)
 
-    <a href="/subscriptions/direct-payment-enroll/{{$subscription->slug}}" class="btn btn-primary btn-sm px-25 mt-20">Subscribe Now</a>
+    <a href="/subscriptions/direct-payment/{{$subscription->slug}}" class="btn btn-primary btn-sm px-25 mt-20">Subscribe Now</a>
     @else
 
         @if($subscription->slug == 'learn-free-vedic-astrology-subscription-online' )

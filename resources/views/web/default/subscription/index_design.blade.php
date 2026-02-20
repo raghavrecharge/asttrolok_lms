@@ -564,7 +564,7 @@
 
 </div>
 
-<a href="/subscriptions/direct-payment-enroll/{{$subscription->slug}}" class="mt-10 btn btn-primary buy-btn1">Register Now</a>
+<a href="/subscriptions/direct-payment/{{$subscription->slug}}" class="mt-10 btn btn-primary buy-btn1">Register Now</a>
 
     @include('web.default.subscription.login_modal')
      @include('web.default.subscription.pop_up')

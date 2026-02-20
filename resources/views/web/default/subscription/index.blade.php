@@ -644,7 +644,7 @@
                             @csrf
                             <input type="hidden" name="item_id" value="{{ $subscription->id }}">
                             <input type="hidden" name="item_name" value="webinar_id">
-                            <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}"
+                            <a href="/subscriptions/direct-payment/{{ $subscription->slug }}"
            style="text-decoration:none;display:block;"> 
                             <button type="button" class="frame1000001692-button3 mt-10 btn-success buy_now js-course-direct-payment" style="display:none;">
                                 <span class="frame1000001692-text112" >
@@ -690,7 +690,7 @@
                       @else
                     <span class="frame1000001692-text114">{{ $displayPrice['price'] }}  </span>
                     @endif
-<a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}" style="text-decoration: none; color: inherit;">
+<a href="/subscriptions/direct-payment/{{ $subscription->slug }}" style="text-decoration: none; color: inherit;">
     <span class="frame1000001692-text115" style="width:30% !important; text-align:left !important;">
         Pay Now
     </span>
@@ -772,7 +772,7 @@
             
             
             
-            <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}" style="text-decoration: none; color: inherit;">
+            <a href="/subscriptions/direct-payment/{{ $subscription->slug }}" style="text-decoration: none; color: inherit;">
             <div class="frame1000001692-background13" style="align-items: center; justify-content:center;">
               <img
                 src="/public/course_detail/svg1178-8ycu.svg"
@@ -1185,7 +1185,7 @@
             </span>
         </a>
         @else
-       <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}"
+       <a href="/subscriptions/direct-payment/{{ $subscription->slug }}"
            style="text-decoration:none;display:block;"> 
             <span class="frame1000001692-text209">
                             {{ $subscription->extraDetails->cta_text }}
@@ -1423,7 +1423,7 @@
                       </button>
                       </a>
                       @else
-                      <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}"
+                      <a href="/subscriptions/direct-payment/{{ $subscription->slug }}"
            style="text-decoration:none;display:block;"> 
                       <button type="button" class="frame1000001692-link19 btn-success buy_now js-course-direct-payment">
                           <span class="frame1000001692-text258">
@@ -1812,7 +1812,7 @@
     </a>
 @else
     {{-- User not enrolled - Show "Enroll Now" button --}}
-    <a href="/subscriptions/direct-payment-enroll/{{ $subscription->slug }}"
+    <a href="/subscriptions/direct-payment/{{ $subscription->slug }}"
        style="text-decoration:none;display:block;"> 
         <button type="button" class="frame1000001692-link20 btn-success buy_now js-course-direct-payment">
             <span class="frame1000001692-text284">
@@ -1840,7 +1840,7 @@
           {{--  
 @php
     $canSale = ($subscription->canSale() and !$hasBought);
-    $directUrl = url('/subscriptions/direct-payment-enroll/' . $subscription->slug);
+    $directUrl = url('/subscriptions/direct-payment/' . $subscription->slug);
 @endphp
 
 @if($hasBought or !empty($subscription->getInstallmentOrder()))

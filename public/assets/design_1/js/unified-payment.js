@@ -127,6 +127,9 @@ class UnifiedPaymentHandler {
 
     hideLoader() {
         if (this.loader) this.loader.style.display = 'none';
+        // Also hide the paymentLoader overlay used in buyNow pages
+        const paymentLoader = document.getElementById('paymentLoader');
+        if (paymentLoader) paymentLoader.style.display = 'none';
         document.body.classList.remove('disabled-page');
     }
 }

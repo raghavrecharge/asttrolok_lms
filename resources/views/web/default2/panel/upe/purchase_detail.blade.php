@@ -1,6 +1,16 @@
 @extends(getTemplate() .'.panel.layouts.panel_layout')
 
 @section('content')
+    @if($errors->any())
+        <div class="alert alert-danger mb-20">
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <section>
         <h2 class="section-title">Purchase Details — #{{ $sale->id }}</h2>
 

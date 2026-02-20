@@ -157,6 +157,41 @@ class AccountingController extends Controller
             \Log::error('Error fetching part payments: ' . $e->getMessage());
         }
 
+        // Also include UPE sales that may not have legacy Sale records
+        try {
+            $upeSales = \App\Models\PaymentEngine\UpeSale::where('user_id', $userAuth->id)
+                ->whereIn('status', ['active', 'partially_refunded', 'completed', 'pending_payment'])
+                ->with('product')
+                ->get();
+
+            foreach ($upeSales as $upeSale) {
+                // Check if already covered by legacy Sale lookup
+                $alreadyCovered = false;
+                foreach ($amount_paid as $ap) {
+                    if (isset($ap[4]) && $upeSale->product && $ap[4] == $upeSale->product->external_id && $ap[5] == 'course') {
+                        $alreadyCovered = true;
+                        break;
+                    }
+                }
+                if (!$alreadyCovered && $upeSale->product) {
+                    $ledgerBalance = app(\App\Services\PaymentEngine\PaymentLedgerService::class)->balance($upeSale->id);
+                    if ($ledgerBalance > 0) {
+                        $amount_paid[] = [
+                            $ledgerBalance,
+                            $upeSale->created_at ? strtotime($upeSale->created_at) : time(),
+                            $upeSale->product->name ?? 'Course',
+                            $upeSale->id,
+                            $upeSale->product->external_id ?? $upeSale->product_id,
+                            'course',
+                            $upeSale->sale_type ?? 'paid',
+                        ];
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error fetching UPE sales for financial summary: ' . $e->getMessage());
+        }
+
         usort($amount_paid, function ($a, $b) {
             return $b[1] <=> $a[1];
         });

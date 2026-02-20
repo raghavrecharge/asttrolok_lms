@@ -773,6 +773,22 @@ class NewSupportForAsttrolokController extends Controller
         }
 
         $sale = $webinar->getSaleItem();
+
+        // Also check installment orders — user may have purchased via installment plan
+        if (!$sale) {
+            $installmentOrder = \App\Models\InstallmentOrder::where('user_id', Auth::id())
+                ->where('webinar_id', $webinarId)
+                ->whereIn('status', ['open', 'paying', 'pending_verification'])
+                ->first();
+
+            if ($installmentOrder) {
+                return [
+                    'status' => 'active',
+                    'purchased_at' => $installmentOrder->created_at,
+                    'expires_at' => null,
+                ];
+            }
+        }
         
         if (!$sale) {
             return [
