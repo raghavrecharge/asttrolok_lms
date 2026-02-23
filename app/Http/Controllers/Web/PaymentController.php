@@ -38,6 +38,9 @@ use App\Models\Cart;
 use App\Models\Api\User;
 use App\Models\Affiliate;
 use Illuminate\Support\Facades\Hash;
+use App\Models\PaymentEngine\UpeProduct;
+use App\Models\PaymentEngine\UpeSale;
+use App\Services\PaymentEngine\PaymentLedgerService;
 
 class PaymentController extends Controller
 {
@@ -171,15 +174,92 @@ class PaymentController extends Controller
                     $totalDiscount = 0;
                     $itemPrice1=$itemPrice-$totalDiscount;
                 }
-                // V-03 FIX: Use server-calculated amount, NEVER client-supplied
-                $serverAmount = $itemPrice1 ?? $itemPrice;
+
+                // UPE FIX: Determine next payable amount from UPE ledger (source of truth).
+                // Sequential enforcement: walk upfront → steps in order, deducting ledger balance.
+                $installmentIdForPart = $validated['installment_id'] ?? null;
+                $partAmount = $itemPrice1 ?? $itemPrice; // fallback
+                $user = auth()->user();
+
+                if ($installmentIdForPart && $user) {
+                    try {
+                        $installment = Installment::where('id', $installmentIdForPart)->where('enable', true)->first();
+                        if ($installment) {
+                            $upeProduct = UpeProduct::where('external_id', $webinar->id)
+                                ->whereIn('product_type', ['course_video', 'webinar'])
+                                ->first();
+
+                            if ($upeProduct) {
+                                $upeSale = UpeSale::where('user_id', $user->id)
+                                    ->where('product_id', $upeProduct->id)
+                                    ->where('pricing_mode', 'installment')
+                                    ->whereIn('status', ['active', 'pending_payment', 'partially_refunded'])
+                                    ->first();
+
+                                if ($upeSale) {
+                                    // webinar_part_payment is authoritative (records every payment once).
+                                    // UPE ledger may double-count from sync, so prefer legacy when available.
+                                    $legacyPartSum = (float) WebinarPartPayment::where('user_id', $user->id)
+                                        ->where('webinar_id', $webinar->id)
+                                        ->sum('amount');
+
+                                    if ($legacyPartSum > 0) {
+                                        $totalPaid = $legacyPartSum;
+                                    } else {
+                                        $ledgerService = app(PaymentLedgerService::class);
+                                        $totalPaid = $ledgerService->balance($upeSale->id);
+                                    }
+
+                                    $runningPaid = $totalPaid;
+
+                                    // Walk upfront first
+                                    $upfrontAmount = $installment->getUpfront($itemPrice1);
+                                    if ($upfrontAmount > 0) {
+                                        if ($runningPaid >= $upfrontAmount) {
+                                            $runningPaid -= $upfrontAmount;
+                                        } else {
+                                            $partAmount = max(1, (int) round($upfrontAmount - $runningPaid, 0, PHP_ROUND_HALF_UP));
+                                            goto partPaymentReturn;
+                                        }
+                                    }
+
+                                    // Walk steps sequentially
+                                    $steps = $installment->steps()->orderBy('id')->get();
+                                    foreach ($steps as $step) {
+                                        $stepAmount = $step->getPrice($itemPrice1);
+                                        if ($runningPaid >= $stepAmount) {
+                                            $runningPaid -= $stepAmount;
+                                        } else {
+                                            $partAmount = max(1, (int) round($stepAmount - $runningPaid, 0, PHP_ROUND_HALF_UP));
+                                            goto partPaymentReturn;
+                                        }
+                                    }
+
+                                    // All paid
+                                    $partAmount = 0;
+                                    goto partPaymentReturn;
+                                }
+                            }
+
+                            // No UPE sale → new purchase → upfront amount
+                            $partAmount = (int) round($installment->getUpfront($itemPrice1), 0, PHP_ROUND_HALF_UP);
+                        }
+                    } catch (\Exception $e) {
+                        Log::warning('UPE part payment lookup failed in PaymentController', [
+                            'webinar_id' => $webinar->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
+                partPaymentReturn:
                 return [
                     'type' => 'part',
                     'item' => $webinar,
                     'webinar_id' => $webinar->id,
                     'discount' => $totalDiscount,
                     'installment_id' => $validated['installment_id'],
-                    'amount' => $serverAmount,
+                    'amount' => $partAmount,
                     'description' => "Course: {$webinar->title}",
                     'user_data' => $validated,
                 ];

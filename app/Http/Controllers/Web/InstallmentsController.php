@@ -42,6 +42,10 @@ use App\Models\SubStepInstallment;
 
 use Razorpay\Api\Api;
 use App\Models\TransactionsHistoryRazorpay;
+use App\Models\PaymentEngine\UpeProduct;
+use App\Models\PaymentEngine\UpeSale;
+use App\Models\PaymentEngine\UpeInstallmentPlan;
+use App\Services\PaymentEngine\PaymentLedgerService;
 
 class InstallmentsController extends Controller
 {
@@ -110,6 +114,19 @@ class InstallmentsController extends Controller
                     ->where('status', 'active')
                     ->first();
 
+                        // UPE: Determine next payable installment from immutable ledger
+                        $upePayable = [
+                            'isNewPurchase' => true,
+                            'nextPayableType' => 'upfront',
+                            'nextPayableStepId' => null,
+                            'nextPayableAmount' => (int) round($installment->getUpfront($itemPrice1), 0, PHP_ROUND_HALF_UP),
+                            'totalPaidFromLedger' => 0,
+                            'allPaid' => false,
+                        ];
+                        if (auth()->check()) {
+                            $upePayable = $this->getNextPayableFromUpe(auth()->id(), $item->id, $installment, $itemPrice1);
+                        }
+
                         $data = [
                             'pageTitle' => trans('update.verify_your_installments'),
                             'installment' => $installment,
@@ -128,6 +145,7 @@ class InstallmentsController extends Controller
                              'paymentChannels' => $paymentChannels,
                              'mayank' => '1',
                             'webinar' => $webinar,
+                            'upePayable' => $upePayable,
                         ];
 
                            session(['success'=>false]);
@@ -259,6 +277,20 @@ class InstallmentsController extends Controller
                         }
                     }
                      $paymentChannels = PaymentChannel::where('status', 'active')->get();
+
+                        // UPE: Determine next payable installment from immutable ledger
+                        $upePayable = [
+                            'isNewPurchase' => true,
+                            'nextPayableType' => 'upfront',
+                            'nextPayableStepId' => null,
+                            'nextPayableAmount' => (int) round($installment->getUpfront($itemPrice1), 0, PHP_ROUND_HALF_UP),
+                            'totalPaidFromLedger' => 0,
+                            'allPaid' => false,
+                        ];
+                        if (auth()->check()) {
+                            $upePayable = $this->getNextPayableFromUpe(auth()->id(), $item->id, $installment, $itemPrice1);
+                        }
+
                         $data = [
                             'pageTitle' => trans('update.verify_your_installments'),
                             'installment' => $installment,
@@ -278,6 +310,7 @@ class InstallmentsController extends Controller
                              'mayank' => '1',
                              'webinar' => $course,
                              'amount' => $amount,
+                            'upePayable' => $upePayable,
                         ];
 
                            session(['success'=>false]);
@@ -465,6 +498,118 @@ class InstallmentsController extends Controller
             return 'subscribe_id';
         } elseif ($itemType == 'registration_package') {
             return 'registration_package_id';
+        }
+    }
+
+    /**
+     * Determine the next payable installment using the UPE ledger as source of truth.
+     *
+     * Returns:
+     *   - isNewPurchase: true if no existing installment sale in UPE
+     *   - nextPayableType: 'upfront' or 'step'
+     *   - nextPayableStepId: legacy InstallmentStep ID (null for upfront)
+     *   - nextPayableAmount: INR integer amount the user must pay now
+     *   - totalPaidFromLedger: total amount already recorded in UPE ledger
+     *   - allPaid: true if every installment (upfront + all steps) is fully covered
+     */
+    private function getNextPayableFromUpe(int $userId, int $webinarId, Installment $installment, float $itemPrice): array
+    {
+        $result = [
+            'isNewPurchase' => true,
+            'nextPayableType' => 'upfront',
+            'nextPayableStepId' => null,
+            'nextPayableAmount' => (int) round($installment->getUpfront($itemPrice), 0, PHP_ROUND_HALF_UP),
+            'totalPaidFromLedger' => 0,
+            'allPaid' => false,
+        ];
+
+        try {
+            // 1. Find UPE product for this webinar
+            $upeProduct = UpeProduct::where('external_id', $webinarId)
+                ->whereIn('product_type', ['course_video', 'webinar'])
+                ->first();
+
+            if (!$upeProduct) {
+                return $result; // No UPE product yet → new purchase
+            }
+
+            // 2. Find UPE sale with installment pricing
+            $upeSale = UpeSale::where('user_id', $userId)
+                ->where('product_id', $upeProduct->id)
+                ->where('pricing_mode', 'installment')
+                ->whereIn('status', ['active', 'pending_payment', 'partially_refunded'])
+                ->first();
+
+            if (!$upeSale) {
+                return $result; // No installment sale → new purchase
+            }
+
+            // 3. Determine total paid.
+            // webinar_part_payment is the authoritative source — it records every
+            // payment (upfront + partials) exactly once.  The UPE ledger may
+            // double-count due to sync commands re-recording payments already present,
+            // so we prefer the legacy sum when available and fall back to ledger only
+            // when no legacy records exist.
+            $legacyPartSum = (float) WebinarPartPayment::where('user_id', $userId)
+                ->where('webinar_id', $webinarId)
+                ->sum('amount');
+
+            if ($legacyPartSum > 0) {
+                $totalPaid = $legacyPartSum;
+            } else {
+                $ledgerService = app(PaymentLedgerService::class);
+                $totalPaid = $ledgerService->balance($upeSale->id);
+            }
+
+            $result['totalPaidFromLedger'] = (int) round($totalPaid, 0, PHP_ROUND_HALF_UP);
+            $result['isNewPurchase'] = false;
+
+            // 4. Walk upfront + steps sequentially, deducting paid amount
+            $runningPaid = $totalPaid;
+
+            // 4a. Check upfront
+            $upfrontAmount = $installment->getUpfront($itemPrice);
+            if ($upfrontAmount > 0) {
+                if ($runningPaid >= $upfrontAmount) {
+                    $runningPaid -= $upfrontAmount;
+                } else {
+                    // Upfront not fully paid — partial deduction
+                    $remaining = (int) round($upfrontAmount - $runningPaid, 0, PHP_ROUND_HALF_UP);
+                    $result['nextPayableType'] = 'upfront';
+                    $result['nextPayableStepId'] = null;
+                    $result['nextPayableAmount'] = max(1, $remaining); // At least ₹1
+                    return $result;
+                }
+            }
+
+            // 4b. Walk each step in order
+            $steps = $installment->steps()->orderBy('id')->get();
+            foreach ($steps as $step) {
+                $stepAmount = $step->getPrice($itemPrice);
+                if ($runningPaid >= $stepAmount) {
+                    $runningPaid -= $stepAmount;
+                } else {
+                    // This step is the next payable — partial deduction applies
+                    $remaining = (int) round($stepAmount - $runningPaid, 0, PHP_ROUND_HALF_UP);
+                    $result['nextPayableType'] = 'step';
+                    $result['nextPayableStepId'] = $step->id;
+                    $result['nextPayableAmount'] = max(1, $remaining);
+                    return $result;
+                }
+            }
+
+            // All steps fully paid
+            $result['allPaid'] = true;
+            $result['nextPayableAmount'] = 0;
+            return $result;
+
+        } catch (\Exception $e) {
+            Log::warning('getNextPayableFromUpe: UPE lookup failed, falling back to upfront amount', [
+                'user_id' => $userId,
+                'webinar_id' => $webinarId,
+                'error' => $e->getMessage(),
+            ]);
+            return $result; // Fallback: treat as new purchase (upfront)
         }
     }
 

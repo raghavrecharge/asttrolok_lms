@@ -84,7 +84,7 @@
             <input type="hidden" name="order_id" value="{{ $order->id ?? 0 }}">
             <input type="hidden" name="installment_id" value="{{ $installment->id ?? null }}">
              <input type="hidden" name="discountId" value="{{!empty($discountId) ? $discountId : 0}}"  class="form-control mt-25 mb-25 " required>
-             <input type="hidden" name="price" value="<?php echo (number_format(((($installments->first()->upfront)*$itemPrice) /100), 2, '.', '')); ?>">
+             <input type="hidden" name="price" value="{{ $upePayable['nextPayableAmount'] ?? 0 }}">
              <input type="hidden" name="item" value="{{!empty($item) ? $item->id : null}}"  placeholder="Contact Number" class="form-control mt-25 mb-25 " >
              <input type="hidden" name="totalDiscount" value="{{!empty($totalDiscount) ? $totalDiscount : 0}}"  placeholder="totalDiscount" class="form-control mt-25 mb-25 " >
             <input type="hidden" name="item_type" value="{{!empty($itemType) ? $itemType : null}}"  placeholder="Contact Number" class="form-control mt-25 mb-25 ">
@@ -118,15 +118,10 @@
                         </div>
 
                         <div class="form-group">
-                            {{-- LMS-036 FIX: Always show upfront amount and make readonly.
-                                 Amount is server-calculated, NEVER user-editable. --}}
-                            @php
-                                $upfrontPercent = $installment->upfront ?? 0;
-                                $computedUpfront = ($upfrontPercent > 0 && $itemPrice > 0)
-                                    ? (int) round($itemPrice * $upfrontPercent / 100, 0, PHP_ROUND_HALF_UP)
-                                    : $totalPayments;
-                            @endphp
-                            <input name="amount" id='amount' placeholder="Amount" type="text" value="{{ $computedUpfront }}" class="form-control @error('number') is-invalid @enderror" readonly>
+                            {{-- UPE FIX: Amount is computed server-side from UPE ledger.
+                                 Sequential enforcement: only the FIRST unpaid installment is payable.
+                                 Partial deduction: ledger balance is deducted before showing remaining. --}}
+                            <input name="amount" id='amount' placeholder="Amount" type="text" value="{{ $upePayable['nextPayableAmount'] ?? 0 }}" class="form-control @error('amount') is-invalid @enderror" readonly>
                             @error('amount')
                             <div class="invalid-feedback">
                                 {{ $message }}

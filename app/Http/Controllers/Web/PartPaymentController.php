@@ -40,6 +40,9 @@ use App\Models\TicketUser;
 use App\Models\SubStepInstallment;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Models\PaymentEngine\UpeProduct;
+use App\Models\PaymentEngine\UpeSale;
+use App\Services\PaymentEngine\PaymentLedgerService;
 
 class PartPaymentController extends Controller
 {
@@ -141,41 +144,99 @@ class PartPaymentController extends Controller
 
             case 'part':
                 $webinar = Webinar::findOrFail($itemId);
-                // LMS-036 FIX: Use the NEXT UNPAID installment amount, NOT the full course price.
-                // Fall back to client amount only if no installment order exists yet.
-                $partAmount = $webinar->getPrice() ?? $webinar->price;
                 $installmentIdForPart = $validated['installment_id'] ?? null;
-                if ($installmentIdForPart) {
-                    $user = auth()->user();
-                    if ($user) {
-                        $existingOrder = InstallmentOrder::where('user_id', $user->id)
-                            ->where('webinar_id', $webinar->id)
-                            ->whereIn('status', ['open', 'paying'])
-                            ->first();
-                        if ($existingOrder) {
-                            // Find the next unpaid step
-                            $steps = \App\Models\InstallmentStep::where('installment_id', $existingOrder->installment_id)
-                                ->orderBy('id')
-                                ->get();
-                            $itemPrice = $existingOrder->getItemPrice();
-                            foreach ($steps as $step) {
-                                $paid = InstallmentOrderPayment::where('installment_order_id', $existingOrder->id)
-                                    ->where('step_id', $step->id)
-                                    ->where('status', 'paid')
-                                    ->exists();
-                                if (!$paid) {
-                                    // Calculate step amount
-                                    if ($step->amount_type == 'percent') {
-                                        $partAmount = (int) round($itemPrice * $step->amount / 100, 0, PHP_ROUND_HALF_UP);
-                                    } else {
-                                        $partAmount = (int) round((float) $step->amount, 0, PHP_ROUND_HALF_UP);
-                                    }
-                                    break;
+
+                // UPE FIX: Determine next payable amount from UPE ledger (source of truth).
+                // Sequential enforcement: walk upfront → steps in order, deducting ledger balance.
+                $partAmount = $webinar->getPrice() ?? $webinar->price; // fallback for new purchase
+                $user = auth()->user();
+
+                if ($installmentIdForPart && $user) {
+                    try {
+                        $installment = Installment::where('id', $installmentIdForPart)->where('enable', true)->first();
+                        if ($installment) {
+                            // Compute itemPrice (same as controller does)
+                            $itemPrice = $webinar->getPrice();
+                            $discountId = $validated['discount_id'] ?? null;
+                            if ($discountId) {
+                                $discountCoupon = Discount::where('id', $discountId)->first();
+                                if ($discountCoupon) {
+                                    $totalDiscount = ($webinar->price > 0) ? $webinar->price * ($discountCoupon->percent ?? 0) / 100 : 0;
+                                    $itemPrice -= $totalDiscount;
                                 }
                             }
+
+                            // Look up UPE sale for this user + webinar
+                            $upeProduct = UpeProduct::where('external_id', $webinar->id)
+                                ->whereIn('product_type', ['course_video', 'webinar'])
+                                ->first();
+
+                            if ($upeProduct) {
+                                $upeSale = UpeSale::where('user_id', $user->id)
+                                    ->where('product_id', $upeProduct->id)
+                                    ->where('pricing_mode', 'installment')
+                                    ->whereIn('status', ['active', 'pending_payment', 'partially_refunded'])
+                                    ->first();
+
+                                if ($upeSale) {
+                                    // webinar_part_payment is authoritative (records every payment once).
+                                    // UPE ledger may double-count from sync, so prefer legacy when available.
+                                    $legacyPartSum = (float) \App\Models\WebinarPartPayment::where('user_id', $user->id)
+                                        ->where('webinar_id', $webinar->id)
+                                        ->sum('amount');
+
+                                    if ($legacyPartSum > 0) {
+                                        $totalPaid = $legacyPartSum;
+                                    } else {
+                                        $ledgerService = app(PaymentLedgerService::class);
+                                        $totalPaid = $ledgerService->balance($upeSale->id);
+                                    }
+
+                                    $runningPaid = $totalPaid;
+
+                                    // Walk upfront first
+                                    $upfrontAmount = $installment->getUpfront($itemPrice);
+                                    if ($upfrontAmount > 0) {
+                                        if ($runningPaid >= $upfrontAmount) {
+                                            $runningPaid -= $upfrontAmount;
+                                        } else {
+                                            $partAmount = (int) round($upfrontAmount - $runningPaid, 0, PHP_ROUND_HALF_UP);
+                                            $partAmount = max(1, $partAmount);
+                                            goto partReturn;
+                                        }
+                                    }
+
+                                    // Walk steps sequentially
+                                    $steps = $installment->steps()->orderBy('id')->get();
+                                    foreach ($steps as $step) {
+                                        $stepAmount = $step->getPrice($itemPrice);
+                                        if ($runningPaid >= $stepAmount) {
+                                            $runningPaid -= $stepAmount;
+                                        } else {
+                                            $partAmount = (int) round($stepAmount - $runningPaid, 0, PHP_ROUND_HALF_UP);
+                                            $partAmount = max(1, $partAmount);
+                                            goto partReturn;
+                                        }
+                                    }
+
+                                    // All paid
+                                    $partAmount = 0;
+                                    goto partReturn;
+                                }
+                            }
+
+                            // No UPE sale → new purchase → upfront amount
+                            $partAmount = (int) round($installment->getUpfront($itemPrice), 0, PHP_ROUND_HALF_UP);
                         }
+                    } catch (\Exception $e) {
+                        Log::warning('UPE part payment lookup failed, using fallback', [
+                            'webinar_id' => $webinar->id,
+                            'error' => $e->getMessage(),
+                        ]);
                     }
                 }
+
+                partReturn:
                 return [
                     'type' => 'part',
                     'item' => $webinar,
