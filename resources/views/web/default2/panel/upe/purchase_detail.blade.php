@@ -25,33 +25,43 @@
                         <span class="font-weight-500">
                             @if($sale->product)
                                 {{ $sale->product->name }}
-                                <span class="font-12 text-gray">({{ ucfirst($sale->product->product_type) }})</span>
                             @else
                                 Product #{{ $sale->product_id }}
                             @endif
                         </span>
                     </div>
                     <div class="d-flex justify-content-between py-5 border-bottom">
-                        <span class="text-gray">Type</span>
-                        <span class="font-weight-500">{{ ucfirst($sale->pricing_mode) }}</span>
+                        <span class="text-gray">Payment Mode</span>
+                        <span class="font-weight-500">
+                            @if($sale->pricing_mode === 'installment')
+                                EMI / Installment
+                            @else
+                                {{ ucfirst($sale->pricing_mode) }}
+                            @endif
+                        </span>
                     </div>
                     <div class="d-flex justify-content-between py-5 border-bottom">
-                        <span class="text-gray">Base Amount</span>
-                        <span class="font-weight-500">₹{{ number_format($sale->base_fee_snapshot, 2) }}</span>
+                        <span class="text-gray">Course Price</span>
+                        <span class="font-weight-500">
+                            @if($sale->installmentPlan)
+                                ₹{{ number_format($sale->installmentPlan->total_amount, 2) }}
+                            @else
+                                ₹{{ number_format($sale->base_fee_snapshot, 2) }}
+                            @endif
+                        </span>
                     </div>
                     <div class="d-flex justify-content-between py-5 border-bottom">
-                        <span class="text-gray">Status</span>
+                        <span class="text-gray">Access Status</span>
                         <span>
-                            @php
-                                $statusClass = match($sale->status) {
-                                    'active' => 'badge-primary',
-                                    'pending_payment' => 'badge-warning',
-                                    'refunded' => 'badge-danger',
-                                    'partially_refunded' => 'badge-warning',
-                                    default => 'badge-secondary',
-                                };
-                            @endphp
-                            <span class="badge {{ $statusClass }}">{{ ucfirst(str_replace('_',' ',$sale->status)) }}</span>
+                            @if($accessResult->hasAccess)
+                                <span class="badge badge-primary">Active</span>
+                            @elseif($sale->status === 'pending_payment')
+                                <span class="badge badge-warning">Payment Pending</span>
+                            @elseif($sale->status === 'refunded')
+                                <span class="badge badge-danger">Refunded</span>
+                            @else
+                                <span class="badge badge-secondary">{{ ucfirst(str_replace('_',' ',$sale->status)) }}</span>
+                            @endif
                         </span>
                     </div>
                     <div class="d-flex justify-content-between py-5 border-bottom">
@@ -78,49 +88,59 @@
                 </div>
             </div>
 
-            {{-- Balance & Access --}}
             <div class="col-12 col-lg-6 mt-15 mt-lg-0">
-                <div class="panel-section-card py-20 px-25">
-                    <h3 class="font-16 font-weight-bold text-dark-blue mb-15">Balance & Access</h3>
-
-                    <div class="row text-center mb-15">
-                        <div class="col-4">
-                            <div class="font-12 text-gray">Credits</div>
-                            <div class="font-20 font-weight-bold text-primary">₹{{ number_format($ledgerSummary['total_credits'], 2) }}</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="font-12 text-gray">Debits</div>
-                            <div class="font-20 font-weight-bold text-danger">₹{{ number_format($ledgerSummary['total_debits'], 2) }}</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="font-12 text-gray">Balance</div>
-                            <div class="font-20 font-weight-bold">₹{{ number_format($ledgerSummary['net_balance'], 2) }}</div>
-                        </div>
-                    </div>
-
-                    <div class="p-10 rounded {{ $accessResult->hasAccess ? 'bg-primary' : 'bg-danger' }} text-white text-center">
-                        @if($accessResult->hasAccess)
-                            <i class="fa fa-check-circle"></i> <strong>Access Granted</strong> ({{ ucfirst($accessResult->accessType) }})
-                        @else
-                            <i class="fa fa-times-circle"></i> <strong>No Access</strong>
-                            <div class="font-12 mt-5">{{ $accessResult->reason }}</div>
-                        @endif
-                    </div>
-                </div>
-
-                {{-- Installment Plan Summary --}}
+                {{-- Payment Progress --}}
                 @if($sale->installmentPlan)
-                    <div class="panel-section-card py-20 px-25 mt-15">
-                        <h3 class="font-16 font-weight-bold text-dark-blue mb-10">EMI Plan</h3>
-                        <div class="d-flex justify-content-between mb-5">
-                            <span class="text-gray">Status</span>
-                            <span class="badge badge-primary">{{ ucfirst($sale->installmentPlan->status) }}</span>
+                    @php
+                        $plan = $sale->installmentPlan;
+                        $schedules = $plan->schedules->sortBy('sequence');
+                        $paidSchedules = $schedules->where('status', 'paid');
+                        $emiTotalPaid = $paidSchedules->sum('amount_due');
+                        $partialPaid = $schedules->where('status', 'partial')->sum('amount_paid');
+                        $totalPaidDisplay = $emiTotalPaid + $partialPaid;
+                        $totalRemaining = max(0, $plan->total_amount - $totalPaidDisplay);
+                        $paidPercent = $plan->total_amount > 0 ? round(($totalPaidDisplay / $plan->total_amount) * 100) : 0;
+                    @endphp
+                    <div class="panel-section-card py-20 px-25">
+                        <h3 class="font-16 font-weight-bold text-dark-blue mb-15">EMI Payment Progress</h3>
+
+                        <div class="row text-center mb-15">
+                            <div class="col-4">
+                                <div class="font-12 text-gray">Total Amount</div>
+                                <div class="font-18 font-weight-bold">₹{{ number_format($plan->total_amount, 2) }}</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="font-12 text-gray">Paid</div>
+                                <div class="font-18 font-weight-bold text-primary">₹{{ number_format($totalPaidDisplay, 2) }}</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="font-12 text-gray">Remaining</div>
+                                <div class="font-18 font-weight-bold text-danger">₹{{ number_format($totalRemaining, 2) }}</div>
+                            </div>
                         </div>
-                        <div class="d-flex justify-content-between mb-5">
-                            <span class="text-gray">Total</span>
-                            <span>₹{{ number_format($sale->installmentPlan->total_amount, 2) }}</span>
+
+                        <div class="progress mb-10" style="height: 10px;">
+                            <div class="progress-bar bg-primary" style="width: {{ $paidPercent }}%"></div>
                         </div>
-                        <a href="/panel/upe/installments/{{ $sale->installmentPlan->id }}" class="btn btn-sm btn-primary mt-10">View EMI Details</a>
+                        <div class="font-12 text-gray text-center">{{ $paidPercent }}% paid — {{ $paidSchedules->count() }} of {{ $schedules->count() }} installments completed</div>
+
+                        <div class="mt-15">
+                            <a href="/panel/upe/installments/{{ $plan->id }}" class="btn btn-sm btn-primary">View EMI Schedule</a>
+                        </div>
+                    </div>
+                @else
+                    <div class="panel-section-card py-20 px-25">
+                        <h3 class="font-16 font-weight-bold text-dark-blue mb-15">Payment Summary</h3>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="font-12 text-gray">Amount Paid</div>
+                                <div class="font-20 font-weight-bold text-primary">₹{{ number_format($ledgerSummary['net_balance'], 2) }}</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="font-12 text-gray">Course Price</div>
+                                <div class="font-20 font-weight-bold">₹{{ number_format($sale->base_fee_snapshot, 2) }}</div>
+                            </div>
+                        </div>
                     </div>
                 @endif
 
@@ -146,49 +166,99 @@
         </div>
     </section>
 
-    {{-- Ledger Entries --}}
-    <section class="mt-25">
-        <h2 class="section-title">Payment History</h2>
+    {{-- Payment History --}}
+    @if($sale->installmentPlan && $sale->installmentPlan->schedules->count() > 0)
+        <section class="mt-25">
+            <h2 class="section-title">Payment History</h2>
 
-        <div class="panel-section-card py-20 px-25 mt-20">
-            <div class="table-responsive">
-                <table class="table text-center">
-                    <thead>
-                        <tr>
-                            <th class="text-left">Type</th>
-                            <th>Direction</th>
-                            <th>Amount</th>
-                            <th>Method</th>
-                            <th class="text-left">Description</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($sale->ledgerEntries->sortByDesc('id') as $entry)
+            <div class="panel-section-card py-20 px-25 mt-20">
+                <div class="table-responsive">
+                    <table class="table text-center">
+                        <thead>
                             <tr>
-                                <td class="text-left">
-                                    <span class="badge badge-circle-white font-12 px-5 py-2">{{ str_replace('_',' ',ucfirst($entry->entry_type)) }}</span>
-                                </td>
-                                <td>
-                                    @if($entry->direction === 'credit')
-                                        <span class="text-primary"><i class="fa fa-arrow-down"></i> Credit</span>
-                                    @else
-                                        <span class="text-danger"><i class="fa fa-arrow-up"></i> Debit</span>
-                                    @endif
-                                </td>
-                                <td class="font-weight-500">₹{{ number_format($entry->amount, 2) }}</td>
-                                <td>{{ $entry->payment_method ?? '-' }}</td>
-                                <td class="text-left font-12">{{ $entry->description ?? '-' }}</td>
-                                <td class="font-12">{{ \Carbon\Carbon::parse($entry->created_at)->format('d M Y H:i') }}</td>
+                                <th>#</th>
+                                <th>Installment</th>
+                                <th>Amount</th>
+                                <th>Paid</th>
+                                <th>Status</th>
+                                <th>Date</th>
                             </tr>
-                        @empty
-                            <tr><td colspan="6" class="text-center text-gray py-15">No payment records yet.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach($sale->installmentPlan->schedules->sortBy('sequence') as $schedule)
+                                @php
+                                    $schedLabel = $schedule->sequence === 1 ? 'Upfront' : 'EMI ' . ($schedule->sequence - 1);
+                                    $schedBadge = match($schedule->status) {
+                                        'paid' => 'badge-primary',
+                                        'partial' => 'badge-warning',
+                                        'due', 'overdue' => 'badge-danger',
+                                        default => 'badge-secondary',
+                                    };
+                                    $schedStatusLabel = match($schedule->status) {
+                                        'paid' => 'Paid',
+                                        'partial' => 'Partially Paid',
+                                        'due' => 'Due',
+                                        'overdue' => 'Overdue',
+                                        'upcoming' => 'Upcoming',
+                                        default => ucfirst($schedule->status),
+                                    };
+                                @endphp
+                                <tr>
+                                    <td>{{ $schedule->sequence }}</td>
+                                    <td class="font-weight-500">{{ $schedLabel }}</td>
+                                    <td>₹{{ number_format($schedule->amount_due, 2) }}</td>
+                                    <td>
+                                        @if(($schedule->amount_paid ?? 0) > 0)
+                                            <span class="text-primary font-weight-500">₹{{ number_format($schedule->amount_paid, 2) }}</span>
+                                        @else
+                                            <span class="text-gray">-</span>
+                                        @endif
+                                    </td>
+                                    <td><span class="badge {{ $schedBadge }} px-10 py-5">{{ $schedStatusLabel }}</span></td>
+                                    <td class="font-12">
+                                        @if($schedule->paid_at)
+                                            {{ \Carbon\Carbon::parse($schedule->paid_at)->format('d M Y') }}
+                                        @elseif($schedule->due_date)
+                                            <span class="text-gray">Due: {{ \Carbon\Carbon::parse($schedule->due_date)->format('d M Y') }}</span>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+    @elseif($sale->ledgerEntries->count() > 0)
+        <section class="mt-25">
+            <h2 class="section-title">Payment History</h2>
+
+            <div class="panel-section-card py-20 px-25 mt-20">
+                <div class="table-responsive">
+                    <table class="table text-center">
+                        <thead>
+                            <tr>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($sale->ledgerEntries->where('direction', 'credit')->sortByDesc('id') as $entry)
+                                <tr>
+                                    <td class="font-weight-500">₹{{ number_format($entry->amount, 2) }}</td>
+                                    <td>{{ ucfirst($entry->payment_method ?? '-') }}</td>
+                                    <td class="font-12">{{ \Carbon\Carbon::parse($entry->created_at)->format('d M Y H:i') }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    @endif
 
     {{-- Action Forms --}}
     @if(in_array($sale->status, ['active', 'partially_refunded']))

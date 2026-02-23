@@ -70,24 +70,6 @@
                     </div>
                 </div>
 
-                {{-- Ledger Summary --}}
-                <div class="panel-section-card py-20 px-25 mt-15">
-                    <h3 class="font-16 font-weight-bold text-dark-blue mb-15">Ledger Summary</h3>
-                    <div class="row text-center">
-                        <div class="col-4">
-                            <div class="font-12 text-gray">Credits</div>
-                            <div class="font-16 font-weight-bold text-primary">₹{{ number_format($ledgerSummary['total_credits'], 2) }}</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="font-12 text-gray">Debits</div>
-                            <div class="font-16 font-weight-bold text-danger">₹{{ number_format($ledgerSummary['total_debits'], 2) }}</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="font-12 text-gray">Balance</div>
-                            <div class="font-16 font-weight-bold">₹{{ number_format($ledgerSummary['net_balance'], 2) }}</div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             {{-- Schedule Table --}}

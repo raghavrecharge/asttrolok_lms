@@ -317,9 +317,8 @@ class UpeController extends Controller
             })
             ->findOrFail($planId);
 
-        $ledgerSummary = $ledger->summary($plan->sale_id);
         $pageTitle = 'Installment Plan';
 
-        return view(getTemplate() . '.panel.upe.installment_detail', compact('plan', 'ledgerSummary', 'pageTitle'));
+        return view(getTemplate() . '.panel.upe.installment_detail', compact('plan', 'pageTitle'));
     }
 }
