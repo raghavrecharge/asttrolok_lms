@@ -641,7 +641,7 @@ class CartController extends Controller
                 }
 
                 if (!empty($webinar) and in_array($webinar->id, $discountWebinarsIds)) {
-                    $totalWebinarsAmount += $webinar->price;
+                    $totalWebinarsAmount += $webinar->getPrice();
 
                 }
             }
@@ -650,7 +650,7 @@ class CartController extends Controller
                 $totalDiscount = ($totalWebinarsAmount > $discount->amount) ? $discount->amount : $totalWebinarsAmount;
 
             } else {
-                $totalDiscount = ($totalWebinarsAmount > 0) ? $totalWebinarsAmount * $percent / 100 : 0;
+                $totalDiscount = ($totalWebinarsAmount > 0) ? (int) round($totalWebinarsAmount * $percent / 100, 0, PHP_ROUND_HALF_UP) : 0;
             }
         } elseif ($discount->source == Discount::$discountSourceBundle) {
             $totalBundlesAmount = 0;
@@ -660,7 +660,7 @@ class CartController extends Controller
             foreach ($carts as $cart) {
                 $bundle = $cart->bundle;
                 if (!empty($bundle) and in_array($bundle->id, $discountBundlesIds)) {
-                    $totalBundlesAmount += $bundle->price;
+                    $totalBundlesAmount += $bundle->getPrice();
 
                 }
             }
@@ -669,7 +669,7 @@ class CartController extends Controller
                 $totalDiscount = ($totalBundlesAmount > $discount->amount) ? $discount->amount : $totalBundlesAmount;
 
             } else {
-                $totalDiscount = ($totalBundlesAmount > 0) ? $totalBundlesAmount * $percent / 100 : 0;
+                $totalDiscount = ($totalBundlesAmount > 0) ? (int) round($totalBundlesAmount * $percent / 100, 0, PHP_ROUND_HALF_UP) : 0;
             }
         } elseif ($discount->source == Discount::$discountSourceProduct) {
             $totalProductsAmount = 0;
@@ -690,7 +690,7 @@ class CartController extends Controller
                 $totalDiscount = ($totalProductsAmount > $discount->amount) ? $discount->amount : $totalProductsAmount;
 
             } else {
-                $totalDiscount = ($totalProductsAmount > 0) ? $totalProductsAmount * $percent / 100 : 0;
+                $totalDiscount = ($totalProductsAmount > 0) ? (int) round($totalProductsAmount * $percent / 100, 0, PHP_ROUND_HALF_UP) : 0;
             }
         } elseif ($discount->source == Discount::$discountSourceMeeting) {
             $totalMeetingAmount = 0;
@@ -709,7 +709,7 @@ class CartController extends Controller
                 $totalDiscount = ($totalMeetingAmount > $discount->amount) ? $discount->amount : $totalMeetingAmount;
 
             } else {
-                $totalDiscount = ($totalMeetingAmount > 0) ? $totalMeetingAmount * $percent / 100 : 0;
+                $totalDiscount = ($totalMeetingAmount > 0) ? (int) round($totalMeetingAmount * $percent / 100, 0, PHP_ROUND_HALF_UP) : 0;
             }
         } elseif ($discount->source == Discount::$discountSourceCategory) {
             $totalCategoriesAmount = 0;
@@ -721,7 +721,7 @@ class CartController extends Controller
                 $webinar = $cart->webinar;
 
                 if (!empty($webinar) and in_array($webinar->category_id, $categoriesIds)) {
-                    $totalCategoriesAmount += $webinar->price;
+                    $totalCategoriesAmount += $webinar->getPrice();
 
                 }
             }
@@ -730,7 +730,7 @@ class CartController extends Controller
                 $totalDiscount = ($totalCategoriesAmount > $discount->amount) ? $discount->amount : $totalCategoriesAmount;
 
             } else {
-                $totalDiscount = ($totalCategoriesAmount > 0) ? $totalCategoriesAmount * $percent / 100 : 0;
+                $totalDiscount = ($totalCategoriesAmount > 0) ? (int) round($totalCategoriesAmount * $percent / 100, 0, PHP_ROUND_HALF_UP) : 0;
             }
         } else {
             $totalCartAmount = 0;
@@ -741,7 +741,7 @@ class CartController extends Controller
                 $reserveMeeting = $cart->reserveMeeting;
 
                 if (!empty($webinar)) {
-                    $totalCartAmount += $webinar->price;
+                    $totalCartAmount += $webinar->getPrice();
 
                 }
 
@@ -755,7 +755,7 @@ class CartController extends Controller
                 $totalDiscount = ($totalCartAmount > $discount->amount) ? $discount->amount : $totalCartAmount;
 
             } else {
-                $totalDiscount = ($totalCartAmount > 0) ? $totalCartAmount * $percent / 100 : 0;
+                $totalDiscount = ($totalCartAmount > 0) ? (int) round($totalCartAmount * $percent / 100, 0, PHP_ROUND_HALF_UP) : 0;
             }
         }
 

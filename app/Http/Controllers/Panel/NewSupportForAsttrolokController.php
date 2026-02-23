@@ -43,7 +43,6 @@ class NewSupportForAsttrolokController extends Controller
     
             $webinarIds = $user->getPurchasedCoursesIds();
             
-            // $expirewebinarIds = $user->Sale($webinarIds);
             $expiredCourses = [];
 
             if (!empty(count($webinarIds))) {
@@ -55,54 +54,92 @@ class NewSupportForAsttrolokController extends Controller
                             $query->select('id', 'full_name');
                         }])
                         ->get();
-            
+            } else {
+                $userPurchases = collect();
+            }
+
+            // LMS-040 FIX: Also find expired UPE sales that getPurchasedCoursesIds() skipped.
+            // getPurchasedCoursesIds() filters out expired sales, but extension dropdown needs them.
+            $expiredWebinarIds = [];
+            try {
+                $expiredUpeSales = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
+                    ->whereIn('status', ['active', 'partially_refunded', 'pending_payment', 'completed'])
+                    ->whereNotNull('valid_until')
+                    ->where('valid_until', '<', now())
+                    ->with('product')
+                    ->get();
+
+                foreach ($expiredUpeSales as $expiredSale) {
+                    if (!$expiredSale->product) continue;
+                    $product = $expiredSale->product;
+                    if (in_array($product->product_type, ['course_video', 'webinar'])) {
+                        $wId = $product->external_id;
+                        if (!in_array($wId, $expiredWebinarIds)) {
+                            $expiredWebinarIds[] = $wId;
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::warning('LMS-040: Could not query expired UPE sales', ['error' => $e->getMessage()]);
+            }
+
+            // Merge expired webinar IDs with active purchases for the full picture
+            $allKnownWebinarIds = array_unique(array_merge($webinarIds, $expiredWebinarIds));
+
+            // Re-fetch if we found additional expired courses
+            if (count($expiredWebinarIds) > 0) {
+                $userPurchases = Webinar::select('id', 'creator_id', 'access_days')
+                    ->whereIn('id', $allKnownWebinarIds)
+                    ->where('status', 'active')
+                    ->with(['creator' => function ($query) {
+                        $query->select('id', 'full_name');
+                    }])
+                    ->get();
+            }
 
             // Use UPE sales to find expired courses for extension dropdown
-                foreach ($userPurchases as $item) {
+            foreach ($userPurchases as $item) {
+                $productTypes = ['course_video', 'webinar'];
+                $upeProduct = \App\Models\PaymentEngine\UpeProduct::whereIn('product_type', $productTypes)
+                    ->where('external_id', $item->id)
+                    ->first();
 
-                    // Try to get the latest UPE sale (active or not) for this user+course
-                    $productTypes = ['course_video', 'webinar'];
-                    $upeProduct = \App\Models\PaymentEngine\UpeProduct::whereIn('product_type', $productTypes)
-                        ->where('external_id', $item->id)
-                        ->first();
-
-                    if (!$upeProduct) {
-                        // Fallback: use legacy access_days check
-                        if (!$item->access_days) continue;
-                        $sale = $item->getSaleItem($user);
-                        if (!$sale || !$sale->created_at) continue;
-                        $purchaseTimestamp = $sale->created_at instanceof \Carbon\Carbon
-                            ? $sale->created_at->timestamp
-                            : (int) $sale->created_at;
-                        if (!$item->checkHasExpiredAccessDays($purchaseTimestamp)) {
-                            $item->expired_date = $purchaseTimestamp;
-                            $expiredCourses[] = $item;
-                        }
-                        continue;
-                    }
-
-                    // Find the latest sale for this user+product (any non-cancelled status)
-                    $upeSale = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
-                        ->where('product_id', $upeProduct->id)
-                        ->whereNotIn('status', ['cancelled'])
-                        ->orderByDesc('id')
-                        ->first();
-
-                    if (!$upeSale) continue;
-
-                    // Course is expired if valid_until is set and in the past
-                    if ($upeSale->valid_until !== null && $upeSale->valid_until->isPast()) {
-                        $item->expired_date = $upeSale->valid_until->timestamp;
+                if (!$upeProduct) {
+                    // Fallback: use legacy access_days check
+                    if (!$item->access_days) continue;
+                    $sale = $item->getSaleItem($user);
+                    if (!$sale || !$sale->created_at) continue;
+                    $purchaseTimestamp = $sale->created_at instanceof \Carbon\Carbon
+                        ? $sale->created_at->timestamp
+                        : (int) $sale->created_at;
+                    if (!$item->checkHasExpiredAccessDays($purchaseTimestamp)) {
+                        $item->expired_date = $purchaseTimestamp;
                         $expiredCourses[] = $item;
-                    } elseif ($item->access_days && $upeSale->valid_until === null) {
-                        // Fallback: calculate from created_at + access_days
-                        $purchaseTimestamp = $upeSale->created_at instanceof \Carbon\Carbon
-                            ? $upeSale->created_at->timestamp
-                            : (int) $upeSale->created_at;
-                        if (!$item->checkHasExpiredAccessDays($purchaseTimestamp)) {
-                            $item->expired_date = $purchaseTimestamp;
-                            $expiredCourses[] = $item;
-                        }
+                    }
+                    continue;
+                }
+
+                // Find the latest sale for this user+product (any non-cancelled status)
+                $upeSale = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
+                    ->where('product_id', $upeProduct->id)
+                    ->whereNotIn('status', ['cancelled'])
+                    ->orderByDesc('id')
+                    ->first();
+
+                if (!$upeSale) continue;
+
+                // Course is expired if valid_until is set and in the past
+                if ($upeSale->valid_until !== null && $upeSale->valid_until->isPast()) {
+                    $item->expired_date = $upeSale->valid_until->timestamp;
+                    $expiredCourses[] = $item;
+                } elseif ($item->access_days && $upeSale->valid_until === null) {
+                    // Fallback: calculate from created_at + access_days
+                    $purchaseTimestamp = $upeSale->created_at instanceof \Carbon\Carbon
+                        ? $upeSale->created_at->timestamp
+                        : (int) $upeSale->created_at;
+                    if (!$item->checkHasExpiredAccessDays($purchaseTimestamp)) {
+                        $item->expired_date = $purchaseTimestamp;
+                        $expiredCourses[] = $item;
                     }
                 }
             }

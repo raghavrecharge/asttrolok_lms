@@ -141,13 +141,47 @@ class PartPaymentController extends Controller
 
             case 'part':
                 $webinar = Webinar::findOrFail($itemId);
-                // V-03 FIX: Use server-calculated amount, NEVER client-supplied
+                // LMS-036 FIX: Use the NEXT UNPAID installment amount, NOT the full course price.
+                // Fall back to client amount only if no installment order exists yet.
+                $partAmount = $webinar->getPrice() ?? $webinar->price;
+                $installmentIdForPart = $validated['installment_id'] ?? null;
+                if ($installmentIdForPart) {
+                    $user = auth()->user();
+                    if ($user) {
+                        $existingOrder = InstallmentOrder::where('user_id', $user->id)
+                            ->where('webinar_id', $webinar->id)
+                            ->whereIn('status', ['open', 'paying'])
+                            ->first();
+                        if ($existingOrder) {
+                            // Find the next unpaid step
+                            $steps = \App\Models\InstallmentStep::where('installment_id', $existingOrder->installment_id)
+                                ->orderBy('id')
+                                ->get();
+                            $itemPrice = $existingOrder->getItemPrice();
+                            foreach ($steps as $step) {
+                                $paid = InstallmentOrderPayment::where('installment_order_id', $existingOrder->id)
+                                    ->where('step_id', $step->id)
+                                    ->where('status', 'paid')
+                                    ->exists();
+                                if (!$paid) {
+                                    // Calculate step amount
+                                    if ($step->amount_type == 'percent') {
+                                        $partAmount = (int) round($itemPrice * $step->amount / 100, 0, PHP_ROUND_HALF_UP);
+                                    } else {
+                                        $partAmount = (int) round((float) $step->amount, 0, PHP_ROUND_HALF_UP);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
                 return [
                     'type' => 'part',
                     'item' => $webinar,
                     'webinar_id' => $webinar->id,
-                    'installment_id' => $validated['installment_id'],
-                    'amount' => $webinar->getPrice() ?? $webinar->price,
+                    'installment_id' => $installmentIdForPart,
+                    'amount' => $partAmount,
                     'description' => "Course: {$webinar->title}",
                     'user_data' => $validated,
                 ];
@@ -451,9 +485,14 @@ class PartPaymentController extends Controller
                 break;
         }
 
+        // LMS-035 FIX: HALF-UP round to nearest integer INR, then convert to paise.
+        // Never store fractional paise — Razorpay amounts must be integer paise.
+        $amountInr = (int) round((float) $paymentData['amount'], 0, PHP_ROUND_HALF_UP);
+        $amountPaise = $amountInr * 100;
+
         $razorpayOrder = $this->razorpayApi->order->create([
             'receipt' => 'order_' . $order->id . '_' . time(),
-            'amount' => (int)($paymentData['amount'] * 100),
+            'amount' => $amountPaise,
             'currency' => currency(),
             'notes' => $notes,
         ]);

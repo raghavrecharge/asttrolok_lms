@@ -635,12 +635,22 @@ class AdminSupportController extends Controller
                         $updateData['coupon_code'] = $request->coupon_code;
                     }
 
-                    // Auto-execute coupon on admin approval so it doesn't stay "Pending Processing"
-                    if ($user->role_name === 'admin' && !empty($supportRequest->coupon_code)) {
-                        $this->ApplyCouponCode($supportRequest);
-                        $updateData['status'] = 'completed';
-                        $updateData['executed_at'] = now();
-                        $updateData['sub_admin_id'] = $user->id;
+                    // LMS-039 FIX: Auto-execute coupon on admin approval.
+                    // Check both the persisted coupon_code AND any just-set coupon_code from admin input.
+                    if ($user->role_name === 'admin') {
+                        // Admin can also supply coupon_code directly at approval time
+                        $adminCoupon = trim($request->input('coupon_code', ''));
+                        if (!empty($adminCoupon)) {
+                            $updateData['coupon_code'] = strtoupper($adminCoupon);
+                            $supportRequest->coupon_code = strtoupper($adminCoupon);
+                        }
+
+                        if (!empty($supportRequest->coupon_code)) {
+                            $this->ApplyCouponCode($supportRequest);
+                            $updateData['status'] = 'completed';
+                            $updateData['executed_at'] = now();
+                            $updateData['sub_admin_id'] = $user->id;
+                        }
                     }
                 }
                
@@ -1016,14 +1026,22 @@ class AdminSupportController extends Controller
 
             DB::rollBack();
 
-            \Log::error('Update failed', [
-                'error' => $e->getMessage()
+            \Log::error('Support ticket update failed', [
+                'support_request_id' => $id,
+                'scenario' => $supportRequest->support_scenario ?? 'unknown',
+                'target_status' => $validated['status'] ?? 'unknown',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
             ]);
+
+            $errorMsg = 'Failed to update: ' . class_basename($e) . ' — ' . \Str::limit($e->getMessage(), 200);
 
             return back()->with([
                 'toast' => [
                     'title' => 'Error',
-                    'msg' => 'Failed to update',
+                    'msg' => $errorMsg,
                     'status' => 'error'
                 ]
             ]);

@@ -118,11 +118,15 @@
                         </div>
 
                         <div class="form-group">
-                            @if($item->slug=='astrology-basic-level' || $item->slug=='3-days-astrology-workshop')
-                            <input name="amount" id='amount'  placeholder="Amount" type="text" value="{{$item->slug=='astrology-basic-level' || $item->slug=='3-days-astrology-workshop'?$totalPayments:null}}" class="form-control @error('number') is-invalid @enderror"  readonly >
-                            @else
-                            <input name="amount" id='amount'  placeholder="Amount" type="text" value="" class="form-control @error('number') is-invalid @enderror"   >
-                            @endif
+                            {{-- LMS-036 FIX: Always show upfront amount and make readonly.
+                                 Amount is server-calculated, NEVER user-editable. --}}
+                            @php
+                                $upfrontPercent = $installment->upfront ?? 0;
+                                $computedUpfront = ($upfrontPercent > 0 && $itemPrice > 0)
+                                    ? (int) round($itemPrice * $upfrontPercent / 100, 0, PHP_ROUND_HALF_UP)
+                                    : $totalPayments;
+                            @endphp
+                            <input name="amount" id='amount' placeholder="Amount" type="text" value="{{ $computedUpfront }}" class="form-control @error('number') is-invalid @enderror" readonly>
                             @error('amount')
                             <div class="invalid-feedback">
                                 {{ $message }}
@@ -159,7 +163,7 @@
                 </div>
             @endif
 
-<button type="button" id="paymentSubmit"  class="{{$item->slug=='astrology-basic-level' || $item->slug=='3-days-astrology-workshop'?'':'d-none'}} btn btn-sm btn-primary loading"style="font-family: 'Inter', sans-serif !important;">{{ trans('public.start_payment') }}</button>
+<button type="button" id="paymentSubmit" class="btn btn-sm btn-primary loading" style="font-family: 'Inter', sans-serif !important;">{{ trans('public.start_payment') }}</button>
 
         </form>
         </div>

@@ -78,14 +78,15 @@
                         </div>
 
                         <div class="form-group">
-                            @if($item->slug=='astrology-basic-level')
+                            {{-- LMS-036 FIX: Always show upfront amount and make readonly.
+                                 Amount is server-calculated, NEVER user-editable. --}}
                             @php
-
+                                $upfrontPercent = $installment->upfront ?? 0;
+                                $computedUpfront = ($upfrontPercent > 0 && $itemPrice > 0)
+                                    ? (int) round($itemPrice * $upfrontPercent / 100, 0, PHP_ROUND_HALF_UP)
+                                    : $totalPayments;
                             @endphp
-                            <input name="amount" id='amount'  placeholder="Amount" type="text" value="{{$item->slug=='astrology-basic-level'?round($totalPayments):null}}" class="form-control @error('number') is-invalid @enderror"  readonly >
-                            @else
-                            <input name="amount" id='amount'  placeholder="Amount" type="text" value="" class="form-control @error('number') is-invalid @enderror"   >
-                            @endif
+                            <input name="amount" id='amount' placeholder="Amount" type="text" value="{{ $computedUpfront }}" class="form-control @error('number') is-invalid @enderror" readonly>
                             @error('amount')
                             <div class="invalid-feedback">
                                 {{ $message }}
@@ -124,7 +125,7 @@
     <br>
     <h3>Please do not refresh or close the page while your payment is being processed...</h3>
     </div></center>
-<button type="button" id="paymentSubmit"  class="{{$item->slug=='astrology-basic-level'?'':'d-none'}} btn btn-sm btn-primary loading">{{ trans('public.start_payment') }}</button>
+<button type="button" id="paymentSubmit" class="btn btn-sm btn-primary loading">{{ trans('public.start_payment') }}</button>
 
         </form>
         </div>

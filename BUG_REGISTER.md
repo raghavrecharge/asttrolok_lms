@@ -1,128 +1,140 @@
-# Bug Register — 19-02-26 Asttrolok Testing Doc
+# Bug Register — Asttrolok LMS Testing
 
-**All 48 images extracted and analyzed.**
+## Document: 20-02-26 Asttrolok Frontend UI – Human Testing Checklist
 
-## Image Coverage Map
+**37 images extracted and analyzed from testing doc.**
 
-| IMG | Source File | Screen | Bug ID |
-|-----|-----------|--------|--------|
-| IMG-01 | image1.png | Post-purchase coupon "palmistry101" applied success | LMS-012 |
-| IMG-02 | image10.png | Order summary: Astrology Level 2, coupon "numerology10", discount ₹22,999 on ₹29,999 | LMS-020 |
-| IMG-03 | image11.png | Razorpay receipt ₹4,999 | LMS-006 |
-| IMG-04 | image12.png | Installment list: Upfront ₹16,500 Paid, 2nd ₹16,500-0 Unpaid | LMS-002, LMS-004 |
-| IMG-05 | image13.png | Invoice: Yoga and Dasha ₹14,999 full paid, discount 0 | LMS-009 |
-| IMG-06 | image14.png | Coupon list: "new discount" 25%, course shows null | LMS-007 |
-| IMG-07 | image15.png | Coupon creation form: "extra discount" 10%, code "extradiscount" | LMS-030 |
-| IMG-08 | image16.png | Course listing: Palmistry English ₹14,999 | LMS-026 |
-| IMG-09 | image17.png | Razorpay checkout ₹12,999 (wrong for 10% off 14999) | LMS-031 |
-| IMG-10 | image18.png | Coupon list: "new discount" 10%, usable 1, Remained:1 | LMS-028 |
-| IMG-11 | image19.png | Purchase detail: Actions (refund, upgrade, extension, coupon) | LMS-011, LMS-015 |
-| IMG-12 | image20.png | Admin support ticket list: 8 tickets various statuses | LMS-005, LMS-024 |
-| IMG-13 | image21.png | SQLSTATE error: request_type "post_purchase_coupon" truncated | LMS-017 |
-| IMG-14 | image22.png | SQLSTATE error: request_type "course_extension" truncated | LMS-014 |
-| IMG-15 | image23.png | Error toast "Failed to update" | LMS-025 |
-| IMG-16 | image24.png | Error toast "Failed to update" with "Never Purchased" visible | LMS-025 |
-| IMG-17 | image25.png | Razorpay checkout ₹12,999 | LMS-031 |
-| IMG-18 | image26.png | Error toast "Failed to update" | LMS-031 |
-| IMG-19 | image27.png | Relative/Friend access dropdown: shows only purchased courses | LMS-008 |
-| IMG-20 | image28.png | 404 error page | LMS-013 |
-| IMG-21 | image29.png | Installment list: Upfront ₹5,940-0 Unpaid despite payment date shown | LMS-001 |
-| IMG-22 | image30.png | Coupon admin list: 3 coupons (nadiastrology10, allusers, palmistry101) | LMS-007 |
-| IMG-23 | image31.png | Mentor access ticket: Executed, "Ticket Successfully Resolved & Closed" | LMS-005 |
-| IMG-24 | image32.png | Checkout ₹32,500: coupon invalid | LMS-019 |
-| IMG-25 | image33.png | Admin ticket list: Installment Restructure Completed | LMS-022 |
-| IMG-26 | image34.png | Error toast "Failed to update" | LMS-031 |
-| IMG-27 | image35.png | Order summary: Astrology Level 2 coupon "allusers" 20%, discount ₹14,000, total ₹15,999 | LMS-020 |
-| IMG-28 | image36.png | Razorpay receipt ₹50,000.03 | LMS-004 |
-| IMG-29 | image37.png | Installment overview: 2 Total Parts, 2 Remained, ₹10,049 Remained | LMS-001 |
-| IMG-30 | image38.png | Checkout ₹4,999: coupon "extradiscount" invalid | LMS-030 |
-| IMG-31 | image39.png | Financial summary: "No financial document!" | LMS-003 |
-| IMG-32 | image40.png | Checkout page with spinner/buffering after cancel | LMS-029 |
-| IMG-33 | image41.png | Payment successful ₹50,000.03 | LMS-004 |
-| IMG-34 | image42.png | Subscription page: Start Free Trial button, ₹2,100/month | LMS-027 |
-| IMG-35 | image43.png | Checkout: Total Amount ₹12,500 (should be ₹14,999) | LMS-026 |
-| IMG-36 | image44.png | Installment list: Upfront Unpaid despite Payment Date present | LMS-001 |
-| IMG-37 | image45.png | Course listing page showing prices | LMS-026 |
-| IMG-38 | image46.png | Admin support ticket: Post-Purchase Coupon Apply "Pending Processing" | LMS-024 |
-| IMG-39 | image47.png | Support ticket details: Installment Restructure, "Never purchased" | LMS-022 |
-| IMG-40 | image48.png | Admin ticket: Post-Purchase Coupon approved, "Pending Processing" | LMS-024 |
-| IMG-41 | image49.png | Palmistry English course card ₹14,999 | LMS-026 |
-| IMG-42 | image50.png | Razorpay checkout ₹9,999 (wrong amount) | LMS-020 |
-| IMG-43 | image51.png | Admin support: Mentor Access ticket "Failed to update" error | LMS-025 |
-| IMG-44 | image52.png | My Requests: 4 requests all "Numerology English" (wrong course) | LMS-018 |
-| IMG-45 | image53.png | Invoice: Palmistry ₹4,999 (partial offline but full invoice) | LMS-009 |
-| IMG-46 | image54.png | Financial summary: "No financial document!" | LMS-003 |
-| IMG-47 | image55.png | Total Amount ₹12,500 (wrong) | LMS-026 |
-| IMG-48 | image56.png | Installment list: Upfront ₹16,500 Paid, others Unpaid | LMS-001 |
+---
 
-## Bug Register
+## Image Coverage Map (20-02-26 Document)
 
-| ID | Title | Severity | Status | Root Cause | Fix Applied |
-|----|-------|----------|--------|------------|-------------|
-| LMS-001 | Upfront installment shows "Unpaid" when already paid | P0 | ✅ FIXED | Upfront `InstallmentOrderPayment` status not reconciled after payment | `InstallmentsController::show()` reconciles upfront to 'paid' when actual payments cover upfront amount |
-| LMS-002 | "Pay Upcoming Part" shows full course amount | P0 | ✅ FIXED | `/register-course/{slug}` link lacks step amount param | Blade links now pass `?amount=` with correct step/upfront/sub-step amount |
-| LMS-003 | Financial summary empty despite 4 purchases | P1 | ✅ FIXED | `AccountingController::index()` only queries legacy tables, misses UPE sales | Added UPE sales aggregation to financial summary |
-| LMS-004 | After paying 2nd installment, shows all "Unpaid" | P0 | ✅ FIXED | Same root as LMS-001 — upfront status not reconciled | Fixed by LMS-001 reconciliation logic |
-| LMS-005 | Mentor access ticket closed after "executed" | P1 | ✅ FIXED | Part of LMS-025 validation issue preventing status transitions | Fixed by LMS-025 validation fix |
-| LMS-006 | Coupon 50% discount math wrong | P0 | ✅ FIXED | `directPayment()` didn't use session coupon, wrong calc | `WebinarController::directPayment()` now uses session coupon, handles fixed_amount + max_amount cap |
-| LMS-007 | Coupon shows null course in discount list | P2 | ℹ️ NO-OP | Already guarded in blade with `@if(!empty($discountCourse->course))` | Verified: 0 orphaned `discount_courses` records exist |
-| LMS-008 | Relative/Friend dropdown shows only purchased courses | P2 | ℹ️ BY DESIGN | Dropdown intentionally shows only user's purchased courses for sharing | Correct behavior — user can only share courses they own |
-| LMS-009 | Offline ₹8,000 payment gives full invoice + full access | P1 | ✅ FIXED | `offlineCashPayment()` always called `purchaseCourseDirectly()` regardless of amount | Now checks `cashAmount >= coursePrice` before granting full access; partial → `WebinarPartPayment` only |
-| LMS-010 | Installment payment not working (coupon invalid) | P0 | ✅ FIXED | Same as LMS-030: `source='all'` coupon rejected | Fixed by LMS-019/LMS-030 coupon scope fix |
-| LMS-011 | Refund request page refreshes without error | P0 | ✅ FIXED | Blade template missing `$errors` display | Added `@if($errors->any())` block to `purchase_detail.blade.php` |
-| LMS-012 | Post-purchase coupon: same coupon reapplied | P1 | ✅ FIXED | Part of LMS-028 — usage not counted across all purchase paths | Fixed by LMS-028 usable-times counting fix |
-| LMS-013 | Wrong course: 404 error | P2 | ⏳ DEFERRED | Route/data issue — needs specific reproduction steps | Low-priority data investigation |
-| LMS-014 | SQLSTATE enum truncation "course_extension" | P0 | ✅ FIXED | `upe_payment_requests.request_type` enum missing values | Migration adds `course_extension`, `post_purchase_coupon`, `installment_restructure` |
-| LMS-017 | SQLSTATE enum truncation "post_purchase_coupon" | P0 | ✅ FIXED | Same as LMS-014 | Same migration fix |
-| LMS-018 | Wrong course in refund request list | P0 | ⏳ DEFERRED | Request `sale_id` linkage — form passes correct sale_id from purchase detail | Likely stale data; needs data investigation |
-| LMS-019 | Coupon "extradiscount" invalid for all courses | P0 | ✅ FIXED | `checkValidDiscount()` doesn't handle `source='all'` | Both `checkValidDiscount()` and `checkValidDiscount1()` now return 'ok' for `source='all'` |
-| LMS-020 | 20% discount gives wrong price | P0 | ✅ FIXED | `directPayment()` used wrong discount logic | Fixed by LMS-006 directPayment coupon math fix |
-| LMS-022 | Installment restructure shows "Never Purchased" | P1 | ✅ FIXED | `getPurchaseInfo()` only checks `getSaleItem()`, misses installment orders | Now also checks `InstallmentOrder` records |
-| LMS-024 | Post-purchase coupon stuck "Pending Processing" | P1 | ✅ FIXED | Admin approval doesn't auto-execute coupon | Auto-executes `ApplyCouponCode()` on approval, sets status to 'completed' |
-| LMS-025 | Mentor access "Failed to update" for Admin | P1 | ✅ FIXED | `support_remarks` required for admin on all status changes | Admin now has `nullable` support_remarks for completed/executed/closed/rejected |
-| LMS-026 | Course price shows ₹12,500 instead of ₹14,999 | P2 | ℹ️ DATA | `activeSpecialOffer()` applies discount — price correct per active offer | Admin should verify/update special offer settings |
-| LMS-027 | Free trial button error | P2 | ✅ FIXED | Button links to non-existent route `/subscriptions/direct-payment-enroll/{slug}` | Fixed all occurrences in both themes to `/subscriptions/direct-payment/{slug}` |
-| LMS-028 | Coupon usable times=1 but can use twice | P0 | ✅ FIXED | `discountRemain()` only counts `OrderItem` usage | Now also counts `Sale` records and UPE ledger entries |
-| LMS-029 | Payment cancel causes infinite buffering | P2 | ✅ FIXED | `hideLoader()` only hides `#loader`, not `#paymentLoader` overlay | `hideLoader()` now also hides `#paymentLoader` |
-| LMS-030 | "extradiscount" coupon for all courses shows invalid | P0 | ✅ FIXED | Same as LMS-019 | Same fix |
-| LMS-031 | 10% discount: 14999→12999 instead of 13500 | P0 | ✅ FIXED | Same as LMS-006 — directPayment coupon math | Same fix |
+| IMG | Source File | Screen Shown | Bug Illustrated | Failing Layer | Bug ID |
+|-----|-----------|--------------|-----------------|---------------|--------|
+| IMG-01 | image1.png | Course Extension dropdown | "No expired courses found" despite expired course on dashboard | Support/Access | LMS-040 |
+| IMG-02 | image2.png | Internal Server Error page | SQLSTATE 1265: `request_type` truncated for `installment_restructure` | DB/Migration | LMS-032 |
+| IMG-03 | image3.png | Internal Server Error page | SQLSTATE 1265: `request_type` truncated for `course_extension` | DB/Migration | LMS-032 |
+| IMG-04 | image4.png | Error toast | "Failed to update" on Mentor access completion | Support/UPE | LMS-034 |
+| IMG-05 | image5.png | EMI Plan Details | Ledger Summary Credits=₹1, Balance=₹1 (wrong) | Ledger | LMS-037 |
+| IMG-06 | image6.png | Support ticket list | Installment Restructure ticket "Completed" but no effect | Installment | LMS-036 |
+| IMG-07 | image7.png | Coupon admin list | `nadiastrology10` 50% max ₹32,000 applied on ₹55,000 course | Coupon | LMS-041 |
+| IMG-08 | image8.png | Installment list | Upfront Paid, 2nd+3rd Unpaid after paying ₹50,000 | Installment/Ledger | LMS-037 |
+| IMG-09 | image9.png | Course card | Numerology English ₹14,999 (₹20,000 crossed) | UI/Coupon | LMS-041 |
+| IMG-10 | image10.png | Support ticket detail | Coupon ticket Approved but "Pending Processing" still showing | Support/State | LMS-039 |
+| IMG-11 | image11.png | Installment list | Upfront ₹16,500 Paid, 2nd ₹16,500-0 Unpaid, 3rd ₹17,000 Unpaid | Installment/Ledger | LMS-037 |
+| IMG-12 | image12.png | Create Support Request | SQL error: "Unknown column 'relative_description'" | DB/Migration | LMS-033 |
+| IMG-13 | image13.png | Error toast | "Failed to update" on Refund completion | Support/UPE | LMS-034 |
+| IMG-14 | image14.png | Purchase Details #20835 | Base ₹20,000, Credits ₹10,999 — 20% off ₹14,999 should give ₹3,000 discount not ₹10,999 | Coupon/Ledger | LMS-041 |
+| IMG-15 | image15.png | Financial summary | "No financial document!" | Ledger/UI | LMS-038 |
+| IMG-16 | image16.png | Purchase Details #20833 | Base ₹55,000, Credits ₹9,075 — coupon applied incorrectly | Coupon/Ledger | LMS-041 |
+| IMG-17 | image17.png | Installment list | Upfront ₹4,290-0 with Payment Date but shows "Pay Upcoming Part" | Installment/Ledger | LMS-037 |
+| IMG-18 | image18.png | Razorpay receipt | ₹50,000.03 — fractional paise | Rounding | LMS-035 |
+| IMG-19 | image19.png | My Purchases page | Request Extension form showing, current validity expired | Support/UI | INFO |
+| IMG-20 | image20.png | Error toast | "Failed to update" on Offline/Cash Payment | Support/UPE | LMS-034 |
+| IMG-21 | image21.png | Razorpay checkout | ₹5,332.32 — fractional paise, coupon not reflected | Rounding/Coupon | LMS-035 |
+| IMG-22 | image22.png | Relative/Friend dropdown | Only purchased courses shown | Support/UI | BY-DESIGN |
+| IMG-23 | image23.png | Razorpay receipt | ₹12,999 paid instead of entered ₹5,000 | Installment/Payment | LMS-036 |
+| IMG-24 | image24.png | Razorpay checkout | ₹12,999 showing instead of ₹5,000 entered | Installment/Payment | LMS-036 |
+| IMG-25 | image25.png | Financial summary | "No financial document!" | Ledger/UI | LMS-038 |
+| IMG-26 | image26.png | Installment payment page | ₹12,999 Total Payment, editable amount field (5000) | Installment/UI | LMS-036 |
+| IMG-27 | image27.png | Checkout page | ₹5,332 instead of ₹21,999 course price | Checkout/Legacy | LMS-035 |
+| IMG-28 | image28.png | Legacy installment page | 3 installments: Upfront Paid, 2nd+3rd Unpaid, overview wrong | Installment/Ledger | LMS-037 |
+| IMG-29 | image29.png | Support ticket detail | Offline payment ticket Approved but "Pending Processing" | Support/State | LMS-039 |
+| IMG-30 | image30.png | UPE Purchase Details #20848 | ₹18,150 balance, "Pending payment" status, EMI Plan Active | UPE/UI | LMS-042 |
+| IMG-31 | image31.png | Installment overview | Upfront paid but all showing Unpaid, overview not updated | Installment/Ledger | LMS-037 |
+| IMG-32 | image32.png | Admin support ticket | Offline/Cash Payment — "Error Failed to update" on Complete | Support/UPE | LMS-034 |
+| IMG-33 | image33.png | Dashboard | My Purchases shown but no access extension/temp access info | Access/UI | LMS-043 |
+| IMG-34 | image34.png | Installment payment page | ₹55,000 Total Payment, editable amount field (18150) | Installment/UI | LMS-036 |
+| IMG-35 | image35.png | UPE EMI Plan Details | Only 2 installments shown, Paid=₹18,150 | Installment/UPE | LMS-042 |
+| IMG-36 | image36.png | Legacy installment page | 3 installments shown vs UPE showing 2 | Installment/UPE | LMS-042 |
+| IMG-37 | image37.png | Course detail page | ₹21,999 price shown | UI | INFO (correct) |
 
-## Verification Checklist
+---
 
-### P0 Fixes (Must verify before deploy)
-- [ ] **LMS-014/017 Enum**: Run `php artisan migrate` — confirm no SQLSTATE 1265 errors on course_extension / post_purchase_coupon requests
-- [ ] **LMS-019/030 Coupon Scope**: Apply a coupon with `source='all'` on checkout — should validate successfully
-- [ ] **LMS-006/020/031 Coupon Math**: Apply 10% coupon on ₹14,999 course → should see ₹13,499.10 (not ₹12,999)
-- [ ] **LMS-028 Coupon Usage**: Use a coupon with `usable_times=1`, purchase → second use should be rejected
-- [ ] **LMS-001/004 Upfront Status**: View installment detail after upfront payment → should show "Paid"
-- [ ] **LMS-002 Pay Upcoming Part**: Click "Pay Upcoming Part" → payment page should show step amount, not full price
-- [ ] **LMS-011 Refund Form**: Submit refund form with invalid data → should show validation errors
+## Bug Register (20-02-26 Round)
 
-### P1 Fixes
-- [ ] **LMS-003 Financial Summary**: View Panel > Financial for user with UPE purchases → should show records
-- [ ] **LMS-025 Mentor Access**: Admin marks mentor access ticket as "completed" → should succeed
-- [ ] **LMS-024 Post-Purchase Coupon**: Admin approves post-purchase coupon ticket → auto-executes, shows "Completed"
-- [ ] **LMS-022 Installment Restructure**: Create restructure ticket for user with installment → shows "Active"
-- [ ] **LMS-009 Offline Payment**: Admin completes offline cash with partial amount → should NOT grant full access
+| ID | Title | Severity | Layer | Root Cause | Status |
+|----|-------|----------|-------|------------|--------|
+| LMS-032 | SQLSTATE 1265: `course_extension` / `installment_restructure` truncated in `upe_payment_requests` | P0 | DB | Enum migration `2026_02_19_180000` exists but not yet run on DB | ⏳ MIGRATION PENDING — run `php artisan migrate` |
+| LMS-033 | SQL error: Unknown column `relative_description` in `new_support_for_asttrolok` | P0 | DB | Column defined in model but missing ALTER migration | ✅ FIXED — migration `2026_02_21_100000` created |
+| LMS-034 | Support completion "Failed to update" for Mentor/Offline/Refund scenarios | P0 | Support/UPE | Generic catch block hid real error; missing tables/columns caused crashes | ✅ FIXED — error toast now shows actual exception; detailed logging added |
+| LMS-035 | Checkout wrong price + fractional paise (₹5,332.32 / ₹50,000.03) | P0 | Checkout/Rounding | Razorpay amount `(int)($amount*100)` produced float artifacts | ✅ FIXED — HALF-UP round to integer INR before ×100 in `createRazorpayOrder()` + `Channel::verify()` |
+| LMS-036 | "Pay Upcoming Part" shows full course amount; Razorpay ignores entered amount | P0 | Installment/Payment | `case 'part'` used `getPrice()` (full price); blade amount field was editable | ✅ FIXED — server calculates next unpaid step amount; blade field is readonly with computed upfront |
+| LMS-037 | Installment upfront paid but shows Unpaid / overview not updated | P0 | Installment/Ledger | `InstallmentOrderPayment` status not reconciled from actual payments | ✅ FIXED — `show()` reconciles upfront + all steps from UPE ledger balance + legacy payments |
+| LMS-038 | Financial summary "No financial document!" | P1 | Ledger/UI | Blade only showed legacy `$accountings`; UPE-only purchases invisible | ✅ FIXED — blade now shows `$amount_paid` payment history section when available |
+| LMS-039 | Support ticket stuck "Pending Processing" after admin approval | P1 | Support/State | Auto-execute only fired if `coupon_code` already persisted; admin couldn't set it at approval | ✅ FIXED — admin can supply `coupon_code` at approval time; auto-execute fires immediately |
+| LMS-040 | Expired course not shown in extension dropdown | P1 | Support/Access | `getPurchasedCoursesIds()` filters out expired UPE sales | ✅ FIXED — separately queries expired UPE sales and merges into dropdown list |
+| LMS-041 | Coupon discount calculation wrong (20% off ₹14,999→₹10,999) + max_amount not enforced | P0 | Coupon/Ledger | Used `$webinar->price` (base) not `getPrice()` (after offers); no HALF-UP rounding | ✅ FIXED — all branches use `getPrice()` + `(int) round(..., PHP_ROUND_HALF_UP)` |
+| LMS-042 | UPE EMI shows 2 installments vs legacy showing 3 | P2 | Installment/UPE | UPE and legacy installment plans configured with different step counts | ℹ️ DATA CONFIG — admin must align UPE installment plan step count with legacy |
+| LMS-043 | Dashboard missing access extension / temp access info | P2 | Access/UI | Dashboard only queried `WebinarAccessControl`, not `UpeSupportAction` | ✅ FIXED — dashboard now merges UPE temp access + extension data into `$extendedAccesses` |
 
-### P2 Fixes
-- [ ] **LMS-029 Cancel Spinner**: Open Razorpay checkout, cancel → spinner disappears
-- [ ] **LMS-027 Free Trial**: Click "Start Free Trial" → navigates to payment page (not 404)
-- [ ] **LMS-026 Course Price**: Verify special offer settings for affected course
+---
 
-## Files Modified
+## Previous Round (19-02-26) — Fixes Already Applied
+
+| ID | Title | Status |
+|----|-------|--------|
+| LMS-001 | Upfront installment shows "Unpaid" when already paid | ✅ FIXED |
+| LMS-002 | "Pay Upcoming Part" shows full course amount | ✅ FIXED (partial — still recurring per LMS-036) |
+| LMS-003 | Financial summary empty | ✅ FIXED (partial — UPE fallback added but still empty per LMS-038) |
+| LMS-006 | Coupon 50% discount math wrong | ✅ FIXED |
+| LMS-014 | SQLSTATE enum truncation "course_extension" | ✅ FIXED (migration created, needs `php artisan migrate`) |
+| LMS-019 | Coupon `source='all'` rejected | ✅ FIXED |
+| LMS-024 | Post-purchase coupon stuck "Pending Processing" | ✅ FIXED (partial — still occurring per LMS-039) |
+| LMS-025 | Mentor access "Failed to update" for Admin | ✅ FIXED (partial — still occurring per LMS-034) |
+| LMS-028 | Coupon usable times=1 but can use twice | ✅ FIXED |
+
+---
+
+## Dual-Write Gap Analysis
+
+| Write Path | Legacy | UPE | Ledger | Status |
+|-----------|--------|-----|--------|--------|
+| Cart checkout (Razorpay) | ✅ Sale | ✅ UpeSale (via hook) | ✅ Ledger | OK |
+| Direct payment (PaymentController) | ✅ Sale | ✅ UpeSale (CheckoutService) | ✅ Ledger | OK |
+| Part payment (PartPaymentController) | ✅ WebinarPartPayment | ⚠️ Only on step clearance | ⚠️ Only on step clearance | BRIDGED |
+| Support: Relative/Mentor access | ✅ Sale | ✅ UpeSale (SupportUpeBridge) | ❌ No ledger (free) | OK (free=no ledger) |
+| Support: Offline payment | ✅ Sale/PartPayment | ✅ UpeSale (SupportUpeBridge) | ✅ Ledger entry | OK |
+| Support: Refund | ✅ Sale soft-revoke | ✅ UPE (SupportUpeBridge) | ✅ Refund ledger | OK |
+| Support: Course extension | ✅ WebinarAccessControl | ✅ UpeSale (SupportUpeBridge) | ✅ Extension ledger | OK |
+| Support: Temp access | ✅ WebinarAccessControl | ✅ UpeSupportAction | ❌ No ledger (temp) | OK |
+| Installment upfront (Razorpay) | ✅ InstallmentOrderPayment | ✅ UpeSale (hook) | ✅ Ledger | VERIFY status reconcile |
+
+## Files Modified (20-02-26 Round)
 
 | File | Bugs Fixed |
 |------|-----------|
-| `database/migrations/2026_02_19_180000_fix_upe_payment_requests_enum.php` | LMS-014, LMS-017 |
-| `app/Models/Discount.php` | LMS-019, LMS-030, LMS-028 |
-| `app/Http/Controllers/Web/WebinarController.php` | LMS-006, LMS-020, LMS-031 |
-| `app/Http/Controllers/Panel/InstallmentsController.php` | LMS-001, LMS-004 |
-| `app/Http/Controllers/Panel/AccountingController.php` | LMS-003 |
-| `app/Http/Controllers/Admin/AdminSupportController.php` | LMS-025, LMS-024, LMS-009 |
-| `app/Http/Controllers/Panel/NewSupportForAsttrolokController.php` | LMS-022 |
-| `public/assets/design_1/js/unified-payment.js` | LMS-029 |
-| `resources/views/web/default2/panel/upe/purchase_detail.blade.php` | LMS-011 |
-| `resources/views/web/default2/panel/financial/installments/details.blade.php` | LMS-002 |
-| `resources/views/web/default2/subscription/index.blade.php` | LMS-027 |
-| `resources/views/web/default/subscription/index.blade.php` | LMS-027 |
+| `database/migrations/2026_02_21_100000_add_relative_description_to_support_table.php` (NEW) | LMS-033 |
+| `app/Http/Controllers/Admin/AdminSupportController.php` | LMS-034, LMS-039 |
+| `app/Http/Controllers/Web/PartPaymentController.php` | LMS-035, LMS-036 |
+| `app/PaymentChannels/Drivers/Razorpay/Channel.php` | LMS-035 |
+| `app/Http/Controllers/Web/CartController.php` | LMS-041 |
+| `resources/views/web/default2/installment/partPayment/card.blade.php` | LMS-036 |
+| `resources/views/web/default/installment/partPayment/card2.blade.php` | LMS-036 |
+| `app/Http/Controllers/Panel/InstallmentsController.php` | LMS-037 |
+| `resources/views/web/default2/panel/financial/summary.blade.php` | LMS-038 |
+| `app/Http/Controllers/Panel/NewSupportForAsttrolokController.php` | LMS-040 |
+| `app/Http/Controllers/Panel/DashboardController.php` | LMS-043 |
+| `BUG_REGISTER.md` | Documentation |
+
+## Ledger Bypass Points (Status After Fixes)
+
+1. **Installment display**: ~~Legacy status not reconciled~~ → ✅ FIXED — `InstallmentsController::show()` now reconciles from UPE ledger
+2. **Financial summary**: ~~Legacy Accounting empty~~ → ✅ FIXED — blade shows `$amount_paid` section when legacy is empty
+3. **Coupon discount**: `handleDiscountPrice()` calculates discount but doesn't create ledger entry at calculation time (only at payment) — BY DESIGN
+4. **Fractional paise**: ~~`Channel::verify()` stores floats~~ → ✅ FIXED — HALF-UP rounded to integer INR
+
+## Secure vs Legacy Path Usage
+
+| UI Action | Currently Calls | Should Call |
+|-----------|----------------|-------------|
+| Admin ticket completion | `AdminSupportController@updateStatus` | Same (has SupportUpeBridge dual-write) |
+| Support ticket verification | `AdminSupportController@updateStatusSecure` → `SupportRequestService@transition` | Correct |
+| User creates support request | `NewSupportForAsttrolokController@store` | Same (creates `upe_payment_requests` for extension/restructure) |
+
+## Reconciliation Plan
+
+1. Run `php artisan migrate` to apply enum fix + missing columns
+2. Run `php artisan upe:sync-part-payments` to sync legacy part payments
+3. Run `php artisan upe:sync-access-control` to sync WebinarAccessControl
+4. Verify installment status reconciliation from UPE ledger
+5. Verify financial summary shows UPE data for all users

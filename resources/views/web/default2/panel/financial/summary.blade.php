@@ -125,8 +125,55 @@
             </div>
 
         </section>
-    @else
+    @endif
 
+    {{-- LMS-038 FIX: Show payment history from $amount_paid (includes UPE sales) when available --}}
+    @if(!empty($amount_paid) && count($amount_paid) > 0)
+        <section class="mt-25">
+            <h2 class="section-title">{{ trans('financial.payment_history') ?? 'Payment History' }}</h2>
+
+            <div class="panel-section-card py-20 px-25 mt-20">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table class="table text-center custom-table">
+                                <thead>
+                                <tr>
+                                    <th>{{ trans('public.title') }}</th>
+                                    <th class="text-center">{{ trans('panel.amount') }}</th>
+                                    <th class="text-center">{{ trans('public.type') }}</th>
+                                    <th class="text-center">{{ trans('public.date') }}</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @foreach($amount_paid as $payment)
+                                    <tr>
+                                        <td class="text-left">
+                                            <span class="font-weight-500">{{ $payment[2] ?? '---' }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="font-16 font-weight-bold text-primary">{{ handlePrice($payment[0] ?? 0) }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="text-gray">{{ ucfirst($payment[5] ?? 'course') }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            @if(!empty($payment[1]))
+                                                <span>{{ dateTimeFormat($payment[1], 'j M Y') }}</span>
+                                            @else
+                                                <span>-</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    @elseif($accountings->count() == 0)
         @include(getTemplate() . '.includes.no-result',[
             'file_name' => 'financial.png',
             'title' => trans('financial.financial_summary_no_result'),

@@ -226,6 +226,41 @@ try {
         }
     }
 
+    // LMS-043 FIX: Also include UPE temporary access and extension info
+    try {
+        $upeSupportActions = \App\Models\PaymentEngine\UpeSupportAction::where('user_id', $user->id)
+            ->whereIn('action_type', ['temporary_access', 'course_extension'])
+            ->where('status', 'executed')
+            ->get();
+
+        foreach ($upeSupportActions as $action) {
+            $webinarId = $action->webinar_id;
+            if (!$webinarId) continue;
+
+            if ($action->action_type === 'temporary_access' && !empty($action->expires_at)) {
+                // Use the later of existing access or UPE temp access
+                $upeExpire = $action->expires_at instanceof \Carbon\Carbon
+                    ? $action->expires_at->timestamp
+                    : strtotime($action->expires_at);
+                if (!isset($extendedAccesses[$webinarId]) || $upeExpire > $extendedAccesses[$webinarId]) {
+                    $extendedAccesses[$webinarId] = $upeExpire;
+                }
+            } elseif ($action->action_type === 'course_extension' && !empty($action->metadata)) {
+                $meta = is_array($action->metadata) ? $action->metadata : json_decode($action->metadata, true);
+                if (!empty($meta['new_valid_until'])) {
+                    $newExpire = strtotime($meta['new_valid_until']);
+                    if (!isset($extendedAccesses[$webinarId]) || $newExpire > $extendedAccesses[$webinarId]) {
+                        $extendedAccesses[$webinarId] = $newExpire;
+                    }
+                }
+            }
+        }
+    } catch (\Throwable $e2) {
+        \Log::warning('LMS-043: Could not fetch UPE support actions for dashboard', [
+            'error' => $e2->getMessage(),
+        ]);
+    }
+
 } catch (\Throwable $e) {
     \Log::error('Dashboard extension fetch failed', [
         'user_id' => $user->id ?? null,

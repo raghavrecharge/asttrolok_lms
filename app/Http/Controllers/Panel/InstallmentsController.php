@@ -280,14 +280,62 @@ class InstallmentsController extends Controller
                     }
                   $paidAmount = $totalSaleAmount  + (isset($WebinarPartPayment)?$WebinarPartPayment->total_amount:0);
 
-                // Reconcile upfront payment status if payment was actually made
+                // LMS-037 FIX: Also include UPE ledger balance for this course
+                // UPE ledger may have credits not reflected in legacy Sale.total_amount
+                try {
+                    $upeProduct = \App\Models\PaymentEngine\UpeProduct::where('external_id', $order->webinar_id)
+                        ->where('external_type', 'webinar')
+                        ->first();
+                    if ($upeProduct) {
+                        $upeSale = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
+                            ->where('product_id', $upeProduct->id)
+                            ->whereIn('status', ['active', 'pending_payment', 'completed'])
+                            ->first();
+                        if ($upeSale) {
+                            $ledgerBalance = app(\App\Services\PaymentEngine\PaymentLedgerService::class)->balance($upeSale->id);
+                            // Use the higher of legacy vs UPE amount to avoid double-counting
+                            $paidAmount = max($paidAmount, (int) $ledgerBalance);
+                        }
+                    }
+                } catch (\Exception $e) {
+                    \Log::warning('LMS-037: Could not fetch UPE ledger balance for installment reconciliation', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+
+                // LMS-037 FIX: Reconcile ALL payment statuses from actual paid amount
+                $itemPrice = $order->getItemPrice();
+                $runningPaid = $paidAmount;
+
+                // Reconcile upfront payment
                 $upfrontPayment = $orderPayments->where('type', 'upfront')->first();
-                if ($upfrontPayment && $upfrontPayment->status !== 'paid' && $paidAmount > 0) {
-                    $upfrontAmount = $order->installment ? $order->installment->getUpfront($order->getItemPrice()) : 0;
-                    if ($upfrontAmount > 0 && $paidAmount >= $upfrontAmount) {
+                if ($upfrontPayment && $order->installment) {
+                    $upfrontAmount = $order->installment->getUpfront($itemPrice);
+                    if ($upfrontPayment->status !== 'paid' && $runningPaid >= $upfrontAmount && $upfrontAmount > 0) {
                         $upfrontPayment->update(['status' => 'paid']);
                     }
+                    if ($upfrontPayment->status === 'paid' || $runningPaid >= $upfrontAmount) {
+                        $runningPaid -= $upfrontAmount;
+                    }
                 }
+
+                // Reconcile step payments sequentially
+                if ($order->installment && $order->installment->steps) {
+                    foreach ($order->installment->steps as $step) {
+                        $stepPaymentRecord = $orderPayments->where('step_id', $step->id)->first();
+                        $stepPrice = $step->getPrice($itemPrice);
+                        if ($stepPaymentRecord && $stepPaymentRecord->status !== 'paid' && $runningPaid >= $stepPrice && $stepPrice > 0) {
+                            $stepPaymentRecord->update(['status' => 'paid']);
+                            $runningPaid -= $stepPrice;
+                        } elseif ($stepPaymentRecord && $stepPaymentRecord->status === 'paid') {
+                            $runningPaid -= $stepPrice;
+                        }
+                    }
+                }
+
+                // Refresh payments collection after reconciliation
+                $orderPayments = InstallmentOrderPayment::where('installment_order_id', $order->id)->get();
                   
             if (!empty($order) and !in_array($order->status, ['refunded', 'canceled'])) {
 
