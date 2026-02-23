@@ -1061,6 +1061,39 @@ class PartPaymentController extends Controller
                         'amount' => $amount,
                         'created_at' => date('Y-m-d H:i:s')
                     ]);
+
+                        // UPE: record payment via CheckoutService (updates schedule + legacy InstallmentOrderPayment)
+                        try {
+                            $nextPayment = \App\Models\InstallmentOrderPayment::where('installment_order_id', $order->id)
+                                ->where('status', '!=', 'paid')
+                                ->orderBy('id')
+                                ->first();
+
+                            if ($nextPayment) {
+                                $checkout = app(\App\Services\PaymentEngine\CheckoutService::class);
+                                $checkout->processInstallmentPayment(
+                                    $user->id,
+                                    $itemId,
+                                    $amount,
+                                    $nextPayment->id,
+                                    'razorpay',
+                                    $data['razorpay_payment_id'] ?? null
+                                );
+                                Log::info('UPE installment payment recorded via CheckoutService', [
+                                    'user_id' => $user->id,
+                                    'webinar_id' => $itemId,
+                                    'amount' => $amount,
+                                    'installment_payment_id' => $nextPayment->id,
+                                ]);
+                                return true;
+                            }
+                        } catch (\Exception $e) {
+                            Log::error('UPE installment payment recording failed, falling through to legacy: ' . $e->getMessage(), [
+                                'user_id' => $user->id,
+                                'webinar_id' => $itemId,
+                                'amount' => $amount,
+                            ]);
+                        }
                         }
 
                     $part_amount=0;

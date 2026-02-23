@@ -380,29 +380,55 @@ class CheckoutService
             ->first();
 
         if ($existingSale) {
-            // This is a subsequent installment payment — just add ledger entry
-            $this->ledger->append(
-                $existingSale->id,
-                UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
-                UpeLedgerEntry::DIR_CREDIT,
-                $amount,
-                $paymentMethod,
-                $razorpayPaymentId,
-                null, // gatewayResponse
-                null, // referenceType
-                null, // referenceId
-                "Installment payment for: {$webinar->slug}",
-                null, // processedBy
-                $razorpayPaymentId ? "rp_{$razorpayPaymentId}_inst_{$installmentPaymentId}" : "inst_{$userId}_{$installmentPaymentId}_" . time()
-            );
-
-            // Check if fully paid → activate
+            // Subsequent installment payment — use InstallmentEngine for proper schedule updates
             $plan = UpeInstallmentPlan::where('sale_id', $existingSale->id)->first();
+            $engineResult = null;
+
             if ($plan) {
+                $hasUnpaidSchedules = $plan->schedules()
+                    ->whereIn('status', ['due', 'partial', 'overdue', 'upcoming'])
+                    ->exists();
+
+                if ($hasUnpaidSchedules) {
+                    $engine = app(InstallmentEngine::class);
+                    $engineResult = $engine->recordPayment(
+                        $plan,
+                        $amount,
+                        $paymentMethod,
+                        $razorpayPaymentId,
+                        null,
+                        null
+                    );
+                } else {
+                    // Fallback: no unpaid schedules, record raw ledger entry
+                    $this->ledger->append(
+                        $existingSale->id,
+                        UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
+                        UpeLedgerEntry::DIR_CREDIT,
+                        $amount,
+                        $paymentMethod,
+                        $razorpayPaymentId,
+                        null, null, null,
+                        "Installment payment for: {$webinar->slug}",
+                        null,
+                        $razorpayPaymentId ? "rp_{$razorpayPaymentId}_inst_{$installmentPaymentId}" : "inst_{$userId}_{$installmentPaymentId}_" . time()
+                    );
+                }
+
+                // Check if fully paid → activate
                 $totalPaid = $plan->totalPaid();
                 if ($totalPaid >= $plan->total_amount) {
                     $existingSale->update(['status' => 'active']);
                 }
+            }
+
+            // Update legacy InstallmentOrderPayment status
+            $installmentPaymentRecord = \App\Models\InstallmentOrderPayment::find($installmentPaymentId);
+            if ($installmentPaymentRecord && $installmentPaymentRecord->status !== 'paid') {
+                $installmentPaymentRecord->update([
+                    'status' => 'paid',
+                    'payment_date' => time(),
+                ]);
             }
 
             $legacySale = Sale::create([
@@ -417,7 +443,29 @@ class CheckoutService
                 'created_at' => time(),
             ]);
 
+            Accounting::create([
+                'user_id' => $webinar->creator_id ?? 1,
+                'installment_payment_id' => $installmentPaymentId,
+                'sale_id' => $legacySale->id,
+                'amount' => $amount,
+                'type' => 'addiction',
+                'description' => "Installment step payment",
+                'is_affiliate' => false,
+                'is_cashback' => false,
+                'store_type' => 'automatic',
+                'tax' => 0,
+                'commission' => 0,
+                'discount' => 0,
+                'created_at' => time(),
+            ]);
+
             $this->clearAccessCache($userId, $upeProduct->id);
+
+            Log::info('CheckoutService: Subsequent installment payment recorded', [
+                'user_id' => $userId, 'webinar_id' => $webinarId,
+                'upe_sale_id' => $existingSale->id, 'amount' => $amount,
+                'engine_result' => $engineResult,
+            ]);
 
             return ['upe_sale' => $existingSale, 'legacy_sale' => $legacySale, 'already_exists' => true];
         }
@@ -451,7 +499,7 @@ class CheckoutService
         $totalAmount = $webinar->price ?? $amount;
 
         if ($installmentOrder && $installmentOrder->installment) {
-            $totalInstallments = ($installmentOrder->installment->steps_count ?? 1) + 1; // +1 for upfront
+            $totalInstallments = $installmentOrder->installment->steps()->count() + 1; // +1 for upfront
             $totalAmount = $installmentOrder->item_price ?? $webinar->price ?? $amount;
         }
 
@@ -473,6 +521,28 @@ class CheckoutService
             'status' => 'paid',
             'paid_at' => now(),
         ]);
+
+        // Step schedules (due/upcoming)
+        if ($installmentOrder && $installmentOrder->installment) {
+            $steps = $installmentOrder->installment->steps()->orderBy('order')->orderBy('id')->get();
+            $baseDueDate = $installmentOrder->created_at
+                ? \Carbon\Carbon::createFromTimestamp($installmentOrder->created_at)
+                : now();
+            $seq = 2;
+            foreach ($steps as $step) {
+                $deadlineDays = (int) $step->deadline;
+                $stepAmount = round($step->getPrice($totalAmount), 2);
+                UpeInstallmentSchedule::create([
+                    'plan_id' => $plan->id,
+                    'sequence' => $seq,
+                    'due_date' => $baseDueDate->copy()->addDays($deadlineDays),
+                    'amount_due' => $stepAmount,
+                    'amount_paid' => 0,
+                    'status' => ($seq === 2) ? 'due' : 'upcoming',
+                ]);
+                $seq++;
+            }
+        }
 
         // Ledger entry for upfront payment
         $this->ledger->append(
