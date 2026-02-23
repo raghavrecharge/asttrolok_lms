@@ -224,6 +224,7 @@ Route::group(['namespace' => 'Web', 'middleware' => ['check_mobile_app', 'impers
     Route::get('/landingpage/{slug}', 'WebinarController@landingpage');
     Route::get('/register-course/{slug}', 'InstallmentsController@partPayment');
     Route::post('/register-course/{slug}', 'RegisterController@registerForCourse');
+    Route::get('/quick-pay/{slug}', 'QuickPayController@show');
     Route::get('/sync-installment-payments/{orderId?}', [Web\InstallmentPaymentSyncController::class, 'syncPaymentsFromPartPayments'])->name('sync.installment.payments');
     Route::post('/sync-installment-order/{orderId}', [Web\InstallmentPaymentSyncController::class, 'syncOrder'])->name('sync.installment.order');
     Route::get('/process-sub-step-payment', 'InstallmentsController@processSubStepPayment');

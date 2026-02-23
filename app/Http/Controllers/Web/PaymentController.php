@@ -59,7 +59,7 @@ class PaymentController extends Controller
     {
         Log::info('initiatePayment');
         $validated = $request->validate([
-            'payment_type' => 'required|in:subscription,webinar,cart,part,meeting,product,bundle,installment',
+            'payment_type' => 'required|in:subscription,webinar,cart,part,meeting,product,bundle,installment,quick_pay',
             'item_id' => 'required',
             'name' => 'required|string',
             'email' => 'required|email',
@@ -519,6 +519,21 @@ class PaymentController extends Controller
                     'is_installment' => true,
                 ];
 
+            case 'quick_pay':
+                $webinar = Webinar::findOrFail($itemId);
+                $quickPayAmount = (float) ($validated['amount'] ?? $webinar->getPrice());
+                $installmentIdForQuickPay = $validated['installment_id'] ?? null;
+                return [
+                    'type' => 'quick_pay',
+                    'item' => $webinar,
+                    'webinar_id' => $webinar->id,
+                    'installment_id' => $installmentIdForQuickPay,
+                    'discount' => 0,
+                    'amount' => $quickPayAmount,
+                    'description' => "Quick Pay: {$webinar->title}",
+                    'user_data' => $validated,
+                ];
+
             default:
                 throw new \Exception('Invalid payment type');
         }
@@ -628,6 +643,10 @@ class PaymentController extends Controller
             case 'installment':
                 $itemData['installment_payment_id'] = $paymentData['installment_payment_id'];
                 break;
+            case 'quick_pay':
+                $itemData['webinar_id'] = $paymentData['webinar_id'];
+                $itemData['installment_type'] = 'quick_pay';
+                break;
         }
 
         return OrderItem::create($itemData);
@@ -675,6 +694,12 @@ class PaymentController extends Controller
                 $notes['installment_payment_id'] = $paymentData['installment_payment_id'];
                 $notes['installment_step'] = $paymentData['installment_step'];
                 $notes['is_installment'] = true;
+                break;
+            case 'quick_pay':
+                $notes['webinar_id'] = $paymentData['webinar_id'];
+                $notes['installment_id'] = $paymentData['installment_id'];
+                $notes['amount'] = $paymentData['amount'];
+                $notes['is_quick_pay'] = true;
                 break;
         }
 
@@ -841,6 +866,10 @@ class PaymentController extends Controller
                     $this->processInstallmentPayment($data);
                     break;
 
+                case 'quick_pay':
+                    $this->processQuickPayPayment($data);
+                    break;
+
                 default:
                     throw new \Exception('Unknown payment type: ' . $paymentType);
             }
@@ -944,6 +973,33 @@ class PaymentController extends Controller
         $PartPaymentController = new PartPaymentController();
         $installments = $PartPaymentController->processPartPayment($data);
 
+    }
+
+    protected function processQuickPayPayment($data)
+    {
+        $webinarId = $data['webinar_id'];
+        $userId = $data['user_id'];
+        $installmentId = !empty($data['installment_id']) ? (int) $data['installment_id'] : null;
+        $amount = $this->getTransactionAmount($data['razorpay_payment_id']);
+
+        if (!$installmentId) {
+            $installmentId = (int) \App\Models\Installment::where('enable', true)->value('id');
+        }
+
+        Log::info('processQuickPayPayment', [
+            'user_id' => $userId, 'webinar_id' => $webinarId,
+            'installment_id' => $installmentId, 'amount' => $amount,
+        ]);
+
+        $checkout = app(\App\Services\PaymentEngine\CheckoutService::class);
+        $result = $checkout->processQuickPayment(
+            $userId, $webinarId, $amount, $installmentId, 'razorpay', $data['razorpay_payment_id']
+        );
+
+        Log::info('Quick pay processed', [
+            'upe_sale_id' => $result['upe_sale']->id,
+            'already_exists' => $result['already_exists'],
+        ]);
     }
 
     protected function processWebinarPayment($data)

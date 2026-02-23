@@ -60,7 +60,7 @@ class PartPaymentController extends Controller
     public function initiatePayment(Request $request)
     {
         $validated = $request->validate([
-            'payment_type' => 'required|in:subscription,webinar,cart,part,meeting,product,bundle,installment',
+            'payment_type' => 'required|in:subscription,webinar,cart,part,meeting,product,bundle,installment,quick_pay',
             'item_id' => 'required',
             'name' => 'required|string',
             'email' => 'required|email',
@@ -244,6 +244,20 @@ class PartPaymentController extends Controller
                     'installment_id' => $installmentIdForPart,
                     'amount' => $partAmount,
                     'description' => "Course: {$webinar->title}",
+                    'user_data' => $validated,
+                ];
+
+            case 'quick_pay':
+                $webinar = Webinar::findOrFail($itemId);
+                $quickPayAmount = (float) ($validated['amount'] ?? $webinar->getPrice());
+                $installmentIdForQuickPay = $validated['installment_id'] ?? null;
+                return [
+                    'type' => 'quick_pay',
+                    'item' => $webinar,
+                    'webinar_id' => $webinar->id,
+                    'installment_id' => $installmentIdForQuickPay,
+                    'amount' => $quickPayAmount,
+                    'description' => "Quick Pay: {$webinar->title}",
                     'user_data' => $validated,
                 ];
 
@@ -485,6 +499,10 @@ class PartPaymentController extends Controller
                 $itemData['webinar_id'] = $paymentData['webinar_id'];
                 $itemData['installment_type'] = $paymentData['type'];
                 break;
+            case 'quick_pay':
+                $itemData['webinar_id'] = $paymentData['webinar_id'];
+                $itemData['installment_type'] = 'quick_pay';
+                break;
             case 'bundle':
                 $itemData['bundle_id'] = $paymentData['bundle_id'];
                 break;
@@ -528,6 +546,12 @@ class PartPaymentController extends Controller
                 $notes['webinar_id'] = $paymentData['webinar_id'];
                 $notes['installment_id'] = $paymentData['installment_id'];
                 $notes['amount'] = $paymentData['amount'];
+                break;
+            case 'quick_pay':
+                $notes['webinar_id'] = $paymentData['webinar_id'];
+                $notes['installment_id'] = $paymentData['installment_id'];
+                $notes['amount'] = $paymentData['amount'];
+                $notes['is_quick_pay'] = true;
                 break;
             case 'bundle':
                 $notes['bundle_id'] = $paymentData['bundle_id'];
