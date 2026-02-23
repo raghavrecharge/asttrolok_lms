@@ -11,7 +11,15 @@
 
 <div class="price-box p-10 shadow-xs mb-20" style="border: 1px solid #e1e1e1;border-radius: 10px;">
 <span class="font-30 font-weight-bold">Total Amount </span>
-<span class="f-right font-30 text-primary" style="    float: right;">{{ handlePrice($totalPayments) }}/-</span>
+@php
+    $originalTotal = isset($cash) ? $installment->totalPayments($cash) : $totalPayments;
+@endphp
+<span class="f-right" style="float: right;">
+    <span class="font-30 text-primary">{{ handlePrice($totalPayments) }}/-</span>
+    @if($originalTotal > $totalPayments)
+        <span class="font-16 text-gray" style="text-decoration: line-through;">{{ handlePrice($originalTotal) }}</span>
+    @endif
+</span>
 </div>
 
                 @if($item->slug!='astrology-basic-level')

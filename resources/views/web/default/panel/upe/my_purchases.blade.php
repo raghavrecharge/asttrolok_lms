@@ -60,7 +60,16 @@
                         <div class="mt-15 d-flex align-items-center justify-content-between">
                             <div>
                                 <span class="font-14 text-gray">Amount:</span>
-                                <span class="font-16 font-weight-bold">{{ handlePrice($sale->base_fee_snapshot) }}</span>
+                                @php
+                                    $displayPrice = $sale->installmentPlan
+                                        ? $sale->installmentPlan->total_amount
+                                        : ($balances[$sale->id] ?? $sale->base_fee_snapshot);
+                                @endphp
+                                <span class="font-16 font-weight-bold {{ $sale->base_fee_snapshot > $displayPrice ? 'text-primary' : '' }}">{{ handlePrice($displayPrice) }}</span>
+                                @if($sale->base_fee_snapshot > $displayPrice)
+                                    <span class="font-12 text-gray" style="text-decoration: line-through;">{{ handlePrice($sale->base_fee_snapshot) }}</span>
+                                    <span class="badge badge-warning font-10 ml-5">Coupon Applied</span>
+                                @endif
                             </div>
                             <div>
                                 <span class="font-14 text-gray">Balance:</span>

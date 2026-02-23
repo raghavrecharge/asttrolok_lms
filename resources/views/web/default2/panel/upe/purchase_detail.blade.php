@@ -43,13 +43,26 @@
                     <div class="d-flex justify-content-between py-5 border-bottom">
                         <span class="text-gray">Course Price</span>
                         <span class="font-weight-500">
-                            @if($sale->installmentPlan)
-                                ₹{{ number_format($sale->installmentPlan->total_amount, 2) }}
-                            @else
-                                ₹{{ number_format($sale->base_fee_snapshot, 2) }}
+                            @php
+                                $displayPrice = $sale->installmentPlan
+                                    ? $sale->installmentPlan->total_amount
+                                    : $ledgerSummary['net_balance'];
+                            @endphp
+                            <span class="{{ $sale->base_fee_snapshot > $displayPrice ? 'text-primary' : '' }}">₹{{ number_format($displayPrice, 2) }}</span>
+                            @if($sale->base_fee_snapshot > $displayPrice)
+                                <span class="font-12 text-gray ml-5" style="text-decoration: line-through;">₹{{ number_format($sale->base_fee_snapshot, 2) }}</span>
                             @endif
                         </span>
                     </div>
+                    @if($sale->base_fee_snapshot > $displayPrice)
+                        <div class="d-flex justify-content-between py-5 border-bottom">
+                            <span class="text-gray">Discount</span>
+                            <span>
+                                <span class="badge badge-warning">Coupon Applied</span>
+                                <span class="font-weight-500 text-primary ml-5">₹{{ number_format($sale->base_fee_snapshot - $displayPrice, 2) }} saved</span>
+                            </span>
+                        </div>
+                    @endif
                     <div class="d-flex justify-content-between py-5 border-bottom">
                         <span class="text-gray">Access Status</span>
                         <span>
@@ -138,9 +151,19 @@
                             </div>
                             <div class="col-6">
                                 <div class="font-12 text-gray">Course Price</div>
-                                <div class="font-20 font-weight-bold">₹{{ number_format($sale->base_fee_snapshot, 2) }}</div>
+                                @if($sale->base_fee_snapshot > $ledgerSummary['net_balance'])
+                                    <div class="font-20 font-weight-bold" style="text-decoration: line-through; color: #aaa;">₹{{ number_format($sale->base_fee_snapshot, 2) }}</div>
+                                @else
+                                    <div class="font-20 font-weight-bold">₹{{ number_format($sale->base_fee_snapshot, 2) }}</div>
+                                @endif
                             </div>
                         </div>
+                        @if($sale->base_fee_snapshot > $ledgerSummary['net_balance'])
+                            <div class="text-center mt-10">
+                                <span class="badge badge-warning">Coupon Applied</span>
+                                <span class="font-12 text-primary font-weight-500 ml-5">₹{{ number_format($sale->base_fee_snapshot - $ledgerSummary['net_balance'], 2) }} saved</span>
+                            </div>
+                        @endif
                     </div>
                 @endif
 

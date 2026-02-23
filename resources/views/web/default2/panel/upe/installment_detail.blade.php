@@ -37,8 +37,22 @@
                     </div>
                     <div class="d-flex justify-content-between py-5 border-bottom">
                         <span class="text-gray">Total Amount</span>
-                        <span class="font-weight-bold">₹{{ number_format($plan->total_amount, 2) }}</span>
+                        <span class="font-weight-bold">
+                            <span class="text-primary">₹{{ number_format($plan->total_amount, 2) }}</span>
+                            @if($plan->sale && $plan->sale->base_fee_snapshot > $plan->total_amount)
+                                <span class="font-12 text-gray font-weight-normal ml-5" style="text-decoration: line-through;">₹{{ number_format($plan->sale->base_fee_snapshot, 2) }}</span>
+                            @endif
+                        </span>
                     </div>
+                    @if($plan->sale && $plan->sale->base_fee_snapshot > $plan->total_amount)
+                        <div class="d-flex justify-content-between py-5 border-bottom">
+                            <span class="text-gray">Discount</span>
+                            <span>
+                                <span class="badge badge-warning">Coupon Applied</span>
+                                <span class="font-weight-500 text-primary ml-5">₹{{ number_format($plan->sale->base_fee_snapshot - $plan->total_amount, 2) }} saved</span>
+                            </span>
+                        </div>
+                    @endif
                     <div class="d-flex justify-content-between py-5 border-bottom">
                         <span class="text-gray">Installments</span>
                         <span>{{ $plan->num_installments }}</span>
@@ -86,6 +100,7 @@
                                     <th>Amount</th>
                                     <th>Paid</th>
                                     <th>Status</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -125,6 +140,11 @@
                                             <span class="badge {{ $schedStatusClass }} px-10 py-5">{{ ucfirst($schedule->status) }}</span>
                                             @if($schedule->paid_at)
                                                 <div class="font-10 text-gray">{{ \Carbon\Carbon::parse($schedule->paid_at)->format('d M Y') }}</div>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($nextUnpaid && $schedule->id === $nextUnpaid->id && $payUrl)
+                                                <a href="{{ $payUrl }}" class="btn btn-sm btn-primary">Pay Now</a>
                                             @endif
                                         </td>
                                     </tr>

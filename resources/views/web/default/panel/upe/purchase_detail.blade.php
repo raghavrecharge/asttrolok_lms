@@ -33,13 +33,26 @@
                     <div class="d-flex justify-content-between py-5 border-bottom">
                         <span class="text-gray">Course Price</span>
                         <span class="font-weight-500">
-                            @if($sale->installmentPlan)
-                                {{ handlePrice($sale->installmentPlan->total_amount) }}
-                            @else
-                                {{ handlePrice($sale->base_fee_snapshot) }}
+                            @php
+                                $displayPrice = $sale->installmentPlan
+                                    ? $sale->installmentPlan->total_amount
+                                    : $ledgerSummary['net_balance'];
+                            @endphp
+                            <span class="{{ $sale->base_fee_snapshot > $displayPrice ? 'text-primary' : '' }}">{{ handlePrice($displayPrice) }}</span>
+                            @if($sale->base_fee_snapshot > $displayPrice)
+                                <span class="font-12 text-gray ml-5" style="text-decoration: line-through;">{{ handlePrice($sale->base_fee_snapshot) }}</span>
                             @endif
                         </span>
                     </div>
+                    @if($sale->base_fee_snapshot > $displayPrice)
+                        <div class="d-flex justify-content-between py-5 border-bottom">
+                            <span class="text-gray">Discount</span>
+                            <span>
+                                <span class="badge badge-warning">Coupon Applied</span>
+                                <span class="font-weight-500 text-primary ml-5">{{ handlePrice($sale->base_fee_snapshot - $displayPrice) }} saved</span>
+                            </span>
+                        </div>
+                    @endif
                     <div class="d-flex justify-content-between py-5 border-bottom">
                         <span class="text-gray">Access Status</span>
                         <span>
@@ -128,9 +141,19 @@
                             </div>
                             <div class="col-6">
                                 <div class="font-12 text-gray">Course Price</div>
-                                <div class="font-20 font-weight-bold">{{ handlePrice($sale->base_fee_snapshot) }}</div>
+                                @if($sale->base_fee_snapshot > $ledgerSummary['net_balance'])
+                                    <div class="font-20 font-weight-bold" style="text-decoration: line-through; color: #aaa;">{{ handlePrice($sale->base_fee_snapshot) }}</div>
+                                @else
+                                    <div class="font-20 font-weight-bold">{{ handlePrice($sale->base_fee_snapshot) }}</div>
+                                @endif
                             </div>
                         </div>
+                        @if($sale->base_fee_snapshot > $ledgerSummary['net_balance'])
+                            <div class="text-center mt-10">
+                                <span class="badge badge-warning">Coupon Applied</span>
+                                <span class="font-12 text-primary font-weight-500 ml-5">{{ handlePrice($sale->base_fee_snapshot - $ledgerSummary['net_balance']) }} saved</span>
+                            </div>
+                        @endif
                     </div>
                 @endif
 

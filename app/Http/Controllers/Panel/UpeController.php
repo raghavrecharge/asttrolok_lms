@@ -51,7 +51,7 @@ class UpeController extends Controller
             }
         }
 
-        $query = UpeSale::whereIn('id', $deduped)->with('product');
+        $query = UpeSale::whereIn('id', $deduped)->with(['product', 'installmentPlan']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -317,8 +317,21 @@ class UpeController extends Controller
             })
             ->findOrFail($planId);
 
+        // Find the next unpaid schedule for the Pay button
+        $nextUnpaid = $plan->schedules->sortBy('sequence')
+            ->whereNotIn('status', ['paid'])
+            ->first();
+
+        $payUrl = null;
+        if ($nextUnpaid && $plan->sale && $plan->sale->product) {
+            $webinar = \App\Models\Webinar::find($plan->sale->product->external_id);
+            if ($webinar) {
+                $payUrl = url('/register-course/' . $webinar->slug . '?amount=' . $nextUnpaid->amount_due);
+            }
+        }
+
         $pageTitle = 'Installment Plan';
 
-        return view(getTemplate() . '.panel.upe.installment_detail', compact('plan', 'pageTitle'));
+        return view(getTemplate() . '.panel.upe.installment_detail', compact('plan', 'nextUnpaid', 'payUrl', 'pageTitle'));
     }
 }

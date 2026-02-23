@@ -54,7 +54,15 @@
                 @endphp
 
                 <div class="d-flex align-items-center justify-content-center flex-column">
-                    <span class="font-36 font-weight-bold text-primary">{{ handlePrice($totalPayments) }}</span>
+                    @php
+                        $originalTotal = isset($cash) ? $installment->totalPayments($cash) : $totalPayments;
+                    @endphp
+                    <div class="d-flex align-items-baseline justify-content-center">
+                        <span class="font-36 font-weight-bold text-primary">{{ handlePrice($totalPayments) }}</span>
+                        @if($originalTotal > $totalPayments)
+                            <span class="font-16 text-gray ml-10" style="text-decoration: line-through;">{{ handlePrice($originalTotal) }}</span>
+                        @endif
+                    </div>
                     <span class="mt-10 font-12 text-gray">{{ trans('update.total_payment') }} @if($installmentTotalInterest > 0)
                             ({{ trans('update.percent_interest',['percent' => $installmentTotalInterest]) }})
                         @endif</span>
