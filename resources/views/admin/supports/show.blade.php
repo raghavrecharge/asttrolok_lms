@@ -249,7 +249,7 @@
         if (mode === 'percent') html += '<th>Percentage (%)</th>';
         html += '<th>Amount (₹)</th><th>Due Date</th></tr></thead><tbody>';
 
-        const equalAmt = Math.floor((targetAmount / n) * 100) / 100;
+        const equalAmt = Math.floor(targetAmount / n);
         const today = new Date();
 
         for (let i = 0; i < n; i++) {
@@ -257,7 +257,7 @@
             dueDate.setDate(dueDate.getDate() + (i * 30));
             const dateStr = dueDate.toISOString().split('T')[0];
 
-            let amt = (i === n - 1) ? (targetAmount - equalAmt * (n - 1)).toFixed(2) : equalAmt.toFixed(2);
+            let amt = (i === n - 1) ? Math.round(targetAmount - equalAmt * (n - 1)) : equalAmt;
             let pct = (i === n - 1) ? (100 - Math.floor(100/n) * (n-1)).toFixed(1) : (100/n).toFixed(1);
 
             html += '<tr>';
@@ -265,7 +265,7 @@
             if (mode === 'percent') {
                 html += '<td><input type="number" class="form-control form-control-sm restructure-pct" data-idx="'+i+'" value="'+pct+'" step="0.1" min="0" max="100"></td>';
             }
-            html += '<td><input type="number" class="form-control form-control-sm restructure-amt" data-idx="'+i+'" value="'+amt+'" step="0.01" min="0" '+(mode === 'percent' ? 'readonly' : (mode === 'equal' ? 'readonly' : ''))+'></td>';
+            html += '<td><input type="number" class="form-control form-control-sm restructure-amt" data-idx="'+i+'" value="'+amt+'" step="1" min="0" '+(mode === 'percent' ? 'readonly' : (mode === 'equal' ? 'readonly' : ''))+'></td>';
             html += '<td><input type="date" class="form-control form-control-sm restructure-date" data-idx="'+i+'" value="'+dateStr+'" required></td>';
             html += '</tr>';
         }
@@ -289,7 +289,7 @@
         const amts = container.querySelectorAll('.restructure-amt');
         pcts.forEach((pctEl, i) => {
             const pct = parseFloat(pctEl.value) || 0;
-            amts[i].value = (targetAmount * pct / 100).toFixed(2);
+            amts[i].value = Math.round(targetAmount * pct / 100);
         });
         recalcTotal();
     }
@@ -298,10 +298,10 @@
         const amts = container.querySelectorAll('.restructure-amt');
         let total = 0;
         amts.forEach(el => { total += parseFloat(el.value) || 0; });
-        totalSpan.textContent = total.toFixed(2);
+        totalSpan.textContent = Math.round(total);
 
         if (Math.abs(total - targetAmount) > 1) {
-            errorSpan.textContent = '(Must equal ₹' + targetAmount.toFixed(2) + ')';
+            errorSpan.textContent = '(Must equal ₹' + Math.round(targetAmount) + ')';
             errorSpan.style.display = 'inline';
         } else {
             errorSpan.style.display = 'none';
@@ -312,7 +312,7 @@
         amts.forEach((el, i) => {
             const dateEl = container.querySelectorAll('.restructure-date')[i];
             schedules.push({
-                amount: parseFloat(el.value) || 0,
+                amount: Math.round(parseFloat(el.value) || 0),
                 due_date: dateEl ? dateEl.value : ''
             });
         });
