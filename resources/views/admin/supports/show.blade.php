@@ -87,7 +87,7 @@
                                     <h6><i class="fas fa-money-bill-wave"></i> Offline Cash Payment Details</h6>
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <strong>Amount Paid:</strong> ₹{{ number_format($supportRequest->cash_amount, 2) }}<br>
+                                            <strong>Amount Paid:</strong> ₹{{ number_format($supportRequest->cash_amount, 0) }}<br>
                                             <strong>Payment Date:</strong> {{ $supportRequest->payment_date }}<br>
                                             <strong>Receipt Number:</strong> {{ $supportRequest->payment_receipt_number ?? 'N/A' }}<br>
                                         </div>
@@ -117,15 +117,15 @@
                                     <div class="row mb-3">
                                         <div class="col-md-6">
                                             <strong>Course:</strong> {{ $restructureData['plan']->sale->product->name ?? 'N/A' }}<br>
-                                            <strong>Plan Total:</strong> ₹{{ number_format($restructureData['plan']->total_amount, 2) }}<br>
+                                            <strong>Plan Total:</strong> ₹{{ number_format($restructureData['plan']->total_amount, 0) }}<br>
                                             <strong>Plan Status:</strong> <span class="badge badge-{{ $restructureData['plan']->status === 'active' ? 'success' : 'secondary' }}">{{ ucfirst($restructureData['plan']->status) }}</span>
                                         </div>
                                         <div class="col-md-6">
                                             @if($restructureData['target_schedule'])
                                                 <strong>Target EMI:</strong> #{{ $restructureData['target_schedule']->sequence }}
                                                 ({{ $restructureData['is_upfront'] ? 'Upfront' : 'Step ' . $restructureData['target_schedule']->sequence }})<br>
-                                                <strong>EMI Amount:</strong> ₹{{ number_format($restructureData['schedule_amount'], 2) }}<br>
-                                                <strong>Remaining:</strong> ₹{{ number_format($restructureData['schedule_remaining'], 2) }}<br>
+                                                <strong>EMI Amount:</strong> ₹{{ number_format($restructureData['schedule_amount'], 0) }}<br>
+                                                <strong>Remaining:</strong> ₹{{ number_format($restructureData['schedule_remaining'], 0) }}<br>
                                                 @if($restructureData['target_schedule']->due_date)
                                                     <strong>Due Date:</strong> {{ \Carbon\Carbon::parse($restructureData['target_schedule']->due_date)->format('d M Y') }}
                                                 @endif
@@ -158,8 +158,8 @@
                                                     <tr class="{{ $isTarget ? 'table-warning font-weight-bold' : '' }}">
                                                         <td>{{ $sched->sequence }}{{ $isTarget ? ' ⬅' : '' }}</td>
                                                         <td>{{ $sched->due_date ? \Carbon\Carbon::parse($sched->due_date)->format('d M Y') : '-' }}</td>
-                                                        <td>₹{{ number_format($sched->amount_due, 2) }}</td>
-                                                        <td>{{ ($sched->amount_paid ?? 0) > 0 ? '₹' . number_format($sched->amount_paid, 2) : '-' }}</td>
+                                                        <td>₹{{ number_format($sched->amount_due, 0) }}</td>
+                                                        <td>{{ ($sched->amount_paid ?? 0) > 0 ? '₹' . number_format($sched->amount_paid, 0) : '-' }}</td>
                                                         <td>
                                                             <span class="badge badge-{{ match($sched->status) { 'paid' => 'success', 'due' => 'warning', 'overdue' => 'danger', 'partial' => 'info', 'waived' => 'secondary', default => 'light' } }}">
                                                                 {{ ucfirst($sched->status) }}
@@ -181,7 +181,7 @@
                                         <div class="card-body">
                                             <p class="text-muted mb-2">
                                                 Split EMI #{{ $restructureData['target_schedule']->sequence }}
-                                                (₹{{ number_format($restructureData['schedule_remaining'], 2) }})
+                                                (₹{{ number_format($restructureData['schedule_remaining'], 0) }})
                                                 into sub-installments. Set the number of parts, then define each amount and due date.
                                             </p>
 
@@ -210,7 +210,7 @@
                                             </div>
 
                                             <div class="mt-2">
-                                                <strong>Total: ₹<span id="restructureSplitTotal">0.00</span></strong>
+                                                <strong>Total: ₹<span id="restructureSplitTotal">0</span></strong>
                                                 <span id="restructureSplitError" class="text-danger ml-3" style="display:none;"></span>
                                             </div>
 
@@ -222,7 +222,7 @@
 
 <script>
 (function() {
-    const targetAmount = {{ $restructureData['schedule_remaining'] }};
+    const targetAmount = Math.round({{ $restructureData['schedule_remaining'] }});
     const scheduleId = {{ $restructureData['target_schedule']->id }};
     const planId = {{ $restructureData['plan']->id }};
     const container = document.getElementById('restructureSplitTable');
@@ -360,7 +360,7 @@
                                     <h6><i class="fas fa-layer-group"></i> EMI Restructure Request</h6>
                                     <strong>Reason:</strong> {{ $supportRequest->restructure_reason ?? $supportRequest->description }}<br>
                                     @if($supportRequest->installment_amount)
-                                        <strong>Installment Amount:</strong> ₹{{ number_format($supportRequest->installment_amount, 2) }}
+                                        <strong>Installment Amount:</strong> ₹{{ number_format($supportRequest->installment_amount, 0) }}
                                     @endif
                                     <br><small class="text-muted">No UPE plan data linked. This may be a legacy ticket.</small>
                                 </div>
