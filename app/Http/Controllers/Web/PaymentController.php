@@ -589,7 +589,9 @@ class PaymentController extends Controller
                 $itemData['reserve_meeting_id'] = $paymentData['reserve_meeting_id'];
                 break;
             case 'installment':
-                $itemData['installment_payment_id'] = $paymentData['installment_payment_id'];
+                $itemData['webinar_id'] = $paymentData['webinar_id'];
+                $itemData['installment_payment_id'] = $paymentData['installment_payment_id'] ?? null;
+                $itemData['installment_type'] = 'installment';
                 break;
             case 'quick_pay':
                 $itemData['webinar_id'] = $paymentData['webinar_id'];
