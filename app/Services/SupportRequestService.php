@@ -223,22 +223,17 @@ class SupportRequestService
      */
     private function executeCourseExtension(NewSupportForAsttrolok $request, array $data, $user)
     {
-        $existingAccess = WebinarAccessControl::where('user_id', $request->user_id)
+        // Replace existing access record with new expiry
+        WebinarAccessControl::where('user_id', $request->user_id)
             ->where('webinar_id', $request->webinar_id)
-            ->where('status', 'active')
-            ->first();
+            ->delete();
 
-        if ($existingAccess) {
-            $existingAccess->update(['status' => 'replaced']);
-        }
-
-        $newAccess = new WebinarAccessControl();
-        $newAccess->user_id = $request->user_id;
-        $newAccess->webinar_id = $request->webinar_id;
-        $newAccess->percentage = 100;
-        $newAccess->expire = now()->addDays($request->extension_days);
-        $newAccess->status = 'active';
-        $newAccess->save();
+        $newAccess = WebinarAccessControl::create([
+            'user_id'    => $request->user_id,
+            'webinar_id' => $request->webinar_id,
+            'percentage' => 100,
+            'expire'     => now()->addDays($request->extension_days),
+        ]);
 
         // UPE: Create extension sale so AccessEngine grants access
         app(SupportUpeBridge::class)->grantCourseExtension(

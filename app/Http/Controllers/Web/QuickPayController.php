@@ -18,14 +18,7 @@ class QuickPayController extends Controller
         $webinar = Webinar::where('slug', $slug)->where('status', 'active')->firstOrFail();
         $coursePrice = $webinar->getPrice() ?? $webinar->price;
 
-        // Get available installment plans
-        $installments = Installment::where('enable', true)
-            ->where(function ($q) {
-                $q->where('capacity', '>', 0)->orWhereNull('capacity');
-            })
-            ->get();
-
-        // Check if user already has a purchase
+        // Quick Pay only works for students who already have a UPE installment plan
         $existingSale = null;
         $existingPlan = null;
         $totalPaid = 0;
@@ -60,7 +53,7 @@ class QuickPayController extends Controller
         $pageTitle = 'Quick Pay - ' . $webinar->title;
 
         return view(getTemplate() . '.quick_pay.index', compact(
-            'webinar', 'coursePrice', 'installments',
+            'webinar', 'coursePrice',
             'existingSale', 'existingPlan', 'totalPaid', 'remaining',
             'pageTitle'
         ));

@@ -476,9 +476,13 @@ try {
 
             $user = auth()->user();
 
+            // Collect webinar_ids already shown via $sales to avoid duplicates
+            $saleWebinarIds = $sales->pluck('webinar_id')->filter()->unique()->toArray();
+
             $query = InstallmentOrder::query()
                 ->where('user_id', $user->id)
-                ->where('status', '!=', 'paying');
+                ->where('status', '!=', 'paying')
+                ->whereNotIn('webinar_id', $saleWebinarIds);
 
             $openInstallmentsCount = deepClone($query)->where('status', 'open')->count();
             $pendingVerificationCount = deepClone($query)->where('status', 'pending_verification')->count();
@@ -497,6 +501,17 @@ try {
                 }
             ])->orderBy('created_at', 'desc')
                 ->paginate(10);
+
+            // Deduplicate orders by webinar_id (keep the latest per course)
+            $seenWebinarIds = [];
+            $uniqueOrders = $orders->filter(function ($order) use (&$seenWebinarIds) {
+                if (in_array($order->webinar_id, $seenWebinarIds)) {
+                    return false;
+                }
+                $seenWebinarIds[] = $order->webinar_id;
+                return true;
+            });
+            $orders->setCollection($uniqueOrders);
 
             foreach ($orders as $order) {
                 $getRemainedInstallments = $this->getRemainedInstallments($order);

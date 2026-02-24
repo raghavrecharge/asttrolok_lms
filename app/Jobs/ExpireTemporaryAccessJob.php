@@ -19,15 +19,14 @@ class ExpireTemporaryAccessJob implements ShouldQueue
     public function handle()
     {
         try {
-            $expired = WebinarAccessControl::where('status', 'active')
-                ->where('expire', '<', now())
+            $expired = WebinarAccessControl::where('expire', '<', now())
                 ->get();
 
             $count = 0;
 
             foreach ($expired as $access) {
                 DB::transaction(function () use ($access) {
-                    $access->update(['status' => 'expired']);
+                    $access->delete();
                 });
 
                 Log::info('Temporary access expired', [

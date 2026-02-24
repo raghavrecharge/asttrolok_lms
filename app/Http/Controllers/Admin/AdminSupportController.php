@@ -999,18 +999,16 @@ class AdminSupportController extends Controller
 
                         $newExpireDate = now()->addDays($extensionDays);
 
-                        // P1 FIX: Soft-revoke existing access instead of hard delete
+                        // Replace existing access record with new expiry
                         WebinarAccessControl::where('user_id', $supportRequest->user_id)
                             ->where('webinar_id', $supportRequest->webinar_id)
-                            ->where('status', 'active')
-                            ->update(['status' => 'replaced']);
+                            ->delete();
 
                         WebinarAccessControl::create([
                             'user_id'    => $supportRequest->user_id,
                             'webinar_id' => $supportRequest->webinar_id,
                             'percentage' => 100,
                             'expire'     => $newExpireDate,
-                            'status'     => 'active',
                         ]);
 
                         // UPE: Create extension sale so AccessEngine grants access
