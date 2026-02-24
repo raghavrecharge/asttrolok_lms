@@ -95,7 +95,7 @@ class EventPaymentController extends Controller
             // Create Razorpay Order
             $razorpayOrder = $api->order->create([
                 'receipt' => 'evt_' . $event->id . '_' . time(),
-                'amount' => $event->price * 100, // Convert to paise
+                'amount' => (int) round((float) $event->price, 0, PHP_ROUND_HALF_UP) * 100, // Convert to paise
                 'currency' => 'INR',
                 'notes' => [
                     'event_id' => $event->id,
@@ -131,7 +131,7 @@ class EventPaymentController extends Controller
                 'success' => true,
                 'order_id' => $razorpayOrder['id'],
                 'razorpay_key' => $razorpayKey,
-                'amount' => $event->price * 100,
+                'amount' => (int) round((float) $event->price, 0, PHP_ROUND_HALF_UP) * 100,
                 'currency' => 'INR',
                 'name' => $request->name,
                 'email' => $request->email,

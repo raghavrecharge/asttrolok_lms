@@ -609,7 +609,7 @@ class CheckoutService
             $scheduleAmounts[] = ['amount' => $stepAmount, 'deadline_days' => (int) $step->deadline];
         }
 
-        $totalAmount = array_sum(array_column($scheduleAmounts, 'amount'));
+        $totalAmount = round(array_sum(array_column($scheduleAmounts, 'amount')), 2);
         $numInstallments = count($scheduleAmounts);
 
         $plan = UpeInstallmentPlan::create([
@@ -837,7 +837,7 @@ class CheckoutService
             $scheduleAmounts[] = ['amount' => $itemPrice, 'deadline_days' => 0];
         }
 
-        $totalAmount = array_sum(array_column($scheduleAmounts, 'amount'));
+        $totalAmount = round(array_sum(array_column($scheduleAmounts, 'amount')), 2);
         $numInstallments = count($scheduleAmounts);
 
         $plan = UpeInstallmentPlan::create([

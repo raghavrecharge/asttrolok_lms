@@ -311,7 +311,7 @@ class RazorpayController extends Controller
                     'name' => $data1['name'] ?? 'Guest',
                     'number' => $payment->contact ?? null,
                     'email' => $payment->email ?? null,
-                    'amount' => $payment->amount / 100 ?? null,
+                    'amount' => round($payment->amount / 100, 2),
                     'razorpay_payment_id' => $payment->id ?? null,
                     'razorpay_description' => $payment->description ?? 'Razorpay Payment',
                 ]);

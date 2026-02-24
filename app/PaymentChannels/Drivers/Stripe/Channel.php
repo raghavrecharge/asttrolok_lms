@@ -42,7 +42,7 @@ class Channel implements IChannel
             'line_items' => [[
                 'price_data' => [
                     'currency' => $currency,
-                    'unit_amount_decimal' => $price * 100,
+                    'unit_amount_decimal' => (int) round((float) $price, 0, PHP_ROUND_HALF_UP) * 100,
                     'product_data' => [
                         'name' => $generalSettings['site_name'] . ' payment',
                     ],
@@ -81,7 +81,7 @@ class Channel implements IChannel
             'line_items' => [[
                 'price_data' => [
                     'currency' => $currency,
-                    'unit_amount_decimal' => $price * 100,
+                    'unit_amount_decimal' => (int) round((float) $price, 0, PHP_ROUND_HALF_UP) * 100,
                     'product_data' => [
                         'name' => $generalSettings['site_name'] . ' payment',
                     ],

@@ -320,30 +320,36 @@
     }
 
     // Hook into the status form submission to inject restructure data
-    const statusForm = document.querySelector('form[action$="/status"]') || document.querySelector('form[action*="updateStatus"]');
-    if (statusForm) {
-        statusForm.addEventListener('submit', function(e) {
-            // Ensure hidden fields are inside the form
-            const existingHidden1 = statusForm.querySelector('input[name="restructure_sub_schedules"]');
-            const existingHidden2 = statusForm.querySelector('input[name="restructure_schedule_id"]');
-            const existingHidden3 = statusForm.querySelector('input[name="restructure_plan_id"]');
+    // NOTE: The form element is rendered AFTER this script in the DOM (right column),
+    // so we must wait for DOMContentLoaded before querying it.
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusForm = document.querySelector('form[action$="/status"]') || document.querySelector('form[action*="updateStatus"]');
+        if (statusForm) {
+            statusForm.addEventListener('submit', function(e) {
+                // Ensure hidden fields are inside the form
+                const existingHidden1 = statusForm.querySelector('input[name="restructure_sub_schedules"]');
+                const existingHidden2 = statusForm.querySelector('input[name="restructure_schedule_id"]');
+                const existingHidden3 = statusForm.querySelector('input[name="restructure_plan_id"]');
 
-            if (!existingHidden1) {
-                const h1 = document.createElement('input'); h1.type='hidden'; h1.name='restructure_sub_schedules'; h1.value=hiddenInput.value;
-                statusForm.appendChild(h1);
-            } else {
-                existingHidden1.value = hiddenInput.value;
-            }
-            if (!existingHidden2) {
-                const h2 = document.createElement('input'); h2.type='hidden'; h2.name='restructure_schedule_id'; h2.value=scheduleId;
-                statusForm.appendChild(h2);
-            }
-            if (!existingHidden3) {
-                const h3 = document.createElement('input'); h3.type='hidden'; h3.name='restructure_plan_id'; h3.value=planId;
-                statusForm.appendChild(h3);
-            }
-        });
-    }
+                if (!existingHidden1) {
+                    const h1 = document.createElement('input'); h1.type='hidden'; h1.name='restructure_sub_schedules'; h1.value=hiddenInput.value;
+                    statusForm.appendChild(h1);
+                } else {
+                    existingHidden1.value = hiddenInput.value;
+                }
+                if (!existingHidden2) {
+                    const h2 = document.createElement('input'); h2.type='hidden'; h2.name='restructure_schedule_id'; h2.value=scheduleId;
+                    statusForm.appendChild(h2);
+                }
+                if (!existingHidden3) {
+                    const h3 = document.createElement('input'); h3.type='hidden'; h3.name='restructure_plan_id'; h3.value=planId;
+                    statusForm.appendChild(h3);
+                }
+            });
+        } else {
+            console.warn('Restructure: Could not find status form to hook into.');
+        }
+    });
 
     render();
 })();

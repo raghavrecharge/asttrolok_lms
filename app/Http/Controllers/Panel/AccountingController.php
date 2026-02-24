@@ -433,7 +433,7 @@ class AccountingController extends Controller
             <script src="/assets/default/js/app.js"></script>
             <script src="https://checkout.razorpay.com/v1/checkout.js"
                     data-key="' . env('RAZORPAY_API_KEY') . '"
-                    data-amount="' . (int)($order->total_amount * 100) . '"
+                    data-amount="' . ((int) round((float) $order->total_amount, 0, PHP_ROUND_HALF_UP) * 100) . '"
                     data-buttontext="product_price"
                     data-description="Rozerpay"
                     data-currency="' . currency() . '"

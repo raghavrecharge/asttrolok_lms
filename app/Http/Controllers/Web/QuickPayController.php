@@ -85,7 +85,7 @@ class QuickPayController extends Controller
                 }
 
                 $installmentBreakdown = $breakdown;
-                $remaining = array_sum(array_column($breakdown, 'amount'));
+                $remaining = round(array_sum(array_column($breakdown, 'amount')), 2);
             }
         }
 

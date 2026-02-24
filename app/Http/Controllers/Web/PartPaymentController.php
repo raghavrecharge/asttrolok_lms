@@ -649,7 +649,7 @@ class PartPaymentController extends Controller
                 'name' => $notes['name'] ?? null,
                 'email' => $payment['email'] ?? $notes['email'] ?? null,
                 'number' => $payment['contact'] ?? $notes['mobile'] ?? null,
-                'amount' => $payment['amount'] / 100,
+                'amount' => round($payment['amount'] / 100, 2),
                 'status' => $payment['status'] === 'captured' ? 'completed' : 'pending',
                 'payment_method' => $payment['method'] ?? null,
                 'source' => $source,

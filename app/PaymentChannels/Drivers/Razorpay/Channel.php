@@ -267,7 +267,7 @@ $gohighlevelresponse = curl_exec($gohighlevelcurl);
             'razorpay_payment_id'  => $input['razorpay_payment_id'],
             'transaction_type'     => 'credit',
             'razorpay_signature'   => $input['razorpay_signature'] ?? null,
-            'amount'               => $payment->amount / 100,  // Convert amount to INR (from paise)
+            'amount'               => round($payment->amount / 100, 2),
             'currency'             => 'INR',
             'status'               => $order->status == Order::$paying ? 'successful' : 'failed',
             'payment_method'       => 'UPI',
@@ -292,7 +292,7 @@ $gohighlevelresponse = curl_exec($gohighlevelcurl);
         $response = [
             'payment_id'           => $payment->id,
             'status'               => $payment->status,
-            'amount'               => $payment->amount / 100,  // Convert from paise to INR
+            'amount'               => round($payment->amount / 100, 2),
             'currency'             => $payment->currency,
             'payment_method'       => $payment->method,
             'description'          => $payment->description,
@@ -370,7 +370,7 @@ public function verifyApi1($input)
             'razorpay_payment_id'  => $input['razorpay_payment_id'],
             'transaction_type'     => 'credit',
             'razorpay_signature'   => $input['razorpay_signature'] ?? null,
-            'amount'               => $payment->amount / 100,  // Convert amount to INR (from paise)
+            'amount'               => round($payment->amount / 100, 2),
             'currency'             => 'INR',
             'status'               => $order->status == Order::$paying ? 'successful' : 'failed',
             'payment_method'       => 'UPI',
@@ -395,7 +395,7 @@ public function verifyApi1($input)
         $response = [
             'payment_id'           => $payment->id,
             'status'               => $payment->status,
-            'amount'               => $payment->amount / 100,  // Convert from paise to INR
+            'amount'               => round($payment->amount / 100, 2),
             'currency'             => $payment->currency,
             'payment_method'       => $payment->method,
             'description'          => $payment->description,
@@ -712,7 +712,7 @@ $gohighlevelresponse = curl_exec($gohighlevelcurl);
                 'razorpay_payment_id' => $input['razorpay_payment_id'],
                 'transaction_type' => 'credit',
                 'razorpay_signature' => $razorpay_signature ?? null,
-                'amount' => $payment['amount'] / 100,
+                'amount' => round($payment['amount'] / 100, 2),
                 'currency' => 'INR',
                 'status' => $orderStatus === Order::$paying ? 'successful' : 'failed',
                 'payment_method' => 'UPI',

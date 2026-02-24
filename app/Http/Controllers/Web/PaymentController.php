@@ -655,7 +655,7 @@ class PaymentController extends Controller
 
         $razorpayOrder = $this->razorpayApi->order->create([
             'receipt' => 'order_' . $order->id . '_' . time(),
-            'amount' => (int)(preg_replace('/[^\d.]/', '', handlePrice($order->total_amount * 100))),
+            'amount' => (int) round((float) $order->total_amount, 0, PHP_ROUND_HALF_UP) * 100,
 
             'currency' => currency(),
             'notes' => $notes,
@@ -730,7 +730,7 @@ class PaymentController extends Controller
                 'name' => $notes['name'] ?? null,
                 'email' => $payment['email'] ?? $notes['email'] ?? null,
                 'number' => $payment['contact'] ?? $notes['mobile'] ?? null,
-                'amount' => $payment['amount'] / 100,
+                'amount' => round($payment['amount'] / 100, 2),
                 'status' => $payment['status'] === 'captured' ? 'completed' : 'pending',
                 'payment_method' => $payment['method'] ?? null,
                 'source' => $source,
