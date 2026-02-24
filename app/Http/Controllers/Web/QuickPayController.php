@@ -43,7 +43,7 @@ class QuickPayController extends Controller
                         ->first();
 
                     if ($existingPlan) {
-                        $totalPaid = $existingPlan->schedules->sum('amount_paid');
+                        $totalPaid = $existingPlan->schedules->where('status', '!=', 'waived')->sum('amount_paid');
                         $remaining = max(0, $existingPlan->total_amount - $totalPaid);
                     }
                 }

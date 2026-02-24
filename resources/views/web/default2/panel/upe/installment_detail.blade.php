@@ -63,7 +63,7 @@
                     </div>
 
                     @php
-                        $totalPaid = $plan->schedules->where('status', 'paid')->sum('amount_due');
+                        $totalPaid = $plan->schedules->whereNotIn('status', ['waived'])->sum('amount_paid');
                         $totalRemaining = $plan->total_amount - $totalPaid;
                         $paidPercent = $plan->total_amount > 0 ? round(($totalPaid / $plan->total_amount) * 100) : 0;
                     @endphp
@@ -104,7 +104,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($plan->schedules->sortBy('sequence') as $schedule)
+                                @foreach($plan->schedules->where('status', '!=', 'waived')->sortBy('sequence') as $schedule)
                                     @php
                                         $schedStatusClass = match($schedule->status) {
                                             'paid' => 'badge-primary',

@@ -326,31 +326,52 @@ class InstallmentEngine
                     });
             }
 
-            // 3. Create new sub-schedules
+            // 3. Carry forward existing payment from the waived schedule
+            $carriedPayment = (float) $schedule->amount_paid;
+            $schedule->update(['amount_paid' => 0]); // payment moves to sub-schedules
+
+            // 4. Create new sub-schedules, distributing carried payment via waterfall
             $created = [];
+            $remainingCarry = $carriedPayment;
             foreach ($subSchedules as $i => $sub) {
                 $newSeq = $originalSequence + $i;
-                $isFirst = ($i === 0);
+                $due = round($sub['amount'], 2);
+
+                // Waterfall: apply as much carried payment as possible
+                $applied = min($remainingCarry, $due);
+                $remainingCarry = round($remainingCarry - $applied, 2);
+
+                // Determine status based on payment
+                if ($applied >= $due - 0.01) {
+                    $status = 'paid';
+                    $applied = $due; // cap at due
+                } elseif ($applied > 0) {
+                    $status = 'partial';
+                } else {
+                    $isFirst = ($i === 0);
+                    $status = $isFirst ? 'due' : 'upcoming';
+                }
 
                 $newSchedule = UpeInstallmentSchedule::create([
                     'plan_id' => $plan->id,
                     'sequence' => $newSeq,
-                    'amount_due' => round($sub['amount'], 2),
-                    'amount_paid' => 0,
+                    'amount_due' => $due,
+                    'amount_paid' => round($applied, 2),
                     'due_date' => $sub['due_date'],
-                    'status' => $isFirst ? 'due' : 'upcoming',
+                    'status' => $status,
+                    'paid_at' => ($status === 'paid') ? now() : null,
                 ]);
 
                 $created[] = $newSchedule;
             }
 
-            // 4. Update plan num_installments
+            // 5. Update plan num_installments
             $activeScheduleCount = UpeInstallmentSchedule::where('plan_id', $plan->id)
                 ->whereNotIn('status', ['waived'])
                 ->count();
             $plan->update(['num_installments' => $activeScheduleCount]);
 
-            // 5. Audit trail
+            // 6. Audit trail
             $this->audit->log($approvedBy, 'admin', 'installment.schedule_split', 'installment_schedule', $schedule->id, [
                 'original_sequence' => $originalSequence,
                 'original_amount' => $targetAmount,

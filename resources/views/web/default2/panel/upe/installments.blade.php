@@ -45,10 +45,11 @@
                                 </div>
 
                                 @php
-                                    $paidCount = $sale->installmentPlan->schedules->where('status', 'paid')->count();
-                                    $totalCount = $sale->installmentPlan->schedules->count();
+                                    $activeSchedules = $sale->installmentPlan->schedules->whereNotIn('status', ['waived']);
+                                    $paidCount = $activeSchedules->where('status', 'paid')->count();
+                                    $totalCount = $activeSchedules->count();
                                     $paidPercent = $totalCount > 0 ? round(($paidCount / $totalCount) * 100) : 0;
-                                    $overdueCount = $sale->installmentPlan->schedules->where('status', 'overdue')->count();
+                                    $overdueCount = $activeSchedules->where('status', 'overdue')->count();
                                 @endphp
 
                                 <div class="progress mt-10" style="height: 8px;">

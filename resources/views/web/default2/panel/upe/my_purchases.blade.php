@@ -58,24 +58,34 @@
                         </div>
 
                         <div class="mt-15 d-flex align-items-center justify-content-between">
+                            @php
+                                $coursePrice = $sale->base_fee_snapshot;
+                                $amountPaid = $balances[$sale->id] ?? 0;
+                                $isFree = in_array($sale->sale_type, ['free', 'trial']) || ($coursePrice == 0 && $amountPaid == 0);
+                                $isInstallment = $sale->pricing_mode === 'installment' && $sale->installmentPlan;
+                                $totalDue = $isInstallment ? $sale->installmentPlan->total_amount : $coursePrice;
+                            @endphp
                             <div>
                                 <span class="font-14 text-gray">Amount:</span>
-                                @php
-                                    $displayPrice = $sale->installmentPlan
-                                        ? $sale->installmentPlan->total_amount
-                                        : ($balances[$sale->id] ?? $sale->base_fee_snapshot);
-                                @endphp
-                                <span class="font-16 font-weight-bold {{ $sale->base_fee_snapshot > $displayPrice ? 'text-primary' : '' }}">₹{{ number_format($displayPrice, 2) }}</span>
-                                @if($sale->base_fee_snapshot > $displayPrice)
-                                    <span class="font-12 text-gray" style="text-decoration: line-through;">₹{{ number_format($sale->base_fee_snapshot, 2) }}</span>
-                                    <span class="badge badge-warning font-10 ml-5">Coupon Applied</span>
-                                @endif
+                                <span class="font-16 font-weight-bold">
+                                    @if($coursePrice > 0)
+                                        ₹{{ number_format($coursePrice, 2) }}
+                                    @else
+                                        Free
+                                    @endif
+                                </span>
                             </div>
                             <div>
-                                <span class="font-14 text-gray">Balance:</span>
-                                <span class="font-16 font-weight-bold {{ ($balances[$sale->id] ?? 0) > 0 ? 'text-primary' : 'text-danger' }}">
-                                    ₹{{ number_format($balances[$sale->id] ?? 0, 2) }}
-                                </span>
+                                @if($isFree)
+                                    <span class="badge badge-info px-10 py-5 font-12">Free Access</span>
+                                @elseif($isInstallment)
+                                    <span class="font-14 text-gray">Paid:</span>
+                                    <span class="font-16 font-weight-bold text-primary">₹{{ number_format($amountPaid, 2) }}</span>
+                                    <span class="font-12 text-gray">/ ₹{{ number_format($totalDue, 2) }}</span>
+                                @else
+                                    <span class="font-14 text-gray">Paid:</span>
+                                    <span class="font-16 font-weight-bold text-primary">₹{{ number_format($amountPaid, 2) }}</span>
+                                @endif
                             </div>
                         </div>
 

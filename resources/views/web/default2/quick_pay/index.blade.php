@@ -135,7 +135,7 @@
 
                         @if($existingPlan->schedules)
                             <div class="mt-10">
-                                @foreach($existingPlan->schedules->sortBy('sequence') as $schedule)
+                                @foreach($existingPlan->schedules->where('status', '!=', 'waived')->sortBy('sequence') as $schedule)
                                     <div class="schedule-row">
                                         <span>Installment {{ $schedule->sequence }}</span>
                                         <span>{{ handlePrice($schedule->amount_due) }}</span>

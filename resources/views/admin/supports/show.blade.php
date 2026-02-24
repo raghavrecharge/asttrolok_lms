@@ -320,7 +320,7 @@
     }
 
     // Hook into the status form submission to inject restructure data
-    const statusForm = document.querySelector('form[action*="updateStatus"]');
+    const statusForm = document.querySelector('form[action$="/status"]') || document.querySelector('form[action*="updateStatus"]');
     if (statusForm) {
         statusForm.addEventListener('submit', function(e) {
             // Ensure hidden fields are inside the form
