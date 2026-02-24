@@ -193,6 +193,13 @@
                             <p class="mt-10 mb-0 font-12 text-gray">Your request is being reviewed by support. You will be notified once a decision is made.</p>
                         </div>
                     @else
+                        @if(isset($lastRejectedRestructure) && $lastRejectedRestructure)
+                            <div class="alert alert-danger mb-15">
+                                <h6 class="mb-5"><i class="fa fa-times-circle"></i> Previous Request Rejected</h6>
+                                <strong>Reason:</strong> {{ $lastRejectedRestructure->rejected_reason ?? 'No reason provided' }}<br>
+                                <small class="text-muted">Rejected on {{ $lastRejectedRestructure->updated_at->format('d M Y H:i') }}. You may submit a new request below.</small>
+                            </div>
+                        @endif
                         <div class="row">
                             <div class="col-12 col-lg-8">
                                 <p class="font-14 text-gray mb-15">

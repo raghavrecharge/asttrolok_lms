@@ -396,6 +396,17 @@ class UpeController extends Controller
             ->latest()
             ->first();
 
+        // If no active request, check if the last one was rejected (for UX feedback)
+        $lastRejectedRestructure = null;
+        if (!$existingRestructureRequest) {
+            $lastRejectedRestructure = UpePaymentRequest::where('user_id', $user->id)
+                ->where('sale_id', $plan->sale_id)
+                ->where('request_type', 'installment_restructure')
+                ->where('status', 'rejected')
+                ->latest()
+                ->first();
+        }
+
         // Determine target schedule for restructure form
         $unpaidSchedules = $plan->schedules->whereIn('status', ['due', 'upcoming', 'partial', 'overdue']);
         $restructureTarget = null;
@@ -407,7 +418,7 @@ class UpeController extends Controller
 
         return view(getTemplate() . '.panel.upe.installment_detail', compact(
             'plan', 'nextUnpaid', 'payUrl', 'pageTitle',
-            'existingRestructureRequest', 'restructureTarget'
+            'existingRestructureRequest', 'restructureTarget', 'lastRejectedRestructure'
         ));
     }
 }

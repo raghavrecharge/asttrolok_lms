@@ -763,6 +763,9 @@ class AdminSupportController extends Controller
 
                 $updateData['rejected_at'] = now();
                 $updateData['rejection_reason'] = $validated['rejection_reason'];
+
+                // Also reject the linked UpePaymentRequest so the student can create a new ticket
+                $this->rejectLinkedUpeRequest($supportRequest, $validated['rejection_reason'] ?? 'Rejected by admin');
             }
 
             /* ================= COMPLETED (ADMIN ONLY) ================= */
@@ -1724,6 +1727,49 @@ class AdminSupportController extends Controller
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Reject the linked UpePaymentRequest when a support ticket is rejected.
+     * This allows the student to create a new ticket for the same scenario.
+     */
+    private function rejectLinkedUpeRequest($supportRequest, $reason = 'Rejected by admin')
+    {
+        try {
+            // Try to find UPE request via execution_result linkage
+            $executionResult = $supportRequest->execution_result ?? [];
+            $upeRequestId = $executionResult['upe_payment_request_id'] ?? null;
+
+            $upeRequest = null;
+            if ($upeRequestId) {
+                $upeRequest = \App\Models\PaymentEngine\UpePaymentRequest::find($upeRequestId);
+            }
+
+            // Fallback: find by user_id + sale matching + request_type
+            if (!$upeRequest && $supportRequest->support_scenario === 'installment_restructure') {
+                $upeRequest = \App\Models\PaymentEngine\UpePaymentRequest::where('user_id', $supportRequest->user_id)
+                    ->where('request_type', 'installment_restructure')
+                    ->whereNotIn('status', ['rejected', 'executed'])
+                    ->latest()
+                    ->first();
+            }
+
+            if ($upeRequest && !in_array($upeRequest->status, ['rejected', 'executed'])) {
+                $upeRequest->update([
+                    'status' => 'rejected',
+                    'rejected_reason' => $reason,
+                ]);
+                Log::info('Linked UpePaymentRequest rejected', [
+                    'upe_request_id' => $upeRequest->id,
+                    'support_request_id' => $supportRequest->id,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to reject linked UpePaymentRequest', [
+                'support_request_id' => $supportRequest->id,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 

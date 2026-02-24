@@ -168,6 +168,49 @@ class SupportRequestService
             'status' => 'rejected',
             'rejection_reason' => $data['rejection_reason'] ?? null,
         ]);
+
+        // Also reject the linked UpePaymentRequest so the student can create a new ticket
+        $this->rejectLinkedUpeRequest($request, $data['rejection_reason'] ?? 'Rejected');
+    }
+
+    /**
+     * Reject the linked UpePaymentRequest when a support ticket is rejected.
+     */
+    private function rejectLinkedUpeRequest(NewSupportForAsttrolok $supportRequest, string $reason)
+    {
+        try {
+            $executionResult = $supportRequest->execution_result ?? [];
+            $upeRequestId = $executionResult['upe_payment_request_id'] ?? null;
+
+            $upeRequest = null;
+            if ($upeRequestId) {
+                $upeRequest = \App\Models\PaymentEngine\UpePaymentRequest::find($upeRequestId);
+            }
+
+            if (!$upeRequest && $supportRequest->support_scenario === 'installment_restructure') {
+                $upeRequest = \App\Models\PaymentEngine\UpePaymentRequest::where('user_id', $supportRequest->user_id)
+                    ->where('request_type', 'installment_restructure')
+                    ->whereNotIn('status', ['rejected', 'executed'])
+                    ->latest()
+                    ->first();
+            }
+
+            if ($upeRequest && !in_array($upeRequest->status, ['rejected', 'executed'])) {
+                $upeRequest->update([
+                    'status' => 'rejected',
+                    'rejected_reason' => $reason,
+                ]);
+                \Log::info('Linked UpePaymentRequest rejected (secure flow)', [
+                    'upe_request_id' => $upeRequest->id,
+                    'support_request_id' => $supportRequest->id,
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to reject linked UpePaymentRequest', [
+                'support_request_id' => $supportRequest->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
