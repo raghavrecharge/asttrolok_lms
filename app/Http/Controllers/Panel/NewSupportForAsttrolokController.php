@@ -191,6 +191,35 @@ class NewSupportForAsttrolokController extends Controller
                         $installmentList[$key] = $order->getItem();
                       
                     }
+
+                // Also include courses from UPE installment plans (e.g. Quick Pay purchases)
+                $seenWebinarIds = collect($installmentList)->pluck('id')->toArray();
+                try {
+                    $upePlans = \App\Models\PaymentEngine\UpeInstallmentPlan::whereHas('sale', function ($q) use ($user) {
+                            $q->where('user_id', $user->id);
+                        })
+                        ->whereIn('status', ['active', 'completed'])
+                        ->with(['sale.product', 'schedules'])
+                        ->get();
+
+                    foreach ($upePlans as $upePlan) {
+                        $product = $upePlan->sale->product ?? null;
+                        if (!$product || !in_array($product->product_type, ['course_video', 'webinar'])) {
+                            continue;
+                        }
+                        $webinarId = $product->external_id;
+                        if (in_array($webinarId, $seenWebinarIds)) {
+                            continue;
+                        }
+                        $webinar = Webinar::with('creator')->find($webinarId);
+                        if ($webinar) {
+                            $seenWebinarIds[] = $webinarId;
+                            $installmentList[] = $webinar;
+                        }
+                    }
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to load UPE installment plans for support form', ['error' => $e->getMessage()]);
+                }
                 
                 
                 // Build extension counts per course for JS limit check
@@ -610,8 +639,94 @@ class NewSupportForAsttrolokController extends Controller
             }
             
             \Log::info('Final data before saving: ' . json_encode($data));
-            
+
+            // For installment_restructure: look up UPE plan, find target schedule, create UpePaymentRequest
+            if ($request->support_scenario === 'installment_restructure' && !empty($data['webinar_id']) && Auth::check()) {
+                try {
+                    $upeUser = Auth::user();
+                    $webinarIdForPlan = $data['webinar_id'];
+
+                    // Find UPE product for this webinar
+                    $upeProduct = \App\Models\PaymentEngine\UpeProduct::where('external_id', $webinarIdForPlan)
+                        ->whereIn('product_type', ['course_video', 'webinar'])
+                        ->first();
+
+                    if ($upeProduct) {
+                        // Find the user's active UPE installment plan for this product
+                        $upePlan = \App\Models\PaymentEngine\UpeInstallmentPlan::whereHas('sale', function ($q) use ($upeUser, $upeProduct) {
+                                $q->where('user_id', $upeUser->id)->where('product_id', $upeProduct->id);
+                            })
+                            ->where('status', 'active')
+                            ->with(['sale', 'schedules'])
+                            ->first();
+
+                        if ($upePlan) {
+                            $unpaidSchedules = $upePlan->schedules->whereIn('status', ['due', 'upcoming', 'partial', 'overdue']);
+
+                            if ($unpaidSchedules->isNotEmpty()) {
+                                // Target: upfront (seq 1) if unpaid, else first unpaid
+                                $targetSchedule = $unpaidSchedules->sortBy('sequence')->first();
+                                $isUpfront = ($targetSchedule->sequence <= 1);
+
+                                // Check for existing pending request
+                                $alreadyRequested = \App\Models\PaymentEngine\UpePaymentRequest::where('user_id', $upeUser->id)
+                                    ->where('sale_id', $upePlan->sale_id)
+                                    ->where('request_type', 'installment_restructure')
+                                    ->whereNotIn('status', ['rejected', 'executed'])
+                                    ->exists();
+
+                                if (!$alreadyRequested) {
+                                    // Create UpePaymentRequest
+                                    $paymentRequestService = app(\App\Services\PaymentEngine\PaymentRequestService::class);
+                                    $paymentRequest = $paymentRequestService->create('installment_restructure', $upeUser->id, $upePlan->sale_id, [
+                                        'plan_id' => $upePlan->id,
+                                        'schedule_id' => $targetSchedule->id,
+                                        'schedule_sequence' => $targetSchedule->sequence,
+                                        'schedule_amount' => $targetSchedule->amount_due,
+                                        'schedule_remaining' => $targetSchedule->remainingAmount(),
+                                        'schedule_due_date' => $targetSchedule->due_date ? $targetSchedule->due_date->format('Y-m-d') : null,
+                                        'is_upfront' => $isUpfront,
+                                        'reason' => $request->restructure_reason ?? $request->description ?? '',
+                                        'overdue_count' => $upePlan->schedules->where('status', 'overdue')->count(),
+                                        'remaining_count' => $unpaidSchedules->count(),
+                                        'remaining_amount' => $unpaidSchedules->sum('amount_due') - $unpaidSchedules->sum('amount_paid'),
+                                        'webinar_id' => $webinarIdForPlan,
+                                    ]);
+
+                                    // Populate execution_result so admin can see EMI details
+                                    $data['execution_result'] = [
+                                        'upe_payment_request_id' => $paymentRequest->id,
+                                        'plan_id' => $upePlan->id,
+                                        'schedule_id' => $targetSchedule->id,
+                                        'schedule_sequence' => $targetSchedule->sequence,
+                                        'schedule_amount' => (float) $targetSchedule->amount_due,
+                                        'schedule_remaining' => $targetSchedule->remainingAmount(),
+                                        'is_upfront' => $isUpfront,
+                                    ];
+                                    $data['installment_amount'] = $targetSchedule->remainingAmount();
+                                }
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to link UPE plan to restructure support ticket', ['error' => $e->getMessage()]);
+                }
+            }
+
             $supportRequest = NewSupportForAsttrolok::create($data);
+
+            // Link support ticket back to UpePaymentRequest if created
+            if (isset($paymentRequest) && $paymentRequest) {
+                try {
+                    $paymentRequest->update([
+                        'payload' => array_merge($paymentRequest->payload ?? [], [
+                            'support_ticket_id' => $supportRequest->id,
+                        ]),
+                    ]);
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to link support ticket to UPE request', ['error' => $e->getMessage()]);
+                }
+            }
             
             
             NewSupportForAsttrolokLog::create([

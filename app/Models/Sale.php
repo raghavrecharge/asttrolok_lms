@@ -735,18 +735,27 @@ curl_close($webhookcurl);
                 ->first();
 
             if ($existingSale) {
-                // Subsequent payment — add ledger entry
-                app(\App\Services\PaymentEngine\PaymentLedgerService::class)->append(
-                    $existingSale->id,
-                    \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
-                    \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
-                    $amount,
-                    $sale->payment_method ?? 'razorpay',
-                    null, null, null, null,
-                    "Installment payment via createSales",
-                    null,
-                    "legacy_sale_{$sale->id}"
-                );
+                // If a UPE plan with schedules exists, InstallmentEngine handles the ledger entry
+                // with proper schedule references — skip duplicate unlinked entry here.
+                $upePlan = \App\Models\PaymentEngine\UpeInstallmentPlan::where('sale_id', $existingSale->id)
+                    ->whereIn('status', ['active', 'completed'])
+                    ->whereHas('schedules')
+                    ->first();
+
+                if (!$upePlan) {
+                    // No UPE plan/schedules — add raw ledger entry as fallback
+                    app(\App\Services\PaymentEngine\PaymentLedgerService::class)->append(
+                        $existingSale->id,
+                        \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
+                        \App\Models\PaymentEngine\UpeLedgerEntry::DIR_CREDIT,
+                        $amount,
+                        $sale->payment_method ?? 'razorpay',
+                        null, null, null, null,
+                        "Installment payment via createSales",
+                        null,
+                        "legacy_sale_{$sale->id}"
+                    );
+                }
             } else {
                 // New installment purchase
                 $validFrom = now();

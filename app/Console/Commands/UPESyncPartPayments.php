@@ -397,17 +397,31 @@ class UPESyncPartPayments extends Command
     private function findTargetSchedule($schedules): UpeInstallmentSchedule
     {
         foreach ($schedules as $schedule) {
+            // Skip waived/paid schedules — they should not receive new payments
+            if (in_array($schedule->status, ['waived', 'paid'])) {
+                continue;
+            }
+
             $paid = (float) UpeLedgerEntry::where('reference_type', 'installment_schedule')
                 ->where('reference_id', $schedule->id)
+                ->where('direction', 'credit')
                 ->sum('amount');
 
-            if ($paid < (float) $schedule->amount_due) {
+            $debits = (float) UpeLedgerEntry::where('reference_type', 'installment_schedule')
+                ->where('reference_id', $schedule->id)
+                ->where('direction', 'debit')
+                ->sum('amount');
+
+            $netPaid = $paid - $debits;
+
+            if ($netPaid < (float) $schedule->amount_due) {
                 return $schedule;
             }
         }
 
-        // All schedules fully paid — link to last schedule (overpayment)
-        return $schedules->last();
+        // All schedules fully paid — link to last non-waived schedule (overpayment)
+        $lastNonWaived = $schedules->filter(fn($s) => $s->status !== 'waived')->last();
+        return $lastNonWaived ?? $schedules->last();
     }
 
     /**

@@ -40,6 +40,7 @@ use App\Models\Affiliate;
 use Illuminate\Support\Facades\Hash;
 use App\Models\PaymentEngine\UpeProduct;
 use App\Models\PaymentEngine\UpeSale;
+use App\Models\PaymentEngine\UpeInstallmentPlan;
 use App\Services\PaymentEngine\PaymentLedgerService;
 
 class PaymentController extends Controller
@@ -175,84 +176,58 @@ class PaymentController extends Controller
                     $itemPrice1=$itemPrice-$totalDiscount;
                 }
 
-                // UPE FIX: Determine next payable amount from UPE ledger (source of truth).
-                // Sequential enforcement: walk upfront → steps in order, deducting ledger balance.
+                // UPE: Determine next payable amount from UPE schedules (sole source of truth).
                 $installmentIdForPart = $validated['installment_id'] ?? null;
-                $partAmount = $itemPrice1 ?? $itemPrice; // fallback
+                $partAmount = $itemPrice1 ?? $itemPrice; // fallback for new purchase
                 $user = auth()->user();
 
-                if ($installmentIdForPart && $user) {
-                    try {
-                        $installment = Installment::where('id', $installmentIdForPart)->where('enable', true)->first();
-                        if ($installment) {
-                            $upeProduct = UpeProduct::where('external_id', $webinar->id)
-                                ->whereIn('product_type', ['course_video', 'webinar'])
+                if ($user) {
+                    $upeProduct = UpeProduct::where('external_id', $webinar->id)
+                        ->whereIn('product_type', ['course_video', 'webinar'])
+                        ->first();
+
+                    if ($upeProduct) {
+                        $upeSale = UpeSale::where('user_id', $user->id)
+                            ->where('product_id', $upeProduct->id)
+                            ->where('pricing_mode', 'installment')
+                            ->whereIn('status', ['active', 'pending_payment', 'partially_refunded'])
+                            ->first();
+
+                        if ($upeSale) {
+                            $upePlan = UpeInstallmentPlan::where('sale_id', $upeSale->id)
+                                ->whereIn('status', ['active', 'completed'])
+                                ->with('schedules')
                                 ->first();
 
-                            if ($upeProduct) {
-                                $upeSale = UpeSale::where('user_id', $user->id)
-                                    ->where('product_id', $upeProduct->id)
-                                    ->where('pricing_mode', 'installment')
-                                    ->whereIn('status', ['active', 'pending_payment', 'partially_refunded'])
+                            if ($upePlan && $upePlan->schedules->isNotEmpty()) {
+                                $nextSchedule = $upePlan->schedules
+                                    ->whereIn('status', ['due', 'upcoming', 'partial', 'overdue'])
+                                    ->sortBy('sequence')
                                     ->first();
 
-                                if ($upeSale) {
-                                    // webinar_part_payment is authoritative (records every payment once).
-                                    // UPE ledger may double-count from sync, so prefer legacy when available.
-                                    $legacyPartSum = (float) WebinarPartPayment::where('user_id', $user->id)
-                                        ->where('webinar_id', $webinar->id)
-                                        ->sum('amount');
-
-                                    if ($legacyPartSum > 0) {
-                                        $totalPaid = $legacyPartSum;
-                                    } else {
-                                        $ledgerService = app(PaymentLedgerService::class);
-                                        $totalPaid = $ledgerService->balance($upeSale->id);
-                                    }
-
-                                    $runningPaid = $totalPaid;
-
-                                    // Walk upfront first
-                                    $upfrontAmount = $installment->getUpfront($itemPrice1);
-                                    if ($upfrontAmount > 0) {
-                                        if ($runningPaid >= $upfrontAmount) {
-                                            $runningPaid -= $upfrontAmount;
-                                        } else {
-                                            $partAmount = max(1, (int) round($upfrontAmount - $runningPaid, 0, PHP_ROUND_HALF_UP));
-                                            goto partPaymentReturn;
-                                        }
-                                    }
-
-                                    // Walk steps sequentially
-                                    $steps = $installment->steps()->orderBy('id')->get();
-                                    foreach ($steps as $step) {
-                                        $stepAmount = $step->getPrice($itemPrice1);
-                                        if ($runningPaid >= $stepAmount) {
-                                            $runningPaid -= $stepAmount;
-                                        } else {
-                                            $partAmount = max(1, (int) round($stepAmount - $runningPaid, 0, PHP_ROUND_HALF_UP));
-                                            goto partPaymentReturn;
-                                        }
-                                    }
-
-                                    // All paid
+                                if ($nextSchedule) {
+                                    $remaining = (float) $nextSchedule->amount_due - (float) $nextSchedule->amount_paid;
+                                    $partAmount = max(1, (int) round($remaining, 0, PHP_ROUND_HALF_UP));
+                                } else {
                                     $partAmount = 0;
-                                    goto partPaymentReturn;
+                                }
+                            } else {
+                                // UPE sale exists but no plan/schedules yet — use ledger balance
+                                $ledgerService = app(PaymentLedgerService::class);
+                                $totalPaid = $ledgerService->balance($upeSale->id);
+                                $partAmount = max(0, (int) round(($itemPrice1 ?? $itemPrice) - $totalPaid, 0, PHP_ROUND_HALF_UP));
+                            }
+                        } else {
+                            // No UPE sale → new purchase → upfront amount
+                            if ($installmentIdForPart) {
+                                $installment = Installment::where('id', $installmentIdForPart)->where('enable', true)->first();
+                                if ($installment) {
+                                    $partAmount = (int) round($installment->getUpfront($itemPrice1), 0, PHP_ROUND_HALF_UP);
                                 }
                             }
-
-                            // No UPE sale → new purchase → upfront amount
-                            $partAmount = (int) round($installment->getUpfront($itemPrice1), 0, PHP_ROUND_HALF_UP);
                         }
-                    } catch (\Exception $e) {
-                        Log::warning('UPE part payment lookup failed in PaymentController', [
-                            'webinar_id' => $webinar->id,
-                            'error' => $e->getMessage(),
-                        ]);
                     }
                 }
-
-                partPaymentReturn:
                 return [
                     'type' => 'part',
                     'item' => $webinar,
@@ -470,51 +445,24 @@ class PaymentController extends Controller
                     }
 
                 }
-                    $userId = $user->id;
+
+                // UPE: Compute upfront amount from Installment config (no legacy record creation)
                 $installment = Installment::query()->where('id', $installmentId)
                     ->where('enable', true)
-                    ->withCount([
-                        'steps'
-                    ])
                     ->first();
 
-                $installmentPlans = new InstallmentPlans($user);
-                $installments = $installmentPlans->getPlans('courses', $item->id, $item->type, $item->category_id, $item->teacher_id);
-
-                $installmentOrder = InstallmentOrder::query()->updateOrCreate([
-                    'installment_id' => $installment->id,
-                    'user_id' => $user->id,
-                    'discount' => $totalDiscount,
-                    'webinar_id' => $itemId,
-                    'product_order_id' => !empty($productOrder) ? $productOrder->id : null,
-                    'item_price' => $itemPrice1 ?? $item->getPrice(),
-                    'status' => 'paying',
-                ], [
-                    'created_at' => time(),
-                ]);
-
-                $step = $validated['installment_step'] ?? 1;
-
-                $installmentPayment = InstallmentOrderPayment :: query()->updateOrCreate([
-                        'installment_order_id' => $installmentOrder->id,
-                        'sale_id' => null,
-                        'type' => 'upfront',
-                        'step_id' => null,
-                        'amount' => $installment->getUpfront($installmentOrder->getItemPrice()),
-                        'status' => 'paying',
-                    ], [
-                        'created_at' => time(),
-                    ]);
+                $upfrontAmount = $installment
+                    ? (int) round($installment->getUpfront($itemPrice1 ?? $itemPrice), 0, PHP_ROUND_HALF_UP)
+                    : ($itemPrice1 ?? $itemPrice);
 
                 return [
                     'type' => 'installment',
-                    'item' => $installmentOrder,
-                    'installment_payment' => $installmentPayment,
-                    'installment_payment_id' => $installmentPayment->id,
-                    'installment_step' => $step,
+                    'item' => $item,
+                    'webinar_id' => $item->id,
+                    'installment_id' => $installmentId,
                     'discount' => $totalDiscount,
-                    'amount' => $installmentPayment->amount,
-                    'description' => "Installment {$step} - Order #{$installmentOrder->id}",
+                    'amount' => $upfrontAmount,
+                    'description' => "Installment Upfront: {$item->title}",
                     'user_data' => $validated,
                     'is_installment' => true,
                 ];
@@ -691,8 +639,8 @@ class PaymentController extends Controller
                 $notes['reserve_meeting_id'] = $paymentData['reserve_meeting_id'] ?? null;
                 break;
             case 'installment':
-                $notes['installment_payment_id'] = $paymentData['installment_payment_id'];
-                $notes['installment_step'] = $paymentData['installment_step'];
+                $notes['webinar_id'] = $paymentData['webinar_id'];
+                $notes['installment_id'] = $paymentData['installment_id'];
                 $notes['is_installment'] = true;
                 break;
             case 'quick_pay':
@@ -969,10 +917,39 @@ class PaymentController extends Controller
 
     protected function processPartPayment($data)
     {
+        $webinarId = $data['webinar_id'];
+        $userId = $data['user_id'];
+        $installmentId = !empty($data['installment_id']) ? (int) $data['installment_id'] : null;
+        $amount = $this->getTransactionAmount($data['razorpay_payment_id']);
+        $discountId = $data['discount_id'] ?? null;
 
-        $PartPaymentController = new PartPaymentController();
-        $installments = $PartPaymentController->processPartPayment($data);
+        $webinar = Webinar::findOrFail($webinarId);
+        $discount = 0;
+        if ($discountId) {
+            $discountCoupon = Discount::where('id', $discountId)->first();
+            if ($discountCoupon) {
+                $discount = ($webinar->price > 0) ? $webinar->price * ($discountCoupon->percent ?? 0) / 100 : 0;
+            }
+        }
 
+        if (!$installmentId) {
+            $installmentId = (int) Installment::where('enable', true)->value('id');
+        }
+
+        Log::info('processPartPayment via UPE CheckoutService', [
+            'user_id' => $userId, 'webinar_id' => $webinarId,
+            'installment_id' => $installmentId, 'amount' => $amount, 'discount' => $discount,
+        ]);
+
+        $checkout = app(\App\Services\PaymentEngine\CheckoutService::class);
+        $result = $checkout->processPartPayment(
+            $userId, $webinarId, $amount, $installmentId, 'razorpay', $data['razorpay_payment_id'], $discount
+        );
+
+        Log::info('Part payment processed via UPE', [
+            'upe_sale_id' => $result['upe_sale']->id,
+            'already_exists' => $result['already_exists'],
+        ]);
     }
 
     protected function processQuickPayPayment($data)
@@ -1306,36 +1283,84 @@ class PaymentController extends Controller
 
     protected function processInstallmentPayment($data)
     {
-        $orderId = $data['order_id'];
-
-        Log::info('processInstallmentPayment', ['data' => $data]);
-        $installmentPaymentId = $data['installment_payment_id'];
-        $installmentStep = $data['installment_step'] ?? 1;
+        $webinarId = $data['webinar_id'] ?? null;
         $userId = $data['user_id'];
+        $installmentId = !empty($data['installment_id']) ? (int) $data['installment_id'] : null;
         $amount = $this->getTransactionAmount($data['razorpay_payment_id']);
+        $discountId = $data['discount_id'] ?? null;
 
-        $installmentPayment = InstallmentOrderPayment::with('installmentOrder')
-            ->findOrFail($installmentPaymentId);
+        // Backward compat: old Razorpay notes may still carry installment_payment_id
+        if (!$webinarId && !empty($data['installment_payment_id'])) {
+            $legacyPayment = InstallmentOrderPayment::with('installmentOrder')->find($data['installment_payment_id']);
+            if ($legacyPayment) {
+                $webinarId = $legacyPayment->installmentOrder->webinar_id ?? null;
+                $legacyPayment->update(['status' => 'paid', 'payment_date' => time()]);
+                if ($legacyPayment->installmentOrder) {
+                    $legacyPayment->installmentOrder->update(['status' => 'open']);
+                }
+            }
+        }
 
-        $installmentPayment->update([
-            'status' => 'paid',
-            'payment_date' => time(),
+        if (!$webinarId) {
+            throw new \Exception('processInstallmentPayment: webinar_id missing from payment data');
+        }
+
+        $webinar = Webinar::findOrFail($webinarId);
+        $discount = 0;
+        if ($discountId) {
+            $discountCoupon = Discount::where('id', $discountId)->first();
+            if ($discountCoupon) {
+                $discount = ($webinar->price > 0) ? $webinar->price * ($discountCoupon->percent ?? 0) / 100 : 0;
+            }
+        }
+
+        if (!$installmentId) {
+            $installmentId = (int) Installment::where('enable', true)->value('id');
+        }
+
+        Log::info('processInstallmentPayment via UPE CheckoutService', [
+            'user_id' => $userId, 'webinar_id' => $webinarId,
+            'installment_id' => $installmentId, 'amount' => $amount, 'discount' => $discount,
         ]);
 
-        $installmentOrder = $installmentPayment->installmentOrder;
-        $webinarId = $installmentOrder->webinar_id;
-        $webinar = Webinar::findOrFail($webinarId);
-
-        $installmentOrder->update(['status' => 'open']);
-
-        // UPE CheckoutService (creates UPE sale + plan + schedule + ledger + legacy Sale + accounting)
+        // UPE: delegate to CheckoutService::processPartPayment (handles new + existing sales)
         $checkout = app(\App\Services\PaymentEngine\CheckoutService::class);
-        $checkout->processInstallmentPayment($userId, $webinarId, $amount, $installmentPaymentId, 'razorpay', $data['razorpay_payment_id']);
+        $result = $checkout->processPartPayment(
+            $userId, $webinarId, $amount, $installmentId, 'razorpay', $data['razorpay_payment_id'], $discount
+        );
 
-        Log::info('Installment payment processed', [
-            'user_id' => $userId,
-            'installment_payment_id' => $installmentPaymentId,
-            'step' => $installmentStep,
+        // Legacy dual-write: create InstallmentOrder + InstallmentOrderPayment for admin views
+        try {
+            $installment = Installment::find($installmentId);
+            if ($installment) {
+                $itemPrice = ceil($webinar->getPrice()) - $discount;
+                $installmentOrder = InstallmentOrder::query()->updateOrCreate([
+                    'installment_id' => $installment->id,
+                    'user_id' => $userId,
+                    'webinar_id' => $webinarId,
+                ], [
+                    'discount' => $discount,
+                    'item_price' => $itemPrice,
+                    'status' => 'open',
+                    'created_at' => time(),
+                ]);
+
+                InstallmentOrderPayment::query()->updateOrCreate([
+                    'installment_order_id' => $installmentOrder->id,
+                    'type' => 'upfront',
+                ], [
+                    'amount' => $amount,
+                    'status' => 'paid',
+                    'created_at' => time(),
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Legacy InstallmentOrder dual-write failed (non-fatal): ' . $e->getMessage());
+        }
+
+        Log::info('Installment payment processed via UPE', [
+            'upe_sale_id' => $result['upe_sale']->id,
+            'already_exists' => $result['already_exists'],
         ]);
     }
 

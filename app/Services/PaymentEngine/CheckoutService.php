@@ -359,246 +359,27 @@ class CheckoutService
     }
 
     /**
-     * Process an installment upfront payment.
-     * Creates UPE sale in pending_payment + installment plan + schedules.
+     * Process an installment upfront payment (DEPRECATED — use processPartPayment instead).
+     * Kept for backward compatibility. Delegates to processPartPayment internally.
      */
     public function processInstallmentPayment(int $userId, int $webinarId, float $amount, int $installmentPaymentId, string $paymentMethod = 'razorpay', ?string $razorpayPaymentId = null): array
     {
-        $webinar = \App\Models\Webinar::findOrFail($webinarId);
-
-        $productType = match ($webinar->type) {
-            'webinar' => 'webinar',
-            default => 'course_video',
-        };
-        $upeProduct = $this->resolveProduct($webinarId, $productType, $webinar->price ?? $amount, $webinar->access_days);
-
-        // Check if UPE sale already exists for this installment
-        $existingSale = UpeSale::where('user_id', $userId)
-            ->where('product_id', $upeProduct->id)
-            ->where('pricing_mode', 'installment')
-            ->whereIn('status', ['active', 'pending_payment', 'partially_refunded'])
-            ->first();
-
-        if ($existingSale) {
-            // Subsequent installment payment — use InstallmentEngine for proper schedule updates
-            $plan = UpeInstallmentPlan::where('sale_id', $existingSale->id)->first();
-            $engineResult = null;
-
-            if ($plan) {
-                $hasUnpaidSchedules = $plan->schedules()
-                    ->whereIn('status', ['due', 'partial', 'overdue', 'upcoming'])
-                    ->exists();
-
-                if ($hasUnpaidSchedules) {
-                    $engine = app(InstallmentEngine::class);
-                    $engineResult = $engine->recordPayment(
-                        $plan,
-                        $amount,
-                        $paymentMethod,
-                        $razorpayPaymentId,
-                        null,
-                        null
-                    );
-                } else {
-                    // Fallback: no unpaid schedules, record raw ledger entry
-                    $this->ledger->append(
-                        $existingSale->id,
-                        UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
-                        UpeLedgerEntry::DIR_CREDIT,
-                        $amount,
-                        $paymentMethod,
-                        $razorpayPaymentId,
-                        null, null, null,
-                        "Installment payment for: {$webinar->slug}",
-                        null,
-                        $razorpayPaymentId ? "rp_{$razorpayPaymentId}_inst_{$installmentPaymentId}" : "inst_{$userId}_{$installmentPaymentId}_" . time()
-                    );
-                }
-
-                // Check if fully paid → activate
-                $totalPaid = $plan->totalPaid();
-                if ($totalPaid >= $plan->total_amount) {
-                    $existingSale->update(['status' => 'active']);
-                }
-            }
-
-            // Update legacy InstallmentOrderPayment status
-            $installmentPaymentRecord = \App\Models\InstallmentOrderPayment::find($installmentPaymentId);
-            if ($installmentPaymentRecord && $installmentPaymentRecord->status !== 'paid') {
-                $installmentPaymentRecord->update([
-                    'status' => 'paid',
-                    'payment_date' => time(),
-                ]);
-            }
-
-            $legacySale = Sale::create([
-                'buyer_id' => $userId,
-                'seller_id' => $webinar->creator_id ?? 1,
-                'webinar_id' => $webinarId,
-                'installment_payment_id' => $installmentPaymentId,
-                'type' => 'installment_payment',
-                'payment_method' => 'payment_channel',
-                'amount' => $amount,
-                'total_amount' => $amount,
-                'created_at' => time(),
-            ]);
-
-            Accounting::create([
-                'user_id' => $webinar->creator_id ?? 1,
-                'installment_payment_id' => $installmentPaymentId,
-                'sale_id' => $legacySale->id,
-                'amount' => $amount,
-                'type' => 'addiction',
-                'description' => "Installment step payment",
-                'is_affiliate' => false,
-                'is_cashback' => false,
-                'store_type' => 'automatic',
-                'tax' => 0,
-                'commission' => 0,
-                'discount' => 0,
-                'created_at' => time(),
-            ]);
-
-            $this->clearAccessCache($userId, $upeProduct->id);
-
-            Log::info('CheckoutService: Subsequent installment payment recorded', [
-                'user_id' => $userId, 'webinar_id' => $webinarId,
-                'upe_sale_id' => $existingSale->id, 'amount' => $amount,
-                'engine_result' => $engineResult,
-            ]);
-
-            return ['upe_sale' => $existingSale, 'legacy_sale' => $legacySale, 'already_exists' => true];
-        }
-
-        // New installment purchase — create sale + plan
-        $validFrom = now();
-        $validUntil = $webinar->access_days ? $validFrom->copy()->addDays($webinar->access_days) : null;
-
-        $upeSale = UpeSale::create([
-            'uuid' => (string) Str::uuid(),
-            'user_id' => $userId,
-            'product_id' => $upeProduct->id,
-            'sale_type' => $amount > 0 ? 'paid' : 'free',
-            'pricing_mode' => 'installment',
-            'base_fee_snapshot' => $webinar->price ?? $amount,
-            'status' => 'pending_payment',
-            'valid_from' => $validFrom,
-            'valid_until' => $validUntil,
-            'metadata' => json_encode([
-                'razorpay_payment_id' => $razorpayPaymentId,
-                'source' => 'checkout',
-                'webinar_id' => $webinarId,
-                'installment_payment_id' => $installmentPaymentId,
-            ]),
-        ]);
-
-        // Resolve installment plan details from legacy InstallmentOrder
-        $installmentPaymentRecord = \App\Models\InstallmentOrderPayment::find($installmentPaymentId);
-        $installmentOrder = $installmentPaymentRecord ? $installmentPaymentRecord->installmentOrder : null;
-        $totalInstallments = 1;
-        $totalAmount = $webinar->price ?? $amount;
-
-        if ($installmentOrder && $installmentOrder->installment) {
-            $totalInstallments = $installmentOrder->installment->steps()->count() + 1; // +1 for upfront
-            $totalAmount = $installmentOrder->item_price ?? $webinar->price ?? $amount;
-        }
-
-        $plan = UpeInstallmentPlan::create([
-            'sale_id' => $upeSale->id,
-            'total_amount' => $totalAmount,
-            'num_installments' => $totalInstallments,
-            'plan_type' => 'standard',
-            'status' => 'active',
-        ]);
-
-        // Upfront schedule
-        UpeInstallmentSchedule::create([
-            'plan_id' => $plan->id,
-            'sequence' => 1,
-            'due_date' => now(),
-            'amount_due' => $amount,
-            'amount_paid' => $amount,
-            'status' => 'paid',
-            'paid_at' => now(),
-        ]);
-
-        // Step schedules (due/upcoming)
-        if ($installmentOrder && $installmentOrder->installment) {
-            $steps = $installmentOrder->installment->steps()->orderBy('order')->orderBy('id')->get();
-            $baseDueDate = $installmentOrder->created_at
-                ? \Carbon\Carbon::createFromTimestamp($installmentOrder->created_at)
-                : now();
-            $seq = 2;
-            foreach ($steps as $step) {
-                $deadlineDays = (int) $step->deadline;
-                $stepAmount = round($step->getPrice($totalAmount), 2);
-                UpeInstallmentSchedule::create([
-                    'plan_id' => $plan->id,
-                    'sequence' => $seq,
-                    'due_date' => $baseDueDate->copy()->addDays($deadlineDays),
-                    'amount_due' => $stepAmount,
-                    'amount_paid' => 0,
-                    'status' => ($seq === 2) ? 'due' : 'upcoming',
-                ]);
-                $seq++;
-            }
-        }
-
-        // Ledger entry for upfront payment
-        $this->ledger->append(
-            $upeSale->id,
-            UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
-            UpeLedgerEntry::DIR_CREDIT,
-            $amount,
-            $paymentMethod,
-            $razorpayPaymentId,
-            null, // gatewayResponse
-            null, // referenceType
-            null, // referenceId
-            "Installment upfront for: {$webinar->slug}",
-            null, // processedBy
-            $razorpayPaymentId ? "rp_{$razorpayPaymentId}_inst_{$installmentPaymentId}" : "inst_upfront_{$userId}_{$webinarId}_" . time()
-        );
-
-        $this->audit->logSaleCreated($userId, 'student', $upeSale->toArray());
-
-        // Legacy dual-write
-        $legacySale = Sale::create([
-            'buyer_id' => $userId,
-            'seller_id' => $webinar->creator_id ?? 1,
-            'webinar_id' => $webinarId,
-            'installment_payment_id' => $installmentPaymentId,
-            'type' => 'installment_payment',
-            'payment_method' => 'payment_channel',
-            'amount' => $amount,
-            'total_amount' => $amount,
-            'created_at' => time(),
-        ]);
-
-        Accounting::create([
-            'user_id' => $webinar->creator_id ?? 1,
-            'installment_payment_id' => $installmentPaymentId,
-            'sale_id' => $legacySale->id,
-            'amount' => $amount,
-            'type' => 'addiction',
-            'description' => "Installment upfront payment",
-            'is_affiliate' => false,
-            'is_cashback' => false,
-            'store_type' => 'automatic',
-            'tax' => 0,
-            'commission' => 0,
-            'discount' => 0,
-            'created_at' => time(),
-        ]);
-
-        $this->clearAccessCache($userId, $upeProduct->id);
-
-        Log::info('CheckoutService: Installment purchase completed', [
+        Log::info('CheckoutService::processInstallmentPayment delegating to processPartPayment', [
             'user_id' => $userId, 'webinar_id' => $webinarId,
-            'upe_sale_id' => $upeSale->id, 'plan_id' => $plan->id,
+            'amount' => $amount, 'installment_payment_id' => $installmentPaymentId,
         ]);
 
-        return ['upe_sale' => $upeSale, 'legacy_sale' => $legacySale, 'already_exists' => false];
+        // Resolve installment_id from legacy InstallmentOrderPayment if available
+        $installmentId = null;
+        $legacyPayment = \App\Models\InstallmentOrderPayment::find($installmentPaymentId);
+        if ($legacyPayment && $legacyPayment->installmentOrder) {
+            $installmentId = $legacyPayment->installmentOrder->installment_id;
+        }
+        if (!$installmentId) {
+            $installmentId = (int) \App\Models\Installment::where('enable', true)->value('id');
+        }
+
+        return $this->processPartPayment($userId, $webinarId, $amount, $installmentId, $paymentMethod, $razorpayPaymentId);
     }
 
     /**
@@ -909,6 +690,234 @@ class CheckoutService
         ]);
 
         return ['upe_sale' => $upeSale, 'legacy_sale' => $legacySale, 'already_exists' => false];
+    }
+
+    /**
+     * Process a part/installment payment — UPE-first flow.
+     * Applies payment to the next unpaid UPE schedule via InstallmentEngine,
+     * then does legacy dual-writes (WebinarPartPayment, Sale, Accounting) for backward compat.
+     */
+    public function processPartPayment(
+        int $userId,
+        int $webinarId,
+        float $amount,
+        ?int $installmentId = null,
+        string $paymentMethod = 'razorpay',
+        ?string $razorpayPaymentId = null,
+        float $discount = 0
+    ): array {
+        $webinar = \App\Models\Webinar::findOrFail($webinarId);
+
+        $productType = match ($webinar->type) {
+            'webinar' => 'webinar',
+            default => 'course_video',
+        };
+        $coursePrice = $webinar->getPrice() ?? $webinar->price;
+        $upeProduct = $this->resolveProduct($webinarId, $productType, $coursePrice, $webinar->access_days);
+
+        // Find existing UPE sale
+        $existingSale = UpeSale::where('user_id', $userId)
+            ->where('product_id', $upeProduct->id)
+            ->where('pricing_mode', 'installment')
+            ->whereIn('status', ['active', 'pending_payment', 'partially_refunded'])
+            ->first();
+
+        $engineResult = null;
+
+        if ($existingSale) {
+            // Subsequent payment — apply to existing plan via InstallmentEngine
+            $plan = UpeInstallmentPlan::where('sale_id', $existingSale->id)
+                ->whereIn('status', ['active', 'completed'])
+                ->first();
+
+            if ($plan) {
+                $hasUnpaid = $plan->schedules()
+                    ->whereIn('status', ['due', 'partial', 'overdue', 'upcoming'])
+                    ->exists();
+
+                if ($hasUnpaid) {
+                    $engine = app(InstallmentEngine::class);
+                    $engineResult = $engine->recordPayment(
+                        $plan, $amount, $paymentMethod, $razorpayPaymentId
+                    );
+                }
+
+                // Check if fully paid → activate
+                if ($plan->totalPaid() >= $plan->total_amount) {
+                    $existingSale->update(['status' => 'active']);
+                }
+            }
+
+            // Legacy dual-write: Sale
+            $legacySale = Sale::create([
+                'buyer_id' => $userId,
+                'seller_id' => $webinar->creator_id ?? 1,
+                'webinar_id' => $webinarId,
+                'type' => 'installment_payment',
+                'payment_method' => 'payment_channel',
+                'amount' => $amount,
+                'total_amount' => $amount,
+                'created_at' => time(),
+            ]);
+
+            // Legacy dual-write: WebinarPartPayment
+            \App\Models\WebinarPartPayment::create([
+                'user_id' => $userId,
+                'webinar_id' => $webinarId,
+                'installment_id' => $installmentId,
+                'amount' => $amount,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Legacy dual-write: Accounting
+            Accounting::create([
+                'user_id' => $webinar->creator_id ?? 1,
+                'sale_id' => $legacySale->id,
+                'amount' => $amount,
+                'type' => 'addiction',
+                'description' => "Part payment for: {$webinar->slug}",
+                'is_affiliate' => false,
+                'is_cashback' => false,
+                'store_type' => 'automatic',
+                'tax' => 0,
+                'commission' => 0,
+                'discount' => $discount,
+                'created_at' => time(),
+            ]);
+
+            $this->clearAccessCache($userId, $upeProduct->id);
+
+            Log::info('CheckoutService: Part payment recorded (existing sale)', [
+                'user_id' => $userId, 'webinar_id' => $webinarId,
+                'upe_sale_id' => $existingSale->id, 'amount' => $amount,
+                'engine_result' => $engineResult,
+            ]);
+
+            return ['upe_sale' => $existingSale, 'legacy_sale' => $legacySale, 'already_exists' => true, 'engine_result' => $engineResult];
+        }
+
+        // New installment purchase — create UPE sale + plan + schedules
+        $validFrom = now();
+        $validUntil = $webinar->access_days ? $validFrom->copy()->addDays($webinar->access_days) : null;
+
+        $upeSale = UpeSale::create([
+            'uuid' => (string) Str::uuid(),
+            'user_id' => $userId,
+            'product_id' => $upeProduct->id,
+            'sale_type' => 'paid',
+            'pricing_mode' => 'installment',
+            'base_fee_snapshot' => $coursePrice,
+            'status' => 'pending_payment',
+            'valid_from' => $validFrom,
+            'valid_until' => $validUntil,
+            'metadata' => json_encode([
+                'razorpay_payment_id' => $razorpayPaymentId,
+                'source' => 'part_payment',
+                'webinar_id' => $webinarId,
+                'installment_id' => $installmentId,
+            ]),
+        ]);
+
+        // Build schedule amounts from legacy installment config (one-time setup)
+        $installment = $installmentId ? \App\Models\Installment::find($installmentId) : null;
+        $itemPrice = $coursePrice - $discount;
+        $scheduleAmounts = [];
+
+        if ($installment) {
+            $upfrontAmount = round($itemPrice * ($installment->upfront / 100), 2);
+            $scheduleAmounts[] = ['amount' => $upfrontAmount, 'deadline_days' => 0];
+
+            $steps = $installment->steps()->orderBy('order')->get();
+            foreach ($steps as $step) {
+                $stepAmount = round($step->getPrice($itemPrice), 2);
+                $scheduleAmounts[] = ['amount' => $stepAmount, 'deadline_days' => (int) $step->deadline];
+            }
+        } else {
+            $scheduleAmounts[] = ['amount' => $itemPrice, 'deadline_days' => 0];
+        }
+
+        $totalAmount = array_sum(array_column($scheduleAmounts, 'amount'));
+        $numInstallments = count($scheduleAmounts);
+
+        $plan = UpeInstallmentPlan::create([
+            'sale_id' => $upeSale->id,
+            'total_amount' => $totalAmount,
+            'num_installments' => $numInstallments,
+            'plan_type' => 'standard',
+            'status' => 'active',
+        ]);
+
+        foreach ($scheduleAmounts as $i => $sched) {
+            UpeInstallmentSchedule::create([
+                'plan_id' => $plan->id,
+                'sequence' => $i + 1,
+                'due_date' => now()->addDays($sched['deadline_days']),
+                'amount_due' => $sched['amount'],
+                'amount_paid' => 0,
+                'status' => ($i === 0) ? 'due' : 'upcoming',
+            ]);
+        }
+
+        // Apply the payment via InstallmentEngine waterfall
+        $engine = app(InstallmentEngine::class);
+        $engineResult = $engine->recordPayment(
+            $plan, $amount, $paymentMethod, $razorpayPaymentId
+        );
+
+        // Check if fully paid → activate
+        $plan->refresh();
+        if ($plan->totalPaid() >= $plan->total_amount) {
+            $upeSale->update(['status' => 'active']);
+        }
+
+        // Legacy dual-write: Sale
+        $legacySale = Sale::create([
+            'buyer_id' => $userId,
+            'seller_id' => $webinar->creator_id ?? 1,
+            'webinar_id' => $webinarId,
+            'type' => 'installment_payment',
+            'payment_method' => 'payment_channel',
+            'amount' => $amount,
+            'total_amount' => $amount,
+            'created_at' => time(),
+        ]);
+
+        // Legacy dual-write: WebinarPartPayment
+        \App\Models\WebinarPartPayment::create([
+            'user_id' => $userId,
+            'webinar_id' => $webinarId,
+            'installment_id' => $installmentId,
+            'amount' => $amount,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Legacy dual-write: Accounting
+        Accounting::create([
+            'user_id' => $webinar->creator_id ?? 1,
+            'sale_id' => $legacySale->id,
+            'amount' => $amount,
+            'type' => 'addiction',
+            'description' => "Part payment for: {$webinar->slug}",
+            'is_affiliate' => false,
+            'is_cashback' => false,
+            'store_type' => 'automatic',
+            'tax' => 0,
+            'commission' => 0,
+            'discount' => $discount,
+            'created_at' => time(),
+        ]);
+
+        $this->clearAccessCache($userId, $upeProduct->id);
+
+        Log::info('CheckoutService: New part payment purchase', [
+            'user_id' => $userId, 'webinar_id' => $webinarId,
+            'upe_sale_id' => $upeSale->id, 'plan_id' => $plan->id,
+            'amount' => $amount, 'engine_result' => $engineResult,
+        ]);
+
+        return ['upe_sale' => $upeSale, 'legacy_sale' => $legacySale, 'already_exists' => false, 'engine_result' => $engineResult];
     }
 
     /**

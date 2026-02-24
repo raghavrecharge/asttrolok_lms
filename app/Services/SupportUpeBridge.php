@@ -456,4 +456,47 @@ class SupportUpeBridge
     {
         return $this->grantRelativeAccess($userId, $webinarId, $supportRequestId, $adminId);
     }
+
+    // ══════════════════════════════════════════════════════════════
+    //  POST-PURCHASE COUPON — record discount in UPE ledger
+    // ══════════════════════════════════════════════════════════════
+
+    public function recordCouponDiscount(int $userId, int $webinarId, int $supportRequestId, int $adminId, float $discountAmount, string $couponCode, int $discountId): ?UpeSale
+    {
+        $product = $this->getOrCreateProduct($webinarId);
+        if (!$product) return null;
+
+        $sale = UpeSale::where('user_id', $userId)
+            ->where('product_id', $product->id)
+            ->whereNotIn('status', ['cancelled', 'refunded'])
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$sale) {
+            Log::warning('SupportUpeBridge: No UPE sale found for coupon discount', [
+                'user_id' => $userId, 'product_id' => $product->id,
+            ]);
+            return null;
+        }
+
+        // Idempotency: check for existing ledger entry
+        $idempotencyKey = "admin_coupon_{$supportRequestId}";
+        $existingEntry = UpeLedgerEntry::where('idempotency_key', $idempotencyKey)->first();
+
+        if (!$existingEntry) {
+            $this->ledger->recordDiscount(
+                saleId: $sale->id,
+                amount: $discountAmount,
+                discountId: $discountId,
+                processedBy: $adminId,
+                description: "Post-purchase coupon '{$couponCode}' via support #{$supportRequestId}"
+            );
+        }
+
+        Log::info('SupportUpeBridge: Coupon discount recorded', [
+            'sale_id' => $sale->id, 'discount_amount' => $discountAmount, 'coupon_code' => $couponCode,
+        ]);
+
+        return $sale;
+    }
 }

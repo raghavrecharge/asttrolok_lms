@@ -265,6 +265,106 @@ class InstallmentEngine
     }
 
     /**
+     * Split a single unpaid schedule into N sub-schedules with custom amounts and dates.
+     * The original schedule is waived and replaced by the new sub-schedules.
+     *
+     * @param UpeInstallmentPlan     $plan           The plan containing the schedule
+     * @param UpeInstallmentSchedule $schedule       The specific schedule to split
+     * @param array                  $subSchedules   [{amount, due_date}, ...] — must sum to schedule's remaining amount
+     * @param int                    $approvedBy     Admin user ID
+     * @return array                                 The newly created sub-schedules
+     */
+    public function splitSchedule(
+        UpeInstallmentPlan $plan,
+        UpeInstallmentSchedule $schedule,
+        array $subSchedules,
+        int $approvedBy = 0
+    ): array {
+        if (!$plan->isActive()) {
+            throw new \RuntimeException("Cannot restructure a plan that is not active.");
+        }
+
+        if ($schedule->isPaid()) {
+            throw new \RuntimeException("Cannot split an already-paid schedule.");
+        }
+
+        if ($schedule->plan_id !== $plan->id) {
+            throw new \RuntimeException("Schedule does not belong to this plan.");
+        }
+
+        if (count($subSchedules) < 2) {
+            throw new \InvalidArgumentException("Must split into at least 2 sub-schedules.");
+        }
+
+        $targetAmount = $schedule->remainingAmount();
+        $splitTotal = round(array_sum(array_column($subSchedules, 'amount')), 2);
+
+        if (abs($splitTotal - $targetAmount) > 1) {
+            throw new \InvalidArgumentException(
+                "Sub-schedule total ({$splitTotal}) does not match schedule remaining amount ({$targetAmount})."
+            );
+        }
+
+        return DB::transaction(function () use ($plan, $schedule, $subSchedules, $approvedBy, $targetAmount) {
+            $plan = UpeInstallmentPlan::where('id', $plan->id)->lockForUpdate()->first();
+            $schedule = UpeInstallmentSchedule::where('id', $schedule->id)->lockForUpdate()->first();
+
+            $originalSequence = $schedule->sequence;
+
+            // 1. Waive the original schedule
+            $schedule->update(['status' => 'waived']);
+
+            // 2. Shift sequences of all subsequent schedules to make room
+            $shiftBy = count($subSchedules) - 1; // e.g., splitting 1 into 3 = shift by 2
+            if ($shiftBy > 0) {
+                UpeInstallmentSchedule::where('plan_id', $plan->id)
+                    ->where('sequence', '>', $originalSequence)
+                    ->where('id', '!=', $schedule->id)
+                    ->orderByDesc('sequence')
+                    ->each(function ($s) use ($shiftBy) {
+                        $s->update(['sequence' => $s->sequence + $shiftBy]);
+                    });
+            }
+
+            // 3. Create new sub-schedules
+            $created = [];
+            foreach ($subSchedules as $i => $sub) {
+                $newSeq = $originalSequence + $i;
+                $isFirst = ($i === 0);
+
+                $newSchedule = UpeInstallmentSchedule::create([
+                    'plan_id' => $plan->id,
+                    'sequence' => $newSeq,
+                    'amount_due' => round($sub['amount'], 2),
+                    'amount_paid' => 0,
+                    'due_date' => $sub['due_date'],
+                    'status' => $isFirst ? 'due' : 'upcoming',
+                ]);
+
+                $created[] = $newSchedule;
+            }
+
+            // 4. Update plan num_installments
+            $activeScheduleCount = UpeInstallmentSchedule::where('plan_id', $plan->id)
+                ->whereNotIn('status', ['waived'])
+                ->count();
+            $plan->update(['num_installments' => $activeScheduleCount]);
+
+            // 5. Audit trail
+            $this->audit->log($approvedBy, 'admin', 'installment.schedule_split', 'installment_schedule', $schedule->id, [
+                'original_sequence' => $originalSequence,
+                'original_amount' => $targetAmount,
+            ], [
+                'num_sub_schedules' => count($subSchedules),
+                'sub_schedule_ids' => array_map(fn($s) => $s->id, $created),
+                'plan_id' => $plan->id,
+            ]);
+
+            return $created;
+        });
+    }
+
+    /**
      * Mark overdue installments. Called by scheduled job.
      */
     public function markOverdue(): int

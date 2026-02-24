@@ -85,6 +85,7 @@ class NewSupportForAsttrolok extends Model
 
     protected $casts = [
         'attachments' => 'array',
+        'execution_result' => 'array',
         'course_purchased_at' => 'datetime',
         'course_expires_at' => 'datetime',
         'approved_at' => 'datetime',

@@ -1086,30 +1086,44 @@ class PartPaymentController extends Controller
                         'created_at' => date('Y-m-d H:i:s')
                     ]);
 
-                        // UPE: record payment via CheckoutService (updates schedule + legacy InstallmentOrderPayment)
+                        // UPE: record payment directly against UPE installment schedule
+                        // (independent of legacy InstallmentOrderPayment — handles restructured sub-schedules)
                         try {
-                            $nextPayment = \App\Models\InstallmentOrderPayment::where('installment_order_id', $order->id)
-                                ->where('status', '!=', 'paid')
-                                ->orderBy('id')
+                            $upeProduct = \App\Models\PaymentEngine\UpeProduct::where('external_id', $itemId)
+                                ->whereIn('product_type', ['course_video', 'webinar'])
                                 ->first();
 
-                            if ($nextPayment) {
-                                $checkout = app(\App\Services\PaymentEngine\CheckoutService::class);
-                                $checkout->processInstallmentPayment(
-                                    $user->id,
-                                    $itemId,
-                                    $amount,
-                                    $nextPayment->id,
-                                    'razorpay',
-                                    $data['razorpay_payment_id'] ?? null
-                                );
-                                Log::info('UPE installment payment recorded via CheckoutService', [
-                                    'user_id' => $user->id,
-                                    'webinar_id' => $itemId,
-                                    'amount' => $amount,
-                                    'installment_payment_id' => $nextPayment->id,
-                                ]);
-                                return true;
+                            if ($upeProduct) {
+                                $upeSale = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
+                                    ->where('product_id', $upeProduct->id)
+                                    ->where('pricing_mode', 'installment')
+                                    ->whereIn('status', ['active', 'pending_payment', 'partially_refunded'])
+                                    ->first();
+
+                                if ($upeSale) {
+                                    $upePlan = \App\Models\PaymentEngine\UpeInstallmentPlan::where('sale_id', $upeSale->id)
+                                        ->whereIn('status', ['active', 'completed'])
+                                        ->first();
+
+                                    if ($upePlan) {
+                                        $engine = app(\App\Services\PaymentEngine\InstallmentEngine::class);
+                                        $engineResult = $engine->recordPayment(
+                                            $upePlan,
+                                            $amount,
+                                            'razorpay',
+                                            $data['razorpay_payment_id'] ?? null,
+                                            null,
+                                            null
+                                        );
+                                        Log::info('UPE installment payment recorded via InstallmentEngine', [
+                                            'user_id' => $user->id,
+                                            'webinar_id' => $itemId,
+                                            'amount' => $amount,
+                                            'plan_id' => $upePlan->id,
+                                            'schedules_affected' => $engineResult['schedules_affected'] ?? [],
+                                        ]);
+                                    }
+                                }
                             }
                         } catch (\Exception $e) {
                             Log::error('UPE installment payment recording failed, falling through to legacy: ' . $e->getMessage(), [

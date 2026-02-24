@@ -237,7 +237,7 @@ class UpeController extends Controller
 
         $user = auth()->user();
 
-        $plan = UpeInstallmentPlan::with('sale')
+        $plan = UpeInstallmentPlan::with(['sale.product', 'schedules'])
             ->whereHas('sale', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             })
@@ -247,28 +247,85 @@ class UpeController extends Controller
             return back()->with(['toast' => ['title' => 'Error', 'msg' => 'This plan is not eligible for restructure.', 'status' => 'error']]);
         }
 
+        // Must have at least one unpaid schedule
+        $unpaidSchedules = $plan->schedules->whereIn('status', ['due', 'upcoming', 'partial', 'overdue']);
+        if ($unpaidSchedules->isEmpty()) {
+            return back()->with(['toast' => ['title' => 'Error', 'msg' => 'All installments are already paid. Nothing to restructure.', 'status' => 'error']]);
+        }
+
+        // Check for existing pending request
         $alreadyRequested = UpePaymentRequest::where('user_id', $user->id)
             ->where('sale_id', $plan->sale_id)
             ->where('request_type', 'installment_restructure')
-            ->whereNotIn('status', ['rejected'])
+            ->whereNotIn('status', ['rejected', 'executed'])
             ->exists();
 
         if ($alreadyRequested) {
             return back()->with(['toast' => ['title' => 'Error', 'msg' => 'A restructure request is already pending for this plan.', 'status' => 'error']]);
         }
 
-        $overdueSchedules = $plan->schedules->where('status', 'overdue');
-        $remainingSchedules = $plan->schedules->whereIn('status', ['due', 'upcoming', 'partial', 'overdue']);
+        // Determine target schedule: upfront (sequence 1) if unpaid, else first unpaid
+        $targetSchedule = $unpaidSchedules->sortBy('sequence')->first();
+        $isUpfront = ($targetSchedule->sequence <= 1) || $unpaidSchedules->where('sequence', 1)->whereIn('status', ['due', 'upcoming', 'partial', 'overdue'])->isNotEmpty();
 
+        if ($isUpfront) {
+            $targetSchedule = $unpaidSchedules->sortBy('sequence')->first();
+        }
+
+        // Resolve webinar_id from UPE product metadata
+        $webinarId = null;
+        if ($plan->sale && $plan->sale->product) {
+            $webinarId = $plan->sale->product->external_id;
+        }
+
+        // 1. Create UpePaymentRequest
         $paymentRequest = $service->create('installment_restructure', $user->id, $plan->sale_id, [
             'plan_id' => $plan->id,
+            'schedule_id' => $targetSchedule->id,
+            'schedule_sequence' => $targetSchedule->sequence,
+            'schedule_amount' => $targetSchedule->amount_due,
+            'schedule_remaining' => $targetSchedule->remainingAmount(),
+            'schedule_due_date' => $targetSchedule->due_date ? $targetSchedule->due_date->format('Y-m-d') : null,
+            'is_upfront' => $isUpfront,
             'reason' => $request->reason,
-            'overdue_count' => $overdueSchedules->count(),
-            'remaining_count' => $remainingSchedules->count(),
-            'remaining_amount' => $remainingSchedules->sum('amount_due') - $remainingSchedules->sum('amount_paid'),
+            'overdue_count' => $plan->schedules->where('status', 'overdue')->count(),
+            'remaining_count' => $unpaidSchedules->count(),
+            'remaining_amount' => $unpaidSchedules->sum('amount_due') - $unpaidSchedules->sum('amount_paid'),
+            'webinar_id' => $webinarId,
         ]);
 
-        return back()->with(['toast' => ['title' => 'Request Submitted', 'msg' => "Restructure request #{$paymentRequest->id} submitted for review.", 'status' => 'success']]);
+        // 2. Create support ticket so admin/support can see it
+        $webinar = $webinarId ? \App\Models\Webinar::find($webinarId) : null;
+        $supportTicket = \App\Models\NewSupportForAsttrolok::create([
+            'user_id' => $user->id,
+            'support_scenario' => 'installment_restructure',
+            'webinar_id' => $webinarId,
+            'title' => 'EMI Restructure: ' . ($webinar ? $webinar->title : "Plan #{$plan->id}"),
+            'description' => $request->reason,
+            'flow_type' => 'existing_student',
+            'purchase_status' => 'purchased',
+            'status' => 'pending',
+            'restructure_reason' => $request->reason,
+            'installment_amount' => $targetSchedule->remainingAmount(),
+            'execution_result' => [
+                'upe_payment_request_id' => $paymentRequest->id,
+                'plan_id' => $plan->id,
+                'schedule_id' => $targetSchedule->id,
+                'schedule_sequence' => $targetSchedule->sequence,
+                'schedule_amount' => (float) $targetSchedule->amount_due,
+                'schedule_remaining' => $targetSchedule->remainingAmount(),
+                'is_upfront' => $isUpfront,
+            ],
+        ]);
+
+        // Link support ticket back to UPE request
+        $paymentRequest->update([
+            'payload' => array_merge($paymentRequest->payload ?? [], [
+                'support_ticket_id' => $supportTicket->id,
+            ]),
+        ]);
+
+        return back()->with(['toast' => ['title' => 'Request Submitted', 'msg' => "Restructure request #{$paymentRequest->id} submitted. Support ticket #{$supportTicket->ticket_number} created.", 'status' => 'success']]);
     }
 
     // ──────────────────────────────────────────────
@@ -319,7 +376,7 @@ class UpeController extends Controller
 
         // Find the next unpaid schedule for the Pay button
         $nextUnpaid = $plan->schedules->sortBy('sequence')
-            ->whereNotIn('status', ['paid'])
+            ->whereNotIn('status', ['paid', 'waived'])
             ->first();
 
         $payUrl = null;
@@ -330,8 +387,26 @@ class UpeController extends Controller
             }
         }
 
+        // Check for existing restructure request
+        $existingRestructureRequest = UpePaymentRequest::where('user_id', $user->id)
+            ->where('sale_id', $plan->sale_id)
+            ->where('request_type', 'installment_restructure')
+            ->whereNotIn('status', ['rejected', 'executed'])
+            ->latest()
+            ->first();
+
+        // Determine target schedule for restructure form
+        $unpaidSchedules = $plan->schedules->whereIn('status', ['due', 'upcoming', 'partial', 'overdue']);
+        $restructureTarget = null;
+        if ($unpaidSchedules->isNotEmpty()) {
+            $restructureTarget = $unpaidSchedules->sortBy('sequence')->first();
+        }
+
         $pageTitle = 'Installment Plan';
 
-        return view(getTemplate() . '.panel.upe.installment_detail', compact('plan', 'nextUnpaid', 'payUrl', 'pageTitle'));
+        return view(getTemplate() . '.panel.upe.installment_detail', compact(
+            'plan', 'nextUnpaid', 'payUrl', 'pageTitle',
+            'existingRestructureRequest', 'restructureTarget'
+        ));
     }
 }

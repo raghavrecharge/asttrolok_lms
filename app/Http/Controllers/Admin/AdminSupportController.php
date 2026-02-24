@@ -93,6 +93,87 @@ class AdminSupportController extends Controller
             'supportRequest' => $supportRequest
         ];
 
+        // For installment_restructure tickets, load UPE plan + schedules for admin
+        if ($supportRequest->support_scenario === 'installment_restructure') {
+            $restructureData = null;
+            $executionResult = is_string($supportRequest->execution_result)
+                ? json_decode($supportRequest->execution_result, true)
+                : $supportRequest->execution_result;
+
+            if ($executionResult && isset($executionResult['plan_id'])) {
+                $plan = \App\Models\PaymentEngine\UpeInstallmentPlan::with(['schedules', 'sale.product'])
+                    ->find($executionResult['plan_id']);
+
+                if ($plan) {
+                    $targetSchedule = isset($executionResult['schedule_id'])
+                        ? \App\Models\PaymentEngine\UpeInstallmentSchedule::find($executionResult['schedule_id'])
+                        : null;
+
+                    $restructureData = [
+                        'plan' => $plan,
+                        'schedules' => $plan->schedules->sortBy('sequence'),
+                        'target_schedule' => $targetSchedule,
+                        'is_upfront' => $executionResult['is_upfront'] ?? false,
+                        'schedule_amount' => $executionResult['schedule_amount'] ?? 0,
+                        'schedule_remaining' => $executionResult['schedule_remaining'] ?? 0,
+                        'upe_payment_request_id' => $executionResult['upe_payment_request_id'] ?? null,
+                    ];
+                }
+            }
+
+            // Fallback: if no execution_result, try to find UPE plan from webinar_id + user_id
+            if (!$restructureData && $supportRequest->webinar_id && $supportRequest->user_id) {
+                try {
+                    $upeProduct = \App\Models\PaymentEngine\UpeProduct::where('external_id', $supportRequest->webinar_id)
+                        ->whereIn('product_type', ['course_video', 'webinar'])
+                        ->first();
+
+                    if ($upeProduct) {
+                        $plan = \App\Models\PaymentEngine\UpeInstallmentPlan::whereHas('sale', function ($q) use ($supportRequest, $upeProduct) {
+                                $q->where('user_id', $supportRequest->user_id)->where('product_id', $upeProduct->id);
+                            })
+                            ->whereIn('status', ['active', 'completed'])
+                            ->with(['schedules', 'sale.product'])
+                            ->first();
+
+                        if ($plan) {
+                            $unpaidSchedules = $plan->schedules->whereIn('status', ['due', 'upcoming', 'partial', 'overdue']);
+                            $targetSchedule = $unpaidSchedules->sortBy('sequence')->first();
+                            $isUpfront = $targetSchedule ? ($targetSchedule->sequence <= 1) : false;
+
+                            $restructureData = [
+                                'plan' => $plan,
+                                'schedules' => $plan->schedules->sortBy('sequence'),
+                                'target_schedule' => $targetSchedule,
+                                'is_upfront' => $isUpfront,
+                                'schedule_amount' => $targetSchedule ? (float) $targetSchedule->amount_due : 0,
+                                'schedule_remaining' => $targetSchedule ? $targetSchedule->remainingAmount() : 0,
+                                'upe_payment_request_id' => null,
+                            ];
+
+                            // Backfill execution_result on the ticket so future views don't need fallback
+                            if ($targetSchedule) {
+                                $supportRequest->update([
+                                    'execution_result' => [
+                                        'plan_id' => $plan->id,
+                                        'schedule_id' => $targetSchedule->id,
+                                        'schedule_sequence' => $targetSchedule->sequence,
+                                        'schedule_amount' => (float) $targetSchedule->amount_due,
+                                        'schedule_remaining' => $targetSchedule->remainingAmount(),
+                                        'is_upfront' => $isUpfront,
+                                    ],
+                                ]);
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    \Log::warning('Fallback UPE plan lookup failed for restructure ticket', ['error' => $e->getMessage()]);
+                }
+            }
+
+            $data['restructureData'] = $restructureData;
+        }
+
         return view('admin.supports.show', $data);
     }
 
@@ -811,26 +892,47 @@ class AdminSupportController extends Controller
                         $sourceWebinar = \App\Models\Webinar::find($sourceCourseId);
                         $targetWebinar = \App\Models\Webinar::find($targetCourseId);
                         
-                        // Get all users who have access to source course
-                        $sourceUsers = \App\Models\Sale::where('webinar_id', $sourceCourseId)
+                        // Get all users who have access to source course from BOTH legacy Sale and UPE
+                        $sourceUserIds = \App\Models\Sale::where('webinar_id', $sourceCourseId)
                             ->where('access_to_purchased_item', 1)
                             ->pluck('buyer_id')
-                            ->unique();
+                            ->unique()
+                            ->toArray();
+
+                        $bridge = app(SupportUpeBridge::class);
+                        $sourceProduct = $bridge->resolveProductId($sourceCourseId);
+                        if ($sourceProduct) {
+                            $upeSourceUserIds = \App\Models\PaymentEngine\UpeSale::where('product_id', $sourceProduct)
+                                ->whereNotIn('status', ['cancelled', 'refunded'])
+                                ->pluck('user_id')
+                                ->unique()
+                                ->toArray();
+                            $sourceUserIds = array_unique(array_merge($sourceUserIds, $upeSourceUserIds));
+                        }
                         
                         $grantedCount = 0;
                         $alreadyHasAccess = 0;
                         
-                        foreach ($sourceUsers as $sourceUserId) {
-                            $user = \App\User::find($sourceUserId);
-                            if (!$user) continue;
+                        foreach ($sourceUserIds as $sourceUserId) {
+                            $userObj = \App\User::find($sourceUserId);
+                            if (!$userObj) continue;
                             
-                            // Check if user already has access to target course
+                            // Check if user already has access to target course (legacy + UPE)
                             $existingSale = \App\Models\Sale::where('buyer_id', $sourceUserId)
                                 ->where('webinar_id', $targetCourseId)
                                 ->where('access_to_purchased_item', 1)
                                 ->first();
+
+                            $existingUpe = false;
+                            $targetProduct = $bridge->resolveProductId($targetCourseId);
+                            if ($targetProduct) {
+                                $existingUpe = \App\Models\PaymentEngine\UpeSale::where('user_id', $sourceUserId)
+                                    ->where('product_id', $targetProduct)
+                                    ->whereNotIn('status', ['cancelled', 'refunded'])
+                                    ->exists();
+                            }
                             
-                            if ($existingSale) {
+                            if ($existingSale || $existingUpe) {
                                 $alreadyHasAccess++;
                                 continue;
                             }
@@ -850,21 +952,10 @@ class AdminSupportController extends Controller
                             $sale->save();
 
                             // UPE: Create UPE sale so AccessEngine grants access
-                            $bridge = app(SupportUpeBridge::class);
                             $bridge->grantFreeCourseAccess($sourceUserId, $targetCourseId, $supportRequest->id, Auth::id());
                             
                             $grantedCount++;
                         }
-                        
-                        // \Log::info('Quick Support Form - Free Access Granted on Completion', [
-                        //     'admin_id' => Auth::id(),
-                        //     'support_request_id' => $id,
-                        //     'source_course' => $sourceWebinar->slug,
-                        //     'target_course' => $targetWebinar->slug,
-                        //     'total_users' => $sourceUsers->count(),
-                        //     'granted_access' => $grantedCount,
-                        //     'already_had_access' => $alreadyHasAccess
-                        // ]);
                         
                         // Update request with results
                         $updateData['course_purchased_at'] = now();
@@ -1240,279 +1331,146 @@ class AdminSupportController extends Controller
     public function adminApproveRestructure($supportRequest)
     {
         try {
-            Log::info('=== STARTING INSTALLMENT RESTRUCTURE APPROVAL ===', [
+            Log::info('=== STARTING INSTALLMENT RESTRUCTURE APPROVAL (UPE) ===', [
                 'support_request_id' => $supportRequest->id,
                 'user_id' => $supportRequest->user_id,
                 'webinar_id' => $supportRequest->webinar_id,
             ]);
 
-            $userId = $supportRequest->user_id;
-            $webinarId = $supportRequest->webinar_id;
-            
-            // Step 1: Get the restructure request
-            $restructureRequest = InstallmentRestructureRequest::where('support_ticket_id', $supportRequest->id)
-                ->where('user_id', $userId)
-                ->where('status', InstallmentRestructureRequest::STATUS_PENDING)
-                ->first();
-
-            if (!$restructureRequest) {
-                throw new \RuntimeException('No pending restructure request found for support ticket #' . $supportRequest->id);
+            // 1. Extract UPE data from the support ticket's execution_result
+            $executionResult = $supportRequest->execution_result;
+            if (is_string($executionResult)) {
+                $executionResult = json_decode($executionResult, true);
             }
 
-            Log::info('Found restructure request', [
-                'restructure_request_id' => $restructureRequest->id,
-                'installment_step_id' => $restructureRequest->installment_step_id,
-                'original_amount' => $restructureRequest->original_amount,
-            ]);
+            $planId = $executionResult['plan_id'] ?? null;
+            $scheduleId = $executionResult['schedule_id'] ?? null;
 
-            // Get installment order from restructure request
-            $installmentOrder = InstallmentOrder::find($restructureRequest->installment_order_id);
-
-            if (!$installmentOrder) {
-                throw new \RuntimeException('Installment order not found: ' . $restructureRequest->installment_order_id);
+            // Allow form override (admin might have adjusted via the split form)
+            $request = request();
+            if ($request->filled('restructure_plan_id')) {
+                $planId = (int) $request->input('restructure_plan_id');
+            }
+            if ($request->filled('restructure_schedule_id')) {
+                $scheduleId = (int) $request->input('restructure_schedule_id');
             }
 
-            // Step 2: Get installment step details
-            $installmentStep = InstallmentStep::find($restructureRequest->installment_step_id);
-
-            if (!$installmentStep) {
-                throw new \RuntimeException('Installment step not found: ' . $restructureRequest->installment_step_id);
+            if (!$planId || !$scheduleId) {
+                throw new \RuntimeException('Missing UPE plan_id or schedule_id. Cannot restructure without UPE data.');
             }
 
-            Log::info('Found installment step', [
-                'step_id' => $installmentStep->id,
-                'step_title' => $installmentStep->title,
-                'amount' => $installmentStep->amount,
-                'amount_type' => $installmentStep->amount_type,
-            ]);
+            // 2. Load UPE plan and target schedule
+            $plan = \App\Models\PaymentEngine\UpeInstallmentPlan::findOrFail($planId);
+            $schedule = \App\Models\PaymentEngine\UpeInstallmentSchedule::findOrFail($scheduleId);
 
-            // Step 3: Get the webinar to calculate actual amount
-            $webinar = Webinar::find($webinarId);
-            
-            if (!$webinar) {
-                throw new \RuntimeException('Course not found: ' . $webinarId);
+            if (!$plan->isActive()) {
+                throw new \RuntimeException("Plan #{$plan->id} is not active.");
+            }
+            if ($schedule->isPaid()) {
+                throw new \RuntimeException("Schedule #{$schedule->id} is already paid.");
             }
 
-            $webinarPrice = $webinar->price ?? 0;
+            // 3. Parse admin-defined sub-schedules from form
+            $subSchedulesJson = $request->input('restructure_sub_schedules');
+            $subSchedules = $subSchedulesJson ? json_decode($subSchedulesJson, true) : null;
 
-            Log::info('Webinar details', [
-                'webinar_id' => $webinar->id,
-                'webinar_title' => $webinar->title,
-                'webinar_price' => $webinarPrice,
-            ]);
-
-            // Step 4: Course-specific validation - ensure sub-steps only for requested course
-            if ($installmentOrder->webinar_id != $webinarId) {
-                throw new \RuntimeException('Course mismatch - installment order belongs to different course');
+            if (!$subSchedules || !is_array($subSchedules) || count($subSchedules) < 2) {
+                // Fallback: equal 2-way split with 30-day interval
+                $remaining = $schedule->remainingAmount();
+                $half = round($remaining / 2, 2);
+                $subSchedules = [
+                    ['amount' => $half, 'due_date' => now()->format('Y-m-d')],
+                    ['amount' => round($remaining - $half, 2), 'due_date' => now()->addDays(30)->format('Y-m-d')],
+                ];
+                Log::info('Using default 2-way equal split (no admin input received)');
             }
 
-            Log::info('Course validation passed', [
-                'webinar_id' => $webinarId,
-                'installment_order_id' => $installmentOrder->id,
-                'course_title' => $webinar->title,
+            Log::info('Restructure sub-schedules', [
+                'plan_id' => $plan->id,
+                'schedule_id' => $schedule->id,
+                'num_sub_schedules' => count($subSchedules),
+                'sub_schedules' => $subSchedules,
             ]);
 
-            // Step 5: Get step amount from InstallmentOrderPayment table (as per requirement)
-            $stepPayment = InstallmentOrderPayment::where('installment_order_id', $installmentOrder->id)
-                ->where('step_id', $installmentStep->id)
-                ->where(function($query) {
-                    $query->where('status', 'paying')
-                          ->orWhere('status', 'pending');
-                })
-                ->first();
+            // 4. Call InstallmentEngine::splitSchedule
+            $engine = app(\App\Services\PaymentEngine\InstallmentEngine::class);
+            $createdSchedules = $engine->splitSchedule($plan, $schedule, $subSchedules, Auth::id());
 
-            if (!$stepPayment) {
-                // If no step payment found, calculate from step amount
-                Log::warning('Step payment not found, calculating from step amount', [
-                    'installment_order_id' => $installmentOrder->id,
-                    'step_id' => $installmentStep->id,
-                ]);
-                
-                $itemPrice = $installmentOrder->getItemPrice();
-                if ($installmentStep->amount_type == 'percent') {
-                    $totalStepAmount = ($itemPrice * $installmentStep->amount) / 100;
-                } else {
-                    $totalStepAmount = $installmentStep->amount;
-                }
-            } else {
-                $totalStepAmount = $stepPayment->amount;
+            // 5. Build execution notes
+            $parts = [];
+            foreach ($createdSchedules as $i => $cs) {
+                $parts[] = sprintf(
+                    'Part %d: ₹%s due %s',
+                    $i + 1,
+                    number_format($cs->amount_due, 2),
+                    \Carbon\Carbon::parse($cs->due_date)->format('d M Y')
+                );
             }
 
-            Log::info('Retrieved step amount', [
-                'step_id' => $installmentStep->id,
-                'step_amount' => $totalStepAmount,
-                'payment_found' => $stepPayment ? true : false,
-            ]);
+            $executionNotes = sprintf(
+                'EMI #%d (₹%s) split into %d sub-installments: %s',
+                $schedule->sequence,
+                number_format($schedule->amount_due, 2),
+                count($createdSchedules),
+                implode(' | ', $parts)
+            );
 
-            // Step 6: Calculate 50-50 split
-            $subStep1Amount = $totalStepAmount / 2;
-            $subStep2Amount = $totalStepAmount / 2;
-
-            Log::info('Split amounts calculated', [
-                'sub_step_1_amount' => $subStep1Amount,
-                'sub_step_2_amount' => $subStep2Amount,
-            ]);
-
-            // Step 7: Get original deadline from installment order
-            $installmentOrder = \App\Models\InstallmentOrder::where('user_id', $userId)
-                ->where('webinar_id', $webinarId)
-                ->whereIn('status', ['open', 'paying'])
-                ->first();
-
-            if (!$installmentOrder) {
-                throw new \RuntimeException('Installment order not found for user ' . $userId . ' webinar ' . $webinarId);
-            }
-
-            // Calculate due date based on step deadline
-            $orderCreatedAt = $installmentOrder->created_at;
-            $originalDueDate = strtotime($orderCreatedAt) + ($installmentStep->deadline * 86400);
-
-            Log::info('Calculated due dates', [
-                'order_created_at' => $orderCreatedAt,
-                'step_deadline_days' => $installmentStep->deadline,
-                'original_due_date' => date('Y-m-d', $originalDueDate),
-            ]);
-
-            // Step 8: Update restructure request status
-            $restructureRequestModel = InstallmentRestructureRequest::find($restructureRequest->id);
-            $restructureRequestModel->update([
-                'status' => InstallmentRestructureRequest::STATUS_APPROVED,
-                'reviewed_by' => Auth::id(),
-                'reviewed_at' => now(),
-                'admin_notes' => 'Approved - Creating 2 sub-steps with 50-50 split',
-                'number_of_sub_steps' => 2,
-            ]);
-
-            Log::info('Restructure request updated to APPROVED');
-
-            // Step 9: Check if sub-steps already exist (avoid duplicates)
-            $existingSubSteps = SubStepInstallment::where('user_id', $userId)
-                ->where('installment_step_id', $installmentStep->id)
-                ->get();
-
-            if ($existingSubSteps->count() > 0) {
-                Log::warning('Sub-steps already exist, soft-cancelling old ones', [
-                    'existing_count' => $existingSubSteps->count()
-                ]);
-                
-                // P1 FIX: Soft-cancel existing sub-steps instead of hard delete
-                SubStepInstallment::where('user_id', $userId)
-                    ->where('installment_step_id', $installmentStep->id)
-                    ->whereNotIn('status', ['paid', 'cancelled'])
-                    ->update(['status' => 'cancelled']);
-            }
-
-            // Step 10: Create Sub-Step 1 (50%) - Due on original date
-            $subStep1 = SubStepInstallment::create([
-                'user_id' => $userId,
-                'order_id' => $installmentOrder->id,
-                'webinar_id' => $webinarId,
-                'installment_order_id' => $installmentOrder->id,
-                'installment_step_id' => $installmentStep->id,
-                'sub_step_number' => 1,
-                'price' => $subStep1Amount,
-                'due_date' => $originalDueDate,
-                'status' => SubStepInstallment::STATUS_APPROVED,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            Log::info('Sub-Step 1 created', [
-                'sub_step_id' => $subStep1->id,
-                'amount' => $subStep1Amount,
-                'due_date' => date('Y-m-d', $originalDueDate),
-            ]);
-
-            // Step 11: Create Sub-Step 2 (50%) - Due 30 days later
-            $subStep2DueDate = $originalDueDate + (30 * 24 * 60 * 60); // 30 days later
-            
-            $subStep2 = SubStepInstallment::create([
-                'user_id' => $userId,
-                'order_id' => $installmentOrder->id,
-                'webinar_id' => $webinarId,
-                'installment_order_id' => $installmentStep->id,
-                'installment_step_id' => $installmentStep->id,
-                'sub_step_number' => 2,
-                'price' => $subStep2Amount,
-                'due_date' => $subStep2DueDate,
-                'status' => SubStepInstallment::STATUS_APPROVED,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            Log::info('Sub-Step 2 created', [
-                'sub_step_id' => $subStep2->id,
-                'amount' => $subStep2Amount,
-                'due_date' => date('Y-m-d', $subStep2DueDate),
-            ]);
-
-            // Step 11: Create sub_steps_data for restructure request
-            $restructureRequestModel->update([
-                'sub_steps_data' => [
-                    [
-                        'sub_step_id' => $subStep1->id,
-                        'amount' => $subStep1Amount,
-                        'deadline' => $originalDueDate,
-                        'order' => 1,
-                        'status' => 'approved'
-                    ],
-                    [
-                        'sub_step_id' => $subStep2->id,
-                        'amount' => $subStep2Amount,
-                        'deadline' => $subStep2DueDate,
-                        'order' => 2,
-                        'status' => 'approved'
-                    ]
-                ]
-            ]);
-
-            // Step 12: Update support request with success notes
-            $supportRequestModel = NewSupportForAsttrolok::find($supportRequest->id);
-            $supportRequestModel->update([
-                'status' => 'close',
+            // 6. Update support ticket
+            $supportRequest->update([
                 'executed_at' => now(),
-                'execution_notes' => sprintf(
-                    'Installment restructure approved. Created 2 sub-steps: Part 1 (₹%s due %s) and Part 2 (₹%s due %s). Restructure Request ID: %s',
-                    number_format($subStep1Amount, 2),
-                    date('d M Y', $originalDueDate),
-                    number_format($subStep2Amount, 2),
-                    date('d M Y', $subStep2DueDate),
-                    $restructureRequest->id
-                )
+                'execution_notes' => $executionNotes,
             ]);
 
-            Log::info('=== INSTALLMENT RESTRUCTURE COMPLETED SUCCESSFULLY ===', [
-                'restructure_request_id' => $restructureRequest->id,
-                'user_id' => $userId,
-                'sub_step_1_id' => $subStep1->id,
-                'sub_step_2_id' => $subStep2->id,
-                'total_amount' => $totalStepAmount,
-                'split_amounts' => [$subStep1Amount, $subStep2Amount]
-            ]);
+            // 7. Update linked UpePaymentRequest if exists
+            $upeRequestId = $executionResult['upe_payment_request_id'] ?? null;
+            $upeRequest = null;
+            if ($upeRequestId) {
+                $upeRequest = \App\Models\PaymentEngine\UpePaymentRequest::find($upeRequestId);
+            }
+            // Fallback: find by sale_id + request_type if not linked in execution_result
+            if (!$upeRequest) {
+                $upeRequest = \App\Models\PaymentEngine\UpePaymentRequest::where('sale_id', $plan->sale_id)
+                    ->where('request_type', 'installment_restructure')
+                    ->whereNotIn('status', ['executed', 'rejected'])
+                    ->latest()
+                    ->first();
+            }
+            if ($upeRequest && !in_array($upeRequest->status, ['executed', 'rejected'])) {
+                $upeRequest->update([
+                    'status' => 'executed',
+                    'executed_at' => now(),
+                    'execution_result' => [
+                        'new_schedule_ids' => array_map(fn($s) => $s->id, $createdSchedules),
+                        'original_schedule_id' => $schedule->id,
+                        'split_count' => count($createdSchedules),
+                    ],
+                ]);
+            }
 
-            // Send notification to user
-            $this->sendRestructureApprovalNotification($supportRequest, $subStep1, $subStep2, $installmentStep);
+            Log::info('=== INSTALLMENT RESTRUCTURE COMPLETED (UPE) ===', [
+                'support_request_id' => $supportRequest->id,
+                'plan_id' => $plan->id,
+                'original_schedule_id' => $schedule->id,
+                'new_schedule_count' => count($createdSchedules),
+                'new_schedule_ids' => array_map(fn($s) => $s->id, $createdSchedules),
+            ]);
 
             return [
                 'success' => true,
-                'message' => 'Installment restructure approved successfully',
+                'message' => $executionNotes,
                 'data' => [
-                    'restructure_request_id' => $restructureRequest->id,
-                    'sub_step_1' => [
-                        'id' => $subStep1->id,
-                        'amount' => $subStep1Amount,
-                        'due_date' => date('d M Y', $originalDueDate),
-                    ],
-                    'sub_step_2' => [
-                        'id' => $subStep2->id,
-                        'amount' => $subStep2Amount,
-                        'due_date' => date('d M Y', $subStep2DueDate),
-                    ]
-                ]
+                    'plan_id' => $plan->id,
+                    'original_schedule_id' => $schedule->id,
+                    'new_schedules' => array_map(fn($s) => [
+                        'id' => $s->id,
+                        'amount' => (float) $s->amount_due,
+                        'due_date' => $s->due_date->format('Y-m-d'),
+                    ], $createdSchedules),
+                ],
             ];
 
         } catch (\Exception $e) {
-            Log::error('Error in installment restructure approval', [
+            Log::error('Error in installment restructure approval (UPE)', [
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -2172,9 +2130,16 @@ class AdminSupportController extends Controller
                             'created_at'      => now(),
                         ]);
 
-                        // $order->update(['discount' => $finalAmount]);
-
-                        
+                        // UPE: Record coupon discount in UPE ledger
+                        try {
+                            $bridge = app(SupportUpeBridge::class);
+                            $bridge->recordCouponDiscount(
+                                $userId, $webinarId, $supportRequest->id, Auth::id(),
+                                $finalAmount, $couponCode, $discount->id
+                            );
+                        } catch (\Exception $e) {
+                            \Log::warning('UPE coupon bridge failed', ['error' => $e->getMessage()]);
+                        }
                 }
 
             //  Success response
@@ -2350,6 +2315,12 @@ class AdminSupportController extends Controller
                 'processed_by' => Auth::id(),
                 'status' => 'pending',
             ]);
+
+            // 6. UPE: Record refund in UPE ledger + revoke UPE sale
+            if ($courseId) {
+                $bridge = app(SupportUpeBridge::class);
+                $bridge->recordRefund($userId, $courseId, $supportRequest->id, Auth::id());
+            }
 
             \Log::info('Refund completed (soft-revoke, all records preserved)', [
                 'user_id' => $userId,

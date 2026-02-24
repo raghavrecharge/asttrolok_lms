@@ -372,22 +372,46 @@ class SupportRequestService
         $targetCourseId = $request->target_course_id ?? $request->webinar_id;
         $targetWebinar = Webinar::findOrFail($targetCourseId);
 
-        $sourceUsers = Sale::where('webinar_id', $sourceCourseId)
+        // Collect source users from BOTH legacy Sale and UPE sales
+        $sourceUserIds = Sale::where('webinar_id', $sourceCourseId)
             ->where('access_to_purchased_item', 1)
             ->whereNull('refund_at')
             ->pluck('buyer_id')
-            ->unique();
+            ->unique()
+            ->toArray();
+
+        // Also find users from UPE sales for the source course
+        $bridge = app(SupportUpeBridge::class);
+        $sourceProduct = $bridge->resolveProductId($sourceCourseId);
+        if ($sourceProduct) {
+            $upeSourceUserIds = \App\Models\PaymentEngine\UpeSale::where('product_id', $sourceProduct)
+                ->whereNotIn('status', ['cancelled', 'refunded'])
+                ->pluck('user_id')
+                ->unique()
+                ->toArray();
+            $sourceUserIds = array_unique(array_merge($sourceUserIds, $upeSourceUserIds));
+        }
 
         $grantedCount = 0;
         $skippedCount = 0;
 
-        foreach ($sourceUsers as $userId) {
-            $existing = Sale::where('buyer_id', $userId)
+        foreach ($sourceUserIds as $userId) {
+            // Check both legacy and UPE for existing access to target course
+            $existingLegacy = Sale::where('buyer_id', $userId)
                 ->where('webinar_id', $targetCourseId)
                 ->whereNull('refund_at')
                 ->first();
 
-            if ($existing) {
+            $existingUpe = false;
+            $targetProduct = $bridge->resolveProductId($targetCourseId);
+            if ($targetProduct) {
+                $existingUpe = \App\Models\PaymentEngine\UpeSale::where('user_id', $userId)
+                    ->where('product_id', $targetProduct)
+                    ->whereNotIn('status', ['cancelled', 'refunded'])
+                    ->exists();
+            }
+
+            if ($existingLegacy || $existingUpe) {
                 $skippedCount++;
                 continue;
             }
@@ -408,7 +432,7 @@ class SupportRequestService
             ]);
 
             // UPE: Create UPE sale so AccessEngine grants access
-            app(SupportUpeBridge::class)->grantFreeCourseAccess(
+            $bridge->grantFreeCourseAccess(
                 $userId, $targetCourseId, $request->id, $user->id
             );
 
@@ -459,6 +483,18 @@ class SupportRequestService
             ]);
         }
 
+        // UPE: Record offline payment in UPE ledger
+        $cashAmount = (float) ($request->cash_amount ?? 0);
+        if ($cashAmount > 0 && $request->webinar_id) {
+            try {
+                app(SupportUpeBridge::class)->recordOfflinePayment(
+                    $request->user_id, $request->webinar_id, $request->id, $user->id, $cashAmount
+                );
+            } catch (\Exception $e) {
+                Log::warning('UPE offline payment bridge failed', ['error' => $e->getMessage()]);
+            }
+        }
+
         Log::info('Offline cash payment processed', [
             'support_request_id' => $request->id,
             'user_id' => $request->user_id,
@@ -472,130 +508,18 @@ class SupportRequestService
      */
     private function executeInstallmentRestructure(NewSupportForAsttrolok $request, array $data, $user)
     {
-        $userId = $request->user_id;
-        $webinarId = $request->webinar_id;
+        // Delegate to AdminSupportController::adminApproveRestructure which now uses UPE
+        $adminController = app(\App\Http\Controllers\Admin\AdminSupportController::class);
+        $result = $adminController->adminApproveRestructure($request);
 
-        // 1. Lock the installment order
-        $installmentOrder = InstallmentOrder::where('user_id', $userId)
-            ->where('webinar_id', $webinarId)
-            ->whereIn('status', ['open', 'paying'])
-            ->lockForUpdate()
-            ->first();
-
-        if (!$installmentOrder) {
-            throw new \RuntimeException('No active installment order found for this user and course.');
+        if (!($result['success'] ?? false)) {
+            throw new \RuntimeException('Installment restructure failed: ' . ($result['message'] ?? 'Unknown error'));
         }
 
-        // 2. Find pending restructure request (try both FK column names for compatibility)
-        $restructureRequest = InstallmentRestructureRequest::where(function ($q) use ($request, $userId) {
-                $q->where('support_request_id', $request->id)
-                  ->orWhere('support_ticket_id', $request->id);
-            })
-            ->where('user_id', $userId)
-            ->where('status', 'pending')
-            ->first();
-
-        if (!$restructureRequest) {
-            throw new \RuntimeException('No pending restructure request found for support ticket #' . $request->id);
-        }
-
-        // 3. Find the installment step to restructure
-        $installmentStep = InstallmentStep::find($restructureRequest->installment_step_id);
-        if (!$installmentStep) {
-            throw new \RuntimeException('Installment step not found: ' . $restructureRequest->installment_step_id);
-        }
-
-        // 4. Course mismatch check
-        if ($installmentOrder->webinar_id != $webinarId) {
-            throw new \RuntimeException('Course mismatch - installment order belongs to different course.');
-        }
-
-        // 5. Calculate step amount (server-side only, never client-supplied)
-        $stepPayment = InstallmentOrderPayment::where('installment_order_id', $installmentOrder->id)
-            ->where('step_id', $installmentStep->id)
-            ->where(function ($q) {
-                $q->where('status', 'paying')->orWhere('status', 'pending');
-            })
-            ->first();
-
-        if ($stepPayment) {
-            $totalStepAmount = $stepPayment->amount;
-        } else {
-            $itemPrice = $installmentOrder->getItemPrice();
-            $totalStepAmount = ($installmentStep->amount_type == 'percent')
-                ? ($itemPrice * $installmentStep->amount) / 100
-                : $installmentStep->amount;
-        }
-
-        // 6. Calculate 50-50 split
-        $subStep1Amount = $totalStepAmount / 2;
-        $subStep2Amount = $totalStepAmount / 2;
-
-        // 7. Calculate due dates
-        $orderCreatedAt = $installmentOrder->created_at;
-        $originalDueDate = strtotime($orderCreatedAt) + ($installmentStep->deadline * 86400);
-        $subStep2DueDate = $originalDueDate + (30 * 86400);
-
-        // 8. Approve the restructure request
-        $restructureRequest->update([
-            'status' => 'approved',
-            'reviewed_by' => $user->id,
-            'reviewed_at' => now(),
-            'admin_notes' => 'Approved - Creating 2 sub-steps with 50-50 split',
-            'number_of_sub_steps' => 2,
-        ]);
-
-        // 9. Soft-cancel existing sub-steps (no hard deletes)
-        SubStepInstallment::where('user_id', $userId)
-            ->where('installment_step_id', $installmentStep->id)
-            ->whereNotIn('status', ['paid', 'cancelled'])
-            ->update(['status' => 'cancelled']);
-
-        // 10. Create Sub-Step 1 (50%) - due on original date
-        $subStep1 = SubStepInstallment::create([
-            'user_id' => $userId,
-            'order_id' => $installmentOrder->id,
-            'webinar_id' => $webinarId,
-            'installment_order_id' => $installmentOrder->id,
-            'installment_step_id' => $installmentStep->id,
-            'sub_step_number' => 1,
-            'price' => $subStep1Amount,
-            'due_date' => $originalDueDate,
-            'status' => SubStepInstallment::STATUS_APPROVED,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        // 11. Create Sub-Step 2 (50%) - due 30 days later
-        $subStep2 = SubStepInstallment::create([
-            'user_id' => $userId,
-            'order_id' => $installmentOrder->id,
-            'webinar_id' => $webinarId,
-            'installment_order_id' => $installmentOrder->id,
-            'installment_step_id' => $installmentStep->id,
-            'sub_step_number' => 2,
-            'price' => $subStep2Amount,
-            'due_date' => $subStep2DueDate,
-            'status' => SubStepInstallment::STATUS_APPROVED,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        // 12. Store sub_steps_data on restructure request
-        $restructureRequest->update([
-            'sub_steps_data' => [
-                ['sub_step_id' => $subStep1->id, 'amount' => $subStep1Amount, 'deadline' => $originalDueDate, 'order' => 1, 'status' => 'approved'],
-                ['sub_step_id' => $subStep2->id, 'amount' => $subStep2Amount, 'deadline' => $subStep2DueDate, 'order' => 2, 'status' => 'approved'],
-            ]
-        ]);
-
-        Log::info('Installment restructure executed', [
+        Log::info('Installment restructure executed via UPE', [
             'support_request_id' => $request->id,
-            'installment_order_id' => $installmentOrder->id,
-            'user_id' => $userId,
-            'total_step_amount' => $totalStepAmount,
-            'sub_step_1_id' => $subStep1->id,
-            'sub_step_2_id' => $subStep2->id,
+            'user_id' => $request->user_id,
+            'result' => $result['message'] ?? '',
         ]);
     }
 
@@ -752,6 +676,18 @@ class SupportRequestService
 
         // P1 FIX: Decrement coupon usage count to prevent unlimited reuse
         $discount->increment('used_count');
+
+        // UPE: Record coupon discount in UPE ledger
+        if ($creditAmount > 0 && $request->webinar_id) {
+            try {
+                app(SupportUpeBridge::class)->recordCouponDiscount(
+                    $request->user_id, $request->webinar_id, $request->id, $user->id,
+                    $creditAmount, $couponCode, $discount->id
+                );
+            } catch (\Exception $e) {
+                Log::warning('UPE coupon discount bridge failed', ['error' => $e->getMessage()]);
+            }
+        }
 
         Log::info('Post-purchase coupon applied', [
             'support_request_id' => $request->id,

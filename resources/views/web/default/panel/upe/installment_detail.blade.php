@@ -167,47 +167,90 @@
             <section class="mt-25">
                 <h2 class="section-title">Request Restructure</h2>
                 <div class="panel-section-card py-20 px-25 mt-20">
-                    <div class="row">
-                        <div class="col-12 col-lg-8">
-                            <p class="font-14 text-gray mb-15">
-                                If you're having difficulty with your current EMI schedule, you can request a restructure.
-                                @if($overdueCount > 0)
-                                    <span class="text-danger font-weight-500">You have {{ $overdueCount }} overdue payment(s).</span>
-                                @endif
-                                Support will review your request and propose a revised schedule.
-                            </p>
-                            <form method="POST" action="/panel/upe/request-restructure">
-                                @csrf
-                                <input type="hidden" name="plan_id" value="{{ $plan->id }}">
-                                <div class="form-group">
-                                    <label class="input-label">Reason for Restructure</label>
-                                    <textarea name="reason" class="form-control" rows="3" required placeholder="Explain why you need your EMI schedule restructured..."></textarea>
+
+                    {{-- Show existing request status if one exists --}}
+                    @if(isset($existingRestructureRequest) && $existingRestructureRequest)
+                        <div class="alert alert-{{ $existingRestructureRequest->status === 'pending' ? 'warning' : ($existingRestructureRequest->status === 'approved' ? 'info' : 'secondary') }} mb-15">
+                            <h6 class="mb-5"><i class="fa fa-clock"></i> Restructure Request #{{ $existingRestructureRequest->id }}</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Status:</strong>
+                                    <span class="badge badge-{{ $existingRestructureRequest->status === 'pending' ? 'warning' : ($existingRestructureRequest->status === 'approved' ? 'primary' : 'secondary') }}">
+                                        {{ ucfirst($existingRestructureRequest->status) }}
+                                    </span><br>
+                                    <strong>Submitted:</strong> {{ $existingRestructureRequest->created_at->format('d M Y H:i') }}
                                 </div>
-                                <button type="submit" class="btn btn-warning" onclick="return confirm('Submit restructure request? Support will review your EMI plan.')">
-                                    Request EMI Restructure
-                                </button>
-                            </form>
+                                <div class="col-md-6">
+                                    @if(isset($existingRestructureRequest->payload['schedule_sequence']))
+                                        <strong>Target EMI:</strong> #{{ $existingRestructureRequest->payload['schedule_sequence'] }}
+                                        ({{ $existingRestructureRequest->payload['is_upfront'] ? 'Upfront' : 'Regular' }})<br>
+                                        <strong>Amount:</strong> {{ handlePrice($existingRestructureRequest->payload['schedule_remaining'] ?? $existingRestructureRequest->payload['schedule_amount']) }}
+                                    @endif
+                                </div>
+                            </div>
+                            @if(isset($existingRestructureRequest->payload['reason']))
+                                <div class="mt-5"><strong>Reason:</strong> {{ $existingRestructureRequest->payload['reason'] }}</div>
+                            @endif
+                            <p class="mt-10 mb-0 font-12 text-gray">Your request is being reviewed by support. You will be notified once a decision is made.</p>
                         </div>
-                        <div class="col-12 col-lg-4 mt-15 mt-lg-0">
-                            <div class="p-15 rounded bg-light">
-                                <div class="font-12 text-gray mb-10">Current Plan Status</div>
-                                <div class="d-flex justify-content-between mb-5">
-                                    <span class="font-12">Remaining EMIs</span>
-                                    <span class="font-weight-500">{{ $remainingCount }}</span>
-                                </div>
-                                @if($overdueCount > 0)
-                                    <div class="d-flex justify-content-between mb-5">
-                                        <span class="font-12 text-danger">Overdue</span>
-                                        <span class="font-weight-500 text-danger">{{ $overdueCount }}</span>
+                    @else
+                        {{-- Show the restructure form --}}
+                        <div class="row">
+                            <div class="col-12 col-lg-8">
+                                <p class="font-14 text-gray mb-15">
+                                    If you're having difficulty with your current EMI schedule, you can request a restructure.
+                                    @if($overdueCount > 0)
+                                        <span class="text-danger font-weight-500">You have {{ $overdueCount }} overdue payment(s).</span>
+                                    @endif
+                                    Support will review your request and propose a revised schedule.
+                                </p>
+
+                                @if(isset($restructureTarget) && $restructureTarget)
+                                    <div class="alert alert-info font-13 mb-15">
+                                        <strong>Installment to restructure:</strong>
+                                        EMI #{{ $restructureTarget->sequence }}
+                                        ({{ $restructureTarget->sequence <= 1 ? 'Upfront' : 'Step ' . $restructureTarget->sequence }})
+                                        &mdash; {{ handlePrice($restructureTarget->remainingAmount()) }}
+                                        @if($restructureTarget->due_date)
+                                            due {{ \Carbon\Carbon::parse($restructureTarget->due_date)->format('d M Y') }}
+                                        @endif
+                                        <br><small class="text-gray">{{ $restructureTarget->sequence <= 1 ? 'Since your upfront payment is pending, only the upfront installment can be restructured.' : 'The first unpaid installment will be restructured.' }}</small>
                                     </div>
                                 @endif
-                                <div class="d-flex justify-content-between">
-                                    <span class="font-12">Remaining Amount</span>
-                                    <span class="font-weight-500">{{ handlePrice($plan->schedules->whereIn('status', ['due', 'upcoming', 'partial', 'overdue'])->sum('amount_due') - $plan->schedules->whereIn('status', ['due', 'upcoming', 'partial', 'overdue'])->sum('amount_paid')) }}</span>
+
+                                <form method="POST" action="/panel/upe/request-restructure">
+                                    @csrf
+                                    <input type="hidden" name="plan_id" value="{{ $plan->id }}">
+                                    <div class="form-group">
+                                        <label class="input-label">Reason for Restructure</label>
+                                        <textarea name="reason" class="form-control" rows="3" required placeholder="Explain why you need your EMI schedule restructured..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning" onclick="return confirm('Submit restructure request? Support will review your EMI plan.')">
+                                        Request EMI Restructure
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="col-12 col-lg-4 mt-15 mt-lg-0">
+                                <div class="p-15 rounded bg-light">
+                                    <div class="font-12 text-gray mb-10">Current Plan Status</div>
+                                    <div class="d-flex justify-content-between mb-5">
+                                        <span class="font-12">Remaining EMIs</span>
+                                        <span class="font-weight-500">{{ $remainingCount }}</span>
+                                    </div>
+                                    @if($overdueCount > 0)
+                                        <div class="d-flex justify-content-between mb-5">
+                                            <span class="font-12 text-danger">Overdue</span>
+                                            <span class="font-weight-500 text-danger">{{ $overdueCount }}</span>
+                                        </div>
+                                    @endif
+                                    <div class="d-flex justify-content-between">
+                                        <span class="font-12">Remaining Amount</span>
+                                        <span class="font-weight-500">{{ handlePrice($plan->schedules->whereIn('status', ['due', 'upcoming', 'partial', 'overdue'])->sum('amount_due') - $plan->schedules->whereIn('status', ['due', 'upcoming', 'partial', 'overdue'])->sum('amount_paid')) }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
             </section>
         @endif

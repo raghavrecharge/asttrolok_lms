@@ -110,6 +110,256 @@
                                 </div>
                             @endif
 
+                            {{-- Installment Restructure Details --}}
+                            @if($supportRequest->support_scenario === 'installment_restructure' && isset($restructureData) && $restructureData)
+                                <div class="alert alert-primary">
+                                    <h6><i class="fas fa-layer-group"></i> EMI Restructure Request</h6>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <strong>Course:</strong> {{ $restructureData['plan']->sale->product->name ?? 'N/A' }}<br>
+                                            <strong>Plan Total:</strong> ₹{{ number_format($restructureData['plan']->total_amount, 2) }}<br>
+                                            <strong>Plan Status:</strong> <span class="badge badge-{{ $restructureData['plan']->status === 'active' ? 'success' : 'secondary' }}">{{ ucfirst($restructureData['plan']->status) }}</span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            @if($restructureData['target_schedule'])
+                                                <strong>Target EMI:</strong> #{{ $restructureData['target_schedule']->sequence }}
+                                                ({{ $restructureData['is_upfront'] ? 'Upfront' : 'Step ' . $restructureData['target_schedule']->sequence }})<br>
+                                                <strong>EMI Amount:</strong> ₹{{ number_format($restructureData['schedule_amount'], 2) }}<br>
+                                                <strong>Remaining:</strong> ₹{{ number_format($restructureData['schedule_remaining'], 2) }}<br>
+                                                @if($restructureData['target_schedule']->due_date)
+                                                    <strong>Due Date:</strong> {{ \Carbon\Carbon::parse($restructureData['target_schedule']->due_date)->format('d M Y') }}
+                                                @endif
+                                            @endif
+                                        </div>
+                                    </div>
+                                    @if($supportRequest->restructure_reason)
+                                        <strong>Student's Reason:</strong> {{ $supportRequest->restructure_reason }}<br>
+                                    @endif
+
+                                    {{-- Full Schedule Table --}}
+                                    <hr>
+                                    <h6 class="mb-2">Current Payment Schedule</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered text-center mb-0">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Due Date</th>
+                                                    <th>Amount</th>
+                                                    <th>Paid</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($restructureData['schedules'] as $sched)
+                                                    @php
+                                                        $isTarget = $restructureData['target_schedule'] && $sched->id === $restructureData['target_schedule']->id;
+                                                    @endphp
+                                                    <tr class="{{ $isTarget ? 'table-warning font-weight-bold' : '' }}">
+                                                        <td>{{ $sched->sequence }}{{ $isTarget ? ' ⬅' : '' }}</td>
+                                                        <td>{{ $sched->due_date ? \Carbon\Carbon::parse($sched->due_date)->format('d M Y') : '-' }}</td>
+                                                        <td>₹{{ number_format($sched->amount_due, 2) }}</td>
+                                                        <td>{{ ($sched->amount_paid ?? 0) > 0 ? '₹' . number_format($sched->amount_paid, 2) : '-' }}</td>
+                                                        <td>
+                                                            <span class="badge badge-{{ match($sched->status) { 'paid' => 'success', 'due' => 'warning', 'overdue' => 'danger', 'partial' => 'info', 'waived' => 'secondary', default => 'light' } }}">
+                                                                {{ ucfirst($sched->status) }}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                {{-- Admin Split Form (only show when not yet completed) --}}
+                                @if(!in_array($supportRequest->status, ['completed', 'executed', 'closed']) && $restructureData['target_schedule'] && Auth::user()->role_name === 'admin')
+                                    <div class="card border-warning mt-3">
+                                        <div class="card-header bg-warning text-dark">
+                                            <h6 class="mb-0"><i class="fas fa-cut"></i> Define Restructure Split</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="text-muted mb-2">
+                                                Split EMI #{{ $restructureData['target_schedule']->sequence }}
+                                                (₹{{ number_format($restructureData['schedule_remaining'], 2) }})
+                                                into sub-installments. Set the number of parts, then define each amount and due date.
+                                            </p>
+
+                                            <div class="form-group">
+                                                <label><strong>Number of Sub-Installments</strong></label>
+                                                <select id="restructureNumParts" class="form-control" style="width:150px">
+                                                    <option value="2">2 parts</option>
+                                                    <option value="3" selected>3 parts</option>
+                                                    <option value="4">4 parts</option>
+                                                    <option value="5">5 parts</option>
+                                                    <option value="6">6 parts</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label><strong>Split Mode</strong></label><br>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <button type="button" class="btn btn-outline-primary active" id="modeEqual">Equal Split</button>
+                                                    <button type="button" class="btn btn-outline-primary" id="modePercent">By Percentage</button>
+                                                    <button type="button" class="btn btn-outline-primary" id="modeCustom">Custom Amounts</button>
+                                                </div>
+                                            </div>
+
+                                            <div id="restructureSplitTable" class="mt-3">
+                                                {{-- Dynamically generated by JS --}}
+                                            </div>
+
+                                            <div class="mt-2">
+                                                <strong>Total: ₹<span id="restructureSplitTotal">0.00</span></strong>
+                                                <span id="restructureSplitError" class="text-danger ml-3" style="display:none;"></span>
+                                            </div>
+
+                                            <input type="hidden" name="restructure_schedule_id" value="{{ $restructureData['target_schedule']->id }}">
+                                            <input type="hidden" name="restructure_plan_id" value="{{ $restructureData['plan']->id }}">
+                                            <input type="hidden" name="restructure_sub_schedules" id="restructureSubSchedulesJson" value="">
+                                        </div>
+                                    </div>
+
+<script>
+(function() {
+    const targetAmount = {{ $restructureData['schedule_remaining'] }};
+    const scheduleId = {{ $restructureData['target_schedule']->id }};
+    const planId = {{ $restructureData['plan']->id }};
+    const container = document.getElementById('restructureSplitTable');
+    const numSelect = document.getElementById('restructureNumParts');
+    const totalSpan = document.getElementById('restructureSplitTotal');
+    const errorSpan = document.getElementById('restructureSplitError');
+    const hiddenInput = document.getElementById('restructureSubSchedulesJson');
+
+    let mode = 'equal'; // equal | percent | custom
+
+    document.getElementById('modeEqual').addEventListener('click', function() { mode = 'equal'; setActiveBtn(this); render(); });
+    document.getElementById('modePercent').addEventListener('click', function() { mode = 'percent'; setActiveBtn(this); render(); });
+    document.getElementById('modeCustom').addEventListener('click', function() { mode = 'custom'; setActiveBtn(this); render(); });
+    numSelect.addEventListener('change', render);
+
+    function setActiveBtn(btn) {
+        document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    function render() {
+        const n = parseInt(numSelect.value);
+        let html = '<table class="table table-sm table-bordered"><thead><tr><th>#</th>';
+        if (mode === 'percent') html += '<th>Percentage (%)</th>';
+        html += '<th>Amount (₹)</th><th>Due Date</th></tr></thead><tbody>';
+
+        const equalAmt = Math.floor((targetAmount / n) * 100) / 100;
+        const today = new Date();
+
+        for (let i = 0; i < n; i++) {
+            const dueDate = new Date(today);
+            dueDate.setDate(dueDate.getDate() + (i * 30));
+            const dateStr = dueDate.toISOString().split('T')[0];
+
+            let amt = (i === n - 1) ? (targetAmount - equalAmt * (n - 1)).toFixed(2) : equalAmt.toFixed(2);
+            let pct = (i === n - 1) ? (100 - Math.floor(100/n) * (n-1)).toFixed(1) : (100/n).toFixed(1);
+
+            html += '<tr>';
+            html += '<td>' + (i + 1) + '</td>';
+            if (mode === 'percent') {
+                html += '<td><input type="number" class="form-control form-control-sm restructure-pct" data-idx="'+i+'" value="'+pct+'" step="0.1" min="0" max="100"></td>';
+            }
+            html += '<td><input type="number" class="form-control form-control-sm restructure-amt" data-idx="'+i+'" value="'+amt+'" step="0.01" min="0" '+(mode === 'percent' ? 'readonly' : (mode === 'equal' ? 'readonly' : ''))+'></td>';
+            html += '<td><input type="date" class="form-control form-control-sm restructure-date" data-idx="'+i+'" value="'+dateStr+'" required></td>';
+            html += '</tr>';
+        }
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+
+        // Bind events
+        container.querySelectorAll('.restructure-pct').forEach(el => {
+            el.addEventListener('input', recalcFromPercent);
+        });
+        container.querySelectorAll('.restructure-amt').forEach(el => {
+            el.addEventListener('input', recalcTotal);
+        });
+
+        recalcTotal();
+    }
+
+    function recalcFromPercent() {
+        const pcts = container.querySelectorAll('.restructure-pct');
+        const amts = container.querySelectorAll('.restructure-amt');
+        pcts.forEach((pctEl, i) => {
+            const pct = parseFloat(pctEl.value) || 0;
+            amts[i].value = (targetAmount * pct / 100).toFixed(2);
+        });
+        recalcTotal();
+    }
+
+    function recalcTotal() {
+        const amts = container.querySelectorAll('.restructure-amt');
+        let total = 0;
+        amts.forEach(el => { total += parseFloat(el.value) || 0; });
+        totalSpan.textContent = total.toFixed(2);
+
+        if (Math.abs(total - targetAmount) > 1) {
+            errorSpan.textContent = '(Must equal ₹' + targetAmount.toFixed(2) + ')';
+            errorSpan.style.display = 'inline';
+        } else {
+            errorSpan.style.display = 'none';
+        }
+
+        // Build JSON for hidden input
+        const schedules = [];
+        amts.forEach((el, i) => {
+            const dateEl = container.querySelectorAll('.restructure-date')[i];
+            schedules.push({
+                amount: parseFloat(el.value) || 0,
+                due_date: dateEl ? dateEl.value : ''
+            });
+        });
+        hiddenInput.value = JSON.stringify(schedules);
+    }
+
+    // Hook into the status form submission to inject restructure data
+    const statusForm = document.querySelector('form[action*="updateStatus"]');
+    if (statusForm) {
+        statusForm.addEventListener('submit', function(e) {
+            // Ensure hidden fields are inside the form
+            const existingHidden1 = statusForm.querySelector('input[name="restructure_sub_schedules"]');
+            const existingHidden2 = statusForm.querySelector('input[name="restructure_schedule_id"]');
+            const existingHidden3 = statusForm.querySelector('input[name="restructure_plan_id"]');
+
+            if (!existingHidden1) {
+                const h1 = document.createElement('input'); h1.type='hidden'; h1.name='restructure_sub_schedules'; h1.value=hiddenInput.value;
+                statusForm.appendChild(h1);
+            } else {
+                existingHidden1.value = hiddenInput.value;
+            }
+            if (!existingHidden2) {
+                const h2 = document.createElement('input'); h2.type='hidden'; h2.name='restructure_schedule_id'; h2.value=scheduleId;
+                statusForm.appendChild(h2);
+            }
+            if (!existingHidden3) {
+                const h3 = document.createElement('input'); h3.type='hidden'; h3.name='restructure_plan_id'; h3.value=planId;
+                statusForm.appendChild(h3);
+            }
+        });
+    }
+
+    render();
+})();
+</script>
+                                @endif
+                            @elseif($supportRequest->support_scenario === 'installment_restructure')
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-layer-group"></i> EMI Restructure Request</h6>
+                                    <strong>Reason:</strong> {{ $supportRequest->restructure_reason ?? $supportRequest->description }}<br>
+                                    @if($supportRequest->installment_amount)
+                                        <strong>Installment Amount:</strong> ₹{{ number_format($supportRequest->installment_amount, 2) }}
+                                    @endif
+                                    <br><small class="text-muted">No UPE plan data linked. This may be a legacy ticket.</small>
+                                </div>
+                            @endif
+
                             {{-- Description --}}
                             @if($supportRequest->description || $supportRequest->relative_description)
                                 <hr>

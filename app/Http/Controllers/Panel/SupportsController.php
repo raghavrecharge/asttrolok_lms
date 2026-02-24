@@ -651,6 +651,7 @@ class SupportsController extends Controller
                     
                     return [
                         'id' => $order->id,
+                        'source' => 'legacy',
                         'course_title' => $order->webinar ? $order->webinar->title : 'Unknown Course',
                         'total_amount' => $order->total_amount,
                         'paid_steps' => $paidStepsCount,
@@ -658,6 +659,52 @@ class SupportsController extends Controller
                         'created_at' => dateTimeFormat($order->created_at, 'j M Y'),
                     ];
                 });
+
+            // Also include UPE installment plans (e.g. Quick Pay purchases)
+            $seenWebinarIds = $orders->map(function ($o) {
+                return $o['course_title']; // used for dedup below
+            })->toArray();
+
+            try {
+                $upePlans = \App\Models\PaymentEngine\UpeInstallmentPlan::whereHas('sale', function ($q) use ($user) {
+                        $q->where('user_id', $user->id);
+                    })
+                    ->whereIn('status', ['active', 'completed'])
+                    ->with(['sale.product', 'schedules'])
+                    ->get();
+
+                $legacyWebinarIds = InstallmentOrder::where('user_id', $user->id)
+                    ->whereIn('status', ['open', 'paying'])
+                    ->pluck('webinar_id')
+                    ->toArray();
+
+                foreach ($upePlans as $upePlan) {
+                    $product = $upePlan->sale->product ?? null;
+                    if (!$product || !in_array($product->product_type, ['course_video', 'webinar'])) {
+                        continue;
+                    }
+                    $webinarId = $product->external_id;
+                    if (in_array($webinarId, $legacyWebinarIds)) {
+                        continue;
+                    }
+
+                    $webinar = \App\Models\Webinar::find($webinarId);
+                    $paidCount = $upePlan->schedules->where('status', 'paid')->count();
+                    $totalCount = $upePlan->schedules->count();
+
+                    $orders->push([
+                        'id' => 'upe_' . $upePlan->id,
+                        'source' => 'upe',
+                        'course_title' => $webinar ? $webinar->title : ('Course #' . $webinarId),
+                        'total_amount' => (float) $upePlan->total_amount,
+                        'paid_steps' => $paidCount,
+                        'total_steps' => $totalCount,
+                        'created_at' => $upePlan->created_at->format('j M Y'),
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to load UPE installment plans in getInstallmentOrders', ['error' => $e->getMessage()]);
+            }
 
             return response()->json(['success' => true, 'orders' => $orders]);
 

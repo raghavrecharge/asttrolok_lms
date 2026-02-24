@@ -521,6 +521,7 @@ class InstallmentsController extends Controller
             'nextPayableAmount' => (int) round($installment->getUpfront($itemPrice), 0, PHP_ROUND_HALF_UP),
             'totalPaidFromLedger' => 0,
             'allPaid' => false,
+            'upeScheduleId' => null,
         ];
 
         try {
@@ -544,63 +545,52 @@ class InstallmentsController extends Controller
                 return $result; // No installment sale → new purchase
             }
 
-            // 3. Determine total paid.
-            // webinar_part_payment is the authoritative source — it records every
-            // payment (upfront + partials) exactly once.  The UPE ledger may
-            // double-count due to sync commands re-recording payments already present,
-            // so we prefer the legacy sum when available and fall back to ledger only
-            // when no legacy records exist.
-            $legacyPartSum = (float) WebinarPartPayment::where('user_id', $userId)
-                ->where('webinar_id', $webinarId)
-                ->sum('amount');
-
-            if ($legacyPartSum > 0) {
-                $totalPaid = $legacyPartSum;
-            } else {
-                $ledgerService = app(PaymentLedgerService::class);
-                $totalPaid = $ledgerService->balance($upeSale->id);
-            }
-
-            $result['totalPaidFromLedger'] = (int) round($totalPaid, 0, PHP_ROUND_HALF_UP);
             $result['isNewPurchase'] = false;
 
-            // 4. Walk upfront + steps sequentially, deducting paid amount
-            $runningPaid = $totalPaid;
+            // 3. Check for UPE installment plan with schedules (authoritative source)
+            $upePlan = UpeInstallmentPlan::where('sale_id', $upeSale->id)
+                ->whereIn('status', ['active', 'completed'])
+                ->with('schedules')
+                ->first();
 
-            // 4a. Check upfront
-            $upfrontAmount = $installment->getUpfront($itemPrice);
-            if ($upfrontAmount > 0) {
-                if ($runningPaid >= $upfrontAmount) {
-                    $runningPaid -= $upfrontAmount;
-                } else {
-                    // Upfront not fully paid — partial deduction
-                    $remaining = (int) round($upfrontAmount - $runningPaid, 0, PHP_ROUND_HALF_UP);
-                    $result['nextPayableType'] = 'upfront';
-                    $result['nextPayableStepId'] = null;
-                    $result['nextPayableAmount'] = max(1, $remaining); // At least ₹1
+            if ($upePlan && $upePlan->schedules->isNotEmpty()) {
+                // UPE schedules are the authoritative source — handles restructured sub-installments
+                $totalPaid = $upePlan->schedules->sum('amount_paid');
+                $result['totalPaidFromLedger'] = (int) round($totalPaid, 0, PHP_ROUND_HALF_UP);
+
+                // Find first unpaid schedule (skip waived/paid), ordered by sequence
+                $nextSchedule = $upePlan->schedules
+                    ->whereIn('status', ['due', 'upcoming', 'partial', 'overdue'])
+                    ->sortBy('sequence')
+                    ->first();
+
+                if (!$nextSchedule) {
+                    // All schedules paid/waived
+                    $result['allPaid'] = true;
+                    $result['nextPayableAmount'] = 0;
                     return $result;
                 }
+
+                $remaining = (float) $nextSchedule->amount_due - (float) $nextSchedule->amount_paid;
+                $result['nextPayableType'] = ($nextSchedule->sequence <= 1) ? 'upfront' : 'step';
+                $result['nextPayableStepId'] = null;
+                $result['nextPayableAmount'] = max(1, (int) round($remaining, 0, PHP_ROUND_HALF_UP));
+                $result['upeScheduleId'] = $nextSchedule->id;
+                return $result;
             }
 
-            // 4b. Walk each step in order
-            $steps = $installment->steps()->orderBy('id')->get();
-            foreach ($steps as $step) {
-                $stepAmount = $step->getPrice($itemPrice);
-                if ($runningPaid >= $stepAmount) {
-                    $runningPaid -= $stepAmount;
-                } else {
-                    // This step is the next payable — partial deduction applies
-                    $remaining = (int) round($stepAmount - $runningPaid, 0, PHP_ROUND_HALF_UP);
-                    $result['nextPayableType'] = 'step';
-                    $result['nextPayableStepId'] = $step->id;
-                    $result['nextPayableAmount'] = max(1, $remaining);
-                    return $result;
-                }
-            }
+            // 4. Fallback: UPE sale exists but no plan/schedules — use ledger balance
+            $ledgerService = app(PaymentLedgerService::class);
+            $totalPaid = $ledgerService->balance($upeSale->id);
+            $result['totalPaidFromLedger'] = (int) round($totalPaid, 0, PHP_ROUND_HALF_UP);
 
-            // All steps fully paid
-            $result['allPaid'] = true;
-            $result['nextPayableAmount'] = 0;
+            $remaining = max(0, $itemPrice - $totalPaid);
+            if ($remaining <= 0) {
+                $result['allPaid'] = true;
+                $result['nextPayableAmount'] = 0;
+            } else {
+                $result['nextPayableAmount'] = max(1, (int) round($remaining, 0, PHP_ROUND_HALF_UP));
+            }
             return $result;
 
         } catch (\Exception $e) {
