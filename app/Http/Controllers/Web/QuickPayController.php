@@ -18,11 +18,12 @@ class QuickPayController extends Controller
         $webinar = Webinar::where('slug', $slug)->where('status', 'active')->firstOrFail();
         $coursePrice = $webinar->getPrice() ?? $webinar->price;
 
-        // Quick Pay only works for students who already have a UPE installment plan
         $existingSale = null;
         $existingPlan = null;
         $totalPaid = 0;
         $remaining = $coursePrice;
+        $installmentConfig = null;
+        $installmentBreakdown = null;
 
         $user = auth()->user();
         if ($user) {
@@ -50,11 +51,50 @@ class QuickPayController extends Controller
             }
         }
 
+        // If no existing plan, check if the course has an installment config
+        if (!$existingPlan) {
+            $installmentId = \DB::table('installment_specification_items')
+                ->where('webinar_id', $webinar->id)
+                ->value('installment_id');
+
+            if ($installmentId) {
+                $installmentConfig = \App\Models\Installment::where('id', $installmentId)
+                    ->where('enable', true)
+                    ->first();
+            }
+
+            if ($installmentConfig) {
+                $breakdown = [];
+                $upfrontAmount = round($coursePrice * ($installmentConfig->upfront / 100), 2);
+                $breakdown[] = [
+                    'label' => 'Upfront Payment',
+                    'amount' => $upfrontAmount,
+                    'deadline_days' => 0,
+                ];
+
+                $steps = $installmentConfig->steps()->orderBy('id')->get();
+                $cumulativeDays = 0;
+                foreach ($steps as $i => $step) {
+                    $stepAmount = round($step->getPrice($coursePrice), 2);
+                    $cumulativeDays += (int) $step->deadline;
+                    $breakdown[] = [
+                        'label' => 'Installment ' . ($i + 2),
+                        'amount' => $stepAmount,
+                        'deadline_days' => $cumulativeDays,
+                    ];
+                }
+
+                $installmentBreakdown = $breakdown;
+                $remaining = array_sum(array_column($breakdown, 'amount'));
+            }
+        }
+
         $pageTitle = 'Quick Pay - ' . $webinar->title;
 
         return view(getTemplate() . '.quick_pay.index', compact(
             'webinar', 'coursePrice',
             'existingSale', 'existingPlan', 'totalPaid', 'remaining',
+            'installmentConfig', 'installmentBreakdown',
             'pageTitle'
         ));
     }

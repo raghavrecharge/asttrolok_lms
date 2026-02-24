@@ -312,32 +312,7 @@
                     </div>
                 </div>
 
-                {{-- Request Upgrade --}}
-                <div class="col-12 col-lg-6 mt-15 mt-lg-0">
-                    <div class="panel-section-card py-20 px-25">
-                        <h3 class="font-16 font-weight-bold text-dark-blue mb-15">Request Upgrade</h3>
-                        <form method="POST" action="/panel/upe/request-upgrade">
-                            @csrf
-                            <input type="hidden" name="sale_id" value="{{ $sale->id }}">
-                            <div class="form-group">
-                                <label class="input-label">Upgrade To</label>
-                                <select name="target_product_id" class="form-control" required>
-                                    <option value="">Select a course to upgrade to...</option>
-                                    @foreach($products as $p)
-                                        <option value="{{ $p->id }}">{{ $p->name }} ({{ ucfirst($p->product_type) }}) — ₹{{ number_format($p->base_fee, 2) }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="input-label">Reason (optional)</label>
-                                <input type="text" name="reason" class="form-control" placeholder="e.g. Want to switch to advanced course">
-                            </div>
-                            <button type="submit" class="btn btn-primary" onclick="return confirm('Submit upgrade request? An admin will review it.')">
-                                Submit Upgrade Request
-                            </button>
-                        </form>
-                    </div>
-                </div>
+                {{-- Request Upgrade (hidden — not wired to support/admin panels yet) --}}
             </div>
         </section>
     @endif

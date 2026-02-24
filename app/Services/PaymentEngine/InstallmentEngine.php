@@ -151,7 +151,8 @@ class InstallmentEngine
 
                 // Derive paid amount from immutable ledger (source of truth)
                 $derivedPaid = $schedule->derivedAmountPaid();
-                $newStatus = ($derivedPaid >= (float) $schedule->amount_due) ? 'paid' : 'partial';
+                $due = (float) $schedule->amount_due;
+                $newStatus = ($derivedPaid >= $due || abs($derivedPaid - $due) < 1.00) ? 'paid' : 'partial';
 
                 // Only update status and link — amount_paid is kept as a denormalized cache
                 // but the TRUTH is always derivedAmountPaid() from the ledger

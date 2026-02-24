@@ -79,12 +79,66 @@
             </div>
         </div>
 
-        @if(!$existingPlan)
-            {{-- No existing installment plan — Quick Pay not available --}}
+        @if(!$existingPlan && !$installmentConfig)
+            {{-- No existing plan AND no installment config — Quick Pay not available --}}
             <div class="alert alert-warning text-center py-20">
                 <i class="fa fa-info-circle font-20 mb-10 d-block"></i>
                 <strong class="font-16">This course does not have an installment plan, therefore Quick Payment is not available.</strong>
                 <p class="mt-10 mb-0 font-13 text-gray">To use Quick Pay, you must first purchase this course through an installment plan.</p>
+            </div>
+        @elseif(!$existingPlan && $installmentConfig)
+            {{-- New purchase: show installment breakdown from config --}}
+            <div class="schedule-preview">
+                <div class="font-13 font-weight-bold mb-10">Installment Plan</div>
+                <div class="row text-center mb-10">
+                    <div class="col-4">
+                        <div class="font-11 text-gray">Total</div>
+                        <div class="font-14 font-weight-bold">{{ handlePrice($remaining) }}</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="font-11 text-gray">Installments</div>
+                        <div class="font-14 font-weight-bold">{{ count($installmentBreakdown) }}</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="font-11 text-gray">Upfront</div>
+                        <div class="font-14 font-weight-bold text-primary">{{ handlePrice($installmentBreakdown[0]['amount']) }}</div>
+                    </div>
+                </div>
+                @foreach($installmentBreakdown as $idx => $item)
+                    <div class="schedule-row">
+                        <span>{{ $item['label'] }}</span>
+                        <span class="font-weight-500">{{ handlePrice($item['amount']) }}</span>
+                        <span class="unpaid">
+                            @if($item['deadline_days'] === 0) Due now
+                            @else Due in {{ $item['deadline_days'] }} days
+                            @endif
+                        </span>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="form-group">
+                <label class="font-13 font-weight-bold">Enter Amount</label>
+                <div class="amount-input-group">
+                    <span class="rupee-symbol">&#8377;</span>
+                    <input type="number" id="amount" class="form-control" min="1" max="{{ $remaining }}" placeholder="Enter amount">
+                </div>
+                <small class="text-gray">Total: {{ handlePrice($remaining) }}</small>
+            </div>
+
+            <div class="payment-summary" id="paymentSummary"><div id="summaryText"></div></div>
+
+            <div id="Payment-Option" class="bg-gray200 mt-15 rounded-lg border p-10">
+                <div class="form-group">
+                    <input name="name" type="text" id="customer_name" placeholder="Name" value="{{ auth()->check() ? auth()->user()->full_name : '' }}" class="form-control">
+                </div>
+                <div class="form-group">
+                    <input name="email" type="email" id="customer_email" placeholder="Email" value="{{ auth()->check() ? auth()->user()->email : '' }}" class="form-control">
+                </div>
+                <div class="form-group">
+                    <input name="number" type="text" id="customer_number" placeholder="Contact Number" value="{{ auth()->check() ? auth()->user()->mobile : '' }}" class="form-control">
+                </div>
+                <button type="button" id="paymentSubmit" class="btn btn-primary btn-block" disabled>Pay Now</button>
             </div>
         @else
             <div class="existing-progress">
@@ -105,7 +159,7 @@
                 </div>
                 @if($existingPlan->schedules)
                     <div class="mt-10">
-                        @foreach($existingPlan->schedules->sortBy('sequence') as $schedule)
+                        @foreach($existingPlan->schedules->where('status', '!=', 'waived')->sortBy('sequence') as $schedule)
                             <div class="schedule-row">
                                 <span>EMI {{ $schedule->sequence }}</span>
                                 <span>{{ handlePrice($schedule->amount_due) }}</span>
@@ -159,6 +213,7 @@
 <script>
     var webinarId = {{ $webinar->id }};
     var remaining = {{ $remaining }};
+    var installmentConfigId = {{ $installmentConfig ? $installmentConfig->id : 'null' }};
 
     function showPaymentLoader() {
         var el = document.getElementById('paymentLoader');
@@ -190,7 +245,7 @@
                 email: document.getElementById('customer_email').value,
                 number: document.getElementById('customer_number').value,
                 amount: document.getElementById('amount').value,
-                installment_id: null
+                installment_id: installmentConfigId
             };
 
             showPaymentLoader();

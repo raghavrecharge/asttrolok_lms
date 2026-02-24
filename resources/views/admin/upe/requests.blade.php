@@ -32,7 +32,7 @@
                         <div class="col-md-3">
                             <select name="request_type" class="form-control">
                                 <option value="">All Types</option>
-                                @foreach(['offline_payment','refund','upgrade','adjustment','restructure','manual_discount','subscription_cancel'] as $t)
+                                @foreach(['offline_payment','refund','adjustment','restructure','manual_discount','subscription_cancel'] as $t)
                                     <option value="{{ $t }}" {{ request('request_type') == $t ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ',$t)) }}</option>
                                 @endforeach
                             </select>

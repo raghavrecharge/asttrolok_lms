@@ -84,7 +84,8 @@ class UpeController extends Controller
 
     public function requests(Request $request)
     {
-        $query = UpePaymentRequest::with(['user', 'sale']);
+        $query = UpePaymentRequest::with(['user', 'sale'])
+            ->where('request_type', '!=', 'upgrade');
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -94,7 +95,7 @@ class UpeController extends Controller
         }
 
         $requests = $query->orderByDesc('id')->paginate(20);
-        $pendingCount = UpePaymentRequest::where('status', 'pending')->count();
+        $pendingCount = UpePaymentRequest::where('status', 'pending')->where('request_type', '!=', 'upgrade')->count();
         $pageTitle = 'UPE Payment Requests';
 
         return view('admin.upe.requests', compact('requests', 'pendingCount', 'pageTitle'));

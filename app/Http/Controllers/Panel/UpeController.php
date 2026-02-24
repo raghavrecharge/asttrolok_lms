@@ -336,6 +336,7 @@ class UpeController extends Controller
     {
         $user = auth()->user();
         $requests = UpePaymentRequest::where('user_id', $user->id)
+            ->where('request_type', '!=', 'upgrade')
             ->with('sale.product')
             ->orderByDesc('id')
             ->paginate(15);
