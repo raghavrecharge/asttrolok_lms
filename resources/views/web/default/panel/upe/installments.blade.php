@@ -87,7 +87,17 @@
                                 </div>
                             @endif
 
-                            <a href="/panel/upe/installments/{{ $sale->installmentPlan->id }}" class="btn btn-sm btn-primary mt-15">View Full Schedule</a>
+                            <div class="mt-15 d-flex">
+                                <a href="/panel/upe/installments/{{ $sale->installmentPlan->id }}" class="btn btn-sm btn-primary mr-10">View Full Schedule</a>
+                                @if($sale->product && in_array($sale->product->product_type, ['course_video', 'webinar', 'course_live']) && in_array($sale->status, ['active', 'completed']))
+                                    @php $webinarForLink = \App\Models\Webinar::find($sale->product->external_id); @endphp
+                                    @if($webinarForLink && $webinarForLink->slug)
+                                        <a href="/course/learning/{{ $webinarForLink->slug }}" target="_blank" class="btn btn-sm btn-success">
+                                            <i class="fa fa-play-circle"></i> Learning Page
+                                        </a>
+                                    @endif
+                                @endif
+                            </div>
                         </div>
                     </div>
                 @endif

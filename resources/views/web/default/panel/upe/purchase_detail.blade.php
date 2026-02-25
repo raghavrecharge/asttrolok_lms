@@ -100,6 +100,17 @@
                         <span class="text-gray">Purchased On</span>
                         <span>{{ \Carbon\Carbon::parse($sale->created_at)->format('d M Y H:i') }}</span>
                     </div>
+
+                    @if($sale->product && in_array($sale->product->product_type, ['course_video', 'webinar', 'course_live']) && $accessResult->hasAccess)
+                        @php $webinarForLink = \App\Models\Webinar::find($sale->product->external_id); @endphp
+                        @if($webinarForLink && $webinarForLink->slug)
+                            <div class="mt-15 text-center">
+                                <a href="/course/learning/{{ $webinarForLink->slug }}" target="_blank" class="btn btn-success btn-block">
+                                    <i class="fa fa-play-circle"></i> Go to Learning Page
+                                </a>
+                            </div>
+                        @endif
+                    @endif
                 </div>
             </div>
 

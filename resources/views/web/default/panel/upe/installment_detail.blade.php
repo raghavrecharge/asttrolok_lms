@@ -268,8 +268,16 @@
         @endif
     @endif
 
-    <div class="mt-20">
+    <div class="mt-20 d-flex">
         <a href="/panel/upe/installments" class="btn btn-sm btn-secondary"><i data-feather="arrow-left" width="14" height="14"></i> Back to EMI Plans</a>
         <a href="/panel/upe/purchases/{{ $plan->sale_id }}" class="btn btn-sm btn-primary ml-10">View Purchase</a>
+        @if($plan->sale && $plan->sale->product && in_array($plan->sale->product->product_type, ['course_video', 'webinar', 'course_live']) && in_array($plan->sale->status, ['active', 'completed']))
+            @php $webinarForLink = \App\Models\Webinar::find($plan->sale->product->external_id); @endphp
+            @if($webinarForLink && $webinarForLink->slug)
+                <a href="/course/learning/{{ $webinarForLink->slug }}" target="_blank" class="btn btn-sm btn-success ml-10">
+                    <i class="fa fa-play-circle"></i> Learning Page
+                </a>
+            @endif
+        @endif
     </div>
 @endsection
