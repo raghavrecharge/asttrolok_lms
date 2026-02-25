@@ -33,7 +33,7 @@ class UpeInstallmentPlan extends Model
 
     public function schedules()
     {
-        return $this->hasMany(UpeInstallmentSchedule::class, 'plan_id')->orderBy('sequence');
+        return $this->hasMany(UpeInstallmentSchedule::class, 'plan_id')->orderBy('due_date')->orderBy('sequence');
     }
 
     public function restructuredFrom()
@@ -93,6 +93,7 @@ class UpeInstallmentPlan extends Model
     {
         return $this->schedules()
             ->whereIn('status', ['due', 'partial', 'overdue'])
+            ->orderBy('due_date')
             ->orderBy('sequence')
             ->first();
     }

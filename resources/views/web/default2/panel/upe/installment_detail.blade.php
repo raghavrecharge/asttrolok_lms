@@ -63,9 +63,11 @@
                     </div>
 
                     @php
-                        $totalPaid = $plan->schedules->whereNotIn('status', ['waived'])->sum('amount_paid');
-                        $totalRemaining = $plan->total_amount - $totalPaid;
-                        $paidPercent = $plan->total_amount > 0 ? round(($totalPaid / $plan->total_amount) * 100) : 0;
+                        $activeSchedules = $plan->schedules->whereNotIn('status', ['waived']);
+                        $totalPaid = $activeSchedules->sum('amount_paid');
+                        $totalDue = $activeSchedules->sum('amount_due');
+                        $totalRemaining = max(0, $totalDue - $totalPaid);
+                        $paidPercent = $totalDue > 0 ? round(($totalPaid / $totalDue) * 100) : 0;
                     @endphp
 
                     <div class="mt-15">
@@ -104,8 +106,10 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($plan->schedules->where('status', '!=', 'waived')->sortBy('sequence') as $schedule)
+                                @php $displayIndex = 0; @endphp
+                                @foreach($plan->schedules->where('status', '!=', 'waived')->sortBy(['due_date', 'sequence']) as $schedule)
                                     @php
+                                        $displayIndex++;
                                         $schedStatusClass = match($schedule->status) {
                                             'paid' => 'badge-primary',
                                             'due' => 'badge-warning',
@@ -115,9 +119,10 @@
                                             'waived' => 'badge-secondary',
                                             default => 'badge-secondary',
                                         };
+                                        $emiLabel = $displayIndex === 1 ? 'Upfront' : 'EMI ' . ($displayIndex - 1);
                                     @endphp
                                     <tr class="{{ $schedule->status === 'overdue' ? 'bg-light' : '' }}">
-                                        <td class="font-weight-500">{{ $schedule->sequence ?? $schedule->installment_number }}</td>
+                                        <td class="font-weight-500">{{ $emiLabel }}</td>
                                         <td>
                                             @if($schedule->due_date)
                                                 {{ \Carbon\Carbon::parse($schedule->due_date)->format('d M Y') }}

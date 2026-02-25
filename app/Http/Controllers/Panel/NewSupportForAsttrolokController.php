@@ -664,8 +664,8 @@ class NewSupportForAsttrolokController extends Controller
                             $unpaidSchedules = $upePlan->schedules->whereIn('status', ['due', 'upcoming', 'partial', 'overdue']);
 
                             if ($unpaidSchedules->isNotEmpty()) {
-                                // Target: upfront (seq 1) if unpaid, else first unpaid
-                                $targetSchedule = $unpaidSchedules->sortBy('sequence')->first();
+                                // Target: first unpaid by due date
+                                $targetSchedule = $unpaidSchedules->sortBy('due_date')->first();
                                 $isUpfront = ($targetSchedule->sequence <= 1);
 
                                 // Check for existing pending request

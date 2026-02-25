@@ -299,14 +299,15 @@ class AdminCoursePurchaseService
         try {
             $course = Webinar::findOrFail($courseId);
             
-            $installments = Installment::where('enable', true)
-                ->where(function($query) use ($course) {
-                    $query->where('webinar_id', $courseId)
-                          ->orWhere('category_id', $course->category_id)
-                          ->orWhere('teacher_id', $course->teacher_id);
-                })
-                ->withCount('steps')
-                ->get();
+            $installmentPlans = new \App\Mixins\Installment\InstallmentPlans();
+            $installments = $installmentPlans->getPlans(
+                'courses',
+                $course->id,
+                $course->type,
+                $course->category_id,
+                $course->teacher_id
+            );
+            $installments->loadCount('steps');
             
             return [
                 'success' => true,

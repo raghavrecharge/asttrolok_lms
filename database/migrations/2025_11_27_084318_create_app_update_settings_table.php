@@ -8,6 +8,9 @@ return new class extends Migration
 {
     public function up()
     {
+        if (Schema::hasTable('app_update_settings')) {
+            return;
+        }
         Schema::create('app_update_settings', function (Blueprint $table) {
             $table->id();
             $table->string('latest_version_android')->default('1.0.0');

@@ -202,7 +202,7 @@ class PaymentController extends Controller
                             if ($upePlan && $upePlan->schedules->isNotEmpty()) {
                                 $nextSchedule = $upePlan->schedules
                                     ->whereIn('status', ['due', 'upcoming', 'partial', 'overdue'])
-                                    ->sortBy('sequence')
+                                    ->sortBy('due_date')
                                     ->first();
 
                                 if ($nextSchedule) {

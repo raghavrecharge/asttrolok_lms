@@ -264,13 +264,9 @@ class UpeController extends Controller
             return back()->with(['toast' => ['title' => 'Error', 'msg' => 'A restructure request is already pending for this plan.', 'status' => 'error']]);
         }
 
-        // Determine target schedule: upfront (sequence 1) if unpaid, else first unpaid
-        $targetSchedule = $unpaidSchedules->sortBy('sequence')->first();
-        $isUpfront = ($targetSchedule->sequence <= 1) || $unpaidSchedules->where('sequence', 1)->whereIn('status', ['due', 'upcoming', 'partial', 'overdue'])->isNotEmpty();
-
-        if ($isUpfront) {
-            $targetSchedule = $unpaidSchedules->sortBy('sequence')->first();
-        }
+        // Determine target schedule: first unpaid by due date
+        $targetSchedule = $unpaidSchedules->sortBy('due_date')->first();
+        $isUpfront = ($targetSchedule->sequence <= 1);
 
         // Resolve webinar_id from UPE product metadata
         $webinarId = null;
@@ -376,8 +372,9 @@ class UpeController extends Controller
             ->findOrFail($planId);
 
         // Find the next unpaid schedule for the Pay button
-        $nextUnpaid = $plan->schedules->sortBy('sequence')
+        $nextUnpaid = $plan->schedules
             ->whereNotIn('status', ['paid', 'waived'])
+            ->sortBy('due_date')
             ->first();
 
         $payUrl = null;
@@ -411,7 +408,7 @@ class UpeController extends Controller
         $unpaidSchedules = $plan->schedules->whereIn('status', ['due', 'upcoming', 'partial', 'overdue']);
         $restructureTarget = null;
         if ($unpaidSchedules->isNotEmpty()) {
-            $restructureTarget = $unpaidSchedules->sortBy('sequence')->first();
+            $restructureTarget = $unpaidSchedules->sortBy('due_date')->first();
         }
 
         $pageTitle = 'Installment Plan';

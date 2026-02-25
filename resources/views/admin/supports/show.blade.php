@@ -102,12 +102,114 @@
                                             @endif
                                         </div>
                                     </div>
-                                    
+
                                     @if($supportRequest->execution_notes)
                                         <hr>
                                         <strong>Execution Notes:</strong> {{ $supportRequest->execution_notes }}
                                     @endif
                                 </div>
+
+                                {{-- Price Breakdown & Admin Controls (only for pending tickets) --}}
+                                @if(isset($offlinePaymentData) && !in_array($supportRequest->status, ['executed', 'completed', 'closed']))
+                                <div class="card border-left-primary shadow-sm mt-3">
+                                    <div class="card-header bg-light py-2">
+                                        <h6 class="m-0"><i class="fas fa-calculator"></i> Price Breakdown & Payment Validation</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        {{-- Price Breakdown Table --}}
+                                        <table class="table table-sm table-bordered mb-3" id="offlinePriceTable">
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Course Price</strong></td>
+                                                    <td class="text-right" id="offlineOriginalPrice">₹{{ number_format($offlinePaymentData['course_price'], 0) }}</td>
+                                                </tr>
+                                                <tr id="offlineDiscountRow" style="display:none;">
+                                                    <td><strong>Coupon Discount</strong> <span id="offlineCouponBadge" class="badge badge-info ml-1"></span></td>
+                                                    <td class="text-right text-success" id="offlineDiscountAmount">-₹0</td>
+                                                </tr>
+                                                <tr class="table-active">
+                                                    <td><strong>Final Payable</strong></td>
+                                                    <td class="text-right font-weight-bold" id="offlineFinalPayable">₹{{ number_format($offlinePaymentData['course_price'], 0) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Cash Received</strong></td>
+                                                    <td class="text-right">₹{{ number_format($offlinePaymentData['cash_amount'], 0) }}</td>
+                                                </tr>
+                                                <tr id="offlineRemainingRow">
+                                                    <td><strong>Remaining</strong></td>
+                                                    <td class="text-right {{ $offlinePaymentData['remaining'] > 0 ? 'text-danger' : 'text-success' }}" id="offlineRemaining">
+                                                        ₹{{ number_format($offlinePaymentData['remaining'], 0) }}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                        {{-- Underpayment Warning --}}
+                                        @if($offlinePaymentData['is_underpaid'])
+                                        <div class="alert alert-warning py-2 mb-3" id="offlineUnderpaidAlert">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <strong>Underpayment:</strong> Cash (₹{{ number_format($offlinePaymentData['cash_amount'], 0) }}) is less than course price (₹{{ number_format($offlinePaymentData['course_price'], 0) }}).
+                                            <span id="offlineUnderpaidHint">
+                                                @if($offlinePaymentData['is_installment_available'])
+                                                    Select an installment plan below or apply a coupon to proceed.
+                                                @else
+                                                    Apply a coupon to reduce the payable amount.
+                                                @endif
+                                            </span>
+                                        </div>
+                                        @endif
+
+                                        {{-- Coupon Input --}}
+                                        <div class="form-group mb-3">
+                                            <label><i class="fas fa-tag"></i> Apply Coupon Code (Optional)</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="offlineCouponInput" placeholder="Enter coupon code" style="text-transform:uppercase;">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-outline-primary" id="offlineValidateCouponBtn">
+                                                        <i class="fas fa-check"></i> Validate
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-secondary" id="offlineClearCouponBtn" style="display:none;">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <small class="form-text" id="offlineCouponFeedback"></small>
+                                        </div>
+
+                                        {{-- Installment Plan Selector --}}
+                                        @if($offlinePaymentData['is_installment_available'])
+                                        <div class="form-group mb-3">
+                                            <label><i class="fas fa-layer-group"></i> Installment Plan (Optional)</label>
+                                            <select class="form-control" id="offlineInstallmentSelect">
+                                                <option value="">-- Full Payment (No Installment) --</option>
+                                                @foreach($offlinePaymentData['installment_plans'] as $plan)
+                                                <option value="{{ $plan['id'] }}"
+                                                        data-upfront="{{ $plan['upfront'] }}"
+                                                        data-steps="{{ $plan['steps_count'] }}">
+                                                    {{ $plan['title'] }} (Upfront: ₹{{ number_format($plan['upfront'], 0) }}, {{ $plan['total_emis'] }} EMIs)
+                                                </option>
+                                                @endforeach
+                                            </select>
+                                            <small class="form-text text-muted">Select an installment plan if the student will pay in installments.</small>
+                                        </div>
+
+                                        {{-- Installment Schedule Preview --}}
+                                        <div id="offlineInstallmentPreview" style="display:none;">
+                                            <h6 class="text-muted mb-2">Installment Schedule Preview</h6>
+                                            <table class="table table-sm table-bordered" id="offlineScheduleTable">
+                                                <thead class="thead-light">
+                                                    <tr><th>EMI</th><th class="text-right">Amount</th><th>Status</th></tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
+                                        </div>
+                                        @endif
+
+                                        {{-- Validation Status --}}
+                                        <div id="offlineValidationStatus" class="mt-2"></div>
+                                    </div>
+                                </div>
+                                @endif
                             @endif
 
                             {{-- Installment Restructure Details --}}
@@ -754,4 +856,243 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+{{-- ══════════════════════════════════════════════════════════════ --}}
+{{-- Offline Cash Payment: Coupon, Installment, Price Recalculation --}}
+{{-- ══════════════════════════════════════════════════════════════ --}}
+@if($supportRequest->support_scenario === 'offline_cash_payment' && isset($offlinePaymentData) && !in_array($supportRequest->status, ['executed', 'completed', 'closed']))
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const webinarId = {{ $supportRequest->webinar_id }};
+    const cashAmount = {{ $offlinePaymentData['cash_amount'] }};
+    const originalPrice = {{ $offlinePaymentData['course_price'] }};
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+    let currentDiscount = 0;
+    let currentCouponCode = '';
+    let currentInstallmentId = null;
+
+    // ── Coupon Validation ──
+    const couponInput = document.getElementById('offlineCouponInput');
+    const validateBtn = document.getElementById('offlineValidateCouponBtn');
+    const clearBtn = document.getElementById('offlineClearCouponBtn');
+    const feedback = document.getElementById('offlineCouponFeedback');
+
+    if (validateBtn) {
+        validateBtn.addEventListener('click', function() {
+            const code = couponInput.value.trim().toUpperCase();
+            if (!code) { feedback.textContent = 'Enter a coupon code.'; feedback.className = 'form-text text-danger'; return; }
+
+            validateBtn.disabled = true;
+            validateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            fetch('/admin/supports/newsuportforasttrolok/validate-offline-coupon', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                body: JSON.stringify({
+                    coupon_code: code,
+                    webinar_id: webinarId,
+                    cash_amount: cashAmount,
+                    installment_id: currentInstallmentId
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                validateBtn.disabled = false;
+                validateBtn.innerHTML = '<i class="fas fa-check"></i> Validate';
+
+                if (data.success) {
+                    currentDiscount = data.discount_amount;
+                    currentCouponCode = code;
+                    feedback.textContent = data.message;
+                    feedback.className = 'form-text text-success font-weight-bold';
+                    clearBtn.style.display = 'inline-block';
+                    couponInput.readOnly = true;
+
+                    updatePriceBreakdown(data.original_price, data.discount_amount, data.final_payable, data.remaining, data.is_sufficient, code);
+
+                    if (data.installment_schedules) {
+                        renderSchedulePreview(data.installment_schedules, cashAmount);
+                    }
+                } else {
+                    feedback.textContent = data.message;
+                    feedback.className = 'form-text text-danger';
+                }
+            })
+            .catch(() => {
+                validateBtn.disabled = false;
+                validateBtn.innerHTML = '<i class="fas fa-check"></i> Validate';
+                feedback.textContent = 'Network error. Try again.';
+                feedback.className = 'form-text text-danger';
+            });
+        });
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+            currentDiscount = 0;
+            currentCouponCode = '';
+            couponInput.value = '';
+            couponInput.readOnly = false;
+            clearBtn.style.display = 'none';
+            feedback.textContent = '';
+            updatePriceBreakdown(originalPrice, 0, originalPrice, Math.max(0, originalPrice - cashAmount), cashAmount >= (originalPrice - 1), '');
+            updateInstallmentPreview();
+        });
+    }
+
+    // ── Installment Plan Selection ──
+    const installmentSelect = document.getElementById('offlineInstallmentSelect');
+    if (installmentSelect) {
+        installmentSelect.addEventListener('change', function() {
+            currentInstallmentId = this.value ? parseInt(this.value) : null;
+            updateInstallmentPreview();
+            updateValidationStatus();
+        });
+    }
+
+    function updateInstallmentPreview() {
+        const preview = document.getElementById('offlineInstallmentPreview');
+        if (!preview) return;
+
+        if (!currentInstallmentId) {
+            preview.style.display = 'none';
+            return;
+        }
+
+        const opt = installmentSelect.options[installmentSelect.selectedIndex];
+        const upfront = parseFloat(opt.dataset.upfront || 0);
+        const finalPayable = originalPrice - currentDiscount;
+
+        // Re-validate with coupon if one is applied
+        if (currentCouponCode) {
+            fetch('/admin/supports/newsuportforasttrolok/validate-offline-coupon', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                body: JSON.stringify({
+                    coupon_code: currentCouponCode,
+                    webinar_id: webinarId,
+                    cash_amount: cashAmount,
+                    installment_id: currentInstallmentId
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.installment_schedules) {
+                    renderSchedulePreview(data.installment_schedules, cashAmount);
+                    updatePriceBreakdown(data.original_price, data.discount_amount, data.final_payable, data.remaining, data.is_sufficient, currentCouponCode);
+                }
+            });
+        } else {
+            // Simple preview without coupon - show upfront from option data
+            const tbody = document.querySelector('#offlineScheduleTable tbody');
+            tbody.innerHTML = `<tr><td>Upfront</td><td class="text-right">₹${formatNum(upfront)}</td><td>${cashAmount >= (upfront - 1) ? '<span class="badge badge-success">Covered</span>' : '<span class="badge badge-warning">Partial</span>'}</td></tr>`;
+            for (let i = 1; i <= parseInt(opt.dataset.steps || 0); i++) {
+                tbody.innerHTML += `<tr><td>EMI ${i}</td><td class="text-right">--</td><td><span class="badge badge-secondary">Upcoming</span></td></tr>`;
+            }
+            preview.style.display = 'block';
+        }
+        updateValidationStatus();
+    }
+
+    function renderSchedulePreview(schedules, cash) {
+        const preview = document.getElementById('offlineInstallmentPreview');
+        const tbody = document.querySelector('#offlineScheduleTable tbody');
+        if (!preview || !tbody) return;
+
+        let remaining = cash;
+        tbody.innerHTML = '';
+        schedules.forEach(s => {
+            const covered = Math.min(remaining, s.amount);
+            remaining -= covered;
+            let statusBadge;
+            if (covered >= s.amount - 1) statusBadge = '<span class="badge badge-success">Covered</span>';
+            else if (covered > 0) statusBadge = '<span class="badge badge-info">Partial (₹' + formatNum(covered) + ')</span>';
+            else statusBadge = '<span class="badge badge-secondary">Upcoming</span>';
+            tbody.innerHTML += `<tr><td>${s.label}</td><td class="text-right">₹${formatNum(s.amount)}</td><td>${statusBadge}</td></tr>`;
+        });
+        preview.style.display = 'block';
+    }
+
+    function updatePriceBreakdown(origPrice, discount, finalPay, remaining, isSufficient, coupon) {
+        const discountRow = document.getElementById('offlineDiscountRow');
+        const discountAmt = document.getElementById('offlineDiscountAmount');
+        const couponBadge = document.getElementById('offlineCouponBadge');
+        const finalEl = document.getElementById('offlineFinalPayable');
+        const remainEl = document.getElementById('offlineRemaining');
+        const underpaidAlert = document.getElementById('offlineUnderpaidAlert');
+
+        if (discount > 0) {
+            discountRow.style.display = '';
+            discountAmt.textContent = '-₹' + formatNum(discount);
+            couponBadge.textContent = coupon;
+        } else {
+            discountRow.style.display = 'none';
+        }
+
+        finalEl.textContent = '₹' + formatNum(finalPay);
+        remainEl.textContent = '₹' + formatNum(remaining);
+        remainEl.className = 'text-right ' + (remaining > 0 ? 'text-danger' : 'text-success');
+
+        if (underpaidAlert) {
+            underpaidAlert.style.display = isSufficient ? 'none' : 'block';
+        }
+
+        updateValidationStatus();
+    }
+
+    function updateValidationStatus() {
+        const statusDiv = document.getElementById('offlineValidationStatus');
+        if (!statusDiv) return;
+
+        const finalPayable = originalPrice - currentDiscount;
+
+        if (currentInstallmentId) {
+            const opt = installmentSelect.options[installmentSelect.selectedIndex];
+            const upfront = parseFloat(opt.dataset.upfront || finalPayable);
+            if (cashAmount >= (upfront - 1)) {
+                statusDiv.innerHTML = '<div class="alert alert-success py-2"><i class="fas fa-check-circle"></i> <strong>Ready:</strong> Cash covers the upfront amount. Payment will be allocated to installment plan.</div>';
+            } else {
+                statusDiv.innerHTML = '<div class="alert alert-info py-2"><i class="fas fa-info-circle"></i> <strong>Partial:</strong> Cash will be recorded as a partial installment payment. Access will be granted once upfront is fully paid.</div>';
+            }
+        } else {
+            if (cashAmount >= (finalPayable - 1)) {
+                statusDiv.innerHTML = '<div class="alert alert-success py-2"><i class="fas fa-check-circle"></i> <strong>Ready:</strong> Cash covers the full course price. Access will be granted.</div>';
+            } else {
+                statusDiv.innerHTML = '<div class="alert alert-danger py-2"><i class="fas fa-times-circle"></i> <strong>Cannot process:</strong> For full payment, cash must cover the entire course price. Select an installment plan or apply a coupon.</div>';
+            }
+        }
+    }
+
+    // ── Inject hidden fields into status form on submit ──
+    const statusForm = document.querySelector('form[action*="status"]');
+    if (statusForm) {
+        statusForm.addEventListener('submit', function(e) {
+            // Remove any previously injected hidden fields
+            statusForm.querySelectorAll('.offline-hidden-field').forEach(el => el.remove());
+
+            if (currentCouponCode) {
+                const h = document.createElement('input');
+                h.type = 'hidden'; h.name = 'offline_coupon_code'; h.value = currentCouponCode;
+                h.className = 'offline-hidden-field';
+                statusForm.appendChild(h);
+            }
+
+            if (currentInstallmentId) {
+                const h = document.createElement('input');
+                h.type = 'hidden'; h.name = 'offline_installment_id'; h.value = currentInstallmentId;
+                h.className = 'offline-hidden-field';
+                statusForm.appendChild(h);
+            }
+        });
+    }
+
+    function formatNum(n) { return Math.round(n).toLocaleString('en-IN'); }
+
+    // Initial validation status
+    updateValidationStatus();
+});
+</script>
+@endif
+
 @endsection

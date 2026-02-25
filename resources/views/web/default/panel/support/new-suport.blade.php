@@ -67,6 +67,18 @@
     </script>
     @endif
 
+    {{-- Validation Errors --}}
+    @if($errors->any())
+    <div class="alert alert-danger shadow-sm mb-20" style="border-radius: 8px; border-left: 4px solid #dc3545;">
+        <h6 class="font-weight-bold mb-2"><i class="fa fa-exclamation-triangle"></i> Please fix the following errors:</h6>
+        <ul class="mb-0 pl-3">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
     <form method="post" id="support-form" class="mb-80" action="/panel/support/newsuportforasttrolok/store" enctype="multipart/form-data">
         @csrf
 
@@ -566,7 +578,7 @@
                     
                     <div class="form-group">
                         <label class="input-label">Wrong Course Purchased <span class="text-danger">*</span></label>
-                        <select name="wrong_course_id" id="wrongCourseId" class="form-control select2">
+                        <select name="wrong_course_id" id="wrongCourseId" class="form-control select2 @error('wrong_course_id') is-invalid @enderror">
                             <option value="">Select your purchased course</option>
                             @if(auth()->check())
                                 @foreach($userPurchases as $purchase)
@@ -580,22 +592,31 @@
                                 @endforeach
                             @endif
                         </select>
+                        @error('wrong_course_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="form-group">
                         <label class="input-label">Correct Course Required <span class="text-danger">*</span></label>
-                        <select name="correct_course_id" id="correctCourseId" class="form-control select2">
+                        <select name="correct_course_id" id="correctCourseId" class="form-control select2 @error('correct_course_id') is-invalid @enderror">
                             <option value="">Select correct course</option>
                             @foreach($webinars as $webinar)
                                 <option value="{{ $webinar->id }}">{{ $webinar->title }}</option>
                             @endforeach
                         </select>
+                        @error('correct_course_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="form-group">
-                        <label class="input-label">Reason for Correction</label>
-                        <textarea name="correction_reason" class="form-control" rows="4" 
-                                  placeholder="Please explain why you need the course correction (optional)"></textarea>
+                        <label class="input-label">Reason for Correction <span class="text-danger">*</span></label>
+                        <textarea name="correction_reason" class="form-control @error('correction_reason') is-invalid @enderror" rows="4" 
+                                  placeholder="Please explain why you need the course correction">{{ old('correction_reason') }}</textarea>
+                        @error('correction_reason')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
 
@@ -1118,6 +1139,7 @@
                 if (selectedScenario === 'wrong_course_correction') {
                     const wrongCourse = document.querySelector('select[name="wrong_course_id"]');
                     const correctCourse = document.querySelector('select[name="correct_course_id"]');
+                    const correctionReason = document.querySelector('textarea[name="correction_reason"]');
                     
                     if (!wrongCourse || !wrongCourse.value) {
                         allErrors.push('Please select the wrong course you purchased');
@@ -1129,6 +1151,10 @@
                     
                     if (wrongCourse && correctCourse && wrongCourse.value === correctCourse.value) {
                         allErrors.push('Wrong course and correct course cannot be the same');
+                    }
+                    
+                    if (!correctionReason || !correctionReason.value.trim()) {
+                        allErrors.push('Reason for correction is required');
                     }
                 }
                 
@@ -1200,7 +1226,19 @@
                 // Show errors if any
                 if (allErrors.length > 0) {
                     event.preventDefault();
-                    alert('Errors: ' + allErrors.join(', '));
+                    // Remove any existing error alert
+                    const existingAlert = document.getElementById('jsValidationErrors');
+                    if (existingAlert) existingAlert.remove();
+                    
+                    // Build error HTML
+                    let errorHtml = '<div id="jsValidationErrors" class="alert alert-danger shadow-sm mb-20" style="border-radius: 8px; border-left: 4px solid #dc3545;">';
+                    errorHtml += '<h6 class="font-weight-bold mb-2"><i class="fa fa-exclamation-triangle"></i> Please fix the following errors:</h6><ul class="mb-0 pl-3">';
+                    allErrors.forEach(function(err) { errorHtml += '<li>' + err + '</li>'; });
+                    errorHtml += '</ul></div>';
+                    
+                    // Insert before the form
+                    form.insertAdjacentHTML('beforebegin', errorHtml);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                     return false;
                 }
                 
