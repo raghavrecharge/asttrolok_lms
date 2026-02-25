@@ -65,7 +65,7 @@
                                                     @if($supportRequest->coupon_apply_reason)
                                                         <strong>Reason:</strong> {{ $supportRequest->coupon_apply_reason }}<br>
                                                     @endif
-                                                    @if($supportRequest->status === 'executed')
+                                                    @if(in_array($supportRequest->status, ['executed', 'completed', 'closed']))
                                                         <span class="badge bg-success bg-opacity-25 text-success mt-2">Coupon Applied</span><br>
                                                         <small class="text-muted">Coupon has been applied to the purchase</small>
                                                     @else
@@ -93,7 +93,7 @@
                                         </div>
                                         <div class="col-md-6">
                                             <strong>Payment Location:</strong> {{ $supportRequest->payment_location }}<br>
-                                            @if($supportRequest->status === 'executed')
+                                            @if(in_array($supportRequest->status, ['executed', 'completed', 'closed']))
                                                 <span class="badge bg-success bg-opacity-25 text-success">Payment Processed</span><br>
                                                 <small class="text-muted">Order created and access granted</small>
                                             @else
@@ -492,8 +492,8 @@
                                     @if($hasScreenshot)
                                         <div class="col-md-4 mb-3">
                                             <div class="card border shadow-sm">
-                                                <a href="{{ asset('storage/' . $supportRequest->payment_screenshot) }}" target="_blank">
-                                                    <img src="{{ asset('storage/' . $supportRequest->payment_screenshot) }}" class="card-img-top" alt="Payment Screenshot" style="max-height:200px; object-fit:contain; background:#f8f9fa; padding:4px;">
+                                                <a href="{{ asset('store/' . $supportRequest->payment_screenshot) }}" target="_blank">
+                                                    <img src="{{ asset('store/' . $supportRequest->payment_screenshot) }}" class="card-img-top" alt="Payment Screenshot" style="max-height:200px; object-fit:contain; background:#f8f9fa; padding:4px;">
                                                 </a>
                                                 <div class="card-body py-2 px-2 text-center">
                                                     <small class="text-muted"><i class="fas fa-receipt"></i> Payment Screenshot</small>
@@ -510,15 +510,15 @@
                                             <div class="col-md-4 mb-3">
                                                 @if($isImage)
                                                     <div class="card border shadow-sm">
-                                                        <a href="{{ asset('storage/' . $attachment) }}" target="_blank">
-                                                            <img src="{{ asset('storage/' . $attachment) }}" class="card-img-top" alt="{{ basename($attachment) }}" style="max-height:200px; object-fit:contain; background:#f8f9fa; padding:4px;">
+                                                        <a href="{{ asset('store/' . $attachment) }}" target="_blank">
+                                                            <img src="{{ asset('store/' . $attachment) }}" class="card-img-top" alt="{{ basename($attachment) }}" style="max-height:200px; object-fit:contain; background:#f8f9fa; padding:4px;">
                                                         </a>
                                                         <div class="card-body py-2 px-2 text-center">
                                                             <small class="text-muted"><i class="fas fa-image"></i> {{ basename($attachment) }}</small>
                                                         </div>
                                                     </div>
                                                 @else
-                                                    <a href="{{ asset('storage/' . $attachment) }}" target="_blank" class="btn btn-outline-primary btn-block">
+                                                    <a href="{{ asset('store/' . $attachment) }}" target="_blank" class="btn btn-outline-primary btn-block">
                                                         <i class="fas fa-file"></i> {{ basename($attachment) }}
                                                     </a>
                                                 @endif

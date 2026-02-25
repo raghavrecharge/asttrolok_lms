@@ -52,8 +52,18 @@
                                         'completed' => 'badge-secondary',
                                         default => 'badge-secondary',
                                     };
+                                    $hasEmiDue = $sale->pricing_mode === 'installment'
+                                        && $sale->installmentPlan
+                                        && $sale->installmentPlan->schedules->whereIn('status', ['due', 'partial', 'overdue', 'upcoming'])->count() > 0;
                                 @endphp
-                                <span class="badge {{ $statusClass }} px-10 py-5">{{ ucfirst(str_replace('_',' ',$sale->status)) }}</span>
+                                @if($sale->status === 'active' && $hasEmiDue)
+                                    <span class="badge badge-primary px-10 py-5">Active</span>
+                                    <span class="badge badge-warning px-10 py-5 ml-5">EMI Due</span>
+                                @elseif($sale->status === 'active' && $sale->pricing_mode === 'installment' && $sale->installmentPlan)
+                                    <span class="badge badge-primary px-10 py-5">Fully Paid</span>
+                                @else
+                                    <span class="badge {{ $statusClass }} px-10 py-5">{{ ucfirst(str_replace('_',' ',$sale->status)) }}</span>
+                                @endif
                             </div>
                         </div>
 

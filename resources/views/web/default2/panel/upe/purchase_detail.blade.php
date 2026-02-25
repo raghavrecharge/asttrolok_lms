@@ -67,7 +67,19 @@
                         <span class="text-gray">Access Status</span>
                         <span>
                             @if($accessResult->hasAccess)
-                                <span class="badge badge-primary">Active</span>
+                                @if($sale->pricing_mode === 'installment' && $sale->installmentPlan)
+                                    @php
+                                        $hasDueSchedules = $sale->installmentPlan->schedules->whereIn('status', ['due', 'partial', 'overdue', 'upcoming'])->count() > 0;
+                                    @endphp
+                                    @if($hasDueSchedules)
+                                        <span class="badge badge-primary">Active</span>
+                                        <span class="badge badge-warning ml-5">EMI Due</span>
+                                    @else
+                                        <span class="badge badge-primary">Fully Paid</span>
+                                    @endif
+                                @else
+                                    <span class="badge badge-primary">Active</span>
+                                @endif
                             @elseif($sale->status === 'pending_payment')
                                 <span class="badge badge-warning">Payment Pending</span>
                             @elseif($sale->status === 'refunded')
@@ -107,12 +119,11 @@
                     @php
                         $plan = $sale->installmentPlan;
                         $schedules = $plan->schedules->sortBy('sequence');
-                        $paidSchedules = $schedules->where('status', 'paid');
-                        $emiTotalPaid = $paidSchedules->sum('amount_due');
-                        $partialPaid = $schedules->where('status', 'partial')->sum('amount_paid');
-                        $totalPaidDisplay = $emiTotalPaid + $partialPaid;
+                        $totalPaidDisplay = $schedules->sum('amount_paid');
                         $totalRemaining = max(0, $plan->total_amount - $totalPaidDisplay);
-                        $paidPercent = $plan->total_amount > 0 ? round(($totalPaidDisplay / $plan->total_amount) * 100) : 0;
+                        $paidPercent = $plan->total_amount > 0 ? min(100, round(($totalPaidDisplay / $plan->total_amount) * 100)) : 0;
+                        $paidSchedules = $schedules->whereIn('status', ['paid', 'waived']);
+                        $activeSchedules = $schedules->whereNotIn('status', ['paid', 'waived']);
                     @endphp
                     <div class="panel-section-card py-20 px-25">
                         <h3 class="font-16 font-weight-bold text-dark-blue mb-15">EMI Payment Progress</h3>
