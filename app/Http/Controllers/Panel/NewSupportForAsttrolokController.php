@@ -618,6 +618,10 @@ class NewSupportForAsttrolokController extends Controller
             
             foreach ($scenarioFields as $field) {
                 if ($request->has($field)) {
+                    // Skip payment_screenshot — already handled via file upload above
+                    if ($field === 'payment_screenshot') {
+                        continue;
+                    }
                     // Only store temporary_access_days for temporary_access scenario
                     if ($field === 'temporary_access_days' && $request->support_scenario !== 'temporary_access') {
                         continue;

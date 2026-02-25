@@ -402,11 +402,24 @@ class SupportUpeBridge
         }
 
         // ── 4. Branch: non-installment vs installment ──
+        // Auto-detect installment plans if none selected
         if (!$installmentId) {
-            return $this->processOfflineFullPayment(
-                $userId, $webinarId, $product, $webinar, $supportRequestId, $adminId,
-                $cashAmount, $finalPayable, $discountAmount, $discountId, $couponCode, $priceBreakdown
+            $studentUser = \App\User::find($userId);
+            $plansFinder = new \App\Mixins\Installment\InstallmentPlans($studentUser);
+            $availablePlans = $plansFinder->getPlans(
+                'courses', $webinar->id, $webinar->type, $webinar->category_id, $webinar->teacher_id
             );
+
+            if ($availablePlans->isNotEmpty()) {
+                // Course has installment plans — auto-select first and use installment flow
+                $installmentId = $availablePlans->first()->id;
+            } else {
+                // No installment plans — require full payment
+                return $this->processOfflineFullPayment(
+                    $userId, $webinarId, $product, $webinar, $supportRequestId, $adminId,
+                    $cashAmount, $finalPayable, $discountAmount, $discountId, $couponCode, $priceBreakdown
+                );
+            }
         }
 
         return $this->processOfflineInstallmentPayment(
@@ -425,12 +438,13 @@ class SupportUpeBridge
         float $cashAmount, float $finalPayable, float $discountAmount,
         ?int $discountId, ?string $couponCode, array $priceBreakdown
     ): array {
-        // Validate: cash must cover full price (with ₹1 tolerance)
+        // Validate: cash must cover full price (with ₹1 tolerance) — only for non-installment courses
         if ($cashAmount < $finalPayable - 1) {
             return $this->offlineResult(
                 false,
-                "Underpayment: ₹" . number_format($cashAmount, 0) .
-                " paid but ₹" . number_format($finalPayable, 0) . " required. Cannot grant access.",
+                "For full payment, cash (₹" . number_format($cashAmount, 0) .
+                ") must cover the entire course price (₹" . number_format($finalPayable, 0) .
+                "). This course does not have an installment plan.",
                 $priceBreakdown
             );
         }

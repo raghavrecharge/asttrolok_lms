@@ -480,18 +480,51 @@
                             @endif
                             
 
-                            {{-- Attachments --}}
-                            @if($supportRequest->attachments && count($supportRequest->attachments) > 0)
+                            {{-- Attachments & Payment Screenshot --}}
+                            @php
+                                $hasAttachments = $supportRequest->attachments && count($supportRequest->attachments) > 0;
+                                $hasScreenshot = $supportRequest->support_scenario === 'offline_cash_payment' && !empty($supportRequest->payment_screenshot);
+                            @endphp
+                            @if($hasAttachments || $hasScreenshot)
                                 <hr>
-                                <h6>Attachments:</h6>
+                                <h6><i class="fas fa-paperclip"></i> Attachments:</h6>
                                 <div class="row">
-                                    @foreach($supportRequest->attachments as $attachment)
-                                        <div class="col-md-4 mb-2">
-                                            <a href="{{ asset('storage/' . $attachment) }}" target="_blank" class="btn btn-outline-primary btn-block">
-                                                <i class="fas fa-file"></i> {{ basename($attachment) }}
-                                            </a>
+                                    @if($hasScreenshot)
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card border shadow-sm">
+                                                <a href="{{ asset('storage/' . $supportRequest->payment_screenshot) }}" target="_blank">
+                                                    <img src="{{ asset('storage/' . $supportRequest->payment_screenshot) }}" class="card-img-top" alt="Payment Screenshot" style="max-height:200px; object-fit:contain; background:#f8f9fa; padding:4px;">
+                                                </a>
+                                                <div class="card-body py-2 px-2 text-center">
+                                                    <small class="text-muted"><i class="fas fa-receipt"></i> Payment Screenshot</small>
+                                                </div>
+                                            </div>
                                         </div>
-                                    @endforeach
+                                    @endif
+                                    @if($hasAttachments)
+                                        @foreach($supportRequest->attachments as $attachment)
+                                            @php
+                                                $ext = strtolower(pathinfo($attachment, PATHINFO_EXTENSION));
+                                                $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']);
+                                            @endphp
+                                            <div class="col-md-4 mb-3">
+                                                @if($isImage)
+                                                    <div class="card border shadow-sm">
+                                                        <a href="{{ asset('storage/' . $attachment) }}" target="_blank">
+                                                            <img src="{{ asset('storage/' . $attachment) }}" class="card-img-top" alt="{{ basename($attachment) }}" style="max-height:200px; object-fit:contain; background:#f8f9fa; padding:4px;">
+                                                        </a>
+                                                        <div class="card-body py-2 px-2 text-center">
+                                                            <small class="text-muted"><i class="fas fa-image"></i> {{ basename($attachment) }}</small>
+                                                        </div>
+                                                    </div>
+                                                @else
+                                                    <a href="{{ asset('storage/' . $attachment) }}" target="_blank" class="btn btn-outline-primary btn-block">
+                                                        <i class="fas fa-file"></i> {{ basename($attachment) }}
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    @endif
                                 </div>
                             @endif
                         </div>
