@@ -346,6 +346,10 @@ class ForumController extends Controller
                 return redirect('/login');
             }
 
+            // Share referralSettings for panel sidebar
+            $referralSettings = getReferralSettings();
+            view()->share('referralSettings', $referralSettings);
+
             $forums = Forum::orderBy('order', 'asc')
                 ->whereNull('parent_id')
                 ->where('status', 'active')
@@ -599,6 +603,10 @@ class ForumController extends Controller
                 ->first();
 
             if (!empty($user) and !empty($forum) and $forum->checkUserCanCreateTopic($user)) {
+                // Share referralSettings for panel sidebar
+                $referralSettings = getReferralSettings();
+                view()->share('referralSettings', $referralSettings);
+
                 $topic = ForumTopic::where('slug', $topicSlug)
                     ->where('forum_id', $forum->id)
                     ->where('creator_id', $user->id)

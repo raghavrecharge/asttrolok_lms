@@ -1,23 +1,7 @@
 @php
     $getPanelSidebarSettings = getPanelSidebarSettings();
 @endphp
-
-<div class="xs-panel-nav d-flex d-lg-none justify-content-between py-5 px-15">
-    <div class="user-info d-flex align-items-center justify-content-between">
-        <div class="user-avatar bg-gray200">
-            <img src="{{ config('app.img_dynamic_url') }}{{ $authUser->getAvatar(100) }}" class="img-cover" alt="{{ $authUser->full_name }}">
-        </div>
-
-        <div class="user-name ml-15">
-            <h3 class="font-16 font-weight-bold">{{ $authUser->full_name }}</h3>
-        </div>
-    </div>
-
-    <button class="sidebar-toggler btn-transparent d-flex flex-column-reverse justify-content-center align-items-center p-5 rounded-sm sidebarNavToggle" type="button">
-        <span>{{ trans('navbar.menu') }}</span>
-        <i data-feather="menu" width="16" height="16"></i>
-    </button>
-</div>
+{{-- xs-panel-nav removed: main site header shown on all screens via panel_layout.blade.php --}}
 
 <style>
     .panel-sidebar {

@@ -812,6 +812,12 @@ class User extends Authenticatable
         return array_unique($webinarIds);
     }
 
+    public function getPurchasedCourses()
+    {
+        $webinarIds = $this->getPurchasedCoursesIds();
+        return Webinar::whereIn('id', $webinarIds)->get();
+    }
+
     public function getActiveQuizzesResults($group_by_quiz = false, $status = null)
     {
         $query = QuizzesResult::where('user_id', $this->id);

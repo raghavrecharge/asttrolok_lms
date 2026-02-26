@@ -11,6 +11,79 @@
             <h2 class="section-title">{{ trans('panel.favorite_live_classes') }}</h2>
         </div>
 
+        <div class="mt-20" style="background: linear-gradient(135deg, #f8faff 0%, #fff 100%); border-radius: 20px; border: 1px solid #e8edf5; padding: 22px 28px; box-shadow: 0 4px 24px rgba(31,59,100,0.06);">
+            <form action="/panel/webinars/favorites" method="get">
+                <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;">
+
+                    {{-- Search --}}
+                    <div style="flex:1 1 200px;min-width:180px;">
+                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
+                            <i data-feather="search" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.search') }}
+                        </label>
+                        <div style="position:relative;">
+                            <input type="text" name="search" value="{{ request()->get('search') }}"
+                                   class="form-control"
+                                   placeholder="{{ trans('public.search_anything') }}"
+                                   style="height:40px;padding-left:12px;font-size:12px;font-weight:600;color:#1f3b64;border:1.5px solid #e8edf5;border-radius:9px;box-shadow:0 2px 6px rgba(31,59,100,0.06);background:#fff;"/>
+                        </div>
+                    </div>
+
+                    {{-- Category --}}
+                    <div style="flex:1 1 200px;min-width:180px;">
+                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
+                            <i data-feather="grid" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.category') }}
+                        </label>
+                        <div style="position:relative;">
+                            <select name="category_id" class="select2" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;">
+                                <option value="all">{{ trans('public.all') }}</option>
+                                @foreach($categories as $category)
+                                    @if(!empty($category->subCategories) and count($category->subCategories))
+                                        <optgroup label="{{ $category->title }}">
+                                            @foreach($category->subCategories as $subCategory)
+                                                <option value="{{ $subCategory->id }}" @if(request()->get('category_id') == $subCategory->id) selected @endif>{{ $subCategory->title }}</option>
+                                            @endforeach
+                                        </optgroup>
+                                    @else
+                                        <option value="{{ $category->id }}" @if(request()->get('category_id') == $category->id) selected @endif>{{ $category->title }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                            <div style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:#8c98a4;">
+                                <i data-feather="chevron-down" width="13" height="13"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Instructor --}}
+                    <div style="flex:1 1 200px;min-width:180px;">
+                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
+                            <i data-feather="user" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.instructor') }}
+                        </label>
+                        <div style="position:relative;">
+                            <select name="instructor_id" class="select2" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;">
+                                <option value="all">{{ trans('public.all') }}</option>
+                                @foreach($instructors as $instructor)
+                                    <option value="{{ $instructor->id }}" @if(request()->get('instructor_id') == $instructor->id) selected @endif>{{ $instructor->full_name }}</option>
+                                @endforeach
+                            </select>
+                            <div style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:#8c98a4;">
+                                <i data-feather="chevron-down" width="13" height="13"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Submit --}}
+                    <div style="flex:0 0 auto;">
+                        <button type="submit" style="height:40px;background:linear-gradient(135deg,#43d477 0%,#2ecc71 100%);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(67,212,119,0.25);white-space:nowrap;padding:0 20px;transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(67,212,119,0.35)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(67,212,119,0.25)'">
+                            <i data-feather="search" width="13" height="13"></i>
+                            {{ trans('public.show_results') }}
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
         @if(!empty($favorites) and !$favorites->isEmpty())
 <div class="row mt-30">
             @foreach($favorites as $favorite)

@@ -1,13 +1,25 @@
+<style>
+    #navbarNotification svg {
+        stroke: #fff !important;
+        color: #fff !important;
+        fill: none !important;
+    }
+    #navbarNotification.dropdown-toggle::after {
+        border-top-color: #fff !important;
+        border-bottom-color: #fff !important;
+    }
+</style>
+
 <div class="dropdown">
     <button type="button" class="btn btn-transparent dropdown-toggle" {{ (empty($unReadNotifications) or count($unReadNotifications) < 1) ? 'disabled' : '' }} id="navbarNotification" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <i data-feather="bell" width="20" height="20" class="mr-10"></i>
 
         @if(!empty($unReadNotifications) and count($unReadNotifications))
-            <span class="badge badge-circle-danger d-flex align-items-center justify-content-center">{{ count($unReadNotifications) }}</span>
+            <span class="badge badge-circle-primary d-flex align-items-center justify-content-center">{{ count($unReadNotifications) }}</span>
         @endif
     </button>
 
-    <div class="dropdown-menu pt-20" aria-labelledby="navbarNotification">
+    <div class="dropdown-menu" aria-labelledby="navbarNotification">
         <div class="d-flex flex-column h-100">
             <div class="mb-auto navbar-notification-card" data-simplebar>
                 <div class="d-md-none border-bottom mb-20 pb-10 text-right">

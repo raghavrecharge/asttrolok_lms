@@ -816,7 +816,7 @@ class NewSupportForAsttrolokController extends Controller
     /**
      * List user's support requests
     */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         
@@ -830,6 +830,32 @@ class NewSupportForAsttrolokController extends Controller
                 $q->where('user_id', $user->id)
                   ->orWhereIn('webinar_id', $webinarIds);
             });
+        }
+
+        $from = $request->get('from');
+        $to = $request->get('to');
+        $webinarId = $request->get('webinar_id');
+        $scenario = $request->get('support_scenario');
+        $status = $request->get('status');
+
+        if (!empty($from)) {
+            $query->where('created_at', '>=', strtotime($from));
+        }
+
+        if (!empty($to)) {
+            $query->where('created_at', '<=', strtotime($to));
+        }
+
+        if (!empty($webinarId) and $webinarId !== 'all') {
+            $query->where('webinar_id', $webinarId);
+        }
+
+        if (!empty($scenario) and $scenario !== 'all') {
+            $query->where('support_scenario', $scenario);
+        }
+
+        if (!empty($status) and $status !== 'all') {
+            $query->where('status', $status);
         }
         
         $supportRequests = $query->with(['webinar', 'category', 'user'])
@@ -852,7 +878,9 @@ class NewSupportForAsttrolokController extends Controller
         $data = [
             'pageTitle' => trans('panel.my_support_requests'),
             'supportRequests' => $supportRequests,
-            'stats' => $stats
+            'stats' => $stats,
+            'userPurchasedCourses' => $user->getPurchasedCourses(),
+            'scenarios' => SupportCategory::where('is_active', true)->get()
         ];
         
         return view(getTemplate() . '.panel.support.index', $data);

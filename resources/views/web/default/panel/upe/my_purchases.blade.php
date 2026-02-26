@@ -161,12 +161,118 @@
         .bg-glass-success { background: rgba(67, 212, 119, 0.15); color: #28a745; }
         .bg-glass-warning { background: rgba(255, 193, 7, 0.15); color: #e6a800; }
         .bg-glass-info { background: rgba(13, 202, 240, 0.15); color: #0dcaf0; }
+
+        /* Custom Pagination Styling */
+        .custom-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            border-radius: 50px;
+            padding: 8px 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.04);
+            width: fit-content;
+            margin: 0 auto;
+            border: 1px solid #f0f0f0;
+            list-style: none;
+        }
+        .custom-pagination li {
+            margin: 0 4px;
+        }
+        .custom-pagination li a, 
+        .custom-pagination li span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5568;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        .custom-pagination li a:hover {
+            background: #f8f9fb;
+            color: #43d477;
+        }
+        .custom-pagination li span.active {
+            background: #43d477;
+            color: #fff !important;
+            box-shadow: 0 4px 12px rgba(67,212,119,0.3);
+        }
+        .custom-pagination li.previous a,
+        .custom-pagination li.next a,
+        .custom-pagination li.previous.disabled,
+        .custom-pagination li.next.disabled {
+            border: 1px solid #e2e8f0;
+            color: #a0aec0;
+        }
+        .custom-pagination li.previous a:hover,
+        .custom-pagination li.next a:hover {
+            border-color: #43d477;
+            color: #43d477;
+            background: #fff;
+        }
+        .custom-pagination li.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .custom-pagination li span:not(.active) {
+            cursor: default;
+        }
+
+        /* Card Progress Styling */
+        .card-progress-container {
+            margin-top: 15px;
+            cursor: pointer;
+            padding: 10px 12px;
+            background: #f8f9fb;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            border: 1px solid #f0f0f0;
+        }
+        .card-progress-container:hover {
+            background: #f0f3ff;
+            border-color: #d0d7ff;
+        }
+        .card-progress-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .card-progress-label .text {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1f3b64;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .card-progress-label .percent {
+            font-size: 12px;
+            font-weight: 800;
+            color: #43d477;
+        }
+        .card-progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .card-progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #43d477 0%, #28a745 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
     </style>
 @endpush
 
 @section('content')
     <section>
-        <h2 class="section-title">{{ trans('panel.my_activity') }}</h2>
+        <h2 class="section-title">My Purchases</h2>
 
         <div class="mt-25">
             <div class="row">
@@ -210,22 +316,56 @@
     </section>
 
     <section class="mt-25">
-        <h2 class="section-title">My Purchases</h2>
+        <!-- <h2 class="section-title">My Purchases</h2> -->
 
-        <div class="upe-filter-bar mt-20">
-            <form method="get" class="d-flex align-items-center flex-wrap" style="gap: 10px;">
-                <select name="type" class="form-control" style="border-radius: 10px; height: 42px; background: #f8f9fb; border: 1px solid #eee; max-width: 160px; font-size: 13px;">
-                    <option value="course" {{ request('type', 'course') == 'course' ? 'selected' : '' }}>Courses</option>
-                    <option value="meeting" {{ request('type') == 'meeting' ? 'selected' : '' }}>Meetings</option>
-                    <option value="all" {{ request('type') == 'all' ? 'selected' : '' }}>All Types</option>
-                </select>
-                <select name="status" class="form-control" style="border-radius: 10px; height: 42px; background: #f8f9fb; border: 1px solid #eee; max-width: 180px; font-size: 13px;">
-                    <option value="">All Statuses</option>
-                    @foreach(['active','pending_payment','completed','refunded','partially_refunded','expired'] as $s)
-                        <option value="{{ $s }}" {{ request('status') == $s ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ',$s)) }}</option>
-                    @endforeach
-                </select>
-                <button type="submit" class="btn btn-primary px-20" style="border-radius: 10px; height: 42px; font-weight: 600; font-size: 13px;">Filter</button>
+        <div class="mt-20" style="background: linear-gradient(135deg, #f8faff 0%, #fff 100%); border-radius: 20px; border: 1px solid #e8edf5; padding: 22px 28px; box-shadow: 0 4px 24px rgba(31,59,100,0.06);">
+            <form method="get">
+                <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;">
+
+                    {{-- Type --}}
+                    <div style="flex:0 0 auto;">
+                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
+                            <i data-feather="grid" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.type') }}
+                        </label>
+                        <div style="position:relative;width:140px;">
+                            <select name="type" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;cursor:pointer;">
+                                <option value="course" {{ request('type', 'course') == 'course' ? 'selected' : '' }}>Courses</option>
+                                <option value="meeting" {{ request('type') == 'meeting' ? 'selected' : '' }}>Meetings</option>
+                                <option value="all" {{ request('type') == 'all' ? 'selected' : '' }}>All Types</option>
+                            </select>
+                            <div style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:#8c98a4;">
+                                <i data-feather="chevron-down" width="13" height="13"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Status --}}
+                    <div style="flex:0 0 auto;">
+                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
+                            <i data-feather="sliders" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.status') }}
+                        </label>
+                        <div style="position:relative;width:160px;">
+                            <select name="status" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;cursor:pointer;">
+                                <option value="">All Statuses</option>
+                                @foreach(['active','pending_payment','completed','refunded','partially_refunded','expired'] as $s)
+                                    <option value="{{ $s }}" {{ request('status') == $s ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ',$s)) }}</option>
+                                @endforeach
+                            </select>
+                            <div style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:#8c98a4;">
+                                <i data-feather="chevron-down" width="13" height="13"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Submit --}}
+                    <div style="flex:0 0 auto;">
+                        <button type="submit" style="height:40px;background:linear-gradient(135deg,#43d477 0%,#2ecc71 100%);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(67,212,119,0.25);white-space:nowrap;padding:0 20px;transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(67,212,119,0.35)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(67,212,119,0.25)'">
+                            <i data-feather="search" width="13" height="13"></i>
+                            {{ trans('public.show_results') }}
+                        </button>
+                    </div>
+
+                </div>
             </form>
         </div>
     </section>
@@ -261,11 +401,6 @@
                             <div class="upe-status-pos">
                                 <span class="upe-status-pill {{ $sale->status }}">{{ ucfirst(str_replace('_',' ',$sale->status)) }}</span>
                             </div>
-                            @if($percent > 0)
-                                <div class="progress">
-                                    <div class="progress-bar bg-primary" style="width:{{ $percent }}%"></div>
-                                </div>
-                            @endif
                         </div>
 
                         <div class="upe-card-body">
@@ -319,6 +454,16 @@
                                     </span>
                                 </div>
                             </div>
+
+                            <div class="card-progress-container trigger-progress-modal" data-sale-id="{{ $sale->id }}">
+                                <div class="card-progress-label">
+                                    <span class="text">Course Progress</span>
+                                    <span class="percent">{{ $percent }}%</span>
+                                </div>
+                                <div class="card-progress-bar">
+                                    <div class="card-progress-bar-fill" style="width: {{ $percent }}%"></div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="upe-card-footer">
@@ -354,7 +499,7 @@
 
         @if($sales->hasPages())
             <div class="mt-30">
-                {{ $sales->appends(request()->query())->links() }}
+                {{ $sales->appends(request()->query())->links('vendor.pagination.panel') }}
             </div>
         @endif
     </section>
@@ -396,11 +541,10 @@
         $(document).ready(function() {
             if (typeof feather !== 'undefined') feather.replace();
 
-            $('.upe-card .image-box .progress').closest('.upe-card').find('.image-box').css('cursor','pointer')
-                .on('click', function() {
-                    var saleId = $(this).closest('.upe-card').find('[data-sale-id]').data('sale-id');
-                    if (saleId) triggerProgress(saleId);
-                });
+            $('body').on('click', '.trigger-progress-modal', function() {
+                var saleId = $(this).data('sale-id');
+                if (saleId) triggerProgress(saleId);
+            });
 
             function triggerProgress(saleId) {
                 var $modal = $('#progressDetailModal'),

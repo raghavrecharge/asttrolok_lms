@@ -10,9 +10,9 @@
     <title>{{ $pageTitle ?? '' }}{{ !empty($generalSettings['site_name']) ? (' | '.$generalSettings['site_name']) : '' }}</title>
 
     <link href="{{ config('app.js_css_url') }}/assets/default/css/font.css" rel="stylesheet">
- <link rel="stylesheet" href="https://asttrolok.in/public/marketing/assets2/default/css/app.css">
-<link rel="stylesheet" href="https://asttrolok.in/asttroloknew/assets/design_1/css/app.min.css">
-<link rel="stylesheet" href="https://asttrolok.in/public/marketing/asttroloknew/assets/design_1/css/parts/theme/headers/header_1.min.css">
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets2/default/css/app.css">
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/asttroloknew/assets/design_1/css/app.min.css">
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/asttroloknew/assets/design_1/css/parts/theme/headers/header_1.min.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/sweetalert2/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/toast/jquery.toast.min.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/simplebar/simplebar.css">
@@ -29,11 +29,6 @@
     @stack('scripts_top')
 
     <style>
-        .xs-panel-nav {
-    position: fixed;
-    top: 0px !important;
-    right:2px !important;
-        }
         {!! !empty(getCustomCssAndJs('css')) ? getCustomCssAndJs('css') : '' !!}
 
         {!! getThemeFontsSettings() !!}
@@ -70,9 +65,9 @@
 @endphp
 
 <div id="panel_app">
-    <div class="d-none d-lg-block">
-        @include('web.default2.includes.top_nav2')
-        @include('web.default2'.'.includes.navbar')
+    <div>
+        @include('web.default2.includes.top_nav')
+        @include('web.default2.includes.navbar')
     </div>
        @if($authUser->isUser())
 <div class="container mt-30">

@@ -104,14 +104,239 @@
             display: inline-flex; align-items: center; gap: 4px;
         }
         .btn-upe-detail:hover { border-color: #1f3b64; background: #f8faff; text-decoration: none; }
+
+        .upe-filter-bar {
+            background: #fff; border-radius: 16px; padding: 16px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #f0f0f0;
+        }
+
+        /* Stat Card Styles */
+        .stat-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f0f0f0;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.07);
+        }
+        .stat-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 18px;
+            flex-shrink: 0;
+        }
+        .stat-value {
+            display: block;
+            font-size: 24px;
+            font-weight: 800;
+            color: #1f3b64;
+            line-height: 1.2;
+        }
+        .stat-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #8c98a4;
+            margin-top: 2px;
+        }
+        .bg-glass-primary { background: rgba(37, 99, 235, 0.1); color: #2563eb; }
+        .bg-glass-success { background: rgba(67, 212, 119, 0.15); color: #28a745; }
+        .bg-glass-warning { background: rgba(255, 193, 7, 0.15); color: #e6a800; }
+        .bg-glass-info { background: rgba(13, 202, 240, 0.15); color: #0dcaf0; }
+
+        /* Custom Pagination Styling */
+        .custom-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            border-radius: 50px;
+            padding: 8px 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.04);
+            width: fit-content;
+            margin: 0 auto;
+            border: 1px solid #f0f0f0;
+            list-style: none;
+        }
+        .custom-pagination li {
+            margin: 0 4px;
+        }
+        .custom-pagination li a, 
+        .custom-pagination li span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5568;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        .custom-pagination li a:hover {
+            background: #f8f9fb;
+            color: #43d477;
+        }
+        .custom-pagination li span.active {
+            background: #43d477;
+            color: #fff !important;
+            box-shadow: 0 4px 12px rgba(67,212,119,0.3);
+        }
+        .custom-pagination li.previous a,
+        .custom-pagination li.next a,
+        .custom-pagination li.previous.disabled,
+        .custom-pagination li.next.disabled {
+            border: 1px solid #e2e8f0;
+            color: #a0aec0;
+        }
+        .custom-pagination li.previous a:hover,
+        .custom-pagination li.next a:hover {
+            border-color: #43d477;
+            color: #43d477;
+            background: #fff;
+        }
+        .custom-pagination li.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .custom-pagination li span:not(.active) {
+            cursor: default;
+        }
+
+        /* Card Progress Styling */
+        .card-progress-container {
+            margin-top: 15px;
+            cursor: pointer;
+            padding: 10px 12px;
+            background: #f8f9fb;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            border: 1px solid #f0f0f0;
+        }
+        .card-progress-container:hover {
+            background: #f0f3ff;
+            border-color: #d0d7ff;
+        }
+        .card-progress-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .card-progress-label .text {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1f3b64;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .card-progress-label .percent {
+            font-size: 12px;
+            font-weight: 800;
+            color: #43d477;
+        }
+        .card-progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .card-progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #43d477 0%, #28a745 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
     </style>
 @endpush
 
 @section('content')
     <section>
-        <div class="d-flex align-items-center justify-content-between">
-            <h2 class="section-title">My EMI Plans</h2>
+        <h2 class="section-title">My EMI Plans</h2>
+
+        <div class="mt-25">
+            <div class="row">
+                <div class="col-12 col-md-4">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-primary">
+                            <i data-feather="monitor" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $purchasedCount }}</span>
+                            <span class="stat-label">{{ trans('panel.purchased') }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4 mt-15 mt-md-0">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-success">
+                            <i data-feather="play-circle" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $activeCount }}</span>
+                            <span class="stat-label">Active</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4 mt-15 mt-md-0">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-warning">
+                            <i data-feather="check-circle" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $completedCount }}</span>
+                            <span class="stat-label">Completed</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </section>
+
+    <section class="mt-25">
+        <div class="mt-20" style="background: linear-gradient(135deg, #f8faff 0%, #fff 100%); border-radius: 20px; border: 1px solid #e8edf5; padding: 22px 28px; box-shadow: 0 4px 24px rgba(31,59,100,0.06);">
+            <form action="" method="get">
+                <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;">
+                    <div style="flex:0 0 auto;">
+                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
+                            <i data-feather="sliders" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.status') }}
+                        </label>
+                        <div style="position:relative;width:160px;">
+                            <select name="status" class="form-control" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;cursor:pointer;">
+                                <option value="">{{ trans('public.all') }}</option>
+                                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                            </select>
+                            <div style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:#8c98a4;">
+                                <i data-feather="chevron-down" width="13" height="13"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="flex:0 0 auto;">
+                        <button type="submit" style="height:40px;background:linear-gradient(135deg,#43d477 0%,#2ecc71 100%);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(67,212,119,0.25);white-space:nowrap;padding:0 20px;transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(67,212,119,0.35)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(67,212,119,0.25)'">
+                            <i data-feather="search" width="13" height="13"></i>
+                            {{ trans('public.show_results') }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
 
         @if(!empty($sales) and !$sales->isEmpty())
             <div class="row mt-20">
@@ -149,11 +374,6 @@
                                     <div class="upe-status-pos">
                                         <span class="upe-status-pill {{ $status }}">{{ ucfirst($status) }}</span>
                                     </div>
-                                    @if($paidPercent > 0)
-                                        <div class="progress">
-                                            <div class="progress-bar {{ $overdueCount > 0 ? 'bg-danger' : 'bg-primary' }}" style="width:{{ $paidPercent }}%"></div>
-                                        </div>
-                                    @endif
                                 </div>
 
                                 <div class="upe-card-body">
@@ -194,6 +414,19 @@
                                             </span>
                                         </div>
                                     </div>
+
+                                    @php
+                                        $courseProgress = $progress[$sale->id] ?? 0;
+                                    @endphp
+                                    <div class="card-progress-container trigger-progress-modal" data-sale-id="{{ $sale->id }}">
+                                        <div class="card-progress-label">
+                                            <span class="text">Course Progress</span>
+                                            <span class="percent">{{ $courseProgress }}%</span>
+                                        </div>
+                                        <div class="card-progress-bar">
+                                            <div class="card-progress-bar-fill" style="width: {{ $courseProgress }}%"></div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="upe-card-footer">
@@ -225,9 +458,40 @@
 
         @if($sales instanceof \Illuminate\Pagination\LengthAwarePaginator && $sales->hasPages())
             <div class="my-30">
-                {{ $sales->appends(request()->query())->links() }}
+                {{ $sales->appends(request()->query())->links('vendor.pagination.panel') }}
             </div>
         @endif
+
+        {{-- Progress Detail Modal --}}
+        <div class="modal fade" id="progressDetailModal" tabindex="-1" role="dialog" aria-labelledby="progressDetailModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 15px 50px rgba(0,0,0,0.15);">
+                    <div class="modal-header border-0 pb-0" style="padding: 25px 25px 10px;">
+                        <div>
+                            <h5 class="modal-title font-18 font-weight-bold text-dark-blue" id="progressDetailModalLabel">Course Progress Breakdown</h5>
+                            <p class="text-gray font-12 mb-0" id="modalCourseTitle">Loading course details...</p>
+                        </div>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="padding: 20px 25px 30px;">
+                        <div id="progressLoading" class="text-center py-30">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                            <p class="mt-15 text-gray font-14">Fetching detailed progress...</p>
+                        </div>
+                        <div id="progressContent" class="d-none"></div>
+                        <div id="progressError" class="d-none text-center py-20">
+                            <i data-feather="alert-circle" class="text-danger mb-10" width="40" height="40"></i>
+                            <p class="text-dark-blue font-14 font-weight-500">Failed to load progress details.</p>
+                            <button class="btn btn-sm btn-outline-primary mt-15 px-20" onclick="location.reload()">Retry</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 @endsection
 
@@ -236,6 +500,57 @@
         $(document).ready(function() {
             if (typeof feather !== 'undefined') {
                 feather.replace();
+            }
+
+            $('body').on('click', '.trigger-progress-modal', function() {
+                var saleId = $(this).data('sale-id');
+                if (saleId) triggerProgress(saleId);
+            });
+
+            function triggerProgress(saleId) {
+                var $modal = $('#progressDetailModal'),
+                    $loading = $('#progressLoading'),
+                    $content = $('#progressContent'),
+                    $error = $('#progressError'),
+                    $title = $('#modalCourseTitle');
+
+                $modal.modal('show');
+                $loading.removeClass('d-none');
+                $content.addClass('d-none').html('');
+                $error.addClass('d-none');
+                $title.text('Loading...');
+
+                $.ajax({
+                    url: '/panel/upe/purchases/' + saleId + '/progress',
+                    method: 'GET',
+                    success: function(r) {
+                        $loading.addClass('d-none');
+                        $title.text(r.course_title);
+                        var html = '';
+                        if (r.chapters && r.chapters.length) {
+                            r.chapters.forEach(function(ch) {
+                                html += '<div class="mb-20"><h6 class="font-14 font-weight-bold text-dark-blue mb-10">' + ch.title + '</h6>';
+                                ch.items.forEach(function(it) {
+                                    html += '<div class="p-10 mb-8" style="background:#f8f9fb;border-radius:10px;border:1px solid #f0f0f0;">' +
+                                        '<div class="d-flex align-items-center justify-content-between mb-5">' +
+                                        '<span class="font-12 text-dark-blue">' + it.title + '</span>' +
+                                        '<span class="font-11 font-weight-700 ' + (it.percentage >= 100 ? 'text-primary' : 'text-gray') + '">' + it.percentage + '%</span></div>' +
+                                        '<div class="progress" style="height:3px;border-radius:10px;background:rgba(0,0,0,0.05);">' +
+                                        '<div class="progress-bar ' + (it.percentage >= 100 ? 'bg-primary' : 'bg-gray') + '" style="width:' + it.percentage + '%"></div></div></div>';
+                                });
+                                html += '</div>';
+                            });
+                            $content.html(html).removeClass('d-none');
+                            if (typeof feather !== 'undefined') feather.replace();
+                        } else {
+                            $content.html('<p class="text-center text-gray py-20">No details found.</p>').removeClass('d-none');
+                        }
+                    },
+                    error: function() {
+                        $loading.addClass('d-none');
+                        $error.removeClass('d-none');
+                    }
+                });
             }
         });
     </script>

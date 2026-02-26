@@ -357,7 +357,7 @@
                 <div class="col-6 col-lg-3 mt-12 mt-lg-0 d-flex align-items-center justify-content-end mr-0">
 
                     <div class="nav-icons-or-start-live navbar-order navbar-order1">
-                        @if(!empty($navBtnUrl))
+                        @if(!empty($navBtnUrl) and empty($authUser))
                             <a href="{{ $navBtnUrl }}" class="d-none d-lg-flex btn btn-sm btn-success nav-start-a-live-btn" style="background-color: #32A128;">
                                 {{ $navBtnText }}
                             </a>
@@ -367,12 +367,16 @@
                             </a>
                         @endif
 
-                        <div class="d-none nav-notify-cart-dropdown top-navbar ">
-                            @include(getTemplate().'.includes.shopping-cart-dropdwon')
-
-                            <div class="border-left mx-15"></div>
-
-                            @include(getTemplate().'.includes.notification-dropdown')
+                        <div class="d-flex align-items-center justify-content-end w-100">
+                            @if(!empty($authUser))
+                                @if(request()->is('panel*'))
+                                    <div class="d-flex align-items-center gap-16 top-navbar">
+                                        @include('web.default.includes.top_nav.user_menu')
+                                    </div>
+                                @else
+                                    <a href="/panel" class="btn btn-sm btn-success py-10 px-20 text-white" style="background-color: #32A128;">Dashboard</a>
+                                @endif
+                            @endif
                         </div>
                     </div>
                 </div>

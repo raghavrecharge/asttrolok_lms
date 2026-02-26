@@ -238,7 +238,7 @@
                         </label>
                         <div style="position:relative;width:110px;">
                             <select name="status" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;cursor:pointer;">
-                                <option>{{ trans('public.all') }}</option>
+                                <option value="all">{{ trans('public.all') }}</option>
                                 <option value="open" {{ request()->get('status') === 'open' ? 'selected' : '' }}>{{ trans('public.open') }}</option>
                                 <option value="finished" {{ request()->get('status') === 'finished' ? 'selected' : '' }}>{{ trans('public.finished') }}</option>
                             </select>
@@ -250,7 +250,7 @@
 
                     {{-- Submit Button --}}
                     <div style="flex:0 0 auto;">
-                        <button type="submit" style="height:40px;background:linear-gradient(135deg,#1f3b64 0%,#2563eb 100%);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(31,59,100,0.25);white-space:nowrap;padding:0 20px;transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(31,59,100,0.35)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(31,59,100,0.25)'">
+                        <button type="submit" style="height:40px;background:linear-gradient(135deg,#43d477 0%,#2ecc71 100%);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(67,212,119,0.25);white-space:nowrap;padding:0 20px;transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(67,212,119,0.35)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(67,212,119,0.25)'">
                             <i data-feather="search" width="13" height="13"></i>
                             {{ trans('public.show_results') }}
                         </button>

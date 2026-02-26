@@ -189,14 +189,13 @@
                                 <div class="summary-item">
                                     <div class="summary-label">
                                         <i data-feather="tag" width="16" height="16" class="mr-10 text-gray"></i>
-                                        Discount
+                                       Coupon Discount
                                     </div>
                                     <span>
                                         @if($ledgerDiscount > 0)
                                             <span class="badge badge-success">Coupon Applied</span>
                                             <span class="font-weight-600 text-primary ml-5">{{ handlePrice($ledgerDiscount) }} saved</span>
                                         @else
-                                            <span class="badge badge-warning">Discount Applied</span>
                                             <span class="font-weight-600 text-primary ml-5">{{ handlePrice($totalSavings) }} saved</span>
                                         @endif
                                     </span>

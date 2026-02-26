@@ -18,6 +18,19 @@
     align-items: center;
     color: #fff;
 }
+
+/* Fix for dropdown menus being too low or behind other elements */
+.theme-header-1__top-navbar .dropdown-menu,
+.theme-header-1__main .dropdown-menu {
+    z-index: 1055 !important;
+    margin-top: -15px !important;
+}
+
+/* Ensure the pointer alignment isn't broken */
+#panel_app .top-navbar .dropdown .dropdown-menu {
+    transform: none !important;
+}
+
 </style>
 <div class="theme-header-1__top-navbar d-flex pb-54 pt-12"style="background-color:#32A128">
     <div class="container">
@@ -75,64 +88,41 @@
 
                                          <div class="col-12 col-lg-8 mt-12 mt-lg-8">
 
-                        <div class="d-flex align-items-center justify-content-between gap-12 gap-lg-24">
-                            <div class="d-flex align-items-center gap-12 gap-lg-24">
+                                <div class="d-flex align-items-center gap-12 gap-lg-24">
+                                    <div class="d-flex align-items-center gap-8">
+                                        @include('web.default2.includes.top_nav.currency')
 
-                                <div class="">
-                          <div class="d-flex align-items-center gap-8">
-                        {{--<div class="size-32 d-flex-center bg-white-10 rounded-8">
-                            <span class="font-12 text-white opacity-75">$</span>
-                        </div>--}}
-               @include('web.default2.includes.top_nav.currency')
+                                        @if(!empty($localLanguage) and count($localLanguage) > 1)
+                                            <form action="/locale" method="post" class="mr-15 mx-md-20">
+                                                {{ csrf_field() }}
+                                                <input type="hidden" name="locale" value="{{ app()->getLocale() }}">
+                                                <div class="language-select">
+                                                    <div id="localItems"
+                                                         data-selected-country="{{ localeToCountryCode(mb_strtoupper(app()->getLocale())) }}"
+                                                         data-countries='{{ json_encode($localLanguage) }}'
+                                                    ></div>
+                                                </div>
+                                            </form>
+                                        @else
+                                            <div class="mr-15 mx-md-20"></div>
+                                        @endif
+                                    </div>
 
-               @if(!empty($localLanguage) and count($localLanguage) > 1)
-                   <form action="/locale" method="post" class="mr-15 mx-md-20">
-                       {{ csrf_field() }}
+                                    <div class="d-flex align-items-center gap-16">
+                                        @if(!empty($authUser))
+                                            @include(getTemplate().'.includes.notification-dropdown')
+                                        @endif
+                                        
+                                        @include(getTemplate().'.includes.shopping-cart-dropdwon')
 
-                       <input type="hidden" name="locale" value="{{ app()->getLocale() }}">
-
-                       <div class="language-select">
-                           <div id="localItems"
-                                data-selected-country="{{ localeToCountryCode(mb_strtoupper(app()->getLocale())) }}"
-                                data-countries='{{ json_encode($localLanguage) }}'
-                           ></div>
-                       </div>
-                   </form>
-               @else
-                   <div class="mr-15 mx-md-20"></div>
-               @endif
-
-                                      </div>
-    </div>
-
- <div class="xs-w-100 d-flex align-items-center justify-content-between ">
-            <div class="d-flex">
-
-                @include(getTemplate().'.includes.shopping-cart-dropdwon')
-
-        </div>
-    </div>
+                                        @if(!empty($authUser))
+                                            <a href="/logout" class="text-white font-14 ml-10">{{ trans('auth.logout') }}</a>
+                                        @else
+                                            <a href="/login" class="text-white font-14 ml-20">{{ trans('auth.login') }}</a>
+                                            <a href="/register" class="text-white font-14 ml-10">{{ trans('auth.register') }}</a>
+                                        @endif
+                                    </div>
                                 </div>
-
-                            @if(empty($authUser))
-                                <div class="d-flex align-items-center">
-                                    <a href="{{ config('app.manual_base_url') }}/login" class="d-flex align-items-center text-white opacity-75">
-                                    <span class="">Login</span>
-                                    </a>
-
-                                    <a href="{{ config('app.manual_base_url') }}/register" class="d-flex align-items-center text-white opacity-75 ml-32">
-                                        <span class="">Register</span>
-                                    </a>
-                                </div>
-                            @else
-                                <div class="d-flex align-items-center">
-                                    <a href="{{ config('app.manual_base_url') }}/logout" class="d-flex align-items-center text-white opacity-75">
-                                    <span class="">Logout</span>
-                                    </a>
-                                </div>
-                            @endif
-
-                        </div>
                     </div>
                 </div>
             </div>

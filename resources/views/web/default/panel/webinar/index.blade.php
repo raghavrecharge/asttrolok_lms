@@ -46,20 +46,30 @@
     </section>
 
     <section class="mt-25">
-        <div class="d-flex align-items-start align-items-md-center justify-content-between flex-column flex-md-row">
-            <h2 class="section-title">{{ trans('panel.my_webinars') }}</h2>
+        <h2 class="section-title">{{ trans('panel.my_webinars') }}</h2>
 
+        <div class="mt-20" style="background: linear-gradient(135deg, #f8faff 0%, #fff 100%); border-radius: 20px; border: 1px solid #e8edf5; padding: 22px 28px; box-shadow: 0 4px 24px rgba(31,59,100,0.06);">
             <form action="" method="get">
-                <div class="d-flex align-items-center flex-row-reverse flex-md-row justify-content-start justify-content-md-center mt-20 mt-md-0">
-                    <label class="cursor-pointer mb-0 mr-10 font-weight-500 font-14 text-gray" for="conductedSwitch">{{ trans('panel.only_not_conducted_webinars') }}</label>
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" name="not_conducted" @if(request()->get('not_conducted','') == 'on') checked @endif class="custom-control-input" id="conductedSwitch">
-                        <label class="custom-control-label" for="conductedSwitch"></label>
+                <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;">
+                    <div style="flex:0 0 auto;">
+                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
+                            <i data-feather="sliders" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('panel.only_not_conducted_webinars') }}
+                        </label>
+                        <div class="custom-control custom-switch" style="height:40px;display:flex;align-items:center;padding-left:3.5rem;">
+                            <input type="checkbox" name="not_conducted" @if(request()->get('not_conducted','') == 'on') checked @endif class="custom-control-input" id="conductedSwitch">
+                            <label class="custom-control-label" for="conductedSwitch"></label>
+                        </div>
+                    </div>
+                    <div style="flex:0 0 auto;">
+                        <button type="submit" style="height:40px;background:linear-gradient(135deg,#43d477 0%,#2ecc71 100%);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(67,212,119,0.25);white-space:nowrap;padding:0 20px;transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(67,212,119,0.35)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(67,212,119,0.25)'">
+                            <i data-feather="search" width="13" height="13"></i>
+                            {{ trans('public.show_results') }}
+                        </button>
                     </div>
                 </div>
             </form>
         </div>
-
+    </section>
         @if(!empty($webinars) and !$webinars->isEmpty())
             @foreach($webinars as $webinar)
                 @php

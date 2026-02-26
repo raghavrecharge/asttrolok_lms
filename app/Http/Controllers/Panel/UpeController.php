@@ -469,22 +469,61 @@ class UpeController extends Controller
     //  INSTALLMENT DASHBOARD
     // ──────────────────────────────────────────────
 
-    public function installments(PaymentLedgerService $ledger)
+    public function installments(Request $request, PaymentLedgerService $ledger, AccessEngine $access)
     {
         $user = auth()->user();
 
-        $sales = UpeSale::where('user_id', $user->id)
+        // Subquery: pick best sale per product where pricing_mode = installment
+        $bestSaleIds = UpeSale::where('user_id', $user->id)
             ->where('pricing_mode', 'installment')
-            ->with(['product', 'installmentPlan.schedules'])
-            ->orderByDesc('id')
-            ->get();
+            ->selectRaw('MAX(CASE
+                WHEN status = "active" THEN 4
+                WHEN status = "partially_refunded" THEN 3
+                WHEN status = "pending_payment" THEN 2
+                ELSE 1
+            END) as priority')
+            ->selectRaw('product_id')
+            ->groupBy('product_id')
+            ->pluck('product_id');
 
-        // Batch-load webinar/bundle items to avoid N+1
+        $deduped = collect();
+        foreach ($bestSaleIds as $productId) {
+            $sale = UpeSale::where('user_id', $user->id)
+                ->where('product_id', $productId)
+                ->where('pricing_mode', 'installment')
+                ->whereHas('product', function ($q) use ($request) {
+                    $type = $request->get('type', 'all');
+                    if ($type === 'course') {
+                        $q->whereIn('product_type', ['webinar', 'course_video', 'course_live', 'bundle']);
+                    } elseif ($type === 'meeting') {
+                        $q->where('product_type', 'meeting');
+                    }
+                })
+                ->orderByRaw("FIELD(status, 'active', 'partially_refunded', 'pending_payment', 'completed', 'refunded', 'expired', 'cancelled') ASC")
+                ->orderByDesc('id')
+                ->first();
+            if ($sale) {
+                $deduped->push($sale->id);
+            }
+        }
+
+        $query = UpeSale::whereIn('id', $deduped)->with(['product', 'installmentPlan.schedules']);
+
+        if ($request->filled('status')) {
+            $query->whereHas('installmentPlan', function ($q) use ($request) {
+                $q->where('status', $request->status);
+            });
+        }
+
+        $sales = $query->orderByDesc('id')->paginate(15);
+
+        // Batch-load webinar/bundle items
         $webinarIds = $sales->filter(fn($s) => $s->product && $s->product->product_type !== 'bundle')->pluck('product.external_id')->filter();
         $bundleIds = $sales->filter(fn($s) => $s->product && $s->product->product_type === 'bundle')->pluck('product.external_id')->filter();
         $webinars = \App\Models\Webinar::whereIn('id', $webinarIds)->with(['teacher', 'category'])->get()->keyBy('id');
         $bundles = \App\Models\Bundle::whereIn('id', $bundleIds)->with(['teacher', 'category'])->get()->keyBy('id');
 
+        $progress = [];
         foreach ($sales as $sale) {
             // Attach webinar/bundle item
             if ($sale->product) {
@@ -494,11 +533,46 @@ class UpeController extends Controller
                     $sale->item = $webinars->get($sale->product->external_id);
                 }
             }
+
+            // Fetch progress
+            if ($sale->product && in_array($sale->product->product_type, ['webinar', 'course_video', 'course_live'])) {
+                if ($sale->item) {
+                    $progress[$sale->id] = $sale->item->getProgress();
+                }
+            }
         }
 
-        $pageTitle = 'My Installments';
+        // Stats (filtered for EMI only)
+        $allSaleIds = UpeSale::where('user_id', $user->id)
+            ->where('pricing_mode', 'installment')
+            ->selectRaw('product_id')
+            ->groupBy('product_id')
+            ->pluck('product_id');
 
-        return view(getTemplate() . '.panel.upe.installments', compact('sales', 'pageTitle'));
+        // Stats (filtered for EMI only)
+        $allSalesStats = UpeSale::where('user_id', $user->id)
+            ->where('pricing_mode', 'installment')
+            ->with('installmentPlan')
+            ->get()
+            ->unique('product_id');
+
+        $purchasedCount = $allSalesStats->count();
+        $activeCount = 0;
+        $completedCount = 0;
+
+        foreach ($allSalesStats as $s) {
+            if ($s->installmentPlan) {
+                if ($s->installmentPlan->status === 'active') {
+                    $activeCount++;
+                } elseif ($s->installmentPlan->status === 'completed') {
+                    $completedCount++;
+                }
+            }
+        }
+
+        $pageTitle = 'My EMI Plans';
+
+        return view(getTemplate() . '.panel.upe.installments', compact('sales', 'progress', 'purchasedCount', 'activeCount', 'completedCount', 'pageTitle'));
     }
 
     public function installmentDetail(int $planId, PaymentLedgerService $ledger)

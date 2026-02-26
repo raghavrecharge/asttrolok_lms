@@ -1,3 +1,5 @@
+@extends(getTemplate() .'.panel.layouts.panel_layout')
+
 @push('styles_top')
     <style>
         .notification-card {

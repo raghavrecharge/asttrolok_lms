@@ -247,7 +247,7 @@
                 </div>
 
                 <div class="mt-20">
-                    {{ $requests->links() }}
+                    {{ $requests->appends(request()->input())->links('vendor.pagination.panel') }}
                 </div>
             @else
                 <div class="req-empty">

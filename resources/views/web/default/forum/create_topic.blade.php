@@ -58,12 +58,12 @@
 @section('content')
     <section>
         <h2 class="section-title">{{ !empty($topic) ? trans('update.edit_topic') : trans('update.new_topic') }}</h2>
-        <p class="text-gray font-14 mt-5">{{ trans('update.new_topic_hint') }}</p>
+        <p class="text-gray font-14 mt-5 mb-20">{{ trans('update.new_topic_hint') }}</p>
 
         <form action="{{ !empty($topic) ? $topic->getEditUrl() : '/forums/create-topic' }}" method="post">
             {{ csrf_field() }}
 
-            <div class="ct-form-card mt-25">
+            <div class="ct-form-card">
                 <div class="row">
                     <div class="col-12 col-md-6">
                         <div class="form-group">

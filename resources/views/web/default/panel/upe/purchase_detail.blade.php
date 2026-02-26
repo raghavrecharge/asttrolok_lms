@@ -174,7 +174,7 @@
                                             @endphp
                                             @if($hasDueSchedules)
                                                 <span class="status-badge badge-primary">Active</span>
-                                                <span class="status-badge badge-warning ml-5">EMI Due</span>
+                                                <span class="status-badge badge-warning mt-1">EMI Due</span>
                                             @else
                                                 <span class="status-badge badge-primary">Fully Paid</span>
                                             @endif
