@@ -846,54 +846,6 @@
                 </div>
             </div>
 
-            {{-- Learning Activity --}}
-            <div class="db-card">
-                <div class="db-card-header">
-                    <h3 class="db-card-title">Learning Activity</h3>
-                    <span style="font-size:11px;color:#9ca3af;">{{ date('Y') }}</span>
-                </div>
-
-                @php
-                    $hasChartData = !empty($monthlyChart['data']) && array_sum($monthlyChart['data']) > 0;
-                    $totalPurchasesThisYear = $hasChartData ? array_sum($monthlyChart['data']) : 0;
-                @endphp
-
-                <div class="db-chart-summary">
-                    <div class="db-chart-summary-item">
-                        <div class="summary-dot blue"><i data-feather="shopping-bag" width="16" height="16"></i></div>
-                        <div>
-                            <div class="summary-num">{{ $totalPurchasesThisYear }}</div>
-                            <div class="summary-label">Courses Enrolled</div>
-                        </div>
-                    </div>
-                    <div class="db-chart-summary-item">
-                        <div class="summary-dot green"><i data-feather="book-open" width="16" height="16"></i></div>
-                        <div>
-                            <div class="summary-num">{{ $webinarsCount ?? 0 }}</div>
-                            <div class="summary-label">Total Courses</div>
-                        </div>
-                    </div>
-                </div>
-
-                @if($hasChartData)
-                    <div class="db-chart-container">
-                        <canvas id="monthlyChart"></canvas>
-                    </div>
-                @else
-                    <div class="db-empty-state">
-                        <div class="empty-icon"><i data-feather="trending-up" width="24" height="24"></i></div>
-                        <h4>No enrollments this year</h4>
-                        <p>Your monthly course enrollment activity will appear here as a chart.</p>
-                        <div class="empty-actions">
-                            <a href="/classes" class="btn-outline"><i data-feather="search" width="14" height="14"></i> Browse Courses</a>
-                        </div>
-                    </div>
-                    <div class="db-chart-container d-none">
-                        <canvas id="monthlyChart"></canvas>
-                    </div>
-                @endif
-            </div>
-
             {{-- Suggested Courses carousel --}}
             @if(!empty($featureWebinars) && count($featureWebinars) > 0)
             <div class="db-card">

@@ -370,7 +370,7 @@ class ForumController extends Controller
                 'error125' => $error125];
             }
 
-                    return view('web.default2.forum.create_topic', $data);
+                    return view(getTemplate() . '.forum.create_topic', $data);
         } catch (\Exception $e) {
             \Log::error('createTopic error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
@@ -622,7 +622,7 @@ class ForumController extends Controller
                         'topic' => $topic,
                     ];
 
-                    return view('web.default2.forum.create_topic', $data);
+                    return view(getTemplate() . '.forum.create_topic', $data);
                 }
             }
 

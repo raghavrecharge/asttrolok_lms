@@ -407,10 +407,6 @@
                                 <a href="/panel/store/products/comments">{{ trans('update.product_comments') }}</a>
                             </li>
                         @endif
-
-                        <li class="mt-5 {{ (request()->is('panel/store/products/my-comments')) ? 'active' : '' }}">
-                            <a href="/panel/store/products/my-comments">{{ trans('panel.my_comments') }}</a>
-                        </li>
                     </ul>
                 </div>
             </li>

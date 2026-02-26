@@ -60,7 +60,8 @@
         .upe-card-title a { color: inherit; text-decoration: none; }
         .upe-card-title a:hover { color: #2563eb; }
         .upe-card-meta {
-            display: flex; flex-wrap: wrap; gap: 10px;
+            display: flex; flex-wrap: wrap; gap: 16px;
+            justify-content: space-between;
             margin-top: auto; padding-top: 10px;
             border-top: 1px solid #f5f5f5;
         }

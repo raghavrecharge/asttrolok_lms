@@ -155,87 +155,107 @@
     <section class="mt-25">
         <h2 class="section-title">{{ trans('panel.filter_meetings') }}</h2>
 
-        <div class="panel-section-card py-20 px-25 mt-20">
-            <form action="/panel/meetings/reservation" method="get" class="row">
-                <div class="col-12 col-lg-4">
-                    <div class="row">
-                        <div class="col-12 col-md-6">
-                            <div class="form-group">
-                                <label class="input-label">{{ trans('public.from') }}</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="dateInputGroupPrepend">
-                                            <i data-feather="calendar" width="18" height="18" class="text-white"></i>
-                                        </span>
-                                    </div>
-                                    <input type="text" name="from" autocomplete="off" class="form-control @if(!empty(request()->get('from'))) datepicker @else datefilter @endif"
-                                           aria-describedby="dateInputGroupPrepend" value="{{ request()->get('from','') }}"/>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-group">
-                                <label class="input-label">{{ trans('public.to') }}</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="dateInputGroupPrepend">
-                                            <i data-feather="calendar" width="18" height="18" class="text-white"></i>
-                                        </span>
-                                    </div>
-                                    <input type="text" name="to" autocomplete="off" class="form-control @if(!empty(request()->get('to'))) datepicker @else datefilter @endif"
-                                           aria-describedby="dateInputGroupPrepend" value="{{ request()->get('to','') }}"/>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 col-lg-6">
-                    <div class="row">
-                        <div class="col-12 col-lg-4">
-                            <div class="form-group">
-                                <label class="input-label">{{ trans('public.day') }}</label>
-                                <select class="form-control" id="day" name="day">
-                                    <option value="all">{{ trans('public.all_days') }}</option>
-                                    <option value="saturday" {{ (request()->get('day') === "saturday") ? 'selected' : '' }}>{{ trans('public.saturday') }}</option>
-                                    <option value="sunday" {{ (request()->get('day') === "sunday") ? 'selected' : '' }}>{{ trans('public.sunday') }}</option>
-                                    <option value="monday" {{ (request()->get('day') === "monday") ? 'selected' : '' }}>{{ trans('public.monday') }}</option>
-                                    <option value="tuesday" {{ (request()->get('day') === "tuesday") ? 'selected' : '' }}>{{ trans('public.tuesday') }}</option>
-                                    <option value="wednesday" {{ (request()->get('day') === "wednesday") ? 'selected' : '' }}>{{ trans('public.wednesday') }}</option>
-                                    <option value="thursday" {{ (request()->get('day') === "thursday") ? 'selected' : '' }}>{{ trans('public.thursday') }}</option>
-                                    <option value="friday" {{ (request()->get('day') === "friday") ? 'selected' : '' }}>{{ trans('public.friday') }}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-12 col-lg-8">
-                            <div class="row">
-                                <div class="col-12 col-lg-8">
-                                    <div class="form-group">
-                                        <label class="input-label">{{ trans('public.instructor') }}</label>
-                                        <select name="instructor_id" class="form-control select2 ">
-                                            <option value="all">{{ trans('webinars.all_instructors') }}</option>
+        <div class="mt-20" style="background: linear-gradient(135deg, #f8faff 0%, #fff 100%); border-radius: 20px; border: 1px solid #e8edf5; padding: 22px 28px; box-shadow: 0 4px 24px rgba(31,59,100,0.06);">
+            <form action="/panel/meetings/reservation" method="get">
+                <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;">
 
-                                            @foreach($instructors as $instructor)
-                                                <option value="{{ $instructor->id }}" @if(request()->get('instructor_id') == $instructor->id) selected @endif>{{ $instructor->full_name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-12 col-lg-4">
-                                    <div class="form-group">
-                                        <label class="input-label">{{ trans('public.status') }}</label>
-                                        <select class="form-control" id="status" name="status">
-                                            <option>{{ trans('public.all') }}</option>
-                                            <option value="open" {{ (request()->get('status') === "open") ? 'selected' : '' }}>{{ trans('public.open') }}</option>
-                                            <option value="finished" {{ (request()->get('status') === "finished") ? 'selected' : '' }}>{{ trans('public.finished') }}</option>
-                                        </select>
-                                    </div>
-                                </div>
+                    {{-- From --}}
+                    <div style="flex:0 0 auto;">
+                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
+                            <i data-feather="calendar" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.from') }}
+                        </label>
+                        <div style="position:relative;width:150px;">
+                            <div style="position:absolute;left:0;top:0;bottom:0;width:38px;background:#1f3b64;display:flex;align-items:center;justify-content:center;border-radius:9px 0 0 9px;z-index:1;">
+                                <i data-feather="calendar" width="14" height="14" style="color:#fff;"></i>
+                            </div>
+                            <input type="text" name="from" autocomplete="off"
+                                   class="form-control @if(!empty(request()->get('from'))) datepicker @else datefilter @endif"
+                                   style="height:40px;padding-left:48px;font-size:12px;font-weight:600;color:#1f3b64;border:1.5px solid #e8edf5;border-radius:9px;box-shadow:0 2px 6px rgba(31,59,100,0.06);background:#fff;"
+                                   value="{{ request()->get('from','') }}"/>
+                        </div>
+                    </div>
+
+                    {{-- To --}}
+                    <div style="flex:0 0 auto;">
+                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
+                            <i data-feather="calendar" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.to') }}
+                        </label>
+                        <div style="position:relative;width:150px;">
+                            <div style="position:absolute;left:0;top:0;bottom:0;width:38px;background:#1f3b64;display:flex;align-items:center;justify-content:center;border-radius:9px 0 0 9px;z-index:1;">
+                                <i data-feather="calendar" width="14" height="14" style="color:#fff;"></i>
+                            </div>
+                            <input type="text" name="to" autocomplete="off"
+                                   class="form-control @if(!empty(request()->get('to'))) datepicker @else datefilter @endif"
+                                   style="height:40px;padding-left:48px;font-size:12px;font-weight:600;color:#1f3b64;border:1.5px solid #e8edf5;border-radius:9px;box-shadow:0 2px 6px rgba(31,59,100,0.06);background:#fff;"
+                                   value="{{ request()->get('to','') }}"/>
+                        </div>
+                    </div>
+
+                    {{-- Day --}}
+                    <div style="flex:0 0 auto;">
+                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
+                            <i data-feather="sun" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.day') }}
+                        </label>
+                        <div style="position:relative;width:130px;">
+                            <select name="day" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;cursor:pointer;">
+                                <option value="all">{{ trans('public.all_days') }}</option>
+                                <option value="saturday" {{ request()->get('day') === 'saturday' ? 'selected' : '' }}>{{ trans('public.saturday') }}</option>
+                                <option value="sunday" {{ request()->get('day') === 'sunday' ? 'selected' : '' }}>{{ trans('public.sunday') }}</option>
+                                <option value="monday" {{ request()->get('day') === 'monday' ? 'selected' : '' }}>{{ trans('public.monday') }}</option>
+                                <option value="tuesday" {{ request()->get('day') === 'tuesday' ? 'selected' : '' }}>{{ trans('public.tuesday') }}</option>
+                                <option value="wednesday" {{ request()->get('day') === 'wednesday' ? 'selected' : '' }}>{{ trans('public.wednesday') }}</option>
+                                <option value="thursday" {{ request()->get('day') === 'thursday' ? 'selected' : '' }}>{{ trans('public.thursday') }}</option>
+                                <option value="friday" {{ request()->get('day') === 'friday' ? 'selected' : '' }}>{{ trans('public.friday') }}</option>
+                            </select>
+                            <div style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:#8c98a4;">
+                                <i data-feather="chevron-down" width="13" height="13"></i>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-12 col-lg-2 d-flex align-items-center justify-content-end">
-                    <button type="submit" class="btn btn-sm btn-primary w-100 mt-2">{{ trans('public.show_results') }}</button>
+
+                    {{-- Instructor --}}
+                    <div style="flex:1 1 160px;min-width:140px;">
+                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
+                            <i data-feather="user" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.instructor') }}
+                        </label>
+                        <div style="position:relative;">
+                            <select name="instructor_id" class="select2" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;">
+                                <option value="all">{{ trans('webinars.all_instructors') }}</option>
+                                @foreach($instructors as $instructor)
+                                    <option value="{{ $instructor->id }}" @if(request()->get('instructor_id') == $instructor->id) selected @endif>{{ $instructor->full_name }}</option>
+                                @endforeach
+                            </select>
+                            <div style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:#8c98a4;">
+                                <i data-feather="chevron-down" width="13" height="13"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Status --}}
+                    <div style="flex:0 0 auto;">
+                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
+                            <i data-feather="sliders" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.status') }}
+                        </label>
+                        <div style="position:relative;width:110px;">
+                            <select name="status" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;cursor:pointer;">
+                                <option>{{ trans('public.all') }}</option>
+                                <option value="open" {{ request()->get('status') === 'open' ? 'selected' : '' }}>{{ trans('public.open') }}</option>
+                                <option value="finished" {{ request()->get('status') === 'finished' ? 'selected' : '' }}>{{ trans('public.finished') }}</option>
+                            </select>
+                            <div style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:#8c98a4;">
+                                <i data-feather="chevron-down" width="13" height="13"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Submit Button --}}
+                    <div style="flex:0 0 auto;">
+                        <button type="submit" style="height:40px;background:linear-gradient(135deg,#1f3b64 0%,#2563eb 100%);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(31,59,100,0.25);white-space:nowrap;padding:0 20px;transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(31,59,100,0.35)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(31,59,100,0.25)'">
+                            <i data-feather="search" width="13" height="13"></i>
+                            {{ trans('public.show_results') }}
+                        </button>
+                    </div>
+
                 </div>
             </form>
         </div>
@@ -245,13 +265,13 @@
         <div class="d-flex align-items-start align-items-md-center justify-content-between flex-column flex-md-row">
             <h2 class="section-title">{{ trans('panel.meeting_list') }}</h2>
 
-            <form action="/panel/meetings/reservation?{{ http_build_query(request()->all()) }}" class="d-flex align-items-center flex-row-reverse flex-md-row justify-content-start justify-content-md-center mt-20 mt-md-0">
+            <!-- <form action="/panel/meetings/reservation?{{ http_build_query(request()->all()) }}" class="d-flex align-items-center flex-row-reverse flex-md-row justify-content-start justify-content-md-center mt-20 mt-md-0">
                 <label class="cursor-pointer mb-0 mr-10 text-gray font-14 font-weight-500" for="openMeetingResult">{{ trans('panel.show_only_open_meetings') }}</label>
                 <div class="custom-control custom-switch">
                     <input type="checkbox" name="open_meetings" class="js-panel-list-switch-filter custom-control-input" id="openMeetingResult" {{ (request()->get('open_meetings', '') == 'on') ? 'checked' : '' }}>
                     <label class="custom-control-label" for="openMeetingResult"></label>
                 </div>
-            </form>
+            </form> -->
         </div>
 
         @if($reserveMeetings->count() > 0)
