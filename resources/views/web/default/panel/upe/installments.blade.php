@@ -2,209 +2,107 @@
 
 @push('styles_top')
     <style>
-        .stat-card {
+        .upe-card {
             background: #fff;
-            border-radius: 20px;
-            padding: 25px;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
             border: 1px solid #f0f0f0;
+            overflow: hidden;
             height: 100%;
-            transition: all 0.3s ease;
-        }
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
-            border-color: #1f3b64;
-        }
-        .stat-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-        }
-        .stat-label {
-            font-size: 13px;
-            color: #6c757d;
-            font-weight: 500;
-            display: block;
-        }
-        .stat-value {
-            font-size: 24px;
-            font-weight: 800;
-            color: #1f3b64;
-            display: block;
-        }
-        .bg-glass-primary { background: rgba(31, 59, 100, 0.1); color: #1f3b64; }
-        .bg-glass-success { background: rgba(67, 212, 119, 0.1); color: #43d477; }
-        .bg-glass-warning { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
-
-        /* Premium Course Card */
-        .premium-course-card {
-            background: #fff;
-            border-radius: 24px;
-            padding: 20px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
-            border: 1px solid #f8f8f8;
-            margin-bottom: 25px;
             transition: all 0.3s ease;
-            position: relative;
-            height: 100%;
         }
-        .premium-course-card:hover {
+        .upe-card:hover {
+            box-shadow: 0 12px 35px rgba(31,59,100,0.1);
             transform: translateY(-5px);
-            box-shadow: 0 15px 50px rgba(0,0,0,0.08);
             border-color: #1f3b64;
         }
-        .premium-course-card .image-container {
-            width: 100%;
-            height: 180px;
+        .upe-card .image-box {
             position: relative;
-            flex-shrink: 0;
-            border-radius: 20px;
+            height: 160px;
             overflow: hidden;
-            margin-bottom: 20px;
+            flex-shrink: 0;
         }
-        .premium-course-card .image-container img {
-            width: 100%;
-            height: 100%;
+        .upe-card .image-box img {
+            width: 100%; height: 100%;
             object-fit: cover;
         }
-        .premium-course-card .play-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(8px);
-            border: 2px solid #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            transition: all 0.3s ease;
+        .upe-card .image-box .upe-badge-overlay {
+            position: absolute; top: 10px; left: 10px;
+            display: flex; gap: 5px; flex-wrap: wrap;
         }
-        .premium-course-card:hover .play-overlay {
-            background: #1f3b64;
-            transform: translate(-50%, -50%) scale(1.1);
+        .upe-card .image-box .upe-type-badge {
+            font-size: 9px; font-weight: 700; text-transform: uppercase;
+            padding: 3px 8px; border-radius: 6px;
+            background: rgba(0,0,0,0.55); color: #fff;
+            letter-spacing: 0.4px; backdrop-filter: blur(4px);
         }
-        .premium-course-card .info-container {
+        .upe-card .image-box .upe-status-pos {
+            position: absolute; top: 10px; right: 10px;
+        }
+        .upe-card .image-box .progress {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 4px; border-radius: 0; background: rgba(255,255,255,0.3);
+        }
+        .upe-card .image-box .progress .progress-bar { border-radius: 0; }
+        .upe-card-body {
+            padding: 14px 16px;
             flex-grow: 1;
-            padding-left: 0;
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
         }
-        .premium-course-card .header-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+        .upe-card-title {
+            font-size: 14px; font-weight: 700; color: #1f3b64;
+            line-height: 1.3; margin-bottom: 8px;
+            display: -webkit-box; -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical; overflow: hidden;
         }
-        .premium-course-card .course-title {
-            font-size: 18px;
-            font-weight: 800;
-            color: #1f3b64;
-            margin-bottom: 4px;
-            display: block;
+        .upe-card-title a { color: inherit; text-decoration: none; }
+        .upe-card-title a:hover { color: #2563eb; }
+        .upe-card-meta {
+            display: flex; flex-wrap: wrap; gap: 10px;
+            margin-top: auto; padding-top: 10px;
+            border-top: 1px solid #f5f5f5;
         }
-        .premium-course-card .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px 15px;
-            margin-top: 10px;
+        .upe-card-meta .meta-item {
+            display: flex; flex-direction: column;
         }
-        .premium-course-card .info-item {
-            display: flex;
-            align-items: center;
+        .upe-card-meta .meta-label {
+            font-size: 9px; color: #8c98a4; text-transform: uppercase;
+            letter-spacing: 0.5px; font-weight: 600;
         }
-        .premium-course-card .info-icon {
-            width: 36px;
-            height: 36px;
-            background: #f8faff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #1f3b64;
-            margin-right: 10px;
-            flex-shrink: 0;
+        .upe-card-meta .meta-value {
+            font-size: 12px; font-weight: 700; color: #1f3b64;
         }
-        .premium-course-card .info-text {
-            line-height: 1.2;
+        .upe-card-footer {
+            padding: 10px 16px 14px;
+            display: flex; align-items: center; gap: 8px;
+            border-top: 1px solid #f5f5f5;
         }
-        .premium-course-card .info-value {
-            display: block;
-            font-weight: 700;
-            font-size: 14px;
-            color: #1f3b64;
+        .upe-status-pill {
+            padding: 3px 10px; border-radius: 20px;
+            font-size: 9px; font-weight: 700;
+            display: inline-block; white-space: nowrap;
         }
-        .premium-course-card .info-label {
-            display: block;
-            font-size: 11px;
-            color: #8c98a4;
-            font-weight: 500;
-        }
-        .premium-course-card .footer-section {
-            margin-top: auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 15px;
-            border-top: 1px solid #f4f4f4;
-        }
+        .upe-status-pill.active { background: #e8f5e9; color: #2e7d32; }
+        .upe-status-pill.completed { background: #e3f2fd; color: #1565c0; }
+        .upe-status-pill.defaulted { background: #ffebee; color: #c62828; }
+        .upe-status-pill.restructured { background: #fff8e1; color: #e6a800; }
         
-        .status-badge {
-            padding: 6px 14px;
-            border-radius: 30px;
-            font-weight: 700;
-            font-size: 10px;
-            display: inline-block;
-            text-transform: uppercase;
-        }
-        .badge-active { background: rgba(31, 59, 100, 0.1); color: #1f3b64; }
-        .badge-completed { background: rgba(67, 212, 119, 0.1); color: #43d477; }
-        .badge-defaulted { background: rgba(244, 117, 117, 0.1); color: #f47575; }
-        .badge-restructured { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
-
-        .btn-learning {
+        .btn-upe-learn {
             background: linear-gradient(135deg, #43d477 0%, #28a745 100%);
-            border: none;
-            box-shadow: 0 4px 15px rgba(67, 212, 119, 0.3);
-            transition: all 0.3s ease;
-            color: white !important;
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 13px;
+            border: none; color: #fff !important; font-size: 11px;
+            padding: 5px 12px; border-radius: 8px; font-weight: 600;
+            transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 4px;
         }
-        .btn-learning:hover {
-            box-shadow: 0 6px 20px rgba(67, 212, 119, 0.4);
-            transform: scale(1.02);
-            background: linear-gradient(135deg, #28a745 0%, #43d477 100%);
+        .btn-upe-learn:hover { box-shadow: 0 4px 12px rgba(67,212,119,0.35); transform: scale(1.02); }
+        .btn-upe-detail {
+            font-size: 11px; padding: 5px 12px; border-radius: 8px;
+            font-weight: 600; border: 1px solid #dde1e6; color: #1f3b64;
+            background: #fff; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; gap: 4px;
         }
-        .btn-schedule {
-            color: #1f3b64;
-            font-weight: 700;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            background: #f8faff;
-            padding: 8px 16px;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-        }
-        .btn-schedule:hover {
-            background: #f0f4ff;
-            color: #1f3b64;
-        }
+        .btn-upe-detail:hover { border-color: #1f3b64; background: #f8faff; text-decoration: none; }
     </style>
 @endpush
 
@@ -215,115 +113,97 @@
         </div>
 
         @if(!empty($sales) and !$sales->isEmpty())
-            <div class="row mt-30">
+            <div class="row mt-20">
                 @foreach($sales as $sale)
                     @if($sale->installmentPlan)
-                        <div class="col-12 col-lg-6 mt-15">
-                            <div class="premium-course-card">
-                                @php
-                                    $product = $sale->product;
-                                    $webinar = null;
-                                    if ($product && $product->external_id) {
-                                        $webinar = \App\Models\Webinar::find($product->external_id);
-                                    }
-                                @endphp
-                                
-                                <div class="image-container">
-                                    <img loading="lazy" src="{{ ($webinar) ? config('app.img_dynamic_url') . $webinar->getImage() : '/assets/default/img/default_course.png' }}" alt="{{ $product->name ?? 'Course' }}">
-                                    @if($webinar)
-                                        <a href="/course/learning/{{ $webinar->slug }}" class="play-overlay">
-                                            <i data-feather="play" width="24" height="24" fill="currentColor"></i>
-                                        </a>
+                        @php
+                            $item = $sale->item ?? null;
+                            $paidCount = $sale->installmentPlan->schedules->where('status', 'paid')->count();
+                            $totalCount = $sale->installmentPlan->schedules->count();
+                            $paidPercent = $totalCount > 0 ? round(($paidCount / $totalCount) * 100) : 0;
+                            $overdueCount = $sale->installmentPlan->schedules->where('status', 'overdue')->count();
+                            
+                            $nextDue = $sale->installmentPlan->schedules
+                                ->whereIn('status', ['due', 'upcoming', 'partial', 'overdue'])
+                                ->sortBy('sequence')
+                                ->first();
+                            $status = $sale->installmentPlan->status;
+                        @endphp
+                        <div class="col-6 col-lg-4 mt-15">
+                            <div class="upe-card">
+                                <div class="image-box">
+                                    @if($item)
+                                        <img src="{{ config('app.img_dynamic_url') }}{{ $item->getImage() }}" alt="{{ $item->title }}">
+                                    @else
+                                        <div style="width:100%;height:100%;background:linear-gradient(135deg,#1f3b64,#2563eb);display:flex;align-items:center;justify-content:center;">
+                                            <i data-feather="book-open" width="40" height="40" style="color:rgba(255,255,255,0.3);"></i>
+                                        </div>
+                                    @endif
+                                    <div class="upe-badge-overlay">
+                                        @if($sale->product)
+                                            <span class="upe-type-badge">{{ str_replace('_',' ',$sale->product->product_type) }}</span>
+                                        @endif
+                                        <span class="upe-type-badge" style="background:rgba(255,193,7,0.8);color:#000;">EMI</span>
+                                    </div>
+                                    <div class="upe-status-pos">
+                                        <span class="upe-status-pill {{ $status }}">{{ ucfirst($status) }}</span>
+                                    </div>
+                                    @if($paidPercent > 0)
+                                        <div class="progress">
+                                            <div class="progress-bar {{ $overdueCount > 0 ? 'bg-danger' : 'bg-primary' }}" style="width:{{ $paidPercent }}%"></div>
+                                        </div>
                                     @endif
                                 </div>
 
-                                <div class="info-container">
-                                    <div class="header-section">
-                                        <div class="w-100">
-                                            <span class="course-title">{{ $product->name ?? 'Course' }}</span>
-                                            <span class="font-12 text-gray">Sale #{{ $sale->id }}</span>
-                                        </div>
-
-                                        @php
-                                            $status = $sale->installmentPlan->status;
-                                            $badgeClass = 'badge-' . $status;
-                                        @endphp
-                                        <div class="status-badge {{ $badgeClass }}">{{ ucfirst($status) }}</div>
-                                    </div>
-
-                                    @php
-                                        $paidCount = $sale->installmentPlan->schedules->where('status', 'paid')->count();
-                                        $totalCount = $sale->installmentPlan->schedules->count();
-                                        $paidPercent = $totalCount > 0 ? round(($paidCount / $totalCount) * 100) : 0;
-                                        $overdueCount = $sale->installmentPlan->schedules->where('status', 'overdue')->count();
-                                        
-                                        $nextDue = $sale->installmentPlan->schedules
-                                            ->whereIn('status', ['due', 'upcoming', 'partial', 'overdue'])
-                                            ->sortBy('sequence')
-                                            ->first();
-                                    @endphp
-
-                                    <div class="info-grid">
-                                        <div class="info-item">
-                                            <div class="info-icon"><i data-feather="dollar-sign" width="16" height="16"></i></div>
-                                            <div class="info-text">
-                                                <span class="info-value">{{ handlePrice($sale->installmentPlan->total_amount) }}</span>
-                                                <span class="info-label">Total Amount</span>
-                                            </div>
-                                        </div>
-                                        <div class="info-item">
-                                            <div class="info-icon"><i data-feather="layers" width="16" height="16"></i></div>
-                                            <div class="info-text">
-                                                <span class="info-value">{{ $paidCount }}/{{ $totalCount }}</span>
-                                                <span class="info-label">Installments</span>
-                                            </div>
-                                        </div>
-                                        <div class="info-item">
-                                            <div class="info-icon"><i data-feather="activity" width="16" height="16"></i></div>
-                                            <div class="info-text">
-                                                <span class="info-value {{ $overdueCount > 0 ? 'text-danger' : '' }}">{{ $paidPercent }}%</span>
-                                                <span class="info-label">Paid Progress</span>
-                                            </div>
-                                        </div>
-                                        <div class="info-item">
-                                            <div class="info-icon"><i data-feather="calendar" width="16" height="16"></i></div>
-                                            <div class="info-text">
-                                                <span class="info-value {{ ($nextDue && $nextDue->status === 'overdue') ? 'text-danger' : '' }}">
-                                                    @if($nextDue)
-                                                        {{ $nextDue->due_date ? \Carbon\Carbon::parse($nextDue->due_date)->format('d M') : '-' }}
-                                                    @else
-                                                        Closed
-                                                    @endif
-                                                </span>
-                                                <span class="info-label">Next Due</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="mt-20">
-                                        <div class="progress" style="height: 8px; border-radius: 10px; background: #f0f4ff;">
-                                            <div class="progress-bar {{ $overdueCount > 0 ? 'bg-danger' : 'bg-primary' }}" 
-                                                 role="progressbar" 
-                                                 style="width: {{ $paidPercent }}%; border-radius: 10px;" 
-                                                 aria-valuenow="{{ $paidPercent }}" 
-                                                 aria-valuemin="0" 
-                                                 aria-valuemax="100"></div>
-                                        </div>
-                                    </div>
-
-                                    <div class="footer-section">
-                                        <a href="/panel/upe/installments/{{ $sale->installmentPlan->id }}" class="btn-schedule mr-10">
-                                            <i data-feather="list" width="16" height="16" class="mr-8"></i>
-                                            Schedule
-                                        </a>
-
-                                        @if($webinar)
-                                            <a href="/course/learning/{{ $webinar->slug }}" target="_blank" class="btn-learning ml-auto">
-                                                <i data-feather="play-circle" width="16" height="16" class="mr-8"></i>
-                                                Learning Page
-                                            </a>
+                                <div class="upe-card-body">
+                                    <h4 class="upe-card-title">
+                                        @if($item)
+                                            <a href="{{ $item->getUrl() }}">{{ $item->title }}</a>
+                                        @elseif($sale->product)
+                                            {{ $sale->product->name }}
+                                        @else
+                                            Product #{{ $sale->product_id }}
                                         @endif
+                                    </h4>
+
+                                    @if($item && $item->teacher)
+                                        <div class="d-flex align-items-center mb-8" style="gap:6px;">
+                                            <i data-feather="user" width="11" height="11" class="text-gray"></i>
+                                            <span style="font-size:11px;color:#6c757d;">{{ $item->teacher->full_name }}</span>
+                                        </div>
+                                    @endif
+
+                                    <div class="upe-card-meta">
+                                        <div class="meta-item">
+                                            <span class="meta-label">Total</span>
+                                            <span class="meta-value">{{ handlePrice($sale->installmentPlan->total_amount) }}</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span class="meta-label">Paid</span>
+                                            <span class="meta-value">{{ $paidCount }}/{{ $totalCount }}</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span class="meta-label">Next Due</span>
+                                            <span class="meta-value {{ ($nextDue && $nextDue->status === 'overdue') ? 'text-danger' : '' }}">
+                                                @if($nextDue)
+                                                    {{ $nextDue->due_date ? \Carbon\Carbon::parse($nextDue->due_date)->format('d M') : '-' }}
+                                                @else
+                                                    Closed
+                                                @endif
+                                            </span>
+                                        </div>
                                     </div>
+                                </div>
+
+                                <div class="upe-card-footer">
+                                    <a href="/panel/upe/installments/{{ $sale->installmentPlan->id }}" class="btn-upe-detail">
+                                        <i data-feather="list" width="12" height="12"></i> Schedule
+                                    </a>
+                                    @if($item && $item->slug)
+                                        <a href="/course/learning/{{ $item->slug }}" target="_blank" class="btn-upe-learn">
+                                            <i data-feather="play-circle" width="12" height="12"></i> Learn
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -342,9 +222,9 @@
             ])
         @endif
 
-        @if($sales instanceof \Illuminate\Pagination\LengthAwarePaginator)
+        @if($sales instanceof \Illuminate\Pagination\LengthAwarePaginator && $sales->hasPages())
             <div class="my-30">
-                {{ $sales->appends(request()->query())->links('vendor.pagination.panel') }}
+                {{ $sales->appends(request()->query())->links() }}
             </div>
         @endif
     </section>

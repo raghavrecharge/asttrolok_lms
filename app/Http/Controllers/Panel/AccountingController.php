@@ -252,13 +252,37 @@ class AccountingController extends Controller
                 return $b[1] <=> $a[1];
             });
 
-            $totalCourseAmount = 0;
-            $totalMeetingAmount = 0;
+            $totalCourseCount = 0;
+            $totalMeetingCount = 0;
+            $totalSubscriptionCount = 0;
+            $totalProductCount = 0;
+            
+            $countedCourses = [];
+            $countedMeetings = [];
+            $countedSubscriptions = [];
+            $countedProducts = [];
+
             foreach ($amount_paid as $item) {
                 if (in_array($item[5], ['course', 'part', 'bundle'])) {
-                    $totalCourseAmount += $item[0];
+                    if (!in_array($item[4] . '_' . ($item[5] == 'bundle' ? 'bundle' : 'webinar'), $countedCourses)) {
+                        $totalCourseCount++;
+                        $countedCourses[] = $item[4] . '_' . ($item[5] == 'bundle' ? 'bundle' : 'webinar');
+                    }
                 } elseif ($item[5] == 'meeting') {
-                    $totalMeetingAmount += $item[0];
+                    if (!in_array($item[4], $countedMeetings)) {
+                        $totalMeetingCount++;
+                        $countedMeetings[] = $item[4];
+                    }
+                } elseif ($item[5] == 'subscription') {
+                    if (!in_array($item[4], $countedSubscriptions)) {
+                        $totalSubscriptionCount++;
+                        $countedSubscriptions[] = $item[4];
+                    }
+                } elseif ($item[5] == 'product') {
+                    if (!in_array($item[4], $countedProducts)) {
+                        $totalProductCount++;
+                        $countedProducts[] = $item[4];
+                    }
                 }
             }
 
@@ -267,8 +291,10 @@ class AccountingController extends Controller
                 'accountings' => $accountings,
                 'amount_paid' => $amount_paid,
                 'commission' => getFinancialSettings('commission') ?? 0,
-                'totalCourseAmount' => $totalCourseAmount,
-                'totalMeetingAmount' => $totalMeetingAmount,
+                'totalCourseCount' => $totalCourseCount,
+                'totalMeetingCount' => $totalMeetingCount,
+                'totalSubscriptionCount' => $totalSubscriptionCount,
+                'totalProductCount' => $totalProductCount,
                 'totalIncome' => $userAuth->getIncome(),
             ];
 

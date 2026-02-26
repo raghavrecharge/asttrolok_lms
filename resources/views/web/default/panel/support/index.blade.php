@@ -156,8 +156,8 @@
                                 <th>Ticket #</th>
                                 <th class="text-left col-title">Title/Course</th>
                                 <th class="text-left col-scenario">Scenario</th>
-                                <th>Status</th>
-                                <th>Date</th>
+                                <th class="text-center col-scenario">Status</th>
+                                <th class="text-center col-scenario">Date</th>
                                 <th class="col-action">Action</th>
                             </tr>
                         </thead>

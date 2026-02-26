@@ -42,6 +42,8 @@
         .bg-glass-primary { background: rgba(31, 59, 100, 0.1); color: #1f3b64; }
         .bg-glass-success { background: rgba(67, 212, 119, 0.1); color: #43d477; }
         .bg-glass-warning { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+        .bg-glass-info { background: rgba(0, 123, 255, 0.1); color: #007bff; }
+        .bg-glass-secondary { background: rgba(108, 117, 125, 0.1); color: #6c757d; }
 
         /* Custom Badge Styles for visibility */
         .type-badge {
@@ -84,38 +86,50 @@
         <h2 class="section-title">Financial Summary</h2>
         <div class="mt-25">
             <div class="row">
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-sm-6 col-lg-3">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-primary">
                             <i data-feather="video" width="24" height="24"></i>
                         </div>
                         <div>
-                            <span class="stat-value">{{ handlePrice($totalCourseAmount) }}</span>
-                            <span class="stat-label">Total Course Amount</span>
+                            <span class="stat-value">{{ $totalCourseCount }}</span>
+                            <span class="stat-label">Total Courses</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4 mt-15 mt-md-0">
+                <div class="col-12 col-sm-6 col-lg-3 mt-15 mt-sm-0">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-success">
                             <i data-feather="users" width="24" height="24"></i>
                         </div>
                         <div>
-                            <span class="stat-value">{{ handlePrice($totalMeetingAmount) }}</span>
-                            <span class="stat-label">Total Meeting</span>
+                            <span class="stat-value">{{ $totalMeetingCount }}</span>
+                            <span class="stat-label">Total Meetings</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4 mt-15 mt-md-0">
+                <div class="col-12 col-sm-6 col-lg-3 mt-15 mt-lg-0">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-warning">
-                            <i data-feather="trending-up" width="24" height="24"></i>
+                            <i data-feather="repeat" width="24" height="24"></i>
                         </div>
                         <div>
-                            <span class="stat-value">{{ handlePrice($totalIncome) }}</span>
-                            <span class="stat-label">Total Income</span>
+                            <span class="stat-value">{{ $totalSubscriptionCount }}</span>
+                            <span class="stat-label">Total Subscriptions</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-lg-3 mt-15 mt-lg-0">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-info">
+                            <i data-feather="shopping-cart" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $totalProductCount }}</span>
+                            <span class="stat-label">Total Products</span>
                         </div>
                     </div>
                 </div>

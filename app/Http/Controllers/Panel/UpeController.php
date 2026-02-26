@@ -67,6 +67,12 @@ class UpeController extends Controller
 
         $sales = $query->orderByDesc('id')->paginate(15);
 
+        // Batch-load webinar/bundle items to avoid N+1
+        $webinarIds = $sales->filter(fn($s) => $s->product && $s->product->product_type !== 'bundle')->pluck('product.external_id')->filter();
+        $bundleIds = $sales->filter(fn($s) => $s->product && $s->product->product_type === 'bundle')->pluck('product.external_id')->filter();
+        $webinars = \App\Models\Webinar::whereIn('id', $webinarIds)->with(['teacher', 'category'])->get()->keyBy('id');
+        $bundles = \App\Models\Bundle::whereIn('id', $bundleIds)->with(['teacher', 'category'])->get()->keyBy('id');
+
         $accessResults = [];
         $balances = [];
         $progress = [];
@@ -74,18 +80,47 @@ class UpeController extends Controller
             $accessResults[$sale->id] = $access->computeAccess($user->id, $sale->product_id);
             $balances[$sale->id] = $ledger->balance($sale->id);
 
+            // Attach webinar/bundle item
+            if ($sale->product) {
+                if ($sale->product->product_type === 'bundle') {
+                    $sale->item = $bundles->get($sale->product->external_id);
+                } else {
+                    $sale->item = $webinars->get($sale->product->external_id);
+                }
+            }
+
             // Fetch progress if it's a webinar/course
             if ($sale->product && in_array($sale->product->product_type, ['webinar', 'course_video', 'course_live'])) {
-                $webinar = \App\Models\Webinar::find($sale->product->external_id);
-                if ($webinar) {
-                    $progress[$sale->id] = $webinar->getProgress();
+                if ($sale->item) {
+                    $progress[$sale->id] = $sale->item->getProgress();
+                }
+            }
+        }
+
+        // Activity stats (use full deduped set, not just current page)
+        $allSales = UpeSale::whereIn('id', $deduped)->with('product')->get();
+        $purchasedCount = $allSales->count();
+        $hours = 0;
+        $upComing = 0;
+        $time = time();
+        foreach ($allSales as $s) {
+            if ($s->product) {
+                if ($s->product->product_type === 'bundle') {
+                    $b = \App\Models\Bundle::find($s->product->external_id);
+                    if ($b) $hours += $b->getBundleDuration();
+                } else {
+                    $w = \App\Models\Webinar::find($s->product->external_id);
+                    if ($w) {
+                        $hours += $w->duration;
+                        if ($w->start_date > $time) $upComing++;
+                    }
                 }
             }
         }
 
         $pageTitle = 'My Purchases';
 
-        return view(getTemplate() . '.panel.upe.my_purchases', compact('sales', 'accessResults', 'balances', 'progress', 'pageTitle'));
+        return view(getTemplate() . '.panel.upe.my_purchases', compact('sales', 'accessResults', 'balances', 'progress', 'purchasedCount', 'hours', 'upComing', 'pageTitle'));
     }
 
     public function purchaseDetail(int $id, PaymentLedgerService $ledger, AccessEngine $access)
@@ -443,6 +478,23 @@ class UpeController extends Controller
             ->with(['product', 'installmentPlan.schedules'])
             ->orderByDesc('id')
             ->get();
+
+        // Batch-load webinar/bundle items to avoid N+1
+        $webinarIds = $sales->filter(fn($s) => $s->product && $s->product->product_type !== 'bundle')->pluck('product.external_id')->filter();
+        $bundleIds = $sales->filter(fn($s) => $s->product && $s->product->product_type === 'bundle')->pluck('product.external_id')->filter();
+        $webinars = \App\Models\Webinar::whereIn('id', $webinarIds)->with(['teacher', 'category'])->get()->keyBy('id');
+        $bundles = \App\Models\Bundle::whereIn('id', $bundleIds)->with(['teacher', 'category'])->get()->keyBy('id');
+
+        foreach ($sales as $sale) {
+            // Attach webinar/bundle item
+            if ($sale->product) {
+                if ($sale->product->product_type === 'bundle') {
+                    $sale->item = $bundles->get($sale->product->external_id);
+                } else {
+                    $sale->item = $webinars->get($sale->product->external_id);
+                }
+            }
+        }
 
         $pageTitle = 'My Installments';
 
