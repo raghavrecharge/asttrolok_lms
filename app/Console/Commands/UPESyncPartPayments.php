@@ -414,7 +414,7 @@ class UPESyncPartPayments extends Command
 
             $netPaid = $paid - $debits;
 
-            if ($netPaid < (float) $schedule->amount_due) {
+            if ($netPaid < (float) $schedule->amount_due - 1.00) {
                 return $schedule;
             }
         }
@@ -440,7 +440,7 @@ class UPESyncPartPayments extends Command
             $derivedPaid = round($derivedPaid, 2);
             $amountDue = (float) $schedule->amount_due;
 
-            if ($derivedPaid >= $amountDue && $amountDue > 0) {
+            if (($derivedPaid >= $amountDue || abs($derivedPaid - $amountDue) < 1.00) && $amountDue > 0 && $derivedPaid > 0) {
                 $newStatus = 'paid';
             } elseif ($derivedPaid > 0) {
                 $newStatus = 'partial';

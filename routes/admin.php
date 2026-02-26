@@ -178,6 +178,7 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
                     ->name('admin.support.updateStatusSecure');
 
                 Route::post('/validate-coupon', 'AdminSupportController@validateCoupon');
+                Route::post('/validate-offline-coupon', 'AdminSupportController@validateOfflineCoupon');
                 
                 Route::post('/support/{id}/assign', 'AdminSupportController@assignHandler')
                     ->name('admin.support.assignHandler');

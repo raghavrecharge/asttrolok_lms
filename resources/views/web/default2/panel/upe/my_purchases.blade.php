@@ -52,8 +52,18 @@
                                         'completed' => 'badge-secondary',
                                         default => 'badge-secondary',
                                     };
+                                    $hasEmiDue = $sale->pricing_mode === 'installment'
+                                        && $sale->installmentPlan
+                                        && $sale->installmentPlan->schedules->whereIn('status', ['due', 'partial', 'overdue', 'upcoming'])->count() > 0;
                                 @endphp
-                                <span class="badge {{ $statusClass }} px-10 py-5">{{ ucfirst(str_replace('_',' ',$sale->status)) }}</span>
+                                @if($sale->status === 'active' && $hasEmiDue)
+                                    <span class="badge badge-primary px-10 py-5">Active</span>
+                                    <span class="badge badge-warning px-10 py-5 ml-5">EMI Due</span>
+                                @elseif($sale->status === 'active' && $sale->pricing_mode === 'installment' && $sale->installmentPlan)
+                                    <span class="badge badge-primary px-10 py-5">Fully Paid</span>
+                                @else
+                                    <span class="badge {{ $statusClass }} px-10 py-5">{{ ucfirst(str_replace('_',' ',$sale->status)) }}</span>
+                                @endif
                             </div>
                         </div>
 
@@ -115,6 +125,14 @@
 
                         <div class="mt-15 d-flex">
                             <a href="/panel/upe/purchases/{{ $sale->id }}" class="btn btn-sm btn-primary mr-10">View Details</a>
+                            @if($sale->product && in_array($sale->product->product_type, ['course_video', 'webinar', 'course_live']) && isset($accessResults[$sale->id]) && $accessResults[$sale->id]->hasAccess)
+                                @php $webinarForLink = \App\Models\Webinar::find($sale->product->external_id); @endphp
+                                @if($webinarForLink && $webinarForLink->slug)
+                                    <a href="/course/learning/{{ $webinarForLink->slug }}" target="_blank" class="btn btn-sm btn-success mr-10">
+                                        <i class="fa fa-play-circle"></i> Learning Page
+                                    </a>
+                                @endif
+                            @endif
                         </div>
                     </div>
                 </div>

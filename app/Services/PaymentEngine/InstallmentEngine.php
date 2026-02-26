@@ -121,9 +121,10 @@ class InstallmentEngine
             $remaining = $amount;
             $paidSchedules = [];
 
-            // Get schedules in order, starting from first unpaid
+            // Get schedules in order, starting from first unpaid (by due date for chronological correctness)
             $schedules = $plan->schedules()
                 ->whereIn('status', ['due', 'partial', 'overdue', 'upcoming'])
+                ->orderBy('due_date')
                 ->orderBy('sequence')
                 ->lockForUpdate()
                 ->get();
@@ -366,7 +367,28 @@ class InstallmentEngine
                 $created[] = $newSchedule;
             }
 
-            // 5. Update plan num_installments
+            // 5. Push due dates of subsequent unpaid schedules to maintain chronological order
+            $lastSubDueDate = end($subSchedules)['due_date'];
+            $lastSubDate = \Carbon\Carbon::parse($lastSubDueDate);
+
+            $subsequentSchedules = UpeInstallmentSchedule::where('plan_id', $plan->id)
+                ->where('sequence', '>', $originalSequence + count($subSchedules) - 1)
+                ->where('id', '!=', $schedule->id)
+                ->whereNotIn('status', ['paid', 'waived'])
+                ->orderBy('sequence')
+                ->get();
+
+            $nextDate = $lastSubDate->copy();
+            foreach ($subsequentSchedules as $subseq) {
+                $subseqDate = \Carbon\Carbon::parse($subseq->due_date);
+                if ($subseqDate->lte($lastSubDate)) {
+                    // Push this schedule's date forward: 1 month after the last sub-schedule or previous pushed date
+                    $nextDate = $nextDate->copy()->addMonth();
+                    $subseq->update(['due_date' => $nextDate->format('Y-m-d')]);
+                }
+            }
+
+            // 6. Update plan num_installments
             $activeScheduleCount = UpeInstallmentSchedule::where('plan_id', $plan->id)
                 ->whereNotIn('status', ['waived'])
                 ->count();
@@ -407,6 +429,7 @@ class InstallmentEngine
         // First unpaid schedule becomes 'due' if it's upcoming
         $nextUnpaid = $plan->schedules()
             ->where('status', 'upcoming')
+            ->orderBy('due_date')
             ->orderBy('sequence')
             ->first();
 

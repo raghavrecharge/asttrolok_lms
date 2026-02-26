@@ -111,7 +111,7 @@ class AdminSupportController extends Controller
 
                     $restructureData = [
                         'plan' => $plan,
-                        'schedules' => $plan->schedules->sortBy('sequence'),
+                        'schedules' => $plan->schedules->sortBy('due_date'),
                         'target_schedule' => $targetSchedule,
                         'is_upfront' => $executionResult['is_upfront'] ?? false,
                         'schedule_amount' => $executionResult['schedule_amount'] ?? 0,
@@ -138,12 +138,12 @@ class AdminSupportController extends Controller
 
                         if ($plan) {
                             $unpaidSchedules = $plan->schedules->whereIn('status', ['due', 'upcoming', 'partial', 'overdue']);
-                            $targetSchedule = $unpaidSchedules->sortBy('sequence')->first();
+                            $targetSchedule = $unpaidSchedules->sortBy('due_date')->first();
                             $isUpfront = $targetSchedule ? ($targetSchedule->sequence <= 1) : false;
 
                             $restructureData = [
                                 'plan' => $plan,
-                                'schedules' => $plan->schedules->sortBy('sequence'),
+                                'schedules' => $plan->schedules->sortBy('due_date'),
                                 'target_schedule' => $targetSchedule,
                                 'is_upfront' => $isUpfront,
                                 'schedule_amount' => $targetSchedule ? (float) $targetSchedule->amount_due : 0,
@@ -172,6 +172,57 @@ class AdminSupportController extends Controller
             }
 
             $data['restructureData'] = $restructureData;
+        }
+
+        // For offline_cash_payment tickets, load price breakdown + available installment plans
+        if ($supportRequest->support_scenario === 'offline_cash_payment' && $supportRequest->webinar_id) {
+            $webinar = $supportRequest->webinar;
+            $coursePrice = $webinar ? $webinar->getPrice() : 0;
+            $cashAmount = (float) ($supportRequest->cash_amount ?? 0);
+
+            $data['offlinePaymentData'] = [
+                'course_price' => $coursePrice,
+                'cash_amount' => $cashAmount,
+                'remaining' => max(0, $coursePrice - $cashAmount),
+                'is_underpaid' => $cashAmount < ($coursePrice - 1),
+                'is_installment_available' => false,
+                'installment_plans' => [],
+            ];
+
+            // Load available installment plans for this course (using student's context, not admin's)
+            $studentUser = $supportRequest->user_id ? \App\User::find($supportRequest->user_id) : null;
+            $showInstallments = $webinar
+                && !empty($webinar->price) && $webinar->price > 0
+                && getInstallmentsSettings('status')
+                && (empty($studentUser) || !empty($studentUser->enable_installments));
+
+            if ($showInstallments) {
+                $installmentPlans = new \App\Mixins\Installment\InstallmentPlans($studentUser);
+                $installments = $installmentPlans->getPlans(
+                    'courses',
+                    $webinar->id,
+                    $webinar->type,
+                    $webinar->category_id,
+                    $webinar->teacher_id
+                );
+                $installments->loadCount('steps');
+
+                if ($installments->isNotEmpty()) {
+                    $data['offlinePaymentData']['is_installment_available'] = true;
+                    $plans = [];
+                    foreach ($installments as $inst) {
+                        $upfront = round($inst->getUpfront($coursePrice), 0, PHP_ROUND_HALF_UP);
+                        $plans[] = [
+                            'id' => $inst->id,
+                            'title' => $inst->title ?? ('Plan #' . $inst->id),
+                            'upfront' => $upfront,
+                            'steps_count' => $inst->steps_count,
+                            'total_emis' => $inst->steps_count + 1,
+                        ];
+                    }
+                    $data['offlinePaymentData']['installment_plans'] = $plans;
+                }
+            }
         }
 
         return view('admin.supports.show', $data);
@@ -1032,38 +1083,45 @@ class AdminSupportController extends Controller
                  /* ---------- offline_cash_payment ---------- */
                 if ($supportRequest->support_scenario === 'offline_cash_payment') {
                      $cashAmount = (float) ($supportRequest->cash_amount ?? 0);
-                     $coursePrice = 0;
-                     $webinar = \App\Models\Webinar::find($supportRequest->webinar_id);
-                     if ($webinar) {
-                         $coursePrice = $webinar->getPrice();
-                     }
 
-                     // Only grant full access if cash covers the full course price
-                     if ($cashAmount > 0 && $cashAmount >= $coursePrice) {
-                         $this->offlineCashPayment($supportRequest);
-                     } else {
-                         // Partial payment: record as part payment, do NOT grant full access
-                         if ($cashAmount > 0 && $supportRequest->webinar_id) {
-                             \App\Models\WebinarPartPayment::create([
-                                 'user_id' => $supportRequest->user_id,
-                                 'webinar_id' => $supportRequest->webinar_id,
-                                 'installment_id' => $supportRequest->installment_id ?? null,
-                                 'amount' => $cashAmount,
-                                 'created_at' => now(),
-                             ]);
-                         }
-                     }
-
-                     // UPE: Record the actual cash amount (not full course price)
                      if ($cashAmount > 0 && $supportRequest->webinar_id) {
                          $bridge = app(SupportUpeBridge::class);
-                         $bridge->recordOfflinePayment(
+                         $couponCode = $request->input('offline_coupon_code') ?: ($supportRequest->coupon_code ?? null);
+                         $installmentId = $request->input('offline_installment_id') ? (int) $request->input('offline_installment_id') : null;
+
+                         $offlineResult = $bridge->processOfflinePayment(
                              $supportRequest->user_id,
                              $supportRequest->webinar_id,
                              $supportRequest->id,
                              $user->id,
-                             $cashAmount
+                             $cashAmount,
+                             $couponCode,
+                             $installmentId
                          );
+
+                         if (!$offlineResult['success']) {
+                             DB::rollBack();
+                             return back()->with([
+                                 'toast' => [
+                                     'title' => 'Payment Failed',
+                                     'msg' => $offlineResult['message'],
+                                     'status' => 'error',
+                                 ],
+                             ]);
+                         }
+
+                         // Store serializable audit data (strip Eloquent objects)
+                         $supportRequest->update([
+                             'execution_result' => [
+                                 'success' => $offlineResult['success'],
+                                 'message' => $offlineResult['message'],
+                                 'sale_id' => $offlineResult['sale']?->id,
+                                 'plan_id' => $offlineResult['plan']?->id,
+                                 'price_breakdown' => $offlineResult['price_breakdown'],
+                                 'allocation' => $offlineResult['allocation'],
+                                 'access_granted' => $offlineResult['access_granted'],
+                             ],
+                         ]);
                      }
                 }
                  /* ---------- refund_payment ---------- */
@@ -1948,10 +2006,20 @@ class AdminSupportController extends Controller
             }
 
             // 7. Revoke old WebinarAccessControl (NO webinar_id overwrite)
-            WebinarAccessControl::where('user_id', $userId)
-                ->where('webinar_id', $wrongCourseId)
-                ->where('status', 'active')
-                ->update(['status' => 'revoked']);
+            try {
+                WebinarAccessControl::where('user_id', $userId)
+                    ->where('webinar_id', $wrongCourseId)
+                    ->where('status', 'active')
+                    ->update(['status' => 'revoked']);
+            } catch (\Exception $e) {
+                // Legacy table may lack 'status' column — delete the row instead
+                WebinarAccessControl::where('user_id', $userId)
+                    ->where('webinar_id', $wrongCourseId)
+                    ->delete();
+                Log::warning('webinar_access_control missing status column, deleted row instead', [
+                    'user_id' => $userId, 'webinar_id' => $wrongCourseId, 'error' => $e->getMessage()
+                ]);
+            }
 
             // UPE: Revoke wrong course + grant correct course in UPE
             $bridge = app(SupportUpeBridge::class);
@@ -2070,6 +2138,98 @@ class AdminSupportController extends Controller
                 'coupon_title' => $discount->title,
                 'remaining_uses' => $remainingCount
             ]);
+        }
+
+        /**
+         * AJAX: Validate coupon + recalculate price breakdown for offline cash payment.
+         * Returns original price, discount, final payable, cash comparison, and installment breakdown if applicable.
+         */
+        public function validateOfflineCoupon(Request $request)
+        {
+            $this->authorize('admin_support_manage');
+
+            $couponCode = strtoupper(trim($request->input('coupon_code', '')));
+            $webinarId = (int) $request->input('webinar_id');
+            $cashAmount = (float) $request->input('cash_amount', 0);
+            $installmentId = $request->input('installment_id') ? (int) $request->input('installment_id') : null;
+
+            if (empty($couponCode)) {
+                return response()->json(['success' => false, 'message' => 'Please enter a coupon code.']);
+            }
+
+            $webinar = \App\Models\Webinar::find($webinarId);
+            if (!$webinar) {
+                return response()->json(['success' => false, 'message' => 'Course not found.']);
+            }
+
+            $originalPrice = (float) $webinar->getPrice();
+
+            // Validate coupon (direct checks — no cart dependency)
+            $discount = \App\Models\Discount::where('code', $couponCode)->first();
+            if (!$discount) {
+                return response()->json(['success' => false, 'message' => 'Invalid coupon code.']);
+            }
+
+            if (!empty($discount->expired_at) && $discount->expired_at < time()) {
+                return response()->json(['success' => false, 'message' => 'This coupon has expired.']);
+            }
+
+            if ($discount->discountRemain() <= 0) {
+                return response()->json(['success' => false, 'message' => 'This coupon has been fully used.']);
+            }
+
+            // Check course-specific coupon restrictions
+            if ($discount->source === 'course') {
+                $discountWebinarIds = $discount->discountCourses()->pluck('course_id')->toArray();
+                if (!empty($discountWebinarIds) && !in_array($webinarId, $discountWebinarIds)) {
+                    return response()->json(['success' => false, 'message' => 'This coupon is not valid for this course.']);
+                }
+            }
+
+            // Calculate discount amount
+            $discountAmount = 0;
+            if ($discount->discount_type === \App\Models\Discount::$discountTypeFixedAmount) {
+                $discountAmount = min((float) $discount->amount, $originalPrice);
+            } else {
+                $discountAmount = round($originalPrice * (float) $discount->percent / 100, 2);
+            }
+            $discountAmount = round($discountAmount, 0, PHP_ROUND_HALF_UP);
+
+            $finalPayable = max(0, $originalPrice - $discountAmount);
+
+            $result = [
+                'success' => true,
+                'message' => "Coupon applied! Discount: ₹" . number_format($discountAmount, 0),
+                'original_price' => $originalPrice,
+                'discount_amount' => $discountAmount,
+                'final_payable' => $finalPayable,
+                'cash_amount' => $cashAmount,
+                'remaining' => max(0, $finalPayable - $cashAmount),
+                'is_sufficient' => $cashAmount >= ($finalPayable - 1),
+            ];
+
+            // If installment plan selected, show schedule breakdown with discounted price
+            if ($installmentId) {
+                $installment = \App\Models\Installment::find($installmentId);
+                if ($installment && $installment->enable) {
+                    $upfront = round($installment->getUpfront($finalPayable), 0, PHP_ROUND_HALF_UP);
+                    $steps = $installment->steps()->orderBy('order')->get();
+                    $schedules = [['label' => 'Upfront', 'amount' => $upfront]];
+                    foreach ($steps as $step) {
+                        $schedules[] = [
+                            'label' => 'EMI ' . $step->order,
+                            'amount' => round($step->getPrice($finalPayable), 0, PHP_ROUND_HALF_UP),
+                        ];
+                    }
+                    $result['installment_schedules'] = $schedules;
+                    $result['installment_total'] = array_sum(array_column($schedules, 'amount'));
+                    $result['upfront_amount'] = $upfront;
+                    $result['is_sufficient'] = $cashAmount >= ($upfront - 1);
+                    $result['message'] .= " | Upfront: ₹" . number_format($upfront, 0);
+                }
+            }
+
+            return response()->json($result);
         }
 
         public function ApplyCouponCode($supportRequest)

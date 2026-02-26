@@ -189,9 +189,11 @@
                     </div>
 
                     @php
-                        $totalPaid = $plan->schedules->sum('amount_paid');
-                        $totalRemaining = $plan->total_amount - $totalPaid;
-                        $paidPercent = $plan->total_amount > 0 ? round(($totalPaid / $plan->total_amount) * 100) : 0;
+                        $activeSchedules = $plan->schedules->whereNotIn('status', ['waived']);
+                        $totalPaid = $activeSchedules->sum('amount_paid');
+                        $totalDue = $activeSchedules->sum('amount_due');
+                        $totalRemaining = max(0, $totalDue - $totalPaid);
+                        $paidPercent = $totalDue > 0 ? round(($totalPaid / $totalDue) * 100) : 0;
                     @endphp
 
                     <div class="mt-25 p-15 rounded-lg bg-light">
@@ -239,8 +241,10 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($plan->schedules->sortBy('sequence') as $schedule)
+                                @php $displayIndex = 0; @endphp
+                                @foreach($plan->schedules->where('status', '!=', 'waived')->sortBy(['due_date', 'sequence']) as $schedule)
                                     @php
+                                        $displayIndex++;
                                         $schedColors = [
                                             'paid' => 'primary',
                                             'due' => 'warning',
@@ -250,10 +254,17 @@
                                             'waived' => 'secondary',
                                         ];
                                         $schedStatusClass = 'badge-' . ($schedColors[$schedule->status] ?? 'secondary');
+                                        $emiLabel = $displayIndex === 1 ? 'Upfront' : 'EMI ' . ($displayIndex - 1);
                                     @endphp
+<<<<<<< HEAD
                                     <tr class="{{ $schedule->status === 'overdue' ? 'bg-light-danger' : '' }}">
                                         <td class="font-weight-bold text-dark-blue">{{ $schedule->sequence ?? $schedule->installment_number }}</td>
                                         <td class="text-left">
+=======
+                                    <tr class="{{ $schedule->status === 'overdue' ? 'bg-light' : '' }}">
+                                        <td class="font-weight-500">{{ $emiLabel }}</td>
+                                        <td>
+>>>>>>> 0e7d69c168339003315a5a94c23904236bf15530
                                             @if($schedule->due_date)
                                                 <div class="font-weight-500">{{ \Carbon\Carbon::parse($schedule->due_date)->format('d M Y') }}</div>
                                                 @if($schedule->status === 'overdue')
@@ -407,9 +418,23 @@
         @endif
     @endif
 
+<<<<<<< HEAD
     <div class="mt-30 d-flex flex-column flex-md-row">
         <a href="/panel/upe/installments" class="btn btn-sm btn-secondary d-flex align-items-center justify-content-center mb-10 mb-md-0 px-20 py-10"><i data-feather="arrow-left" width="16" height="16" class="mr-8"></i> Back to EMI Plans</a>
         <a href="/panel/upe/purchases/{{ $plan->sale_id }}" class="btn btn-sm btn-primary ml-md-15 d-flex align-items-center justify-content-center px-20 py-10"><i data-feather="shopping-bag" width="16" height="16" class="mr-8"></i> View Purchase Details</a>
+=======
+    <div class="mt-20 d-flex">
+        <a href="/panel/upe/installments" class="btn btn-sm btn-secondary"><i data-feather="arrow-left" width="14" height="14"></i> Back to EMI Plans</a>
+        <a href="/panel/upe/purchases/{{ $plan->sale_id }}" class="btn btn-sm btn-primary ml-10">View Purchase</a>
+        @if($plan->sale && $plan->sale->product && in_array($plan->sale->product->product_type, ['course_video', 'webinar', 'course_live']) && in_array($plan->sale->status, ['active', 'completed']))
+            @php $webinarForLink = \App\Models\Webinar::find($plan->sale->product->external_id); @endphp
+            @if($webinarForLink && $webinarForLink->slug)
+                <a href="/course/learning/{{ $webinarForLink->slug }}" target="_blank" class="btn btn-sm btn-success ml-10">
+                    <i class="fa fa-play-circle"></i> Learning Page
+                </a>
+            @endif
+        @endif
+>>>>>>> 0e7d69c168339003315a5a94c23904236bf15530
     </div>
 @endsection
 

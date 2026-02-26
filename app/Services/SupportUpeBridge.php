@@ -5,10 +5,14 @@ namespace App\Services;
 use App\Models\PaymentEngine\UpeProduct;
 use App\Models\PaymentEngine\UpeSale;
 use App\Models\PaymentEngine\UpeLedgerEntry;
+use App\Models\PaymentEngine\UpeInstallmentPlan;
+use App\Models\PaymentEngine\UpeInstallmentSchedule;
 use App\Models\PaymentEngine\UpeSupportAction;
 use App\Models\PaymentEngine\UpeMentorBadge;
 use App\Services\PaymentEngine\AccessEngine;
 use App\Services\PaymentEngine\PaymentLedgerService;
+use App\Services\PaymentEngine\InstallmentEngine;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -299,9 +303,474 @@ class SupportUpeBridge
     }
 
     // ══════════════════════════════════════════════════════════════
-    //  OFFLINE PAYMENT — create UPE sale + ledger entry with USER amount
+    //  OFFLINE PAYMENT V2 — full validation, coupon, installment allocation
     // ══════════════════════════════════════════════════════════════
 
+    /**
+     * Process an offline/cash payment with full UPE validation.
+     *
+     * Handles both non-installment (full payment) and installment-based courses.
+     * Validates coupon, blocks underpayment for non-installment, allocates
+     * payment sequentially for installment courses.
+     *
+     * @return array{success: bool, message: string, sale: ?UpeSale, plan: ?UpeInstallmentPlan,
+     *               price_breakdown: array, allocation: array, access_granted: bool}
+     */
+    public function processOfflinePayment(
+        int $userId,
+        int $webinarId,
+        int $supportRequestId,
+        int $adminId,
+        float $cashAmount,
+        ?string $couponCode = null,
+        ?int $installmentId = null
+    ): array {
+        // ── 1. Resolve product & course ──
+        $product = $this->getOrCreateProduct($webinarId);
+        if (!$product) {
+            return $this->offlineResult(false, 'Course not found or product could not be created.');
+        }
+
+        $webinar = \App\Models\Webinar::find($webinarId);
+        if (!$webinar) {
+            return $this->offlineResult(false, 'Course not found.');
+        }
+
+        $originalPrice = (float) $webinar->getPrice();
+
+        // ── 2. Validate & apply coupon ──
+        $discountAmount = 0;
+        $discountId = null;
+        $couponError = null;
+
+        if ($couponCode) {
+            $discount = \App\Models\Discount::where('code', $couponCode)->first();
+            if (!$discount) {
+                $couponError = "Coupon '{$couponCode}' not found.";
+            } elseif (!empty($discount->expired_at) && $discount->expired_at < time()) {
+                $couponError = "Coupon '{$couponCode}' has expired.";
+            } elseif ($discount->discountRemain() <= 0) {
+                $couponError = "Coupon '{$couponCode}' has been fully used.";
+            } else {
+                // Check course-specific coupon restrictions
+                if ($discount->source === 'course') {
+                    $validCourseIds = $discount->discountCourses()->pluck('course_id')->toArray();
+                    if (!empty($validCourseIds) && !in_array($webinarId, $validCourseIds)) {
+                        $couponError = "Coupon '{$couponCode}' is not valid for this course.";
+                    }
+                }
+
+                // Calculate discount amount (only if no error so far)
+                if (!$couponError) {
+                    $discountId = $discount->id;
+                    if ($discount->discount_type === \App\Models\Discount::$discountTypeFixedAmount) {
+                        $discountAmount = min((float) $discount->amount, $originalPrice);
+                    } else {
+                        $discountAmount = round($originalPrice * (float) $discount->percent / 100, 2);
+                    }
+                    $discountAmount = round($discountAmount, 0, PHP_ROUND_HALF_UP);
+                }
+            }
+
+            if ($couponError) {
+                return $this->offlineResult(false, $couponError, [
+                    'original_price' => $originalPrice,
+                    'discount_amount' => 0,
+                    'final_payable' => $originalPrice,
+                    'cash_amount' => $cashAmount,
+                    'remaining' => max(0, $originalPrice - $cashAmount),
+                ]);
+            }
+        }
+
+        $finalPayable = max(0, $originalPrice - $discountAmount);
+        $priceBreakdown = [
+            'original_price' => $originalPrice,
+            'discount_amount' => $discountAmount,
+            'coupon_code' => $couponCode,
+            'final_payable' => $finalPayable,
+            'cash_amount' => $cashAmount,
+            'remaining' => max(0, $finalPayable - $cashAmount),
+        ];
+
+        // ── 3. Idempotency check ──
+        $idempotencyKey = "admin_offline_{$supportRequestId}";
+        $existingEntry = UpeLedgerEntry::where('idempotency_key', $idempotencyKey)->first();
+        if ($existingEntry) {
+            $existingSale = UpeSale::find($existingEntry->sale_id);
+            return $this->offlineResult(true, 'Payment already processed (idempotent).', $priceBreakdown, $existingSale);
+        }
+
+        // ── 4. Branch: non-installment vs installment ──
+        // Auto-detect installment plans if none selected
+        if (!$installmentId) {
+            $studentUser = \App\User::find($userId);
+            $plansFinder = new \App\Mixins\Installment\InstallmentPlans($studentUser);
+            $availablePlans = $plansFinder->getPlans(
+                'courses', $webinar->id, $webinar->type, $webinar->category_id, $webinar->teacher_id
+            );
+
+            if ($availablePlans->isNotEmpty()) {
+                // Course has installment plans — auto-select first and use installment flow
+                $installmentId = $availablePlans->first()->id;
+            } else {
+                // No installment plans — require full payment
+                return $this->processOfflineFullPayment(
+                    $userId, $webinarId, $product, $webinar, $supportRequestId, $adminId,
+                    $cashAmount, $finalPayable, $discountAmount, $discountId, $couponCode, $priceBreakdown
+                );
+            }
+        }
+
+        return $this->processOfflineInstallmentPayment(
+            $userId, $webinarId, $product, $webinar, $supportRequestId, $adminId,
+            $cashAmount, $finalPayable, $discountAmount, $discountId, $couponCode,
+            $installmentId, $priceBreakdown
+        );
+    }
+
+    /**
+     * Non-installment full payment: cash must cover final payable amount.
+     */
+    private function processOfflineFullPayment(
+        int $userId, int $webinarId, UpeProduct $product, $webinar,
+        int $supportRequestId, int $adminId,
+        float $cashAmount, float $finalPayable, float $discountAmount,
+        ?int $discountId, ?string $couponCode, array $priceBreakdown
+    ): array {
+        // Validate: cash must cover full price (with ₹1 tolerance) — only for non-installment courses
+        if ($cashAmount < $finalPayable - 1) {
+            return $this->offlineResult(
+                false,
+                "For full payment, cash (₹" . number_format($cashAmount, 0) .
+                ") must cover the entire course price (₹" . number_format($finalPayable, 0) .
+                "). This course does not have an installment plan.",
+                $priceBreakdown
+            );
+        }
+
+        return DB::transaction(function () use (
+            $userId, $webinarId, $product, $webinar, $supportRequestId, $adminId,
+            $cashAmount, $finalPayable, $discountAmount, $discountId, $couponCode, $priceBreakdown
+        ) {
+            // Create UPE sale
+            $validFrom = now();
+            $validUntil = $product->validity_days
+                ? $validFrom->copy()->addDays($product->validity_days)
+                : null;
+
+            $sale = UpeSale::create([
+                'uuid' => (string) Str::uuid(),
+                'user_id' => $userId,
+                'product_id' => $product->id,
+                'sale_type' => 'paid',
+                'pricing_mode' => 'full',
+                'base_fee_snapshot' => $product->base_fee,
+                'currency' => 'INR',
+                'status' => 'active',
+                'valid_from' => $validFrom,
+                'valid_until' => $validUntil,
+                'support_request_id' => $supportRequestId,
+                'approved_by' => $adminId,
+                'executed_at' => now(),
+                'metadata' => [
+                    'source' => 'admin_offline_full_payment',
+                    'support_request_id' => $supportRequestId,
+                    'cash_amount' => $cashAmount,
+                    'discount_amount' => $discountAmount,
+                    'coupon_code' => $couponCode,
+                ],
+            ]);
+
+            // Record payment in ledger
+            $idempotencyKey = "admin_offline_{$supportRequestId}";
+            $this->ledger->recordPayment(
+                saleId: $sale->id,
+                amount: $cashAmount,
+                paymentMethod: 'cash',
+                processedBy: $adminId,
+                description: "Offline/cash full payment via support #{$supportRequestId}",
+                idempotencyKey: $idempotencyKey
+            );
+
+            // Record coupon discount in ledger if applied
+            if ($discountId && $discountAmount > 0) {
+                $this->ledger->recordDiscount(
+                    saleId: $sale->id,
+                    amount: $discountAmount,
+                    discountId: $discountId,
+                    processedBy: $adminId,
+                    description: "Coupon '{$couponCode}' applied to offline payment #{$supportRequestId}"
+                );
+            }
+
+            // Legacy dual-write: Sale
+            \App\Models\Sale::create([
+                'buyer_id' => $userId,
+                'seller_id' => $webinar->creator_id ?? 1,
+                'webinar_id' => $webinarId,
+                'type' => \App\Models\Order::$webinar,
+                'payment_method' => 'credit',
+                'amount' => $cashAmount,
+                'tax' => 0,
+                'commission' => 0,
+                'discount' => $discountAmount,
+                'total_amount' => $cashAmount,
+                'created_at' => time(),
+            ]);
+
+            // Legacy dual-write: Accounting
+            \App\Models\Accounting::create([
+                'user_id' => $userId,
+                'webinar_id' => $webinarId,
+                'amount' => $cashAmount,
+                'type' => \App\Models\Accounting::$addiction,
+                'description' => "Admin Offline Payment: {$webinar->title}",
+                'created_at' => time(),
+            ]);
+
+            $this->access->invalidate($userId, $product->id);
+
+            Log::info('SupportUpeBridge: Offline full payment processed', [
+                'sale_id' => $sale->id,
+                'user_id' => $userId,
+                'cash_amount' => $cashAmount,
+                'discount' => $discountAmount,
+                'final_payable' => $finalPayable,
+                'admin_id' => $adminId,
+                'support_request_id' => $supportRequestId,
+            ]);
+
+            return $this->offlineResult(true, 'Full payment processed. Access granted.', $priceBreakdown, $sale, null, [], true);
+        });
+    }
+
+    /**
+     * Installment payment: create plan + schedules, allocate cash sequentially.
+     */
+    private function processOfflineInstallmentPayment(
+        int $userId, int $webinarId, UpeProduct $product, $webinar,
+        int $supportRequestId, int $adminId,
+        float $cashAmount, float $finalPayable, float $discountAmount,
+        ?int $discountId, ?string $couponCode,
+        int $installmentId, array $priceBreakdown
+    ): array {
+        $installment = \App\Models\Installment::find($installmentId);
+        if (!$installment || !$installment->enable) {
+            return $this->offlineResult(false, 'Invalid or disabled installment plan.', $priceBreakdown);
+        }
+
+        return DB::transaction(function () use (
+            $userId, $webinarId, $product, $webinar, $supportRequestId, $adminId,
+            $cashAmount, $finalPayable, $discountAmount, $discountId, $couponCode,
+            $installment, $installmentId, $priceBreakdown
+        ) {
+            // Find existing UPE sale or create new one
+            $sale = UpeSale::where('user_id', $userId)
+                ->where('product_id', $product->id)
+                ->where('pricing_mode', 'installment')
+                ->whereIn('status', ['active', 'pending_payment', 'partially_refunded'])
+                ->first();
+
+            $isNewSale = false;
+
+            if (!$sale) {
+                $isNewSale = true;
+                $validFrom = now();
+                $validUntil = $product->validity_days
+                    ? $validFrom->copy()->addDays($product->validity_days)
+                    : null;
+
+                $sale = UpeSale::create([
+                    'uuid' => (string) Str::uuid(),
+                    'user_id' => $userId,
+                    'product_id' => $product->id,
+                    'sale_type' => 'paid',
+                    'pricing_mode' => 'installment',
+                    'base_fee_snapshot' => $product->base_fee,
+                    'currency' => 'INR',
+                    'status' => 'pending_payment',
+                    'valid_from' => $validFrom,
+                    'valid_until' => $validUntil,
+                    'support_request_id' => $supportRequestId,
+                    'approved_by' => $adminId,
+                    'executed_at' => now(),
+                    'metadata' => [
+                        'source' => 'admin_offline_installment_payment',
+                        'support_request_id' => $supportRequestId,
+                        'installment_id' => $installmentId,
+                        'coupon_code' => $couponCode,
+                    ],
+                ]);
+            }
+
+            // Find or create UPE installment plan
+            $plan = UpeInstallmentPlan::where('sale_id', $sale->id)
+                ->whereIn('status', ['active', 'completed'])
+                ->first();
+
+            if (!$plan) {
+                // Build schedule amounts from legacy Installment config
+                $scheduleAmounts = [];
+                $upfrontAmount = round($installment->getUpfront($finalPayable), 0, PHP_ROUND_HALF_UP);
+                $scheduleAmounts[] = ['amount' => $upfrontAmount, 'deadline_days' => 0];
+
+                $steps = $installment->steps()->orderBy('order')->get();
+                foreach ($steps as $step) {
+                    $stepAmount = round($step->getPrice($finalPayable), 0, PHP_ROUND_HALF_UP);
+                    $scheduleAmounts[] = ['amount' => $stepAmount, 'deadline_days' => (int) $step->deadline];
+                }
+
+                $totalAmount = round(array_sum(array_column($scheduleAmounts, 'amount')), 2);
+
+                $plan = UpeInstallmentPlan::create([
+                    'sale_id' => $sale->id,
+                    'total_amount' => $totalAmount,
+                    'num_installments' => count($scheduleAmounts),
+                    'plan_type' => 'standard',
+                    'status' => 'active',
+                ]);
+
+                foreach ($scheduleAmounts as $i => $sched) {
+                    UpeInstallmentSchedule::create([
+                        'plan_id' => $plan->id,
+                        'sequence' => $i + 1,
+                        'due_date' => now()->addDays($sched['deadline_days']),
+                        'amount_due' => $sched['amount'],
+                        'amount_paid' => 0,
+                        'status' => ($i === 0) ? 'due' : 'upcoming',
+                    ]);
+                }
+            }
+
+            // Allocate cash sequentially via InstallmentEngine
+            $engine = app(InstallmentEngine::class);
+            $engineResult = $engine->recordPayment(
+                $plan, $cashAmount, 'cash', null, null, $adminId
+            );
+
+            // Record coupon discount in ledger if applied
+            if ($discountId && $discountAmount > 0 && $isNewSale) {
+                $this->ledger->recordDiscount(
+                    saleId: $sale->id,
+                    amount: $discountAmount,
+                    discountId: $discountId,
+                    processedBy: $adminId,
+                    description: "Coupon '{$couponCode}' applied to offline installment #{$supportRequestId}"
+                );
+            }
+
+            // Determine access: granted if upfront (seq 1) is paid
+            $upfrontSchedule = $plan->schedules()->where('sequence', 1)->first();
+            $accessGranted = $upfrontSchedule && in_array($upfrontSchedule->status, ['paid']);
+
+            if ($accessGranted && $sale->status === 'pending_payment') {
+                $sale->update(['status' => 'active']);
+            }
+
+            // Legacy dual-write: Sale
+            \App\Models\Sale::create([
+                'buyer_id' => $userId,
+                'seller_id' => $webinar->creator_id ?? 1,
+                'webinar_id' => $webinarId,
+                'type' => \App\Models\Order::$installmentPayment,
+                'payment_method' => 'credit',
+                'amount' => $cashAmount,
+                'tax' => 0,
+                'commission' => 0,
+                'discount' => $discountAmount,
+                'total_amount' => $cashAmount,
+                'status' => 'part',
+                'created_at' => time(),
+            ]);
+
+            // Legacy dual-write: WebinarPartPayment (only if installment_id is available)
+            \App\Models\WebinarPartPayment::create([
+                'user_id' => $userId,
+                'webinar_id' => $webinarId,
+                'installment_id' => $installmentId,
+                'amount' => (int) round($cashAmount, 0, PHP_ROUND_HALF_UP),
+                'created_at' => now(),
+            ]);
+
+            // Legacy dual-write: Accounting
+            \App\Models\Accounting::create([
+                'user_id' => $userId,
+                'webinar_id' => $webinarId,
+                'amount' => $cashAmount,
+                'type' => \App\Models\Accounting::$addiction,
+                'description' => "Admin Offline Installment Payment: {$webinar->title}",
+                'created_at' => time(),
+            ]);
+
+            $this->access->invalidate($userId, $product->id);
+
+            // Build allocation breakdown for admin display
+            $allocation = [];
+            $plan->refresh();
+            foreach ($plan->schedules as $s) {
+                $label = $s->sequence === 1 ? 'Upfront' : 'EMI ' . ($s->sequence - 1);
+                $allocation[] = [
+                    'label' => $label,
+                    'amount_due' => (float) $s->amount_due,
+                    'amount_paid' => (float) $s->amount_paid,
+                    'status' => $s->status,
+                    'due_date' => $s->due_date,
+                ];
+            }
+
+            // Update price breakdown with installment-specific info
+            $priceBreakdown['installment_total'] = (float) $plan->total_amount;
+            $priceBreakdown['upfront_amount'] = $upfrontSchedule ? (float) $upfrontSchedule->amount_due : 0;
+
+            Log::info('SupportUpeBridge: Offline installment payment processed', [
+                'sale_id' => $sale->id,
+                'plan_id' => $plan->id,
+                'user_id' => $userId,
+                'cash_amount' => $cashAmount,
+                'discount' => $discountAmount,
+                'access_granted' => $accessGranted,
+                'engine_result' => $engineResult,
+                'admin_id' => $adminId,
+                'support_request_id' => $supportRequestId,
+            ]);
+
+            $msg = $accessGranted
+                ? 'Installment payment processed. Upfront covered — access granted.'
+                : 'Installment payment recorded. Upfront NOT fully covered — access NOT granted yet.';
+
+            return $this->offlineResult(true, $msg, $priceBreakdown, $sale, $plan, $allocation, $accessGranted);
+        });
+    }
+
+    /**
+     * Build a standardized result array for offline payment processing.
+     */
+    private function offlineResult(
+        bool $success,
+        string $message,
+        array $priceBreakdown = [],
+        ?UpeSale $sale = null,
+        ?UpeInstallmentPlan $plan = null,
+        array $allocation = [],
+        bool $accessGranted = false
+    ): array {
+        return [
+            'success' => $success,
+            'message' => $message,
+            'sale' => $sale,
+            'plan' => $plan,
+            'price_breakdown' => $priceBreakdown,
+            'allocation' => $allocation,
+            'access_granted' => $accessGranted,
+        ];
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  OFFLINE PAYMENT (LEGACY) — simple UPE sale + ledger entry
+    // ══════════════════════════════════════════════════════════════
+
+    /** @deprecated Use processOfflinePayment() instead */
     public function recordOfflinePayment(int $userId, int $webinarId, int $supportRequestId, int $adminId, float $cashAmount): ?UpeSale
     {
         $product = $this->getOrCreateProduct($webinarId);

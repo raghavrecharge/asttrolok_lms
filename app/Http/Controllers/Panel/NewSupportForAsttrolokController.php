@@ -618,6 +618,10 @@ class NewSupportForAsttrolokController extends Controller
             
             foreach ($scenarioFields as $field) {
                 if ($request->has($field)) {
+                    // Skip payment_screenshot — already handled via file upload above
+                    if ($field === 'payment_screenshot') {
+                        continue;
+                    }
                     // Only store temporary_access_days for temporary_access scenario
                     if ($field === 'temporary_access_days' && $request->support_scenario !== 'temporary_access') {
                         continue;
@@ -664,8 +668,8 @@ class NewSupportForAsttrolokController extends Controller
                             $unpaidSchedules = $upePlan->schedules->whereIn('status', ['due', 'upcoming', 'partial', 'overdue']);
 
                             if ($unpaidSchedules->isNotEmpty()) {
-                                // Target: upfront (seq 1) if unpaid, else first unpaid
-                                $targetSchedule = $unpaidSchedules->sortBy('sequence')->first();
+                                // Target: first unpaid by due date
+                                $targetSchedule = $unpaidSchedules->sortBy('due_date')->first();
                                 $isUpfront = ($targetSchedule->sequence <= 1);
 
                                 // Check for existing pending request

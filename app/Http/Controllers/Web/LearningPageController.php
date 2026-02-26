@@ -17,6 +17,9 @@ use App\Models\InstallmentOrderPayment;
 use App\Models\InstallmentOrder;
 use App\Models\Webinar;
 use App\Models\WebinarAccessControl;
+use App\Models\PaymentEngine\UpeProduct;
+use App\Models\PaymentEngine\UpeSale;
+use App\Services\PaymentEngine\AccessEngine;
 use Illuminate\Http\Request;
 
 class LearningPageController extends Controller
@@ -67,7 +70,7 @@ public function inststep(Request $request, $slug){
 
             $data = $webinarController->course($slug, true);
 
-            $data['directAccess']=0;
+            $data['directAccess'] = 0;
 
             $course = $data['course'] ?? null;
 
@@ -75,47 +78,71 @@ public function inststep(Request $request, $slug){
                 return back()->with('error', 'Course not found!');
             }
             $user = $data['user'];
-             $course_pricess = $course->price;
-              $cchapt=count($course->chapters);
+            $cchapt = count($course->chapters);
 
-             $installmentLimitation_limit = $webinarController->installmentContentLimitation_limit($user, $course->id, 'webinar_id');
-             $installmentLimitation_limit1 = $webinarController->installmentContentLimitation_limit1($user, $course->id, 'webinar_id');
-
-             $directAccess = WebinarAccessControl ::where('webinar_id', $course->id)
-                ->where('user_id', $user->id)
+            // ── UPE: Find product and sale ──
+            $upeProduct = UpeProduct::where('external_id', $course->id)
+                ->whereIn('product_type', ['course_video', 'webinar', 'course_live'])
                 ->first();
 
-             if($directAccess){
+            $upeSale = null;
+            $installmentPlan = null;
 
-                 if(strtotime($directAccess->expire) > time()){
+            if ($upeProduct) {
+                $upeSale = UpeSale::where('user_id', $user->id)
+                    ->where('product_id', $upeProduct->id)
+                    ->whereNotIn('status', ['refunded', 'cancelled', 'expired'])
+                    ->orderByRaw("FIELD(status, 'active', 'completed', 'partially_refunded', 'pending_payment') ASC")
+                    ->with(['installmentPlan.schedules'])
+                    ->first();
 
-                     if($directAccess->percentage > $installmentLimitation_limit){
-                         $installmentLimitation_limit =$directAccess->percentage;
-                         $data['directAccess']=1;
-                     }
-                     if($directAccess->percentage==100){
-                         $installmentLimitation_limit =$directAccess->percentage;
-                         $data['directAccess']=1;
-                     }
-                 }
-             }
-
-            $P1 = ($installmentLimitation_limit/100)*$cchapt;
-
-             $pchapters1=round($P1);
-
-             $data['limit']=$pchapters1;
-
-             $data['install_url']='/panel/financial/installments/'.$installmentLimitation_limit1.'/details';
-
-            $installmentLimitation = $webinarController->installmentContentLimitation($user, $course->id, 'webinar_id');
-            if ($installmentLimitation != "ok") {
-
+                if ($upeSale && $upeSale->pricing_mode === 'installment') {
+                    $installmentPlan = $upeSale->installmentPlan;
+                }
             }
 
-            if ((!$data or (!$data['hasBought'] and empty($course->getInstallmentOrder()))) and $data['directAccess']==0) {
+            // ── UPE: Access check via AccessEngine ──
+            $accessEngine = app(AccessEngine::class);
+            $accessResult = $upeProduct
+                ? $accessEngine->computeAccess($user->id, $upeProduct->id)
+                : null;
 
-                abort(403);
+            // ── UPE: Content gating % (replaces installmentContentLimitation_limit) ──
+            $contentPercent = 100;
+
+            if ($installmentPlan && $installmentPlan->total_amount > 0) {
+                $totalPaid = $installmentPlan->schedules->sum('amount_paid');
+                $contentPercent = min(100, round(($totalPaid / $installmentPlan->total_amount) * 100));
+            }
+
+            // If user has full access (non-installment, completed plan, or special access types)
+            if ($accessResult && $accessResult->hasAccess) {
+                if (!$installmentPlan || $installmentPlan->status === 'completed') {
+                    $contentPercent = 100;
+                    $data['directAccess'] = 1;
+                }
+                if ($installmentPlan && in_array($accessResult->accessType, ['temporary', 'mentor', 'free'])) {
+                    $contentPercent = 100;
+                    $data['directAccess'] = 1;
+                }
+            }
+
+            // Calculate accessible chapters
+            $data['limit'] = round(($contentPercent / 100) * $cchapt);
+
+            // ── UPE: Installment URL (replaces installmentContentLimitation_limit1) ──
+            $data['install_url'] = $installmentPlan
+                ? '/panel/upe/installments/' . $installmentPlan->id
+                : '/panel/upe/purchases';
+
+            // ── UPE: Access gate (replaces legacy hasBought + getInstallmentOrder) ──
+            $hasUpeAccess = $accessResult && $accessResult->hasAccess;
+            $hasInstallmentSale = $upeSale && $upeSale->pricing_mode === 'installment';
+
+            if (!$hasUpeAccess && !$hasInstallmentSale && !$data['hasBought'] && $data['directAccess'] == 0) {
+                if ($user->id != $course->creator_id && $user->id != $course->teacher_id && !$user->isAdmin()) {
+                    abort(403);
+                }
             }
 
             if (!empty($requestData['type']) and $requestData['type'] == 'assignment' and !empty($requestData['item'])) {
@@ -145,57 +172,22 @@ public function inststep(Request $request, $slug){
                     ->first();
             }
 
-            $user = auth()->user();
+            // ── UPE: Due date for content dripping (replaces InstallmentOrder loop) ──
+            $data['duedate'] = time();
 
-            $order = InstallmentOrder::query()
-                ->where('webinar_id', $course->id)
-                ->where('user_id', $user->id)
-                ->with([
-                    'installment' => function ($query) {
-                        $query->with([
-                            'steps' => function ($query) {
-                                $query->orderBy('deadline', 'asc');
-                            }
-                        ]);
-                    }
-                ])
-                ->first();
+            if ($installmentPlan) {
+                $overdueSchedule = $installmentPlan->schedules
+                    ->filter(function ($s) {
+                        return in_array($s->status, ['due', 'partial', 'overdue'])
+                            && $s->due_date
+                            && $s->due_date->isPast();
+                    })
+                    ->sortBy('due_date')
+                    ->first();
 
-            if (!empty($order) and !in_array($order->status, ['refunded', 'canceled'])) {
-
-                $getRemainedInstallments = $this->getRemainedInstallments($order);
-                $getOverdueOrderInstallments = $this->getOverdueOrderInstallments($order);
-
-                $totalParts = $order->installment->steps->count();
-                $remainedParts = $getRemainedInstallments['total'];
-                $remainedAmount = $getRemainedInstallments['amount'];
-                $overdueAmount = $getOverdueOrderInstallments['amount'];
-
-            }
-
-            $data["duedate"]=time();
-            if(isset($order->installment)){
-                $count=count($order->installment->steps);
-                $paid=0;
-
-              foreach($order->installment->steps as $step){
-
-                                        $stepPayment = $order->payments->where('step_id', $step->id)->where('status', 'paid')->first();
-
-                                        $dueAt = ($step->deadline * 86400) + $order->created_at;
-                                        $isOverdue = ($dueAt < time() and empty($stepPayment));
-
-                                     $duedate= dateTimeFormat($dueAt, 'j M Y');
-
-                                     if($isOverdue==1)
-                                     break;
-
-                                     $paid++;
-
-              }
-              if($count!=$paid)
-               $data["duedate"] =$dueAt;
-
+                if ($overdueSchedule) {
+                    $data['duedate'] = $overdueSchedule->due_date->timestamp;
+                }
             }
 
             $webinars = Webinar::where('webinars.status', 'active')

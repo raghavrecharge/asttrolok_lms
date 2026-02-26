@@ -491,53 +491,49 @@ class SupportRequestService
      */
     private function executeOfflineCashPayment(NewSupportForAsttrolok $request, array $data, $user)
     {
-        $purchaseService = new AdminCoursePurchaseService();
-
-        if (!empty($request->installment_id)) {
-            $result = $purchaseService->purchaseCourseWithInstallment(
-                $request->webinar_id,
-                $request->user_id,
-                $request->installment_id,
-                null,
-                $user->id
-            );
-        } else {
-            $result = $purchaseService->purchaseCourseDirectly(
-                $request->webinar_id,
-                $request->user_id,
-                null,
-                $user->id
-            );
-        }
-
-        if (!($result['success'] ?? false)) {
-            throw new \RuntimeException('Offline payment failed: ' . ($result['message'] ?? 'Unknown error'));
-        }
-
-        if (isset($result['sale_id'])) {
-            Sale::where('id', $result['sale_id'])->update([
-                'support_request_id' => $request->id,
-                'granted_by_admin_id' => $user->id,
-            ]);
-        }
-
-        // UPE: Record offline payment in UPE ledger
         $cashAmount = (float) ($request->cash_amount ?? 0);
-        if ($cashAmount > 0 && $request->webinar_id) {
-            try {
-                app(SupportUpeBridge::class)->recordOfflinePayment(
-                    $request->user_id, $request->webinar_id, $request->id, $user->id, $cashAmount
-                );
-            } catch (\Exception $e) {
-                Log::warning('UPE offline payment bridge failed', ['error' => $e->getMessage()]);
-            }
+        if ($cashAmount <= 0 || !$request->webinar_id) {
+            throw new \RuntimeException('Invalid offline payment: missing cash amount or course.');
         }
 
-        Log::info('Offline cash payment processed', [
+        $bridge = app(SupportUpeBridge::class);
+        $couponCode = $data['offline_coupon_code'] ?? ($request->coupon_code ?? null);
+        $installmentId = !empty($data['offline_installment_id']) ? (int) $data['offline_installment_id'] : ($request->installment_id ?? null);
+
+        $result = $bridge->processOfflinePayment(
+            $request->user_id,
+            $request->webinar_id,
+            $request->id,
+            $user->id,
+            $cashAmount,
+            $couponCode,
+            $installmentId
+        );
+
+        if (!$result['success']) {
+            throw new \RuntimeException('Offline payment failed: ' . $result['message']);
+        }
+
+        // Store serializable audit data
+        $request->update([
+            'execution_result' => [
+                'success' => $result['success'],
+                'message' => $result['message'],
+                'sale_id' => $result['sale']?->id,
+                'plan_id' => $result['plan']?->id,
+                'price_breakdown' => $result['price_breakdown'],
+                'allocation' => $result['allocation'],
+                'access_granted' => $result['access_granted'],
+            ],
+        ]);
+
+        Log::info('Offline cash payment processed via UPE', [
             'support_request_id' => $request->id,
             'user_id' => $request->user_id,
             'webinar_id' => $request->webinar_id,
-            'result' => $result['success'] ?? false,
+            'cash_amount' => $cashAmount,
+            'access_granted' => $result['access_granted'],
+            'sale_id' => $result['sale']?->id,
         ]);
     }
 
@@ -631,13 +627,23 @@ class SupportRequestService
             'status' => 'pending',
         ]);
 
-        $accessControl = WebinarAccessControl::where('user_id', $request->user_id)
-            ->where('webinar_id', $request->webinar_id)
-            ->where('status', 'active')
-            ->get();
+        try {
+            $accessControl = WebinarAccessControl::where('user_id', $request->user_id)
+                ->where('webinar_id', $request->webinar_id)
+                ->where('status', 'active')
+                ->get();
 
-        foreach ($accessControl as $ac) {
-            $ac->update(['status' => 'revoked']);
+            foreach ($accessControl as $ac) {
+                $ac->update(['status' => 'revoked']);
+            }
+        } catch (\Exception $e) {
+            // Legacy table may lack 'status' column — delete the rows instead
+            WebinarAccessControl::where('user_id', $request->user_id)
+                ->where('webinar_id', $request->webinar_id)
+                ->delete();
+            \Log::warning('webinar_access_control missing status column (refund), deleted rows instead', [
+                'user_id' => $request->user_id, 'webinar_id' => $request->webinar_id,
+            ]);
         }
 
         // UPE: Record refund in UPE ledger
@@ -831,13 +837,23 @@ class SupportRequestService
             $oldInstallment->update(['transferred_to_order_id' => $newInstallment->id]);
         }
 
-        $oldAccessControls = WebinarAccessControl::where('user_id', $request->user_id)
-            ->where('webinar_id', $wrongCourseId)
-            ->where('status', 'active')
-            ->get();
+        try {
+            $oldAccessControls = WebinarAccessControl::where('user_id', $request->user_id)
+                ->where('webinar_id', $wrongCourseId)
+                ->where('status', 'active')
+                ->get();
 
-        foreach ($oldAccessControls as $ac) {
-            $ac->update(['status' => 'revoked']);
+            foreach ($oldAccessControls as $ac) {
+                $ac->update(['status' => 'revoked']);
+            }
+        } catch (\Exception $e) {
+            // Legacy table may lack 'status' column — delete the rows instead
+            WebinarAccessControl::where('user_id', $request->user_id)
+                ->where('webinar_id', $wrongCourseId)
+                ->delete();
+            \Log::warning('webinar_access_control missing status column (wrong course), deleted rows instead', [
+                'user_id' => $request->user_id, 'webinar_id' => $wrongCourseId,
+            ]);
         }
 
         // UPE: Revoke wrong course + grant correct course in UPE

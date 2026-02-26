@@ -558,10 +558,10 @@ class InstallmentsController extends Controller
                 $totalPaid = $upePlan->schedules->sum('amount_paid');
                 $result['totalPaidFromLedger'] = (int) round($totalPaid, 0, PHP_ROUND_HALF_UP);
 
-                // Find first unpaid schedule (skip waived/paid), ordered by sequence
+                // Find first unpaid schedule (skip waived/paid), ordered by due date
                 $nextSchedule = $upePlan->schedules
                     ->whereIn('status', ['due', 'upcoming', 'partial', 'overdue'])
-                    ->sortBy('sequence')
+                    ->sortBy('due_date')
                     ->first();
 
                 if (!$nextSchedule) {

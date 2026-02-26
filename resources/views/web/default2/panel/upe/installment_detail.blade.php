@@ -63,9 +63,11 @@
                     </div>
 
                     @php
-                        $totalPaid = $plan->schedules->whereNotIn('status', ['waived'])->sum('amount_paid');
-                        $totalRemaining = $plan->total_amount - $totalPaid;
-                        $paidPercent = $plan->total_amount > 0 ? round(($totalPaid / $plan->total_amount) * 100) : 0;
+                        $activeSchedules = $plan->schedules->whereNotIn('status', ['waived']);
+                        $totalPaid = $activeSchedules->sum('amount_paid');
+                        $totalDue = $activeSchedules->sum('amount_due');
+                        $totalRemaining = max(0, $totalDue - $totalPaid);
+                        $paidPercent = $totalDue > 0 ? round(($totalPaid / $totalDue) * 100) : 0;
                     @endphp
 
                     <div class="mt-15">
@@ -104,8 +106,10 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($plan->schedules->where('status', '!=', 'waived')->sortBy('sequence') as $schedule)
+                                @php $displayIndex = 0; @endphp
+                                @foreach($plan->schedules->where('status', '!=', 'waived')->sortBy(['due_date', 'sequence']) as $schedule)
                                     @php
+                                        $displayIndex++;
                                         $schedStatusClass = match($schedule->status) {
                                             'paid' => 'badge-primary',
                                             'due' => 'badge-warning',
@@ -115,9 +119,10 @@
                                             'waived' => 'badge-secondary',
                                             default => 'badge-secondary',
                                         };
+                                        $emiLabel = $displayIndex === 1 ? 'Upfront' : 'EMI ' . ($displayIndex - 1);
                                     @endphp
                                     <tr class="{{ $schedule->status === 'overdue' ? 'bg-light' : '' }}">
-                                        <td class="font-weight-500">{{ $schedule->sequence ?? $schedule->installment_number }}</td>
+                                        <td class="font-weight-500">{{ $emiLabel }}</td>
                                         <td>
                                             @if($schedule->due_date)
                                                 {{ \Carbon\Carbon::parse($schedule->due_date)->format('d M Y') }}
@@ -261,8 +266,16 @@
         @endif
     @endif
 
-    <div class="mt-20">
+    <div class="mt-20 d-flex">
         <a href="/panel/upe/installments" class="btn btn-sm btn-secondary"><i class="fa fa-arrow-left"></i> Back to EMI Plans</a>
         <a href="/panel/upe/purchases/{{ $plan->sale_id }}" class="btn btn-sm btn-primary ml-10">View Purchase</a>
+        @if($plan->sale && $plan->sale->product && in_array($plan->sale->product->product_type, ['course_video', 'webinar', 'course_live']) && in_array($plan->sale->status, ['active', 'completed']))
+            @php $webinarForLink = \App\Models\Webinar::find($plan->sale->product->external_id); @endphp
+            @if($webinarForLink && $webinarForLink->slug)
+                <a href="/course/learning/{{ $webinarForLink->slug }}" target="_blank" class="btn btn-sm btn-success ml-10">
+                    <i class="fa fa-play-circle"></i> Learning Page
+                </a>
+            @endif
+        @endif
     </div>
 @endsection
