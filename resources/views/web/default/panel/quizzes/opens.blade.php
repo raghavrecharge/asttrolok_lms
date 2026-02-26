@@ -2,6 +2,39 @@
 
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/daterangepicker/daterangepicker.min.css">
+    <style>
+        .custom-table thead th {
+            border-top: none;
+            background-color: #fcfcfc;
+            color: #1f3b64;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.8px;
+            padding: 18px 15px;
+        }
+        .custom-table tbody td {
+            padding: 20px 15px;
+            vertical-align: middle;
+            color: #1f3b64;
+            font-weight: 500;
+        }
+        .custom-table tbody tr {
+            transition: all 0.2s ease;
+        }
+        .custom-table tbody tr:hover {
+            background-color: #fbfcfe;
+        }
+        .grade-badge {
+            padding: 6px 14px;
+            border-radius: 30px;
+            background: rgba(31, 59, 100, 0.1);
+            color: #1f3b64;
+            font-weight: 700;
+            font-size: 11px;
+            display: inline-block;
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -101,18 +134,34 @@
                                             <span class="d-block text-dark-blue font-weight-500">{{ $quiz->title }}</span>
                                             <span class="font-12 mt-5 text-gray d-block">{{ $quiz->webinar->title }}</span>
                                         </td>
-                                        <td class="text-dark-blue font-weight-500 align-middle">{{ $quiz->quizQuestions->sum('grade') }}</td>
+                                        <td class="align-middle">
+                                            <span class="grade-badge">
+                                                {{ $quiz->quizQuestions->sum('grade') }}
+                                            </span>
+                                        </td>
 
-                                        <td class="text-dark-blue font-weight-500 align-middle">{{ dateTimeFormat($quiz->created_at,'j M Y H:i')}}</td>
+                                        <td class="align-middle text-gray font-13">
+                                            <div class="d-flex align-items-center">
+                                                <i data-feather="calendar" width="14" height="14" class="mr-5"></i>
+                                                {{ dateTimeFormat($quiz->created_at,'j M Y') }}
+                                            </div>
+                                            <div class="font-11 text-gray mt-5">{{ dateTimeFormat($quiz->created_at,'H:i') }}</div>
+                                        </td>
 
                                         <td class="align-middle text-right font-weight-normal">
-                                            <div class="btn-group dropdown table-actions table-actions-lg table-actions-lg">
+                                            <div class="btn-group dropdown table-actions table-actions-lg">
                                                 <button type="button" class="btn-transparent dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                     <i data-feather="more-vertical" height="20"></i>
                                                 </button>
                                                 <div class="dropdown-menu">
-                                                    <a href="/panel/quizzes/{{ $quiz->id }}/start" class="webinar-actions d-block mt-10">{{ trans('public.start') }}</a>
-                                                    <a href="{{ $quiz->webinar->getUrl() }}" target="_blank" class="webinar-actions d-block mt-10">{{ trans('webinars.webinar_page') }}</a>
+                                                    <a href="/panel/quizzes/{{ $quiz->id }}/start" class="webinar-actions d-block mt-10 text-primary font-weight-bold">
+                                                        <i data-feather="play" width="14" height="14" class="mr-8"></i>
+                                                        {{ trans('public.start') }}
+                                                    </a>
+                                                    <a href="{{ $quiz->webinar->getUrl() }}" target="_blank" class="webinar-actions d-block mt-10">
+                                                        <i data-feather="external-link" width="14" height="14" class="mr-8"></i>
+                                                        {{ trans('webinars.webinar_page') }}
+                                                    </a>
                                                 </div>
                                             </div>
                                         </td>

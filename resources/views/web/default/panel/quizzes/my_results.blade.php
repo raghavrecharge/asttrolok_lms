@@ -2,46 +2,141 @@
 
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/daterangepicker/daterangepicker.min.css">
+    <style>
+        .stat-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f0f0f0;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+            border-color: #1f3b64;
+        }
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #6c757d;
+            font-weight: 500;
+            display: block;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1f3b64;
+            display: block;
+        }
+        .bg-glass-primary { background: rgba(31, 59, 100, 0.1); color: #1f3b64; }
+        .bg-glass-success { background: rgba(67, 212, 119, 0.1); color: #43d477; }
+        .bg-glass-danger { background: rgba(239, 102, 110, 0.1); color: #ef666e; }
+        .bg-glass-warning { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+
+        .custom-table thead th {
+            border-top: none;
+            background-color: #fcfcfc;
+            color: #1f3b64;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.8px;
+            padding: 18px 15px;
+        }
+        .custom-table tbody td {
+            padding: 20px 15px;
+            vertical-align: middle;
+            color: #1f3b64;
+            font-weight: 500;
+        }
+        .custom-table tbody tr {
+            transition: all 0.2s ease;
+        }
+        .custom-table tbody tr:hover {
+            background-color: #fbfcfe;
+        }
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 11px;
+            display: inline-block;
+        }
+        .btn-hover-shadow {
+            transition: all 0.3s ease;
+        }
+        .btn-hover-shadow:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+    </style>
 @endpush
 
 @section('content')
     <section>
         <h2 class="section-title">{{ trans('quiz.results_statistics') }}</h2>
 
-        <div class="activities-container mt-25 p-20 p-lg-35">
+        <div class="mt-25">
             <div class="row">
-                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/42.svg" width="64" height="64" alt="">
-                        <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ $quizzesResultsCount }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('quiz.quizzes') }}</span>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-primary">
+                            <i data-feather="file-text" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $quizzesResultsCount }}</span>
+                            <span class="stat-label">{{ trans('quiz.quizzes') }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/45.svg" width="64" height="64" alt="">
-                        <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ $passedCount }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('quiz.passed') }}</span>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-success">
+                            <i data-feather="check-circle" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $passedCount }}</span>
+                            <span class="stat-label">{{ trans('quiz.passed') }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-6 col-md-3 mt-30 mt-md-0 d-flex align-items-center justify-content-center mt-5 mt-md-0">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/44.svg" width="64" height="64" alt="">
-                        <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ $failedCount }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('quiz.failed') }}</span>
+                <div class="col-6 col-md-3 mt-20 mt-md-0">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-danger">
+                            <i data-feather="x-circle" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $failedCount }}</span>
+                            <span class="stat-label">{{ trans('quiz.failed') }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-6 col-md-3 mt-30 mt-md-0 d-flex align-items-center justify-content-center mt-5 mt-md-0">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/43.svg" width="64" height="64" alt="">
-                        <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ $waitingCount }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('quiz.open_results') }}</span>
+                <div class="col-6 col-md-3 mt-20 mt-md-0">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-warning">
+                            <i data-feather="clock" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $waitingCount }}</span>
+                            <span class="stat-label">{{ trans('quiz.open_results') }}</span>
+                        </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
@@ -174,16 +269,26 @@
                                         <td class="align-middle">{{ $result->user_grade }}</td>
 
                                         <td class="align-middle">
-                                        <span class="d-block text-{{ ($result->status == 'passed') ? 'primary' : ($result->status == 'waiting' ? 'warning' : 'danger') }}">
-                                            {{ trans('quiz.'.$result->status) }}
-                                        </span>
+                                            @php
+                                                $statusClass = ($result->status == 'passed') ? 'success' : ($result->status == 'waiting' ? 'warning' : 'danger');
+                                                $statusText = trans('quiz.'.$result->status);
+                                            @endphp
+                                            <span class="status-badge bg-glass-{{ $statusClass }} text-{{ $statusClass }}">
+                                                {{ $statusText }}
+                                            </span>
 
                                             @if($result->status =='failed' and $result->can_try)
-                                                <span class="d-block font-12 text-gray">{{ trans('quiz.quiz_chance_remained',['count' => $result->count_can_try]) }}</span>
+                                                <span class="d-block font-11 text-gray mt-5">{{ trans('quiz.quiz_chance_remained',['count' => $result->count_can_try]) }}</span>
                                             @endif
                                         </td>
 
-                                        <td class="align-middle">{{ dateTimeFormat($result->created_at,'j M Y H:i')}}</td>
+                                        <td class="align-middle">
+                                            <div class="d-flex align-items-center text-gray font-13">
+                                                <i data-feather="calendar" width="14" height="14" class="mr-5"></i>
+                                                {{ dateTimeFormat($result->created_at,'j M Y') }}
+                                            </div>
+                                            <div class="font-11 text-gray mt-5">{{ dateTimeFormat($result->created_at,'H:i') }}</div>
+                                        </td>
 
                                         <td class="align-middle text-right font-weight-normal">
                                             <div class="btn-group dropdown table-actions table-actions-lg table-actions-lg">

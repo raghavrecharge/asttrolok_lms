@@ -3,34 +3,60 @@
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/select2/select2.min.css">
     <style>
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .premium-form-container {
+            background: #fff;
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+            border: 1px solid #f8f8f8;
         }
-
-        /* Hide all scenario fields by default */
+        .input-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1f3b64;
+            margin-bottom: 8px;
+        }
+        .form-control {
+            border-radius: 12px;
+            border: 1px solid #eee;
+            padding: 12px 15px;
+            height: auto;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #1f3b64;
+            box-shadow: 0 0 0 3px rgba(31, 59, 100, 0.05);
+        }
+        .glass-alert {
+            background: rgba(31, 59, 100, 0.05);
+            border: 1px solid rgba(31, 59, 100, 0.1);
+            border-left: 5px solid #1f3b64;
+            border-radius: 15px;
+            padding: 20px;
+            color: #1f3b64;
+        }
+        .glass-alert-warning {
+            background: rgba(255, 193, 7, 0.05);
+            border: 1px solid rgba(255, 193, 7, 0.1);
+            border-left: 5px solid #ffc107;
+            color: #856404;
+        }
+        .glass-alert-info {
+            background: rgba(0, 123, 255, 0.05);
+            border: 1px solid rgba(0, 123, 255, 0.1);
+            border-left: 5px solid #007bff;
+            color: #004085;
+        }
         .scenario-field {
             display: none;
+            animation: fadeIn 0.4s ease;
         }
-
-        /* Show active scenario field */
         .scenario-field.active {
             display: block;
         }
-
-        /* Installment step styling */
-        .installment-step-paid {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .installment-step-unpaid {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
-        .alert.alert-info, .alert.alert-info * {
-            color: #000;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 @endpush
@@ -83,567 +109,240 @@
         @csrf
 
         <section>
-            <h2 class="section-title">{{ trans('panel.create_support_message') }}</h2>
+            <div class="d-flex align-items-center mb-25">
+                <a href="{{ route('newsuportforasttrolok.index') }}" class="mr-15 text-gray">
+                    <i data-feather="arrow-left" width="24" height="24"></i>
+                </a>
+                <h2 class="section-title mb-0">{{ trans('panel.create_support_message') }}</h2>
+            </div>
 
-            <div class="mt-25 rounded-sm shadow py-20 px-10 px-lg-25 bg-white">
+            <div class="premium-form-container mt-25">
 
                 {{-- Guest Information --}}
                 @guest
-                <div class="guest-info-section mb-4 p-3" style="background-color: #f0f7ff; border-left: 4px solid #007bff; border-radius: 4px;">
-                    <h5 class="mb-3">{{ trans('auth.your_information') }}</h5>
-                    
-                    <div class="form-group">
-                        <label class="input-label">{{ trans('auth.full_name') }} <span class="text-danger">*</span></label>
-                        <input type="text" name="guest_name" value="{{ old('guest_name') }}" 
-                               class="form-control @error('guest_name') is-invalid @enderror" required/>
-                        @error('guest_name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">{{ trans('auth.email') }} <span class="text-danger">*</span></label>
-                        <input type="email" name="guest_email" value="{{ old('guest_email') }}" 
-                               class="form-control @error('guest_email') is-invalid @enderror" required/>
-                        @error('guest_email')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">{{ trans('auth.mobile') }}</label>
-                        <input type="text" name="guest_phone" value="{{ old('guest_phone') }}" 
-                               class="form-control @error('guest_phone') is-invalid @enderror"/>
-                        @error('guest_phone')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                <div class="glass-alert mb-30">
+                    <h5 class="font-16 font-weight-bold mb-10"><i data-feather="user" width="18" height="18" class="mr-5"></i>{{ trans('auth.your_information') }}</h5>
+                    <div class="row">
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mb-0">
+                                <label class="input-label">{{ trans('auth.full_name') }} <span class="text-danger">*</span></label>
+                                <input type="text" name="guest_name" value="{{ old('guest_name') }}" class="form-control" placeholder="John Doe" required/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mb-0">
+                                <label class="input-label">{{ trans('auth.email') }} <span class="text-danger">*</span></label>
+                                <input type="email" name="guest_email" value="{{ old('guest_email') }}" class="form-control" placeholder="john@example.com" required/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mb-0">
+                                <label class="input-label">{{ trans('auth.mobile') }}</label>
+                                <input type="text" name="guest_phone" value="{{ old('guest_phone') }}" class="form-control" placeholder="+91 9999999999"/>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 @endguest
 
-                {{-- Subject/Title --}}
-                <div class="form-group">
-                    <label class="input-label">{{ trans('site.subject') }} <span class="text-danger">*</span></label>
-                    <input type="text" name="title" value="{{ old('title') }}" 
-                           class="form-control @error('title') is-invalid @enderror" required/>
-                    @error('title')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                {{-- Support Scenario Selection --}}
-                <div class="form-group">
-                    <label class="input-label d-block">{{ trans('panel.support_scenario') }} <span class="text-danger">*</span></label>
-                    <select name="support_scenario" id="supportScenario" 
-                            class="form-control select2 @error('support_scenario') is-invalid @enderror" 
-                            data-placeholder="{{ trans('panel.select_support_scenario') }}" required>
-                        <option value="">{{ trans('panel.select_support_scenario') }}</option>
-                        <option value="course_extension">Course Extension</option>
-                        <option value="temporary_access">Temporary Access</option>
-                        <option value="mentor_access">Mentor Access</option>
-                        <option value="relatives_friends_access">Relatives/Friends Access</option>
-                        <!-- <option value="free_course_grant">Free Course Grant</option> -->
-                        <option value="offline_cash_payment">Offline/Cash Payment</option>
-                        <option value="installment_restructure">Installment Restructure</option>
-                        <!-- <option value="new_service_access">New Service Access</option> -->
-                        <option value="refund_payment">Refund Payment</option>
-                        <option value="post_purchase_coupon">Post-Purchase Coupon Apply</option>
-                        <option value="wrong_course_correction">Wrong Course Correction</option>
-                    </select>
-                    @error('support_scenario')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                {{-- ============= SCENARIO-SPECIFIC FIELDS (ALL SCENARIOS) ============= --}}
-                {{-- Course Extension Fields --}}
-                <div class="scenario-field" data-scenario="course_extension">
-                    <div class="p-3 mb-3" style="background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
-                        <h6 class="font-weight-bold">Course Extension Request</h6>
-                        <p class="mb-0 small">Only your expired courses are shown below</p>
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        {{-- Subject/Title --}}
+                        <div class="form-group">
+                            <label class="input-label">{{ trans('site.subject') }} <span class="text-danger">*</span></label>
+                            <input type="text" name="title" value="{{ old('title') }}" 
+                                   class="form-control @error('title') is-invalid @enderror" placeholder="Brief summary of your request" required/>
+                        </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label class="input-label">Select Expired Course <span class="text-danger">*</span></label>
-                        <select name="webinar_id" class="form-control select2 extension-course-select" disabled>
-                            <option value="">{{ trans('panel.select_course') }}</option>
-                            @if(isset($expiredCourses) && count($expiredCourses) > 0)
-                                @foreach($expiredCourses as $course)
-                                    @php
-                                        $extensionCount = $extensionCounts[$course->id] ?? 0;
-                                        $expiredDate = !empty($course->expired_date) 
-                                            ? \Carbon\Carbon::parse($course->expired_date)->format('d M Y') 
-                                            : 'N/A';
-                                    @endphp
-                                    <option value="{{ $course->id }}" 
-                                            data-extension-count="{{ $extensionCount }}"
-                                            data-expired-date="{{ $course->expired_date }}"
-                                            @if($extensionCount >= 3) disabled @endif>
-                                        {{ $course->title }} 
-                                        @if($course->creator)
-                                            - {{ $course->creator->full_name }}
+
+                    <div class="col-12 col-md-6">
+                        {{-- Support Scenario Selection --}}
+                        <div class="form-group">
+                            <label class="input-label d-block">{{ trans('panel.support_scenario') }} <span class="text-danger">*</span></label>
+                            <select name="support_scenario" id="supportScenario" 
+                                    class="form-control select2 @error('support_scenario') is-invalid @enderror" 
+                                    data-placeholder="{{ trans('panel.select_support_scenario') }}" required>
+                                <option value="">{{ trans('panel.select_support_scenario') }}</option>
+                                <option value="course_extension">Course Extension</option>
+                                <option value="temporary_access">Temporary Access</option>
+                                <option value="mentor_access">Mentor Access</option>
+                                <option value="relatives_friends_access">Relatives/Friends Access</option>
+                                <option value="offline_cash_payment">Offline/Cash Payment</option>
+                                <option value="installment_restructure">Installment Restructure</option>
+                                <option value="refund_payment">Refund Payment</option>
+                                <option value="post_purchase_coupon">Post-Purchase Coupon Apply</option>
+                                <option value="wrong_course_correction">Wrong Course Correction</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Scenario fields wrapper with padding --}}
+                <div class="scenario-fields-wrapper mt-10">
+                    {{-- Course Extension --}}
+                    <div class="scenario-field" data-scenario="course_extension">
+                        <div class="glass-alert-warning mb-20 d-flex align-items-center">
+                            <i data-feather="clock" width="20" height="20" class="mr-10"></i>
+                            <span class="font-14">Only expired courses can be extended. Max 3 extensions per course.</span>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label class="input-label">Select Expired Course</label>
+                                    <select name="webinar_id" class="form-control select2 extension-course-select" disabled>
+                                        <option value="">{{ trans('panel.select_course') }}</option>
+                                        @if(isset($expiredCourses))
+                                            @foreach($expiredCourses as $course)
+                                                @php $cnt = $extensionCounts[$course->id] ?? 0; @endphp
+                                                <option value="{{ $course->id }}" data-extension-count="{{ $cnt }}" @if($cnt >= 3) disabled @endif>
+                                                    {{ $course->title }} (Used: {{ $cnt }}/3)
+                                                </option>
+                                            @endforeach
                                         @endif
-                                        (Expired: {{ $expiredDate }})
-                                        @if($extensionCount >= 3)
-                                            - ⚠️ Max extensions reached
-                                        @elseif($extensionCount > 0)
-                                            - {{ $extensionCount }}/3 extensions used
-                                        @endif
-                                    </option>
-                                @endforeach
-                            @else
-                                <option value="" disabled>
-                                    @auth
-                                        No expired courses found
-                                    @else
-                                        Please login to see your expired courses
-                                    @endauth
-                                </option>
-                            @endif
-                        </select>
-                        <small class="form-text text-muted">
-                            <i class="fa fa-info-circle"></i> Only courses with expired access are listed. Maximum 3 extensions allowed per course.
-                        </small>
-                    </div>
-
-                    <div id="extensionLimitWarning" class="alert mt-2" style="display:none; background:#fff3cd; color:#856404; border-left:4px solid #ffc107;">
-                        <strong>⚠️ Extension Limit Reached:</strong><br>
-                        You have already used the maximum 3 extensions for this course. No further extensions are allowed.
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Extension Days <span class="text-danger">*</span></label>
-                        <select name="extension_days" class="form-control" disabled>
-                            <option value="">Select Extension Period</option>
-                            <option value="7">7 Days</option>
-                            <option value="15">15 Days</option>
-                            <option value="30">30 Days</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Reason for Extension <span class="text-danger">*</span></label>
-                        <textarea name="extension_reason" class="form-control" rows="4" 
-                                placeholder="Please explain why you need extension (e.g., health issues, work commitments, technical difficulties)" disabled></textarea>
-                    </div>
-                </div>
-
-                {{-- Temporary Access Fields --}}
-                <div class="scenario-field" data-scenario="temporary_access">
-                    <div class="p-3 mb-3" style="background-color: #e2f0fb; border-left: 4px solid #17a2b8; border-radius: 4px;">
-                        <h6 class="font-weight-bold">Temporary Access Request</h6>
-                        <p class="mb-0 small">Only courses with overdue installment payments are shown</p>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Select Overdue Course <span class="text-danger">*</span></label>
-                        <select name="webinar_id" class="form-control select2 temporary-course-select" disabled>
-                            <option value="">{{ trans('panel.select_course') }}</option>
-                            @if(isset($overdueCourses) && $overdueCourses->count() > 0)
-                                @foreach($overdueCourses as $course)
-                                    <option value="{{ $course->id }}">
-                                        {{ $course->title }}
-                                        @if($course->creator)
-                                            - {{ $course->creator->full_name }}
-                                        @endif
-                                    </option>
-                                @endforeach
-                            @else
-                                <option value="" disabled>
-                                    @auth
-                                        No courses with overdue payments found
-                                    @else
-                                        Please login to see your courses with overdue payments
-                                    @endauth
-                                </option>
-                            @endif
-                        </select>
-                        <small class="form-text text-muted">
-                            <i class="fa fa-exclamation-triangle text-warning"></i> Only courses with pending overdue installments are listed
-                        </small>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Temporary Access Duration <span class="text-danger">*</span></label>
-                        <select name="temporary_access_days" class="form-control" disabled>
-                            <option value="">Select Access Duration</option>
-                            <option value="7" selected>7 Days</option>
-                            <option value="15">15 Days</option>
-                            <option value="30">30 Days</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Reason for Temporary Access <span class="text-danger">*</span></label>
-                        <textarea name="temporary_access_reason" class="form-control" rows="4" 
-                                placeholder="Please explain why you need temporary access (e.g., awaiting salary, pending payment clearance)" disabled></textarea>
-                    </div>
-                </div>
-
-                {{-- Mentor Access Fields --}}
-                <div class="scenario-field" data-scenario="mentor_access">
-                    <div class="p-3 mb-3" style="background-color: #d4edda; border-left: 4px solid #28a745; border-radius: 4px;">
-                        <h6 class="font-weight-bold">Mentor Access Request</h6>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Select Course <span class="text-danger">*</span></label>
-                        <select name="webinar_id" class="form-control select2" disabled>
-                            <option value="">{{ trans('panel.select_course') }}</option>
-                            @foreach($webinars as $webinar)
-                                <option value="{{ $webinar->id }}">{{ $webinar->title }} - {{ $webinar->creator->full_name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="input-label">Reason for Mentor Change <span class="text-danger">*</span></label>
-                        <textarea name="mentor_change_reason" class="form-control" rows="4" 
-                                  placeholder="Please explain why you want to change mentor" disabled></textarea>
-                    </div>
-                </div>
-
-                {{-- Relatives/Friends Access Fields --}}
-                <div class="scenario-field" data-scenario="relatives_friends_access">
-                    <div class="p-3 mb-3" style="background-color: #f8d7da; border-left: 4px solid #dc3545; border-radius: 4px;">
-                        <h6 class="font-weight-bold">Relatives/Friends Access Request</h6>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Select Course <span class="text-danger">*</span></label>
-                        <select name="webinar_id" class="form-control select2">
-                            <option value="">{{ trans('panel.select_course') }}</option>
-                            @foreach($webinars as $webinar)
-                                <option value="{{ $webinar->id }}">{{ $webinar->title ?? 'Course #'.$webinar->id }} - {{ $webinar->creator->full_name ?? '' }}</option>
-                            @endforeach
-                        </select>
-                        <small class="form-text text-muted">Select the course you want relative/friend access for</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="input-label">Description <span class="text-danger">*</span></label>
-                        <textarea name="relative_description" class="form-control" rows="4" 
-                                  placeholder="Please describe why you need relative/friend access to this course..."></textarea>
-                        <small class="form-text text-muted">Provide details about your relative/friend access request</small>
-                    </div>
-                </div>
-
-                {{-- Free Course Grant Fields --}}
-                <div class="scenario-field" data-scenario="free_course_grant">
-                    <div class="p-3 mb-3" style="background-color: #d1ecf1; border-left: 4px solid #17a2b8; border-radius: 4px;">
-                        <h6 class="font-weight-bold">Free Course Grant Request</h6>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Select Course <span class="text-danger">*</span></label>
-                        <select name="webinar_id" class="form-control select2">
-                            <option value="">{{ trans('panel.select_course') }}</option>
-                            @foreach($webinars as $webinar)
-                                <option value="{{ $webinar->id }}">{{ $webinar->title }} - {{ $webinar->creator->full_name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="input-label">Reason for Free Course <span class="text-danger">*</span></label>
-                        <textarea name="free_course_reason" class="form-control" rows="5" 
-                                  placeholder="Please explain in detail why you need this course for free"></textarea>
-                    </div>
-
-                    <div class="custom-control custom-checkbox">
-                        <input type="checkbox" name="is_special_case" class="custom-control-input" id="specialCase">
-                        <label class="custom-control-label" for="specialCase">
-                            This is a special case (financial hardship, scholarship, etc.)
-                        </label>
-                    </div>
-                </div>
-
-                {{-- Offline/Cash Payment Fields --}}
-                <div class="scenario-field" data-scenario="offline_cash_payment">
-                    <div class="p-3 mb-3" style="background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
-                        <h6 class="font-weight-bold">Offline/Cash Payment Details</h6>
-                        <p class="mb-0 small">Submit your payment details for verification. Our team will review and activate your course access.</p>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Select Course <span class="text-danger">*</span></label>
-                        <select name="webinar_id" class="form-control select2">
-                            <option value="">{{ trans('panel.select_course') }}</option>
-                            @foreach($webinars as $webinar)
-                                <option value="{{ $webinar->id }}">{{ $webinar->title }} - {{ $webinar->creator->full_name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="input-label">Payment Amount <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">₹</span>
+                                    </select>
+                                </div>
                             </div>
-                            <input type="number" name="cash_amount" class="form-control" step="0.01" min="0" 
-                                   placeholder="Enter amount paid">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="input-label">Period</label>
+                                    <select name="extension_days" class="form-control" disabled>
+                                        <option value="7">7 Days</option>
+                                        <option value="15">15 Days</option>
+                                        <option value="30">30 Days</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">Reason</label>
+                            <textarea name="extension_reason" class="form-control" rows="3" disabled></textarea>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="input-label">UTR / Transaction Number <span class="text-danger">*</span></label>
-                        <input type="text" name="payment_receipt_number" class="form-control" 
-                               placeholder="Enter UTR or transaction number">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Payment Date <span class="text-danger">*</span></label>
-                        <input type="date" name="payment_date" class="form-control" max="{{ now()->format('Y-m-d') }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Bank Name <span class="text-danger">*</span></label>
-                        <input type="text" name="payment_location" class="form-control" 
-                               placeholder="e.g., State Bank of India, HDFC Bank, etc.">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Payment Screenshot <span class="text-danger">*</span></label>
-                        <div class="custom-file">
-                            <input type="file" name="payment_screenshot" class="custom-file-input" id="paymentScreenshot" 
-                                   accept="image/*">
-                            <label class="custom-file-label" for="paymentScreenshot">Choose payment screenshot...</label>
+                    {{-- Temporary Access --}}
+                    <div class="scenario-field" data-scenario="temporary_access">
+                        <div class="glass-alert-info mb-20">
+                            <i data-feather="alert-circle" width="18" height="18" class="mr-5"></i>
+                            <span class="font-14">Request brief access while payment is being processed.</span>
                         </div>
-                        <div id="screenshotPreview" class="mt-2"></div>
-                    </div>
-                </div>
-
-                {{-- Installment Restructure Fields --}}
-                <div class="scenario-field" data-scenario="installment_restructure">
-                    <div class="p-3 mb-3" style="background-color: #f8d7da; border-left: 4px solid #dc3545; border-radius: 4px;">
-                        <h6 class="font-weight-bold">Installment Restructure Request</h6>
-                        <p class="mb-0 small">Select the course for which you want to restructure installment payments. Only your purchased courses are shown.</p>
-                    </div>
-
-                    {{-- Purchased Courses Dropdown (Show for installment_restructure) --}}
-                    <div class="form-group">
-                        <label class="input-label">Select Your Purchased Course <span class="text-danger">*</span></label>
-                        <select name="webinar_id" class="form-control select2 installment-purchased-courses" disabled>
-                            <option value="">Select your purchased course</option>
-                            @if(auth()->check())
-                               
-                                @if(count($installmentList) > 0)
-                                    @foreach($installmentList as $purchase)
-
-                                   
-                                    
-                                    <option value="{{ $purchase->id }}">
-                                        {{ $purchase->title }}
-                                        @if($purchase->creator)
-                                            - {{ $purchase->creator->full_name }}
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label class="input-label">Select Overdue Course</label>
+                                    <select name="webinar_id" class="form-control select2 temporary-course-select" disabled>
+                                        <option value="">{{ trans('panel.select_course') }}</option>
+                                        @if(isset($overdueCourses))
+                                            @foreach($overdueCourses as $course)
+                                                <option value="{{ $course->id }}">{{ $course->title }}</option>
+                                            @endforeach
                                         @endif
-                                    </option>
-                                @endforeach
-                                @else
-                                    <option value="" disabled>No purchased courses found</option>
-                                @endif
-                            @else
-                                <option value="" disabled>Please login to see your purchased courses</option>
-                            @endif
-                        </select>
-                        <small class="form-text text-muted">
-                            <i class="fa fa-info-circle"></i> Only courses you have purchased are listed here
-                        </small>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="input-label">Duration</label>
+                                    <select name="temporary_access_days" class="form-control" disabled>
+                                        <option value="7">7 Days</option>
+                                        <option value="15">15 Days</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <textarea name="temporary_access_reason" class="form-control" rows="3" placeholder="Reason..." disabled></textarea>
                     </div>
 
-                    <div class="form-group">
-                        <label class="input-label">Reason for Restructure <span class="text-danger">*</span></label>
-                        <textarea name="restructure_reason" class="form-control" rows="4" 
-                                  placeholder="Please explain why you need to restructure installments" disabled></textarea>
-                    </div>
-                </div>
-
-                {{-- New Service Access Fields --}}
-                <div class="scenario-field" data-scenario="new_service_access">
-                    <div class="p-3 mb-3" style="background-color: #f8d7da; border-left: 4px solid #dc3545; border-radius: 4px;">
-                        <h6 class="font-weight-bold">New Service Access Request</h6>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Select Course <span class="text-danger">*</span></label>
-                        <select name="webinar_id" class="form-control select2">
-                            <option value="">{{ trans('panel.select_course') }}</option>
-                            @foreach($webinars as $webinar)
-                                <option value="{{ $webinar->id }}">{{ $webinar->title }} - {{ $webinar->creator->full_name }}</option>
-                            @endforeach
-                        </select>
+                    {{-- Offline Payment --}}
+                    <div class="scenario-field" data-scenario="offline_cash_payment">
+                        <div class="glass-alert mb-20">Submit payment screenshot for verification.</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="input-label">Amount Paid (₹)</label>
+                                    <input type="number" name="cash_amount" class="form-control" disabled>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="input-label">Transaction ID / UTR</label>
+                                    <input type="text" name="payment_receipt_number" class="form-control" disabled>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="input-label">Date</label>
+                                    <input type="date" name="payment_date" class="form-control" disabled>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="input-label">Upload Receipt</label>
+                                    <input type="file" name="payment_screenshot" class="form-control-file" disabled>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label class="input-label">Service Name <span class="text-danger">*</span></label>
-                        <input type="text" name="requested_service" class="form-control" placeholder="Enter service name">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Service Details <span class="text-danger">*</span></label>
-                        <textarea name="service_details" class="form-control" rows="4" 
-                                  placeholder="Describe the service you want to access"></textarea>
-                    </div>
-                </div>
-
-                {{-- Refund Payment Fields --}}
-                <div class="scenario-field" data-scenario="refund_payment">
-                    <div class="p-3 mb-3" style="background-color: #d1ecf1; border-left: 4px solid #17a2b8; border-radius: 4px;">
-                        <h6 class="font-weight-bold">Refund Payment Request</h6>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="input-label">Select Purchase Course to Refund <span class="text-danger">*</span></label>
-                        <select name="webinar_id" id="purchaseToRefund" class="form-control select2">
-                            <option value="">Select your purchase Course</option>
-                            @if(auth()->check())
-                               
-                                @foreach($userPurchases as $purchase)
-                                    
-                                    <option value="{{ $purchase->id }}">
-                                        {{ $purchase->title }}
-                                        @if($purchase->creator)
-                                            - {{ $purchase->creator->full_name }}
-                                        @endif
-                                    </option>
-                                @endforeach
+                    {{-- Generic dropdown for other scenarios --}}
+                    @php
+                        $genericScenarios = ['mentor_access', 'relatives_friends_access', 'installment_restructure', 'refund_payment', 'post_purchase_coupon', 'wrong_course_correction'];
+                    @endphp
+                    @foreach($genericScenarios as $scen)
+                        <div class="scenario-field" data-scenario="{{ $scen }}">
+                            @if($scen == 'wrong_course_correction')
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="input-label">Wrong Course</label>
+                                        <select name="wrong_course_id" class="form-control select2" disabled>
+                                            @foreach($userPurchases as $p) <option value="{{ $p->id }}">{{ $p->title }}</option> @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="input-label">Correct Course</label>
+                                        <select name="correct_course_id" class="form-control select2" disabled>
+                                            @foreach($webinars as $w) <option value="{{ $w->id }}">{{ $w->title }}</option> @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            @elseif($scen == 'relatives_friends_access' || $scen == 'mentor_access')
+                                <div class="form-group">
+                                    <label class="input-label">Select Course</label>
+                                    <select name="webinar_id" class="form-control select2" disabled>
+                                        @foreach($webinars as $w) <option value="{{ $w->id }}">{{ $w->title }}</option> @endforeach
+                                    </select>
+                                </div>
+                            @elseif($scen == 'installment_restructure' || $scen == 'refund_payment' || $scen == 'post_purchase_coupon')
+                                <div class="form-group">
+                                    <label class="input-label">Select Course</label>
+                                    <select name="webinar_id" class="form-control select2" disabled>
+                                        @foreach($userPurchases as $p) <option value="{{ $p->id }}">{{ $p->title }}</option> @endforeach
+                                    </select>
+                                </div>
                             @endif
-                        </select>
-                    </div>
-
-
-                    <div class="form-group">
-                        <label class="input-label">Reason for Refund <span class="text-danger">*</span></label>
-                        <textarea name="refund_reason" class="form-control" rows="4" 
-                                  placeholder="Please explain why you want a refund"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Bank Account Number <span class="text-danger">*</span></label>
-                        <input type="text" name="bank_account_number" class="form-control" 
-                               placeholder="Enter your bank account number">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">IFSC Code <span class="text-danger">*</span></label>
-                        <input type="text" name="ifsc_code" class="form-control" placeholder="Enter IFSC code">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Account Holder Name <span class="text-danger">*</span></label>
-                        <input type="text" name="account_holder_name" class="form-control" 
-                               placeholder="Enter account holder name">
-                    </div>
-                </div>
-
-                {{-- Post-Purchase Coupon Apply Fields --}}
-                <div class="scenario-field" data-scenario="post_purchase_coupon">
-                    <div class="p-3 mb-3" style="background-color: #d1ecf1; border-left: 4px solid #17a2b8; border-radius: 4px;">
-                        <h6 class="font-weight-bold">Post-Purchase Coupon Apply</h6>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Select Course <span class="text-danger">*</span></label>
-                        <select name="webinar_id" class="form-control select2">
-                            <option value="">Select your purchased course</option>
-                            @if(auth()->check())
-                               
-                               @foreach($userPurchases as $purchase)
-                                    
-                                    <option value="{{ $purchase->id }}">
-                                        {{ $purchase->title }}
-                                        @if($purchase->creator)
-                                            - {{ $purchase->creator->full_name }}
-                                        @endif
-                                    </option>
-                                @endforeach
-                            @endif
-                        </select>
-                    </div>
-
-
-                    <div class="form-group">
-                        <label class="input-label">Reason for Coupon Request</label>
-                        <textarea name="coupon_apply_reason" class="form-control" rows="4" 
-                                  placeholder="Please explain why you need to apply this coupon (optional)"></textarea>
-                    </div>
-                </div>
-
-                {{-- Wrong Course Correction Fields --}}
-                <div class="scenario-field" data-scenario="wrong_course_correction">
-                    <div class="p-3 mb-3" style="background-color: #f8d7da; border-left: 4px solid #dc3545; border-radius: 4px;">
-                        <h6 class="font-weight-bold">Wrong Course Correction</h6>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="input-label">Wrong Course Purchased <span class="text-danger">*</span></label>
-                        <select name="wrong_course_id" id="wrongCourseId" class="form-control select2 @error('wrong_course_id') is-invalid @enderror">
-                            <option value="">Select your purchased course</option>
-                            @if(auth()->check())
-                                @foreach($userPurchases as $purchase)
-                                    
-                                    <option value="{{ $purchase->id }}">
-                                        {{ $purchase->title }}
-                                        @if($purchase->creator)
-                                            - {{ $purchase->creator->full_name }}
-                                        @endif
-                                    </option>
-                                @endforeach
-                            @endif
-                        </select>
-                        @error('wrong_course_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Correct Course Required <span class="text-danger">*</span></label>
-                        <select name="correct_course_id" id="correctCourseId" class="form-control select2 @error('correct_course_id') is-invalid @enderror">
-                            <option value="">Select correct course</option>
-                            @foreach($webinars as $webinar)
-                                <option value="{{ $webinar->id }}">{{ $webinar->title }}</option>
-                            @endforeach
-                        </select>
-                        @error('correct_course_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label class="input-label">Reason for Correction <span class="text-danger">*</span></label>
-                        <textarea name="correction_reason" class="form-control @error('correction_reason') is-invalid @enderror" rows="4" 
-                                  placeholder="Please explain why you need the course correction">{{ old('correction_reason') }}</textarea>
-                        @error('correction_reason')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
+                            <div class="form-group mt-15">
+                                <label class="input-label">Details / Reason</label>
+                                <textarea name="description" class="form-control" rows="4" placeholder="Describe your request..." disabled></textarea>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
 
                 {{-- Attachments --}}
-                <div class="form-group">
-                    <label class="input-label">{{ trans('panel.attach_file') }}</label>
-                    <div class="input-group">
-                        <div class="custom-file">
-                            <input type="file" name="attachments[]" id="attachments" 
-                                   class="custom-file-input" multiple 
-                                   accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
-                            <label class="custom-file-label" for="attachments">{{ trans('panel.choose_files') }}</label>
-                        </div>
-                    </div>
-                    <small class="form-text text-muted">Maximum 5 files, 5MB each (JPG, PNG, PDF, DOC, DOCX)</small>
-                    <div id="fileList" class="mt-2"></div>
-                </div>
-
-                {{-- Submit Button --}}
-                <div class="row">
-                    <div class="col-12 col-lg-8 d-flex align-items-center">
-                        <button type="submit" id="supportSubmitBtn" class="btn btn-primary btn-sm">
-                            {{ trans('site.send_message') }}
-                        </button>
+                <div class="form-group mt-20">
+                    <label class="input-label">{{ trans('panel.attach_file') }} (Optional)</label>
+                    <div class="custom-file">
+                        <input type="file" name="attachments[]" id="attachments" class="custom-file-input" multiple>
+                        <label class="custom-file-label" for="attachments">Choose files...</label>
                     </div>
                 </div>
 
+                <div class="mt-30 text-right">
+                    <button type="submit" id="supportSubmitBtn" class="btn btn-primary px-30">
+                        {{ trans('site.send_message') }}
+                    </button>
+                </div>
             </div>
         </section>
     </form>

@@ -1,4 +1,160 @@
-@extends(getTemplate() .'.panel.layouts.panel_layout')
+@push('styles_top')
+    <style>
+        .stat-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f0f0f0;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+            border-color: #1f3b64;
+        }
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #6c757d;
+            font-weight: 500;
+            display: block;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1f3b64;
+            display: block;
+        }
+        .bg-glass-primary { background: rgba(31, 59, 100, 0.1); color: #1f3b64; }
+        .bg-glass-success { background: rgba(67, 212, 119, 0.1); color: #43d477; }
+        .bg-glass-warning { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+        .bg-glass-danger { background: rgba(244, 110, 110, 0.1); color: #f46e6e; }
+
+        /* Premium Course Card */
+        .premium-course-card {
+            background: #fff;
+            border-radius: 24px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+            border: 1px solid #f8f8f8;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            height: 100%;
+        }
+        .premium-course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.08);
+            border-color: #1f3b64;
+        }
+        .premium-course-card .image-container {
+            width: 100%;
+            height: 180px;
+            position: relative;
+            flex-shrink: 0;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .premium-course-card .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .premium-course-card .info-container {
+            flex-grow: 1;
+            padding-left: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .premium-course-card .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .premium-course-card .course-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1f3b64;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .premium-course-card .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 15px;
+            margin-top: 10px;
+        }
+        .premium-course-card .info-item {
+            display: flex;
+            align-items: center;
+        }
+        .premium-course-card .info-icon {
+            width: 36px;
+            height: 36px;
+            background: #f8faff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1f3b64;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        .premium-course-card .info-value {
+            display: block;
+            font-weight: 700;
+            font-size: 14px;
+            color: #1f3b64;
+        }
+        .premium-course-card .info-label {
+            display: block;
+            font-size: 11px;
+            color: #8c98a4;
+            font-weight: 500;
+        }
+        .premium-course-card .footer-section {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #f4f4f4;
+        }
+        .premium-course-card .status-badge {
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .premium-course-card .detail-btn {
+            color: #1f3b64;
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .premium-course-card .detail-btn:hover {
+            color: #3b6096;
+            margin-right: -5px;
+        }
+    </style>
+@endpush
 
 @section('content')
 
@@ -17,37 +173,53 @@
     <section>
         <h2 class="section-title">{{ trans('update.installments_overview') }}</h2>
 
-        <div class="activities-container mt-25 p-20 p-lg-35">
+        <div class="mt-25">
             <div class="row">
-                <div class="col-6 col-md-3 mt-30 mt-md-0 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/129.png" width="64" height="64" alt="">
-                        <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ $openInstallmentsCount }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('update.open_installments') }}</span>
+                <div class="col-6 col-md-3 mt-30 mt-md-0">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-primary">
+                            <i data-feather="book-open" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $openInstallmentsCount }}</span>
+                            <span class="stat-label">{{ trans('update.open_installments') }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-6 col-md-3 mt-30 mt-md-0 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/130.png" width="64" height="64" alt="">
-                        <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ $pendingVerificationCount }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('update.pending_verification') }}</span>
+                <div class="col-6 col-md-3 mt-30 mt-md-0">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-warning">
+                            <i data-feather="clock" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $pendingVerificationCount }}</span>
+                            <span class="stat-label">{{ trans('update.pending_verification') }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-6 col-md-3 mt-30 mt-md-0 d-flex align-items-center justify-content-center mt-5 mt-md-0">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/127.png" width="64" height="64" alt="">
-                        <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ $finishedInstallmentsCount }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('update.finished_installments') }}</span>
+                <div class="col-6 col-md-3 mt-30 mt-md-0">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-success">
+                            <i data-feather="check-circle" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $finishedInstallmentsCount }}</span>
+                            <span class="stat-label">{{ trans('update.finished_installments') }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-6 col-md-3 mt-30 mt-md-0 d-flex align-items-center justify-content-center mt-5 mt-md-0">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/128.png" width="64" height="64" alt="">
-                        <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ $overdueInstallmentsCount }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('update.overdue_installments') }}</span>
+                <div class="col-6 col-md-3 mt-30 mt-md-0">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-danger">
+                            <i data-feather="alert-circle" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $overdueInstallmentsCount }}</span>
+                            <span class="stat-label">{{ trans('update.overdue_installments') }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -60,55 +232,37 @@
         </div>
 
         @if(!empty($orders) and count($orders))
-         <div class="row mt-30">
-            @foreach($orders as $order)
-                @php
-                    $orderItem = $order->getItem();
-                    $itemType = $order->getItemType();
-                    $itemPrice = $order->getItemPrice();
-                @endphp
+            <div class="row mt-30">
+                @foreach($orders as $order)
+                    @php
+                        $orderItem = $order->item;
+                        $itemType = $order->product->product_type ?? 'webinar';
+                        if ($itemType === 'webinar') $itemType = 'course'; // Backward compatibility with legacy trans keys
+                        
+                        $itemPrice = $order->installmentPlan ? $order->installmentPlan->total_amount : $order->base_fee_snapshot;
+                    @endphp
 
-                @if(!empty($orderItem))
-
-                        <div class="col-lg-6 mb-10">
-                            <div class="webinar-card webinar-list panel-installment-card d-flex">
-                                <div class="image-box" style="height:auto !important;">
+                    @if(!empty($orderItem))
+                        <div class="col-12 col-lg-6 mt-15">
+                            <div class="premium-course-card">
+                                <div class="image-container">
                                     @if(in_array($itemType, ['course', 'bundle']))
-                                        <img loading="lazy"  src="{{ config('app.img_dynamic_url') }}{{ $orderItem->getImage() }}" class="img-cover" alt="">
+                                        <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $orderItem->getImage() }}" alt="{{ $orderItem->title }}">
                                     @elseif($itemType == 'product')
-                                        <img loading="lazy"  src="{{ config('app.img_dynamic_url') }}{{ $orderItem->thumbnail }}" class="img-cover" alt="">
-                                    @elseif($itemType == "subscribe")
-                                        <div class="d-flex align-items-center justify-content-center w-100 h-100">
-                                            <img loading="lazy"  src="{{ config('app.img_dynamic_url') }}{{ config('app.js_css_url') }}/assets/default/img/icons/installment/subscribe_default.svg" alt="">
+                                        <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $orderItem->thumbnail }}" alt="{{ $orderItem->title }}">
+                                    @else
+                                        <div class="d-flex align-items-center justify-content-center w-100 h-100 bg-light">
+                                            <i data-feather="package" width="48" height="48" class="text-gray"></i>
                                         </div>
-                                    @elseif($itemType == "registrationPackage")
-                                        <div class="d-flex align-items-center justify-content-center w-100 h-100">
-                                            <img loading="lazy"  src="{{ config('app.img_dynamic_url') }}{{ config('app.js_css_url') }}/assets/default/img/icons/installment/reg_package_default.svg" alt="">
-                                        </div>
-                                    @endif
-
-                                    @if($order->isCompleted())
-                                        <span class="badge badge-secondary">{{ trans('update.completed') }}</span>
-                                    @elseif($order->status == "open")
-                                        <span class="badge badge-primary">{{  trans('public.open') }}</span>
-                                    @elseif($order->status == "rejected")
-                                        <span class="badge badge-danger">{{  trans('public.rejected') }}</span>
-                                    @elseif($order->status == "canceled")
-                                        <span class="badge badge-danger">{{  trans('public.canceled') }}</span>
-                                    @elseif($order->status == "pending_verification")
-                                        <span class="badge badge-warning">{{  trans('update.pending_verification') }}</span>
-                                    @elseif($order->status == "refunded")
-                                        <span class="badge badge-secondary">{{  trans('update.refunded') }}</span>
                                     @endif
                                 </div>
 
-                                <div class="webinar-card-body w-100 d-flex flex-column">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div class="d-flex align-items-center">
-                                            <h3 class="font-16 text-dark-blue font-weight-bold">{{ $orderItem->title }}</h3>
-
+                                <div class="info-container">
+                                    <div class="header-section">
+                                        <div class="w-100">
+                                            <h3 class="course-title">{{ $orderItem->title }}</h3>
                                             @if($order->has_overdue)
-                                                <span class="badge badge-outlined-danger ml-10">{{  trans('update.overdue') }}</span>
+                                                <span class="badge badge-danger">Overdue</span>
                                             @endif
                                         </div>
 
@@ -117,79 +271,90 @@
                                                 <button type="button" class="btn-transparent dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                     <i data-feather="more-vertical" height="20"></i>
                                                 </button>
-                                                <div class="dropdown-menu ">
-
-                                                    @if($order->status == "open")
-
+                                                <div class="dropdown-menu">
+                                                    @if($order->installmentPlan)
+                                                        <a href="/panel/upe/installments/{{ $order->installmentPlan->id }}" target="_blank" class="webinar-actions d-block mt-10">{{ trans('update.view_details') }}</a>
                                                     @endif
 
-                                                    @if(!in_array($order->status, ['refunded', 'canceled']))
-                                                        <a href="/panel/financial/installments/{{ $order->id }}/details" target="_blank" class="webinar-actions d-block mt-10">{{ trans('update.view_details') }}</a>
-                                                    @endif
-
-                                                    @if($itemType == "course" and ($order->isCompleted() or $order->status == "open"))
+                                                    @if($itemType == "course" and !empty($orderItem))
                                                         <a href="{{ $orderItem->getLearningPageUrl() }}" target="_blank" class="webinar-actions d-block mt-10">{{ trans('update.learning_page') }}</a>
                                                     @endif
-
-                                                    @if($order->status == "pending_verification" and getInstallmentsSettings("allow_cancel_verification"))
-                                                        <a href="/panel/financial/installments/{{ $order->id }}/cancel" class="webinar-actions d-block mt-10 text-danger delete-action" data-title="{{ trans('public.deleteAlertHint') }}" data-confirm="{{ trans('update.yes_cancel') }}">{{ trans('public.cancel') }}</a>
-                                                    @endif
                                                 </div>
                                             </div>
                                         @endif
-
                                     </div>
 
-                                    <div class="d-flex align-items-center justify-content-between flex-wrap mt-auto">
-                                        <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                            <span class="stat-title">{{ trans('update.item_type') }}:</span>
-                                            <span class="stat-value">{{ trans('update.item_type_'.$itemType) }}</span>
-                                        </div>
-
-                                        <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                            <span class="stat-title">{{ trans('panel.purchase_date') }}:</span>
-                                            <span class="stat-value">{{ dateTimeFormat($order->created_at, 'j M Y H:i') }}</span>
-                                        </div>
-
-                                        <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                            <span class="stat-title">{{ trans('update.upfront') }}:</span>
-                                            <span class="stat-value">{{ !empty($order->installment->upfront) ? handlePrice($order->installment->getUpfront($itemPrice)) : '-' }}</span>
-                                        </div>
-
-                                        <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                            <span class="stat-title">{{ trans('update.total_installments') }}:</span>
-                                            <span class="stat-value">{{ trans('update.total_parts_count', ['count' => $order->installment->steps_count]) }} ({{ handlePrice($order->installment->totalPayments($itemPrice, false)) }})</span>
-                                        </div>
-
-                                        @if($order->status == "open" or $order->status == "pending_verification")
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('update.remained_installments') }}:</span>
-                                                <span class="stat-value">{{ trans('update.total_parts_count', ['count' => $order->remained_installments_count]) }} ({{ handlePrice($order->remained_installments_amount) }})</span>
+                                    <div class="info-grid">
+                                        <div class="info-item">
+                                            <div class="info-icon"><i data-feather="tag" width="16" height="16"></i></div>
+                                            <div class="info-text">
+                                                <span class="info-value">{{ trans('update.item_type_'.$itemType) }}</span>
+                                                <span class="info-label">Item Type</span>
                                             </div>
-
-                                            @if(!empty($order->upcoming_installment))
-                                                <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                    <span class="stat-title">{{ trans('update.upcoming_installment') }}:</span>
-                                                    <span class="stat-value">{{ dateTimeFormat((($order->upcoming_installment->deadline * 86400) + $order->created_at), 'j M Y') }} ({{ handlePrice($order->upcoming_installment->getPrice($itemPrice)) }})</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-icon"><i data-feather="calendar" width="16" height="16"></i></div>
+                                            <div class="info-text">
+                                                <span class="info-value">{{ dateTimeFormat($order->created_at, 'j M Y') }}</span>
+                                                <span class="info-label">Purchase Date</span>
+                                            </div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-icon"><i data-feather="dollar-sign" width="16" height="16"></i></div>
+                                            <div class="info-text">
+                                                <span class="info-value">{{ handlePrice($itemPrice) }}</span>
+                                                <span class="info-label">Plan Total</span>
+                                            </div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-icon"><i data-feather="repeat" width="16" height="16"></i></div>
+                                            <div class="info-text">
+                                                <span class="info-value">{{ $order->remained_installments_count }} / {{ $order->installmentPlan->num_installments ?? 0 }}</span>
+                                                <span class="info-label">Remaining EMIs</span>
+                                            </div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-icon"><i data-feather="credit-card" width="16" height="16"></i></div>
+                                            <div class="info-text">
+                                                <span class="info-value text-danger">{{ handlePrice($order->remained_installments_amount) }}</span>
+                                                <span class="info-label">Remaining Amount</span>
+                                            </div>
+                                        </div>
+                                        @if(!empty($order->upcoming_installment))
+                                            <div class="info-item">
+                                                <div class="info-icon"><i data-feather="clock" width="16" height="16"></i></div>
+                                                <div class="info-text">
+                                                    <span class="info-value">{{ dateTimeFormat($order->upcoming_installment->due_date, 'j M Y') }}</span>
+                                                    <span class="info-label">Next Due: {{ handlePrice($order->upcoming_installment->amount_due) }}</span>
                                                 </div>
-                                            @endif
-
-                                            @if($order->has_overdue)
-                                                <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                    <span class="stat-title">{{ trans('update.overdue_installments') }}:</span>
-                                                    <span class="stat-value">{{ $order->overdue_count }} ({{ handlePrice($order->overdue_amount) }})</span>
-                                                </div>
-                                            @endif
+                                            </div>
                                         @endif
+                                    </div>
 
+                                    <div class="footer-section">
+                                        <div class="d-flex align-items-center">
+                                            @php
+                                                $statusClass = 'bg-primary';
+                                                $statusText = $order->status;
+                                                if($order->installmentPlan && $order->installmentPlan->isCompleted()) { $statusClass = 'bg-success'; $statusText = 'Completed'; }
+                                                elseif($order->status == 'refunded') { $statusClass = 'bg-danger'; }
+                                            @endphp
+                                            <span class="status-badge {{ $statusClass }} text-white">{{ ucfirst($statusText) }}</span>
+                                        </div>
+
+                                        @if($order->installmentPlan)
+                                            <a href="/panel/upe/installments/{{ $order->installmentPlan->id }}" class="detail-btn">
+                                                View Details
+                                                <i data-feather="arrow-right" width="16" height="16" class="ml-5"></i>
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                @endif
-            @endforeach
-</div>
+                    @endif
+                @endforeach
+            </div>
             <div class="my-30">
                 {{ $orders->appends(request()->input())->links('vendor.pagination.panel') }}
             </div>

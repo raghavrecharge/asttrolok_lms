@@ -275,6 +275,7 @@ Route::group(['namespace' => 'Panel', 'prefix' => 'panel', 'middleware' => ['che
     Route::group(['prefix' => 'upe'], function () {
         Route::get('/purchases', 'UpeController@myPurchases');
         Route::get('/purchases/{id}', 'UpeController@purchaseDetail');
+        Route::get('/purchases/{id}/progress', 'UpeController@getCourseProgress');
         Route::post('/request-refund', 'UpeController@requestRefund');
         Route::post('/request-upgrade', 'UpeController@requestUpgrade');
         Route::post('/request-extension', 'UpeController@requestExtension');

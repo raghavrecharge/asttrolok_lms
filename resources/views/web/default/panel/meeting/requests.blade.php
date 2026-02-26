@@ -3,6 +3,50 @@
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/select2/select2.min.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/daterangepicker/daterangepicker.min.css">
+    <style>
+        .custom-table thead th {
+            border-top: none;
+            background-color: #f8faff;
+            color: #1f3b64;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            padding: 20px 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .custom-table tbody td {
+            padding: 25px 15px;
+            vertical-align: middle;
+            color: #1f3b64;
+            border-bottom: 1px solid #f9f9f9;
+        }
+        .bg-glass-primary { background: rgba(31, 59, 100, 0.12) !important; color: #1f3b64 !important; }
+        .bg-glass-success { background: rgba(40, 167, 69, 0.15) !important; color: #1e7e34 !important; }
+        .bg-glass-warning { background: rgba(255, 193, 7, 0.15) !important; color: #9b7400 !important; }
+        .bg-glass-danger { background: rgba(220, 53, 69, 0.12) !important; color: #bd2130 !important; }
+        .bg-glass-gray { background: rgba(108, 117, 125, 0.12) !important; color: #495057 !important; }
+
+        .status-badge {
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 11px;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .input-group .input-group-prepend .input-group-text {
+            background-color: #1f3b64;
+            border-color: #1f3b64;
+            color: #fff;
+            border-radius: 10px 0 0 10px;
+        }
+        .datepicker, .datefilter {
+            cursor: pointer !important;
+            border-radius: 0 10px 10px 0 !important;
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -174,53 +218,60 @@
                                     <tr>
                                         <td class="text-left">
                                             <div class="user-inline-avatar d-flex align-items-center">
-                                                <div class="avatar bg-gray200">
-                                                    <img loading="lazy"  src="{{ config('app.img_dynamic_url') }}{{ $ReserveMeeting->user->getAvatar() }}" class="img-cover" alt="">
-                                                </div>
-                                                <div class=" ml-5">
-                                                    <span class="d-block font-weight-500">{{ $ReserveMeeting->user->full_name }}</span>
-                                                    <span class="mt-5 font-12 text-gray d-block">{{ $ReserveMeeting->user->email }}</span>
-                                                </div>
+                                                @if(!empty($ReserveMeeting->user))
+                                                    <div class="avatar bg-gray200">
+                                                        <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $ReserveMeeting->user->getAvatar() }}" class="img-cover" alt="">
+                                                    </div>
+                                                    <div class=" ml-5">
+                                                        <span class="d-block font-weight-500">{{ $ReserveMeeting->user->full_name }}</span>
+                                                        <span class="mt-5 font-12 text-gray d-block">{{ $ReserveMeeting->user->email }}</span>
+                                                    </div>
+                                                @else
+                                                    <div class="avatar bg-gray200">
+                                                        <img loading="lazy" src="/assets/default/img/avatar.png" class="img-cover" alt="">
+                                                    </div>
+                                                    <div class=" ml-5">
+                                                        <span class="d-block font-weight-500 text-danger">{{ trans('update.deleted_user') }}</span>
+                                                    </div>
+                                                @endif
                                             </div>
                                         </td>
-                                        <td class="align-middle">
+                                        <td class="align-middle text-center">
                                             <span class="font-weight-500">{{ trans('update.'.$ReserveMeeting->meeting_type) }}</span>
                                         </td>
-                                        <td class="align-middle">
+                                        <td class="align-middle text-center">
                                             <span class="font-weight-500">{{ dateTimeFormat($ReserveMeeting->start_at, 'D') }}</span>
                                         </td>
-                                        <td class="align-middle">
+                                        <td class="align-middle text-center">
                                             <span>{{ dateTimeFormat($ReserveMeeting->start_at, 'j M Y') }}</span>
                                         </td>
-                                        <td class="align-middle">
-                                            <div class="d-inline-flex align-items-center rounded bg-gray200 py-5 px-15 font-14 font-weight-500">
+                                        <td class="align-middle text-center">
+                                            <div class="d-inline-flex align-middle rounded bg-gray200 py-5 px-15 font-14 font-weight-500">
                                                 <span class="">{{ dateTimeFormat($ReserveMeeting->start_at, 'H:i') }}</span>
                                                 <span class="mx-1">-</span>
                                                 <span class="">{{ dateTimeFormat($ReserveMeeting->end_at, 'H:i') }}</span>
                                             </div>
                                         </td>
 
-                                        <td class="font-weight-500 align-middle">{{ handlePrice($ReserveMeeting->paid_amount) }}</td>
+                                        <td class="font-weight-bold text-dark-blue align-middle text-center">{{ handlePrice($ReserveMeeting->paid_amount) }}</td>
 
-                                        <td class="align-middle font-weight-500">
+                                        <td class="align-middle text-center font-weight-bold text-gray">
                                             {{ $ReserveMeeting->student_count ?? 1 }}
                                         </td>
 
-                                        <td class="align-middle">
-                                            @switch($ReserveMeeting->status)
-                                                @case(\App\Models\ReserveMeeting::$pending)
-                                                    <span class="font-weight-500">{{ trans('public.pending') }}</span>
-                                                    @break
-                                                @case(\App\Models\ReserveMeeting::$open)
-                                                    <span class="text-primary font-weight-500">{{ trans('public.open') }}</span>
-                                                    @break
-                                                @case(\App\Models\ReserveMeeting::$finished)
-                                                    <span class="font-weight-500">{{ trans('public.finished') }}</span>
-                                                    @break
-                                                @case(\App\Models\ReserveMeeting::$canceled)
-                                                    <span class="font-weight-500">{{ trans('public.canceled') }}</span>
-                                                    @break
-                                            @endswitch
+                                        <td class="align-middle text-center">
+                                            @php
+                                                $statusClass = 'gray';
+                                                switch($ReserveMeeting->status) {
+                                                    case \App\Models\ReserveMeeting::$pending: $statusClass = 'warning'; break;
+                                                    case \App\Models\ReserveMeeting::$open: $statusClass = 'primary'; break;
+                                                    case \App\Models\ReserveMeeting::$finished: $statusClass = 'success'; break;
+                                                    case \App\Models\ReserveMeeting::$canceled: $statusClass = 'danger'; break;
+                                                }
+                                            @endphp
+                                            <span class="status-badge bg-glass-{{ $statusClass }}">
+                                                {{ trans('public.'.$ReserveMeeting->status) }}
+                                            </span>
                                         </td>
 
                                         <td class="align-middle text-right">

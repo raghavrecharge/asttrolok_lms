@@ -226,6 +226,10 @@ class Bundle extends Model implements TranslatableContract
             }
         }
 
+        if ($purchaseDate instanceof \Illuminate\Support\Carbon) {
+            $purchaseDate = $purchaseDate->timestamp;
+        }
+
         return strtotime("+{$this->access_days} days", $purchaseDate);
     }
 
@@ -243,6 +247,10 @@ class Bundle extends Model implements TranslatableContract
         }
 
         $time = time();
+
+        if ($purchaseDate instanceof \Illuminate\Support\Carbon) {
+            $purchaseDate = $purchaseDate->timestamp;
+        }
 
         return strtotime("+{$this->access_days} days", $purchaseDate) > $time;
     }

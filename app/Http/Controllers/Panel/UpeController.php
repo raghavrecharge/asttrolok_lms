@@ -69,14 +69,23 @@ class UpeController extends Controller
 
         $accessResults = [];
         $balances = [];
+        $progress = [];
         foreach ($sales as $sale) {
             $accessResults[$sale->id] = $access->computeAccess($user->id, $sale->product_id);
             $balances[$sale->id] = $ledger->balance($sale->id);
+
+            // Fetch progress if it's a webinar/course
+            if ($sale->product && in_array($sale->product->product_type, ['webinar', 'course_video', 'course_live'])) {
+                $webinar = \App\Models\Webinar::find($sale->product->external_id);
+                if ($webinar) {
+                    $progress[$sale->id] = $webinar->getProgress();
+                }
+            }
         }
 
         $pageTitle = 'My Purchases';
 
-        return view(getTemplate() . '.panel.upe.my_purchases', compact('sales', 'accessResults', 'balances', 'pageTitle'));
+        return view(getTemplate() . '.panel.upe.my_purchases', compact('sales', 'accessResults', 'balances', 'progress', 'pageTitle'));
     }
 
     public function purchaseDetail(int $id, PaymentLedgerService $ledger, AccessEngine $access)
@@ -97,6 +106,77 @@ class UpeController extends Controller
             ->get();
 
         return view(getTemplate() . '.panel.upe.purchase_detail', compact('sale', 'ledgerSummary', 'accessResult', 'products', 'pageTitle'));
+    }
+
+    public function getCourseProgress(int $id)
+    {
+        $user = auth()->user();
+        $sale = UpeSale::where('user_id', $user->id)
+            ->with(['product'])
+            ->findOrFail($id);
+
+        if (!$sale->product or !in_array($sale->product->product_type, ['webinar', 'course_video', 'course_live'])) {
+            return response()->json(['error' => 'No learning progress available for this product.'], 400);
+        }
+
+        $webinar = \App\Models\Webinar::with([
+            'chapters' => function ($q) {
+                $q->where('status', 'active')->orderBy('order', 'asc');
+            },
+            'chapters.chapterItems' => function ($q) {
+                $q->orderBy('order', 'asc');
+            }
+        ])->find($sale->product->external_id);
+
+        if (!$webinar) {
+            return response()->json(['error' => 'Course not found.'], 404);
+        }
+
+        $chapters = [];
+        foreach ($webinar->chapters as $chapter) {
+            $items = [];
+            foreach ($chapter->chapterItems as $chapterItem) {
+                $item = null;
+                $type = '';
+
+                if ($chapterItem->type == \App\Models\WebinarChapterItem::$chapterFile and $chapterItem->file and $chapterItem->file->status == 'active') {
+                    $item = $chapterItem->file;
+                    $type = 'file';
+                } elseif ($chapterItem->type == \App\Models\WebinarChapterItem::$chapterSession and $chapterItem->session and $chapterItem->session->status == 'active') {
+                    $item = $chapterItem->session;
+                    $type = 'session';
+                } elseif ($chapterItem->type == \App\Models\WebinarChapterItem::$chapterTextLesson and $chapterItem->textLesson and $chapterItem->textLesson->status == 'active') {
+                    $item = $chapterItem->textLesson;
+                    $type = 'text_lesson';
+                }
+
+                if ($item) {
+                    $progress = \App\Models\CourseProgress::where('user_id', $user->id)
+                        ->where('item_id', $item->id)
+                        ->first();
+
+                    $items[] = [
+                        'id' => $item->id,
+                        'title' => $item->title,
+                        'type' => $type,
+                        'percentage' => $progress ? $progress->watch_percentage : 0,
+                    ];
+                }
+            }
+
+            if (count($items) > 0) {
+                $chapters[] = [
+                    'id' => $chapter->id,
+                    'title' => $chapter->title,
+                    'items' => $items
+                ];
+            }
+        }
+
+        return response()->json([
+            'course_title' => $webinar->title,
+            'chapters' => $chapters
+        ]);
     }
 
     // ──────────────────────────────────────────────
@@ -373,7 +453,7 @@ class UpeController extends Controller
     {
         $user = auth()->user();
 
-        $plan = UpeInstallmentPlan::with(['schedules', 'sale.product'])
+        $plan = UpeInstallmentPlan::with(['schedules', 'sale.product', 'sale.ledgerEntries'])
             ->whereHas('sale', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             })

@@ -1,39 +1,244 @@
 @extends(getTemplate() .'.panel.layouts.panel_layout')
 
 @push('styles_top')
+    <style>
+        .stat-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f0f0f0;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+            border-color: #1f3b64;
+        }
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #6c757d;
+            font-weight: 500;
+            display: block;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1f3b64;
+            display: block;
+        }
+        .bg-glass-primary { background: rgba(31, 59, 100, 0.1); color: #1f3b64; }
+        .bg-glass-success { background: rgba(67, 212, 119, 0.1); color: #43d477; }
+        .bg-glass-warning { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
 
+        /* Premium Course Card */
+        .premium-course-card {
+            background: #fff;
+            border-radius: 24px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+            border: 1px solid #f8f8f8;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            height: 100%;
+        }
+        .premium-course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.08);
+            border-color: #1f3b64;
+        }
+        .premium-course-card .image-container {
+            width: 100%;
+            height: 180px;
+            position: relative;
+            flex-shrink: 0;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .premium-course-card .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .premium-course-card .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+        .premium-course-card:hover .play-overlay {
+            background: #1f3b64;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        .premium-course-card .info-container {
+            flex-grow: 1;
+            padding-left: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .premium-course-card .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .premium-course-card .course-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1f3b64;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .premium-course-card .rating-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .premium-course-card .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 15px;
+            margin-top: 10px;
+        }
+        .premium-course-card .info-item {
+            display: flex;
+            align-items: center;
+        }
+        .premium-course-card .info-icon {
+            width: 36px;
+            height: 36px;
+            background: #f8faff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1f3b64;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        .premium-course-card .info-text {
+            line-height: 1.2;
+        }
+        .premium-course-card .info-value {
+            display: block;
+            font-weight: 700;
+            font-size: 14px;
+            color: #1f3b64;
+        }
+        .premium-course-card .info-label {
+            display: block;
+            font-size: 11px;
+            color: #8c98a4;
+            font-weight: 500;
+        }
+        .premium-course-card .footer-section {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #f4f4f4;
+        }
+        .premium-course-card .expiry-info {
+            display: flex;
+            align-items: center;
+        }
+        .premium-course-card .expiry-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(31, 59, 100, 0.08);
+            color: #1f3b64;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+        .premium-course-card .continue-btn {
+            color: #1f3b64;
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            background: transparent;
+            border: none;
+            padding: 5px 10px;
+        }
+        .premium-course-card .continue-btn:hover {
+            color: #3b6096;
+            margin-right: -5px;
+        }
+    </style>
 @endpush
 
 @section('content')
     <section>
         <h2 class="section-title">{{ trans('panel.my_activity') }}</h2>
 
-        <div class="activities-container mt-25 p-20 p-lg-35">
+        <div class="mt-25">
             <div class="row">
-                <div class="col-4 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/activity/webinars.svg" width="64" height="64" alt="">
-                        <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ $purchasedCount }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('panel.purchased') }}</span>
+                <div class="col-4">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-primary">
+                            <i data-feather="monitor" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $purchasedCount }}</span>
+                            <span class="stat-label">{{ trans('panel.purchased') }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-4 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/activity/hours.svg" width="64" height="64" alt="">
-                        <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ convertMinutesToHourAndMinute($hours) }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('home.hours') }}</span>
+                <div class="col-4">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-success">
+                            <i data-feather="clock" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ convertMinutesToHourAndMinute($hours) }}</span>
+                            <span class="stat-label">{{ trans('home.hours') }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-4 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/activity/upcoming.svg" width="64" height="64" alt="">
-                        <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ $upComing }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('panel.upcoming') }}</span>
+                <div class="col-4">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-warning">
+                            <i data-feather="calendar" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $upComing }}</span>
+                            <span class="stat-label">{{ trans('panel.upcoming') }}</span>
+                        </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
@@ -43,471 +248,158 @@
             <h2 class="section-title">{{ trans('panel.my_purchases') }}</h2>
         </div>
 
-        @if((!empty($sales) and !$sales->isEmpty()) or !empty($orders) and !$orders->isEmpty())
-         <div class="row mt-30">
-            @foreach($sales as $sale)
-                @php
-                    $item = !empty($sale->webinar) ? $sale->webinar : $sale->bundle;
+        @if(!empty($sales) and !$sales->isEmpty())
+            <div class="row mt-30">
+                @foreach($sales as $sale)
+                    @php
+                        $item = $sale->item;
+                        $nextSession = (!empty($item) and $item instanceof \App\Models\Webinar) ? $item->nextSession() : null;
+                    @endphp
 
-                    $lastSession = !empty($sale->webinar) ? $sale->webinar->lastSession() : null;
-                    $nextSession = !empty($sale->webinar) ? $sale->webinar->nextSession() : null;
-                    $isProgressing = false;
-
-                    if(!empty($sale->webinar) and $sale->webinar->start_date <= time() and !empty($lastSession) and $lastSession->date > time()) {
-                        $isProgressing = true;
-                    }
-                @endphp
-
-                @if(!empty($item))
-
-                        <div class="col-lg-6 mt-15">
-                            <div class="webinar-card webinar-list d-flex">
-                                <div class="image-box" style="height:auto !important;">
-                                    <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $item->getImage() }}" class="img-cover" alt="">
-
-                                    @if(!empty($sale->webinar))
-                                        @if($item->type == 'webinar')
-                                            @if($item->start_date > time())
-                                                <span class="badge badge-primary">{{  trans('panel.not_conducted') }}</span>
-                                            @elseif($item->isProgressing())
-                                                <span class="badge badge-secondary">{{ trans('webinars.in_progress') }}</span>
-                                            @else
-                                                <span class="badge badge-secondary">{{ trans('public.finished') }}</span>
-                                            @endif
-                                        @elseif(!empty($item->downloadable))
-                                            <span class="badge badge-secondary">{{ trans('home.downloadable') }}</span>
-                                        @else
-                                            <span class="badge badge-secondary">{{ trans('webinars.'.$item->type) }}</span>
-                                        @endif
-
-                                        @php
-                                            $percent = $item->getProgress();
-
-                                            if($item->isWebinar()){
-                                                if($item->isProgressing()) {
-                                                    $progressTitle = trans('public.course_learning_passed',['percent' => $percent]);
-                                                } else {
-                                                    $progressTitle = $item->sales_count .'/'. $item->capacity .' '. trans('quiz.students');
-                                                }
-                                            } else {
-                                                   $progressTitle = trans('public.course_learning_passed',['percent' => $percent]);
-                                            }
-                                        @endphp
-
-                                        @if(!empty($sale->gift_id) and $sale->buyer_id == $authUser->id)
-
-                                        @else
-                                            <div class="progress cursor-pointer" data-toggle="tooltip" data-placement="top" title="{{ $progressTitle }}">
-                                                <span class="progress-bar" style="width: {{ $percent }}%"></span>
-                                            </div>
-                                        @endif
-                                    @else
-                                        <span class="badge badge-secondary">{{ trans('update.bundle') }}</span>
-                                    @endif
+                    @if(!empty($item))
+                        <div class="col-12 col-lg-6 mt-15">
+                            <div class="premium-course-card">
+                                <div class="image-container">
+                                    <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $item->getImage() }}" alt="{{ $item->title }}">
+                                    <a href="{{ $item->getLearningPageUrl() }}" class="play-overlay">
+                                        <i data-feather="play" width="24" height="24" fill="currentColor"></i>
+                                    </a>
                                 </div>
 
-                                <div class="webinar-card-body w-100 d-flex flex-column">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <a href="{{ $item->getLearningPageUrl() }}">
-                                            <h3 class="webinar-title font-weight-bold font-16 text-dark-blue">
-                                                {{ $item->title }}
-
-                                                @if(!empty($item->access_days))
-                                                    @if(!$item->checkHasExpiredAccessDays($sale->created_at, $sale->gift_id))
-                                                        <span class="badge badge-outlined-danger ml-10">{{ trans('update.access_days_expired') }}</span>
-                                                    @else
-                                                        <span class="badge badge-outlined-warning ml-10">{{ trans('update.expired_on_date',['date' => dateTimeFormat($item->getExpiredAccessDays($sale->created_at, $sale->gift_id),'j M Y')]) }}</span>
-                                                    @endif
-                                                @endif
-
-                                                @if($sale->payment_method == \App\Models\Sale::$subscribe and $sale->checkExpiredPurchaseWithSubscribe($sale->buyer_id, $item->id, !empty($sale->webinar) ? 'webinar_id' : 'bundle_id'))
-                                                    <span class="badge badge-outlined-danger ml-10">{{ trans('update.subscribe_expired') }}</span>
-                                                @endif
-
-                                                @if(!empty($sale->webinar))
-                                                    <span class="badge badge-dark ml-10 status-badge-dark">{{ trans(''.$item->lang) }}</span>
-                                                @endif
-
-                                                @if(!empty($sale->gift_id))
-                                                    <span class="badge badge-primary ml-10">{{ trans('update.gift') }}</span>
-                                                @endif
-                                            </h3>
-                                        </a>
+                                <div class="info-container">
+                                    <div class="header-section">
+                                        <div class="w-100">
+                                            <a href="{{ $item->getLearningPageUrl() }}" class="course-title">{{ $item->title }}</a>
+                                        </div>
 
                                         <div class="btn-group dropdown table-actions">
                                             <button type="button" class="btn-transparent dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 <i data-feather="more-vertical" height="20"></i>
                                             </button>
-
                                             <div class="dropdown-menu">
                                                 @if(!empty($sale->gift_id) and $sale->buyer_id == $authUser->id)
-                                                    <a href="/panel/webinars/{{ $item->id }}/sale/{{ $sale->id }}/invoice" target="_blank" class="webinar-actions d-block mt-10">{{ trans('public.invoice') }}</a>
+                                                    <a href="/panel/webinars/{{ $item->id }}/sale/{{ $sale->id }}/invoice" target="_blank" class="webinar-actions d-block mt-10">
+                                                        <i data-feather="file-text" width="14" height="14" class="mr-8"></i>
+                                                        {{ trans('public.invoice') }}
+                                                    </a>
                                                 @else
                                                     @if(!empty($item->access_days) and !$item->checkHasExpiredAccessDays($sale->created_at, $sale->gift_id))
-                                                        <a href="{{ $item->getLearningPageUrl() }}" target="_blank" class="webinar-actions d-block mt-10">{{ trans('update.enroll_on_course') }}</a>
-                                                    @elseif(!empty($sale->webinar))
-                                                        <a href="{{ $item->getLearningPageUrl() }}" target="_blank" class="webinar-actions d-block">{{ trans('update.learning_page') }}</a>
+                                                        <a href="{{ $item->getLearningPageUrl() }}" target="_blank" class="webinar-actions d-block mt-10">
+                                                            <i data-feather="play-circle" width="14" height="14" class="mr-8"></i>
+                                                            {{ trans('update.enroll_on_course') }}
+                                                        </a>
+                                                    @elseif(!empty($item) and $item instanceof \App\Models\Webinar)
+                                                        <a href="{{ $item->getLearningPageUrl() }}" target="_blank" class="webinar-actions d-block">
+                                                            <i data-feather="book-open" width="14" height="14" class="mr-8"></i>
+                                                            {{ trans('update.learning_page') }}
+                                                        </a>
 
                                                         @if(!empty($item->start_date) and ($item->start_date > time() or ($item->isProgressing() and !empty($nextSession))))
-                                                            <button type="button" data-webinar-id="{{ $item->id }}" class="join-purchase-webinar webinar-actions btn-transparent d-block mt-10">{{ trans('footer.join') }}</button>
+                                                            <button type="button" data-webinar-id="{{ $item->id }}" class="join-purchase-webinar webinar-actions btn-transparent d-block mt-10">
+                                                                <i data-feather="video" width="14" height="14" class="mr-8"></i>
+                                                                {{ trans('footer.join') }}
+                                                            </button>
                                                         @endif
 
                                                         @if(!empty($item->downloadable) or (!empty($item->files) and count($item->files)))
-                                                            <a href="{{ $item->getUrl() }}?tab=content" target="_blank" class="webinar-actions d-block mt-10">{{ trans('home.download') }}</a>
+                                                            <a href="{{ $item->getUrl() }}?tab=content" target="_blank" class="webinar-actions d-block mt-10">
+                                                                <i data-feather="download" width="14" height="14" class="mr-8"></i>
+                                                                {{ trans('home.download') }}
+                                                            </a>
                                                         @endif
 
                                                         @if($item->price > 0)
-                                                            <a href="/panel/webinars/{{ $item->id }}/sale/{{ $sale->id }}/invoice" target="_blank" class="webinar-actions d-block mt-10">{{ trans('public.invoice') }}</a>
+                                                            <a href="/panel/webinars/{{ $item->id }}/sale/{{ $sale->id }}/invoice" target="_blank" class="webinar-actions d-block mt-10">
+                                                                <i data-feather="file-text" width="14" height="14" class="mr-8"></i>
+                                                                {{ trans('public.invoice') }}
+                                                            </a>
                                                         @endif
                                                     @endif
 
-                                                    <a href="{{ $item->getUrl() }}?tab=reviews" target="_blank" class="webinar-actions d-block mt-10">{{ trans('public.feedback') }}</a>
+                                                    <a href="{{ $item->getUrl() }}?tab=reviews" target="_blank" class="webinar-actions d-block mt-10">
+                                                        <i data-feather="star" width="14" height="14" class="mr-8"></i>
+                                                        {{ trans('public.feedback') }}
+                                                    </a>
                                                 @endif
                                             </div>
                                         </div>
                                     </div>
 
-                                    @include(getTemplate() . '.includes.webinar.rate',['rate' => $item->getRate()])
-
-                                    <div class="webinar-price-box mt-15">
-                                        @if($item->price > 0)
-                                            @if($item->bestTicket() < $item->price)
-                                                <span class="real">{{ handlePrice($item->bestTicket(), true, true, false, null, true) }}</span>
-                                                <span class="off ml-10">{{ handlePrice($item->price, true, true, false, null, true) }}</span>
-                                            @else
-                                                <span class="real">{{ handlePrice($item->price, true, true, false, null, true) }}</span>
-                                            @endif
-                                        @else
-                                            <span class="real">{{ trans('public.free') }}</span>
-                                        @endif
+                                    <div class="info-grid">
+                                        <div class="info-item">
+                                            <div class="info-icon"><i data-feather="book" width="16" height="16"></i></div>
+                                            <div class="info-text">
+                                                <span class="info-value">{{ trans('webinars.'.$item->type) }}</span>
+                                                <span class="info-label">Type</span>
+                                            </div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-icon"><i data-feather="activity" width="16" height="16"></i></div>
+                                            <div class="info-text">
+                                                <span class="info-value">{{ $item->getProgress() }}%</span>
+                                                <span class="info-label">Learning Progress</span>
+                                            </div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-icon"><i data-feather="calendar" width="16" height="16"></i></div>
+                                            <div class="info-text">
+                                                <span class="info-value">{{ dateTimeFormat($sale->created_at, 'j M Y') }}</span>
+                                                <span class="info-label">Enrollment Date</span>
+                                            </div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-icon"><i data-feather="clock" width="16" height="16"></i></div>
+                                            <div class="info-text">
+                                                <span class="info-value">{{ convertMinutesToHourAndMinute($item->duration) }}</span>
+                                                <span class="info-label">Duration</span>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <div class="d-flex align-items-center justify-content-between flex-wrap mt-auto">
-
-                                        @if(!empty($sale->gift_id) and $sale->buyer_id == $authUser->id)
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('update.gift_status') }}:</span>
-
-                                                @if(!empty($sale->gift_date) and $sale->gift_date > time())
-                                                    <span class="stat-value text-warning">{{ trans('public.pending') }}</span>
-                                                @else
-                                                    <span class="stat-value text-primary">{{ trans('update.sent') }}</span>
-                                                @endif
-                                            </div>
-                                        @else
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('public.item_id') }}:</span>
-                                                <span class="stat-value">{{ $item->id }}</span>
-                                            </div>
-                                        @endif
-
-                                        @if(!empty($sale->gift_id))
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('update.gift_receive_date') }}:</span>
-                                                <span class="stat-value">{{ (!empty($sale->gift_date)) ? dateTimeFormat($sale->gift_date, 'j M Y H:i') : trans('update.instantly') }}</span>
-                                            </div>
-                                        @else
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('public.category') }}:</span>
-                                                <span class="stat-value">{{ !empty($item->category_id) ? $item->category->title : '' }}</span>
-                                            </div>
-                                        @endif
-
-                                        @if(!empty($sale->webinar) and $item->type == 'webinar')
-                                            @if($item->isProgressing() and !empty($nextSession))
-                                                <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                    <span class="stat-title">{{ trans('webinars.next_session_duration') }}:</span>
-                                                    <span class="stat-value">{{ convertMinutesToHourAndMinute($nextSession->duration) }} Hrs</span>
-                                                </div>
-
-                                                <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                    <span class="stat-title">{{ trans('webinars.next_session_start_date') }}:</span>
-                                                    <span class="stat-value">{{ dateTimeFormat($nextSession->date,'j M Y') }}</span>
-                                                </div>
-                                            @else
-                                                <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                    <span class="stat-title">{{ trans('public.duration') }}:</span>
-                                                    <span class="stat-value">{{ convertMinutesToHourAndMinute($item->duration) }} Hrs</span>
-                                                </div>
-
-                                                <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                    <span class="stat-title">{{ trans('public.start_date') }}:</span>
-                                                    <span class="stat-value">{{ dateTimeFormat($item->start_date,'j M Y') }}</span>
-                                                </div>
-                                            @endif
-                                        @elseif(!empty($sale->bundle))
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('public.duration') }}:</span>
-                                                <span class="stat-value">{{ convertMinutesToHourAndMinute($item->getBundleDuration()) }} Hrs</span>
-                                            </div>
-                                        @endif
-
-                                        @if(!empty($sale->gift_id) and $sale->buyer_id == $authUser->id)
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('update.receipt') }}:</span>
-                                                <span class="stat-value">{{ $sale->gift_recipient }}</span>
-                                            </div>
-                                        @else
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('public.instructor') }}:</span>
-                                                <span class="stat-value">{{ $item->teacher->full_name }}</span>
-                                            </div>
-                                        @endif
-
-                                        @if(!empty($sale->gift_id) and $sale->buyer_id != $authUser->id)
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('update.gift_sender') }}:</span>
-                                                <span class="stat-value">{{ $sale->gift_sender }}</span>
-                                            </div>
-                                        @else
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('panel.purchase_date') }}:</span>
-                                                <span class="stat-value">{{ dateTimeFormat($sale->created_at,'j M Y') }}</span>
-                                            </div>
-                                        @endif
-
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                @endif
-            @endforeach
-
-              @foreach($orders as $sale)
-                @php
-                    $item = !empty($sale->webinar) ? $sale->webinar : $sale->bundle;
-
-                    $lastSession = !empty($sale->webinar) ? $sale->webinar->lastSession() : null;
-                    $nextSession = !empty($sale->webinar) ? $sale->webinar->nextSession() : null;
-                    $isProgressing = false;
-
-                    if(!empty($sale->webinar) and $sale->webinar->start_date <= time() and !empty($lastSession) and $lastSession->date > time()) {
-                        $isProgressing = true;
-                    }
-                @endphp
-
-                @if(!empty($item))
-
-                        <div class="col-6  mt-15">
-                            <div class="webinar-card webinar-list d-flex">
-                                <div class="image-box" style="height:auto !important;">
-                                    <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $item->getImage() }}" class="img-cover" alt="">
-
-                                    @if(!empty($sale->webinar))
-                                        @if($item->type == 'webinar')
-                                            @if($item->start_date > time())
-                                                <span class="badge badge-primary">{{  trans('panel.not_conducted') }}</span>
-                                            @elseif($item->isProgressing())
-                                                <span class="badge badge-secondary">{{ trans('webinars.in_progress') }}</span>
-                                            @else
-                                                <span class="badge badge-secondary">{{ trans('public.finished') }}</span>
-                                            @endif
-                                        @elseif(!empty($item->downloadable))
-                                            <span class="badge badge-secondary">{{ trans('home.downloadable') }}</span>
-                                        @else
-                                            <span class="badge badge-secondary">{{ trans('webinars.'.$item->type) }}</span>
-                                        @endif
-
-                                        @php
-                                            $percent = $item->getProgress();
-
-                                            if($item->isWebinar()){
-                                                if($item->isProgressing()) {
-                                                    $progressTitle = trans('public.course_learning_passed',['percent' => $percent]);
-                                                } else {
-                                                    $progressTitle = $item->sales_count .'/'. $item->capacity .' '. trans('quiz.students');
-                                                }
-                                            } else {
-                                                   $progressTitle = trans('public.course_learning_passed',['percent' => $percent]);
-                                            }
-                                        @endphp
-
-                                        @if(!empty($sale->gift_id) and $sale->buyer_id == $authUser->id)
-
-                                        @else
-                                            <div class="progress cursor-pointer" data-toggle="tooltip" data-placement="top" title="{{ $progressTitle }}">
-                                                <span class="progress-bar" style="width: {{ $percent }}%"></span>
-                                            </div>
-                                        @endif
-                                    @else
-                                        <span class="badge badge-secondary">{{ trans('update.bundle') }}</span>
-                                    @endif
-                                </div>
-
-                                <div class="webinar-card-body w-100 d-flex flex-column">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <a href="{{ $item->getUrl() }}">
-                                            <h3 class="webinar-title font-weight-bold font-16 text-dark-blue">
-                                                {{ $item->title }}
-
+                                    <div class="footer-section">
+                                        <div class="expiry-info">
+                                            <div class="expiry-icon"><i data-feather="calendar" width="16" height="16"></i></div>
+                                            <div>
                                                 @if(!empty($item->access_days))
-                                                    @if(!$item->checkHasExpiredAccessDays($sale->created_at, $sale->gift_id))
-                                                        <span class="badge badge-outlined-danger ml-10">{{ trans('update.access_days_expired') }}</span>
-                                                    @else
-                                                        <span class="badge badge-outlined-warning ml-10">{{ trans('update.expired_on_date',['date' => dateTimeFormat($item->getExpiredAccessDays($sale->created_at, $sale->gift_id),'j M Y')]) }}</span>
+                                                    @php
+                                                        $expiryDate = $item->getExpiredAccessDays($sale->created_at, $sale->gift_id);
+                                                        $isExpired = !$item->checkHasExpiredAccessDays($sale->created_at, $sale->gift_id);
+                                                    @endphp
+                                                    <span class="d-block font-12 font-weight-bold {{ $isExpired ? 'text-danger' : 'text-dark-blue' }}">
+                                                        {{ $isExpired ? trans('update.access_days_expired') : 'Course Expiry' }}
+                                                    </span>
+                                                    @if(!$isExpired)
+                                                        <span class="d-block font-11 text-gray">Course access expires on {{ dateTimeFormat($expiryDate, 'j M Y') }}</span>
                                                     @endif
-                                                @endif
-
-                                                @if($sale->payment_method == \App\Models\Sale::$subscribe and $sale->checkExpiredPurchaseWithSubscribe($sale->buyer_id, $item->id, !empty($sale->webinar) ? 'webinar_id' : 'bundle_id'))
-                                                    <span class="badge badge-outlined-danger ml-10">{{ trans('update.subscribe_expired') }}</span>
-                                                @endif
-
-                                                @if(!empty($sale->webinar))
-                                                    <span class="badge badge-dark ml-10 status-badge-dark">{{ trans(''.$item->lang) }}</span>
-                                                @endif
-
-                                                @if(!empty($sale->gift_id))
-                                                    <span class="badge badge-primary ml-10">{{ trans('update.gift') }}</span>
-                                                @endif
-                                            </h3>
-                                        </a>
-
-                                        <div class="btn-group dropdown table-actions">
-                                            <button type="button" class="btn-transparent dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                <i data-feather="more-vertical" height="20"></i>
-                                            </button>
-
-                                            <div class="dropdown-menu">
-                                                @if(!empty($sale->gift_id) and $sale->buyer_id == $authUser->id)
-                                                    <a href="/panel/webinars/{{ $item->id }}/sale/{{ $sale->id }}/invoice" target="_blank" class="webinar-actions d-block mt-10">{{ trans('public.invoice') }}</a>
                                                 @else
-                                                    @if(!empty($item->access_days) and !$item->checkHasExpiredAccessDays($sale->created_at, $sale->gift_id))
-                                                        <a href="{{ $item->getUrl() }}" target="_blank" class="webinar-actions d-block mt-10">{{ trans('update.enroll_on_course') }}</a>
-                                                    @elseif(!empty($sale->webinar))
-                                                        <a href="{{ $item->getLearningPageUrl() }}" target="_blank" class="webinar-actions d-block">{{ trans('update.learning_page') }}</a>
-
-                                                        @if(!empty($item->start_date) and ($item->start_date > time() or ($item->isProgressing() and !empty($nextSession))))
-                                                            <button type="button" data-webinar-id="{{ $item->id }}" class="join-purchase-webinar webinar-actions btn-transparent d-block mt-10">{{ trans('footer.join') }}</button>
-                                                        @endif
-
-                                                    @endif
-
-                                                    <a href="{{ $item->getUrl() }}?tab=reviews" target="_blank" class="webinar-actions d-block mt-10">{{ trans('public.feedback') }}</a>
+                                                    <span class="d-block font-12 font-weight-bold text-dark-blue">Lifetime Access</span>
+                                                    <span class="d-block font-11 text-gray">Unlimited course access</span>
                                                 @endif
                                             </div>
                                         </div>
-                                    </div>
 
-                                    @include(getTemplate() . '.includes.webinar.rate',['rate' => $item->getRate()])
-
-                                    <div class="webinar-price-box mt-15">
-                                        @if($item->price > 0)
-                                            @if($item->bestTicket() < $item->price)
-                                                <span class="real">{{ handlePrice($item->bestTicket(), true, true, false, null, true) }}</span>
-                                                <span class="off ml-10">{{ handlePrice($item->price, true, true, false, null, true) }}</span>
-                                            @else
-                                                <span class="real">{{ handlePrice($item->price, true, true, false, null, true) }}</span>
-                                            @endif
-                                        @else
-                                            <span class="real">{{ trans('public.free') }}</span>
-                                        @endif
-                                    </div>
-
-                                    <div class="d-flex align-items-center justify-content-between flex-wrap mt-auto">
-
-                                        @if(!empty($sale->gift_id) and $sale->buyer_id == $authUser->id)
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('update.gift_status') }}:</span>
-
-                                                @if(!empty($sale->gift_date) and $sale->gift_date > time())
-                                                    <span class="stat-value text-warning">{{ trans('public.pending') }}</span>
-                                                @else
-                                                    <span class="stat-value text-primary">{{ trans('update.sent') }}</span>
-                                                @endif
-                                            </div>
-                                        @else
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('public.item_id') }}:</span>
-                                                <span class="stat-value">{{ $item->id }}</span>
-                                            </div>
-                                        @endif
-
-                                        @if(!empty($sale->gift_id))
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('update.gift_receive_date') }}:</span>
-                                                <span class="stat-value">{{ (!empty($sale->gift_date)) ? dateTimeFormat($sale->gift_date, 'j M Y H:i') : trans('update.instantly') }}</span>
-                                            </div>
-                                        @else
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('public.category') }}:</span>
-                                                <span class="stat-value">{{ !empty($item->category_id) ? $item->category->title : '' }}</span>
-                                            </div>
-                                        @endif
-
-                                        @if(!empty($sale->webinar) and $item->type == 'webinar')
-                                            @if($item->isProgressing() and !empty($nextSession))
-                                                <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                    <span class="stat-title">{{ trans('webinars.next_session_duration') }}:</span>
-                                                    <span class="stat-value">{{ convertMinutesToHourAndMinute($nextSession->duration) }} Hrs</span>
-                                                </div>
-
-                                                <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                    <span class="stat-title">{{ trans('webinars.next_session_start_date') }}:</span>
-                                                    <span class="stat-value">{{ dateTimeFormat($nextSession->date,'j M Y') }}</span>
-                                                </div>
-                                            @else
-                                                <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                    <span class="stat-title">{{ trans('public.duration') }}:</span>
-                                                    <span class="stat-value">{{ convertMinutesToHourAndMinute($item->duration) }} Hrs</span>
-                                                </div>
-
-                                                <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                    <span class="stat-title">{{ trans('public.start_date') }}:</span>
-                                                    <span class="stat-value">{{ dateTimeFormat($item->start_date,'j M Y') }}</span>
-                                                </div>
-                                            @endif
-                                        @elseif(!empty($sale->bundle))
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('public.duration') }}:</span>
-                                                <span class="stat-value">{{ convertMinutesToHourAndMinute($item->getBundleDuration()) }} Hrs</span>
-                                            </div>
-                                        @endif
-
-                                        @if(!empty($sale->gift_id) and $sale->buyer_id == $authUser->id)
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('update.receipt') }}:</span>
-                                                <span class="stat-value">{{ $sale->gift_recipient }}</span>
-                                            </div>
-                                        @else
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('public.instructor') }}:</span>
-                                                <span class="stat-value">{{ $item->teacher->full_name }}</span>
-                                            </div>
-                                        @endif
-
-                                        @if(!empty($sale->gift_id) and $sale->buyer_id != $authUser->id)
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('update.gift_sender') }}:</span>
-                                                <span class="stat-value">{{ $sale->gift_sender }}</span>
-                                            </div>
-                                        @else
-                                            <div class="d-flex align-items-start flex-column mt-20 mr-15">
-                                                <span class="stat-title">{{ trans('panel.purchase_date') }}:</span>
-                                                <span class="stat-value">{{ dateTimeFormat($sale->created_at,'j M Y') }}</span>
-                                            </div>
-                                        @endif
-
+                                        <a href="{{ $item->getLearningPageUrl() }}" class="continue-btn">
+                                            Continue
+                                            <i data-feather="arrow-right" width="16" height="16" class="ml-5"></i>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                @endif
-            @endforeach
-             </div>
-      
+                    @endif
+                @endforeach
+            </div>
         @else
-    @include(getTemplate() . '.includes.no-result', [
-        "file_name" => "student.png",
-        "title" => trans("panel.no_result_purchases"),
-        "hint" => trans("panel.no_result_purchases_hint"),
-        "btn" => [
-            "url" => config("app.manual_base_url") . "/classes?sort=newest",
-            "text" => trans("panel.start_learning")
-        ]
-    ])
-@endif
+            @include(getTemplate() . '.includes.no-result', [
+                "file_name" => "student.png",
+                "title" => trans("panel.no_result_purchases"),
+                "hint" => trans("panel.no_result_purchases_hint"),
+                "btn" => [
+                    "url" => config("app.manual_base_url") . "/classes?sort=newest",
+                    "text" => trans("panel.start_learning")
+                ]
+            ])
+        @endif
 
     </section>
 

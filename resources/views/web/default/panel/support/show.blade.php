@@ -1,389 +1,221 @@
 @extends(getTemplate() .'.panel.layouts.panel_layout')
-<style>
-    .badge-light-success {
-  background-color: #d4edda !important;
-  color: #155724;
-}
-
-</style>
+@push('styles_top')
+    <style>
+        .premium-detail-container {
+            background: #fff;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+            border: 1px solid #f8f8f8;
+        }
+        .detail-item {
+            margin-bottom: 20px;
+        }
+        .detail-label {
+            font-size: 13px;
+            color: #6c757d;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .detail-value {
+            font-size: 15px;
+            color: #1f3b64;
+            font-weight: 700;
+        }
+        .message-box {
+            background: #f8faff;
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid #eee;
+            color: #1f3b64;
+            line-height: 1.6;
+        }
+        .scenario-badge {
+            background: rgba(31, 59, 100, 0.05);
+            color: #1f3b64;
+            padding: 10px 20px;
+            border-radius: 12px;
+            display: inline-block;
+            font-weight: 700;
+        }
+        .attachment-card {
+            border: 1px solid #eee;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .attachment-card:hover {
+            border-color: #1f3b64;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+    </style>
+@endpush
 @section('content')
     <section>
-        <div class="d-flex align-items-start align-items-md-center justify-content-between flex-column flex-md-row">
-            <h2 class="section-title">Support Ticket Details</h2>
-            <a href="{{ route('newsuportforasttrolok.index') }}" class="btn btn-sm btn-primary mt-3 mt-md-0">
-                <i class="fa fa-list mr-1"></i>
-                All Tickets
+        <div class="d-flex align-items-center justify-content-between mb-25">
+            <h2 class="section-title mb-0">Ticket #{{ $supportRequest->ticket_number }}</h2>
+            <a href="{{ route('newsuportforasttrolok.index') }}" class="btn btn-border-white d-flex align-items-center">
+                <i data-feather="arrow-left" width="18" height="18" class="mr-5"></i>
+                Back to Tickets
             </a>
         </div>
 
-        <div class="mt-25 rounded-sm shadow py-20 px-10 px-lg-25 bg-white">
+        <div class="premium-detail-container mt-25">
             
-            {{-- Payment Success Message for Offline Cash Payment --}}
+            {{-- Payment Success Message --}}
             @if($supportRequest->support_scenario === 'offline_cash_payment' && $supportRequest->status === 'executed')
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <div class="d-flex align-items-center">
-                        <div class="mr-3">
-                            <i class="fa fa-check-circle fa-2x"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h5 class="alert-heading mb-1">Payment Successful! 🎉</h5>
-                            <p class="mb-2">Your offline cash payment of <strong>₹{{ number_format($supportRequest->cash_amount ?? 0, 2) }}</strong> has been verified and approved.</p>
-                            <p class="mb-0">You now have full access to <strong>{{ $supportRequest->webinar?->title }}</strong>. You can start learning immediately!</p>
-                        </div>
+                <div class="glass-alert-success mb-30 p-25 rounded-20 d-flex align-items-center" style="background: rgba(67, 212, 119, 0.1); border: 1px solid rgba(67, 212, 119, 0.2); border-left: 5px solid #43d477;">
+                    <div class="mr-20">
+                        <i data-feather="check-circle" width="40" height="40" class="text-success"></i>
                     </div>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <div>
+                        <h4 class="font-18 font-weight-bold text-dark-blue mb-5">Payment Successfully Applied! 🎉</h4>
+                        <p class="mb-0 text-gray">Your payment of <strong>₹{{ number_format($supportRequest->cash_amount ?? 0, 2) }}</strong> has been verified. You now have full access to current course.</p>
+                    </div>
                 </div>
-                
-                <div class="text-center mb-4">
-                    <a href="{{ $supportRequest->webinar ? route('webinar', $supportRequest->webinar->id) : '#' }}" class="btn btn-success btn-lg">
-                        <i class="fa fa-play-circle mr-2"></i> Start Learning Now
-                    </a>
-                    <a href="{{ route('user.purchased_courses') }}" class="btn btn-outline-primary btn-lg ml-2">
-                        <i class="fa fa-list mr-2"></i> My Courses
-                    </a>
-                </div>
-                
-                <hr>
             @endif
             
             {{-- Ticket Header --}}
-            <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+            <div class="d-flex align-items-center justify-content-between mb-30 pb-20 border-bottom">
                 <div>
-                    <h3 class="mb-2">{{ $supportRequest->title }}</h3>
-                    <p class="text-gray mb-0">
-                        <strong>Ticket Number:</strong> 
-                        <span class="text-primary">{{ $supportRequest->ticket_number }}</span>
-                    </p>
+                    <h3 class="font-20 font-weight-bold text-dark-blue">{{ $supportRequest->title }}</h3>
+                    <div class="mt-5 d-flex align-items-center">
+                        <span class="scenario-badge mr-15">
+                            <i data-feather="tag" width="14" height="14" class="mr-5"></i>
+                            {{ $supportRequest->getScenarioLabel() }}
+                        </span>
+                        <span class="text-gray font-14"><i data-feather="calendar" width="14" height="14" class="mr-5"></i>{{ $supportRequest->created_at->format('d M Y, h:i A') }}</span>
+                    </div>
                 </div>
                 <div>
-                    <span class="badge badge-{{ $supportRequest->getStatusBadgeClass() }}" style="font-size: 14px; padding: 8px 16px;">
+                    @php
+                        $badgeClass = 'bg-primary';
+                        if($supportRequest->status == 'pending') $badgeClass = 'bg-warning';
+                        elseif($supportRequest->status == 'approved' || $supportRequest->status == 'executed') $badgeClass = 'bg-success';
+                        elseif($supportRequest->status == 'rejected') $badgeClass = 'bg-danger';
+                    @endphp
+                    <span class="badge {{ $badgeClass }} text-white font-14 px-20 py-10" style="border-radius: 12px;">
                         {{ ucfirst(str_replace('_', ' ', $supportRequest->status)) }}
                     </span>
                 </div>
             </div>
 
-            {{-- Request Information --}}
             <div class="row">
-                <div class="col-12 col-md-6">
-                    <div class="mb-4">
-                        <label class="font-weight-500 text-dark-blue d-block mb-2">Requester</label>
-                        <p class="mb-0">{{ $supportRequest->getRequesterName() }}</p>
-                        <small class="text-gray">{{ $supportRequest->getRequesterEmail() }}</small>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="font-weight-500 text-dark-blue d-block mb-2">Course</label>
-                        <p class="mb-0">{{ $supportRequest->webinar?->title }}</p>
-                        <small class="text-gray">by {{ $supportRequest->webinar?->creator?->full_name }}</small>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="font-weight-500 text-dark-blue d-block mb-2">Support Scenario</label>
-                        <p class="mb-0">{{ $supportRequest->getScenarioLabel() }}</p>
+                <div class="col-12 col-md-4">
+                    <div class="detail-item">
+                        <span class="detail-label">Status History</span>
+                        <div class="mt-10">
+                            @if(in_array($supportRequest->status, ['rejected', 'approved', 'executed', 'closed', 'verified']))
+                                <div class="p-15 rounded-15" style="background: #f8faff; border: 1px dashed #ddd;">
+                                    <h6 class="font-14 font-weight-bold mb-5">
+                                        @if($supportRequest->status === 'rejected')
+                                            <i data-feather="x-circle" width="16" height="16" class="text-danger mr-5"></i> Rejected
+                                        @elseif($supportRequest->status === 'approved' || $supportRequest->status === 'executed')
+                                            <i data-feather="check-circle" width="16" height="16" class="text-success mr-5"></i> Approved/Executed
+                                        @else
+                                            <i data-feather="info" width="16" height="16" class="text-primary mr-5"></i> {{ ucfirst($supportRequest->status) }}
+                                        @endif
+                                    </h6>
+                                    @if($supportRequest->rejection_reason || $supportRequest->approval_remarks || $supportRequest->execution_notes)
+                                        <p class="font-13 text-gray mb-0">
+                                            {{ $supportRequest->rejection_reason ?? $supportRequest->approval_remarks ?? $supportRequest->execution_notes }}
+                                        </p>
+                                    @endif
+                                </div>
+                            @else
+                                <span class="badge bg-glass-warning">Awaiting Review</span>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-12 col-md-6">
-                    <div class="mb-4">
-                        <label class="font-weight-500 text-dark-blue d-block mb-2">Flow Type</label>
-                        <p class="mb-0">
-                            <span class="badge badge-info" style="color: #000000ff;">{{ $supportRequest->getFlowTypeLabel() }}</span>
-                        </p>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="font-weight-500 text-dark-blue d-block mb-2">Purchase Status</label>
-                        <p class="mb-0">{{ ucfirst(str_replace('_', ' ', $supportRequest->purchase_status)) }}</p>
-                        @if($supportRequest->course_purchased_at)
-                            <small class="text-gray">
-                                Purchased: {{ $supportRequest->course_purchased_at }}
-                            </small>
-                        @endif
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="font-weight-500 text-dark-blue d-block mb-2">Date</label>
-                        <p class="mb-0">{{ $supportRequest->created_at->format('d M Y, h:i A') }}</p>
-                        <small class="text-gray">{{ $supportRequest->created_at->diffForHumans() }}</small>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Status Updates Section --}}
-            @if(in_array($supportRequest->status, ['rejected', 'approved', 'executed', 'closed', 'verified']))
-            <div class="mt-4 p-3 border rounded" style="background-color: {{ $supportRequest->status === 'rejected' ? '#fff5f5' : ($supportRequest->status === 'approved' || $supportRequest->status === 'executed' ? '#f0fff4' : '#f0f4ff') }};">
-                <h5 class="mb-3">
-                    @if($supportRequest->status === 'rejected')
-                        <i class="fa fa-times-circle text-danger mr-1"></i> Request Rejected
-                    @elseif($supportRequest->status === 'approved')
-                        <i class="fa fa-check-circle text-success mr-1"></i> Request Approved
-                    @elseif($supportRequest->status === 'executed')
-                        <i class="fa fa-check-double text-primary mr-1"></i> Request Executed
-                    @elseif($supportRequest->status === 'verified')
-                        <i class="fa fa-shield text-info mr-1"></i> Request Verified
-                    @else
-                        <i class="fa fa-lock text-secondary mr-1"></i> Request Closed
-                    @endif
-                </h5>
-                @if($supportRequest->status === 'rejected' && $supportRequest->rejection_reason)
-                    <div class="mb-2">
-                        <strong>Reason:</strong>
-                        <p class="mb-0">{{ $supportRequest->rejection_reason }}</p>
-                    </div>
-                    @if($supportRequest->rejected_at)
-                        <small class="text-gray">Rejected on {{ $supportRequest->rejected_at->format('d M Y, h:i A') }}</small>
-                    @endif
-                @endif
-                @if(in_array($supportRequest->status, ['approved', 'executed']) && $supportRequest->approval_remarks)
-                    <div class="mb-2">
-                        <strong>Approval Remarks:</strong>
-                        <p class="mb-0">{{ $supportRequest->approval_remarks }}</p>
-                    </div>
-                    @if($supportRequest->approved_at)
-                        <small class="text-gray">Approved on {{ $supportRequest->approved_at->format('d M Y, h:i A') }}</small>
-                    @endif
-                @endif
-                @if($supportRequest->status === 'executed' && $supportRequest->execution_notes)
-                    <div class="mb-2 mt-2">
-                        <strong>Execution Notes:</strong>
-                        <p class="mb-0">{{ $supportRequest->execution_notes }}</p>
-                    </div>
-                    @if($supportRequest->executed_at)
-                        <small class="text-gray">Executed on {{ $supportRequest->executed_at->format('d M Y, h:i A') }}</small>
-                    @endif
-                @endif
-            </div>
-            @endif
-
-            {{-- Scenario Specific Data --}}
-
-
-            
-            @if($supportRequest->support_scenario)
-            <div class="mt-4 p-3 border rounded" style="background-color: #f8f9fa;">
-                <h5 class="mb-3">Scenario Details</h5>
-                
-                @if($supportRequest->support_scenario === 'course_extension')
-                    <div class="row">
-                        <div class="col-md-6">
-                            <strong>Extension Days:</strong> {{ $supportRequest->extension_days }} days
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Reason:</strong> {{ $supportRequest->extension_reason }}
-                        </div>
-                    </div>
-                @endif
-
-                @if($supportRequest->support_scenario === 'temporary_access')
-                    <!-- <div class="row">
-                        <div class="col-md-6">
-                            <strong>Pending Amount:</strong> ₹{{ number_format($supportRequest->pending_amount ?? 0, 2) }}
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Expected Payment:</strong> {{ $supportRequest->expected_payment_date }}
-                        </div>
-                    </div> -->
-                     @if($supportRequest->temporary_access_days)
-                    <div class="row">
-                        <div class="col-md-6">
-                            <strong>Temporary Access Duration:</strong> {{ $supportRequest->temporary_access_days }} Days
-                        </div>
-                    </div>
-                     @endif
-                    @if($supportRequest->temporary_access_reason)
-                    <div class="row">
-                        <div class="col-md-6">
-                            <strong>Reason for Temporary Access:</strong> {{ $supportRequest->temporary_access_reason }}
-                        </div>
-                    </div>
-                     @endif
-                @endif
-
-                @if($supportRequest->support_scenario === 'mentor_access')
-                    <div class="row">
-                        <div class="col-md-12 mb-2">
-                            <strong>Reason:</strong> {{ $supportRequest->mentor_change_reason }}
-                        </div>
-                    </div>
-                @endif
-
-                @if($supportRequest->support_scenario === 'relatives_friends_access')
-                    <div class="row">
-                        <div class="col-md-12">
-                            <strong>Description:</strong> {{ $supportRequest->relative_description }}
-                        </div>
-                    </div>
-                @endif
-
-                @if($supportRequest->support_scenario === 'free_course_grant')
-                    <div>
-                        <strong>Reason:</strong>
-                        <p>{{ $supportRequest->free_course_reason }}</p>
-                        @if($supportRequest->is_special_case)
-                            <span class="badge badge-warning">Special Case</span>
-                        @endif
-                    </div>
-                @endif
-
-                @if($supportRequest->support_scenario === 'offline_cash_payment')
-                    <div class="row">
-                        <div class="col-md-3">
-                            <strong>Amount:</strong> ₹{{ number_format($supportRequest->cash_amount ?? 0, 2) }}
-                        </div>
-                        <div class="col-md-3">
-                            <strong>Date:</strong> {{ $supportRequest->payment_date }}
-                        </div>
-                        <div class="col-md-3">
-                            <strong>Receipt:</strong> {{ $supportRequest->payment_receipt_number ?? 'N/A' }}
-                        </div>
-                        <div class="col-md-3">
-                            <strong>Location:</strong> {{ $supportRequest->payment_location }}
-                        </div>
-                    </div>
-                @endif
-
-                @if($supportRequest->support_scenario === 'installment_restructure')
-                    <div class="row">
-                        <!-- <div class="col-md-4">
-                            <strong>Installments:</strong> {{ $supportRequest->requested_installments }}
-                        </div>
-                        <div class="col-md-4">
-                            <strong>Per Installment:</strong> ₹{{ number_format($supportRequest->installment_amount ?? 0, 2) }}
-                        </div> -->
-                        <div class="col-md-12 mt-2">
-                            <strong>Reason:</strong> {{ $supportRequest->restructure_reason }}
-                        </div>
-                    </div>
-                @endif
-
-                @if($supportRequest->support_scenario === 'new_service_access')
-                    <div class="row">
-                        <div class="col-md-12">
-                            <strong>Service:</strong> {{ $supportRequest->requested_service }}
-                        </div>
-                        <div class="col-md-12 mt-2">
-                            <strong>Details:</strong>
-                            <p>{{ $supportRequest->service_details }}</p>
-                        </div>
-                    </div>
-                @endif
-
-                @if($supportRequest->support_scenario === 'refund_payment')
-                    <div class="row">
-                        <div class="col-md-12 mb-2">
-                            <strong>Reason:</strong> {{ $supportRequest->refund_reason }}
-                        </div>
-                        <div class="col-md-4">
-                            <strong>Account:</strong> {{ $supportRequest->bank_account_number }}
-                        </div>
-                        <div class="col-md-4">
-                            <strong>IFSC:</strong> {{ $supportRequest->ifsc_code }}
-                        </div>
-                        <div class="col-md-4">
-                            <strong>Holder:</strong> {{ $supportRequest->account_holder_name }}
-                        </div>
-                    </div>
-                @endif
-
-                @if($supportRequest->support_scenario === 'post_purchase_coupon')
-                    <div class="row">
-                       
-                        <div class="col-md-12 mt-2">
-                            <strong>Reason:</strong> {{ $supportRequest->coupon_apply_reason }}
-                        </div>
-                    </div>
-                @endif
-
-                @if($supportRequest->support_scenario === 'wrong_course_correction')
-                    <div class="row">
-                        <div class="col-md-12 mb-2">
-                            <strong>Reason:</strong> {{ $supportRequest->correction_reason }}
-                        </div>
-                    </div>
-                @endif
-            </div>
-            @endif
-
-            {{-- Description --}}
-            @if($supportRequest->description)
-                 <div class="mt-4">
-                <label class="font-weight-500 text-dark-blue d-block mb-2">Message</label>
-                <div class="p-3 border rounded" style="background-color: #f8f9fa;">
-                    {!! nl2br(e($supportRequest->description)) !!}
-                </div>
-            </div>
-            @endif
-           
-
-            {{-- Attachments --}}
-            @if($supportRequest->attachments)
-            <div class="mt-4">
-                <label class="font-weight-500 text-dark-blue d-block mb-2">Attachments ({{ is_array($supportRequest->attachments) ? count($supportRequest->attachments) : 0 }})</label>
-                
-                @if(is_array($supportRequest->attachments) && count($supportRequest->attachments) > 0)
-                <div class="row">
-                    @foreach($supportRequest->attachments as $attachment)
-                        @php
-                            $extension = pathinfo($attachment, PATHINFO_EXTENSION);
-                            $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
-                        @endphp
-                        <div class="col-12 col-md-4 mb-3">
-                            <a href="{{ asset('store/' . $attachment) }}" target="_blank" 
-                               class="d-block p-3 border rounded text-center hover-shadow" 
-                               style="text-decoration: none; transition: all 0.3s;">
-                                @if($isImage)
-                                    <img src="{{ asset('storage/' . $attachment) }}" 
-                                         class="img-fluid mb-2" 
-                                         style="max-height: 100px; object-fit: cover;"
-                                         alt="{{ basename($attachment) }}">
-                                @else
-                                    <i class="fa fa-file-{{ $extension === 'pdf' ? 'pdf' : 'alt' }}-o fa-3x text-primary mb-2"></i>
-                                @endif
-                                <p class="mb-0 text-truncate small">{{ basename($attachment) }}</p>
-                            </a>
-                        </div>
-                    @endforeach
-                </div>
-                @else
-                    <p class="text-gray">No attachments</p>
-                @endif
-            </div>
-            @endif
-
-
-
-            {{-- 
-            @if($supportRequest->logs && count($supportRequest->logs) > 0)
-            <div class="mt-4">
-                <label class="font-weight-500 text-dark-blue d-block mb-3">Activity Timeline</label>
-                <div class="timeline">
-                    @foreach($supportRequest->logs as $log)
-                    <div class="d-flex mb-3 pb-3 border-bottom">
-                        <div class="mr-3">
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                <i class="fa fa-check"></i>
+                <div class="col-12 col-md-4">
+                    <div class="detail-item">
+                        <span class="detail-label">Course / Service</span>
+                        <div class="d-flex align-items-center mt-10">
+                            <i data-feather="book-open" width="20" height="20" class="text-primary mr-10"></i>
+                            <div>
+                                <span class="detail-value d-block">{{ $supportRequest->webinar?->title ?? 'N/A' }}</span>
+                                <small class="text-gray">by {{ $supportRequest->webinar?->creator?->full_name ?? 'Instructor' }}</small>
                             </div>
                         </div>
-                        <div class="flex-grow-1">
-                            <p class="mb-1">
-                                <strong>{{ ucfirst($log->action) }}</strong>
-                                @if($log->user)
-                                    <span class="text-gray">by {{ $log->user->full_name }}</span>
-                                @endif
-                            </p>
-                            @if($log->remarks)
-                                <p class="mb-1 text-gray">{{ $log->remarks }}</p>
-                            @endif
-                            <small class="text-gray">{{ $log->created_at }}</small>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="detail-item">
+                        <span class="detail-label">Payment Mode</span>
+                        <div class="d-flex align-items-center mt-10">
+                            <i data-feather="credit-card" width="20" height="20" class="text-primary mr-10"></i>
+                            <span class="detail-value">{{ ucfirst(str_replace('_', ' ', $supportRequest->purchase_status)) }}</span>
                         </div>
                     </div>
-                    @endforeach
                 </div>
             </div>
+
+            {{-- Message Content --}}
+            <div class="mt-30 message-box">
+                <span class="detail-label mb-10">Description / Request Message</span>
+                <p class="mb-0">{!! nl2br(e($supportRequest->description)) !!}</p>
+                
+                @if($supportRequest->support_scenario === 'course_extension')
+                    <div class="mt-15 pt-15 border-top">
+                        <span class="badge bg-glass-primary mr-10">Extension: {{ $supportRequest->extension_days }} Days</span>
+                        <small class="text-gray">Reason: {{ $supportRequest->extension_reason }}</small>
+                    </div>
+                @elseif($supportRequest->support_scenario === 'offline_cash_payment')
+                     <div class="mt-15 pt-15 border-top row">
+                        <div class="col-6 col-md-3">
+                            <span class="detail-label">Amount Paid</span>
+                            <span class="detail-value">₹{{ number_format($supportRequest->cash_amount ?? 0, 2) }}</span>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <span class="detail-label">Date</span>
+                            <span class="detail-value">{{ $supportRequest->payment_date }}</span>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+            {{-- Attachments --}}
+            @if($supportRequest->attachments && count($supportRequest->attachments) > 0)
+                <div class="mt-40">
+                    <h5 class="font-16 font-weight-bold text-dark-blue mb-20"><i data-feather="paperclip" width="18" height="18" class="mr-5"></i>Attachments</h5>
+                    <div class="row">
+                        @foreach($supportRequest->attachments as $attachment)
+                            @php
+                                $extension = pathinfo($attachment, PATHINFO_EXTENSION);
+                                $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                            @endphp
+                            <div class="col-6 col-md-3 mb-20">
+                                <a href="{{ asset('store/' . $attachment) }}" target="_blank" class="attachment-card text-decoration-none">
+                                    @if($isImage)
+                                        <img src="{{ asset('storage/' . $attachment) }}" 
+                                             class="img-fluid rounded-10 mb-10" 
+                                             style="height: 60px; object-fit: cover;"
+                                             alt="{{ basename($attachment) }}">
+                                    @else
+                                        <div class="mb-10 text-primary">
+                                            <i data-feather="file-text" width="30" height="30"></i>
+                                        </div>
+                                    @endif
+                                    <span class="font-12 text-dark-blue text-truncate w-100 px-5">{{ basename($attachment) }}</span>
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
             @endif
-            Activity Timeline --}}
 
         </div>
     </section>

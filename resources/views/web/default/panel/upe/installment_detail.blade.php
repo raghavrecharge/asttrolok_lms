@@ -131,8 +131,8 @@
                         <div class="col-12 col-md-6 col-lg-4 mb-20">
                             <div class="summary-item">
                                 <div class="summary-label">
-                                    <i data-feather="package" width="16" height="16" class="mr-10 text-gray"></i>
-                                    Product
+                                    <i data-feather="book-open" width="16" height="16" class="mr-10 text-gray"></i>
+                                    Course
                                 </div>
                                 <span class="summary-value">
                                     @if($plan->sale && $plan->sale->product)
@@ -181,15 +181,24 @@
                         </div>
 
                         <div class="col-12 col-md-6 col-lg-4 mb-20">
-                            @if($plan->sale && $plan->sale->base_fee_snapshot > $plan->total_amount)
+                            @php
+                                $ledgerDiscount = $plan->sale->ledgerEntries->where('entry_type', 'discount')->sum('amount');
+                                $totalSavings = $plan->sale->base_fee_snapshot - $plan->total_amount;
+                            @endphp
+                            @if($totalSavings > 0)
                                 <div class="summary-item">
                                     <div class="summary-label">
                                         <i data-feather="tag" width="16" height="16" class="mr-10 text-gray"></i>
                                         Discount
                                     </div>
                                     <span>
-                                        <span class="badge badge-warning">Coupon Applied</span>
-                                        <span class="font-weight-600 text-primary ml-5">{{ handlePrice($plan->sale->base_fee_snapshot - $plan->total_amount) }} saved</span>
+                                        @if($ledgerDiscount > 0)
+                                            <span class="badge badge-success">Coupon Applied</span>
+                                            <span class="font-weight-600 text-primary ml-5">{{ handlePrice($ledgerDiscount) }} saved</span>
+                                        @else
+                                            <span class="badge badge-warning">Discount Applied</span>
+                                            <span class="font-weight-600 text-primary ml-5">{{ handlePrice($totalSavings) }} saved</span>
+                                        @endif
                                     </span>
                                 </div>
                             @endif

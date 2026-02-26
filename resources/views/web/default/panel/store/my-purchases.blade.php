@@ -3,46 +3,128 @@
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/daterangepicker/daterangepicker.min.css">
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/select2/select2.min.css">
+    <style>
+        .stat-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f0f0f0;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+            border-color: #1f3b64;
+        }
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #6c757d;
+            font-weight: 500;
+            display: block;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1f3b64;
+            display: block;
+        }
+        .bg-glass-primary { background: rgba(31, 59, 100, 0.1); color: #1f3b64; }
+        .bg-glass-success { background: rgba(67, 212, 119, 0.1); color: #43d477; }
+        .bg-glass-danger { background: rgba(239, 102, 110, 0.1); color: #ef666e; }
+        .bg-glass-warning { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+
+        .custom-table thead th {
+            border-top: none;
+            background-color: #fcfcfc;
+            color: #1f3b64;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.8px;
+            padding: 18px 15px;
+        }
+        .custom-table tbody td {
+            padding: 20px 15px;
+            vertical-align: middle;
+            color: #1f3b64;
+            font-weight: 500;
+        }
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 11px;
+            display: inline-block;
+        }
+    </style>
 @endpush
 
 @section('content')
     <section>
         <h2 class="section-title">{{ trans('update.purchases_statistics') }}</h2>
 
-        <div class="activities-container mt-25 p-20 p-lg-35">
+        <div class="mt-25">
             <div class="row">
-                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/physical_product3.png" width="64" height="64" alt="">
-                        <strong class="font-30 font-weight-bold mt-5 text-dark-blue">{{ $totalOrders }}</strong>
-                        <span class="font-16 font-weight-500 text-gray">{{ trans('update.total_orders') }}</span>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-primary">
+                            <i data-feather="shopping-bag" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $totalOrders }}</span>
+                            <span class="stat-label">{{ trans('update.total_orders') }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/physical_product2.png" width="64" height="64" alt="">
-                        <strong class="font-30 font-weight-bold mt-5 text-dark-blue">{{ $pendingOrders }}</strong>
-                        <span class="font-16 font-weight-500 text-gray">{{ trans('update.pending_orders') }}</span>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-warning">
+                            <i data-feather="clock" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $pendingOrders }}</span>
+                            <span class="stat-label">{{ trans('update.pending_orders') }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center mt-5 mt-md-0">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/physical_product1.png" width="64" height="64" alt="">
-                        <strong class="font-30 font-weight-bold mt-5 text-dark-blue">{{ $canceledOrders }}</strong>
-                        <span class="font-16 font-weight-500 text-gray">{{ trans('update.canceled_orders') }}</span>
+                <div class="col-6 col-md-3 mt-20 mt-md-0">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-danger">
+                            <i data-feather="x-circle" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $canceledOrders }}</span>
+                            <span class="stat-label">{{ trans('update.canceled_orders') }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center mt-5 mt-md-0">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/33.png" width="64" height="64" alt="">
-                        <strong class="font-30 font-weight-bold mt-5 text-dark-blue">{{ !empty($totalPurchase) ? handlePrice($totalPurchase) : 0 }}</strong>
-                        <span class="font-16 font-weight-500 text-gray">{{ trans('update.total_purchase') }}</span>
+                <div class="col-6 col-md-3 mt-20 mt-md-0">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-success">
+                            <i data-feather="dollar-sign" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ !empty($totalPurchase) ? handlePrice($totalPurchase) : 0 }}</span>
+                            <span class="stat-label">{{ trans('update.total_purchase') }}</span>
+                        </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
@@ -232,18 +314,33 @@
                                             @endif
                                         </td>
                                         <td class="align-middle">
-                                            @if($order->status == \App\Models\ProductOrder::$waitingDelivery)
-                                                <span class="text-warning">{{ trans('update.product_order_status_waiting_delivery') }}</span>
-                                            @elseif($order->status == \App\Models\ProductOrder::$success)
-                                                <span class="text-dark-blue">{{ trans('update.product_order_status_success') }}</span>
-                                            @elseif($order->status == \App\Models\ProductOrder::$shipped)
-                                                <span class="text-warning">{{ trans('update.product_order_status_shipped') }}</span>
-                                            @elseif($order->status == \App\Models\ProductOrder::$canceled)
-                                                <span class="text-danger">{{ trans('update.product_order_status_canceled') }}</span>
-                                            @endif
+                                            @php
+                                                $statusClass = 'gray';
+                                                $statusText = '';
+                                                if($order->status == \App\Models\ProductOrder::$waitingDelivery) {
+                                                    $statusClass = 'warning';
+                                                    $statusText = trans('update.product_order_status_waiting_delivery');
+                                                } elseif($order->status == \App\Models\ProductOrder::$success) {
+                                                    $statusClass = 'success';
+                                                    $statusText = trans('update.product_order_status_success');
+                                                } elseif($order->status == \App\Models\ProductOrder::$shipped) {
+                                                    $statusClass = 'primary';
+                                                    $statusText = trans('update.product_order_status_shipped');
+                                                } elseif($order->status == \App\Models\ProductOrder::$canceled) {
+                                                    $statusClass = 'danger';
+                                                    $statusText = trans('update.product_order_status_canceled');
+                                                }
+                                            @endphp
+                                            <span class="status-badge bg-glass-{{ $statusClass }} text-{{ $statusClass }}">
+                                                {{ $statusText }}
+                                            </span>
                                         </td>
-                                        <td class="align-middle">
-                                            <span>{{ dateTimeFormat($order->created_at, 'j M Y H:i') }}</span>
+                                        <td class="align-middle text-gray font-13">
+                                            <div class="d-flex align-items-center justify-content-center">
+                                                <i data-feather="calendar" width="14" height="14" class="mr-5"></i>
+                                                {{ dateTimeFormat($order->created_at, 'j M Y') }}
+                                            </div>
+                                            <div class="font-11 text-gray mt-5">{{ dateTimeFormat($order->created_at, 'H:i') }}</div>
                                         </td>
 
                                         <td class="text-center align-middle">
@@ -253,16 +350,28 @@
                                                         <i data-feather="more-vertical" height="20"></i>
                                                     </button>
                                                     <div class="dropdown-menu font-weight-normal">
-                                                        <a href="/panel/store/purchases/{{ $order->sale_id }}/productOrder/{{ $order->id }}/invoice" target="_blank" class="webinar-actions d-block mt-10">{{ trans('public.invoice') }}</a>
+                                                        <a href="/panel/store/purchases/{{ $order->sale_id }}/productOrder/{{ $order->id }}/invoice" target="_blank" class="webinar-actions d-block mt-10 text-primary font-weight-bold">
+                                                            <i data-feather="file-text" width="14" height="14" class="mr-8"></i>
+                                                            {{ trans('public.invoice') }}
+                                                        </a>
 
                                                         @if(!empty($order->product) and $order->status == \App\Models\ProductOrder::$success)
-                                                            <a href="{{ $order->product->getUrl() }}" class="webinar-actions d-block mt-10" target="_blank">{{ trans('public.feedback') }}</a>
+                                                            <a href="{{ $order->product->getUrl() }}" class="webinar-actions d-block mt-10" target="_blank">
+                                                                <i data-feather="message-square" width="14" height="14" class="mr-8"></i>
+                                                                {{ trans('public.feedback') }}
+                                                            </a>
                                                         @endif
 
                                                         @if($order->status == \App\Models\ProductOrder::$shipped)
-                                                            <button type="button" data-sale-id="{{ $order->sale_id }}" data-product-order-id="{{ $order->id }}" class="js-view-tracking-code webinar-actions btn-transparent d-block mt-10">{{ trans('update.view_tracking_code') }}</button>
+                                                            <button type="button" data-sale-id="{{ $order->sale_id }}" data-product-order-id="{{ $order->id }}" class="js-view-tracking-code webinar-actions btn-transparent d-block mt-10">
+                                                                <i data-feather="map-pin" width="14" height="14" class="mr-8"></i>
+                                                                {{ trans('update.view_tracking_code') }}
+                                                            </button>
 
-                                                            <button type="button" data-sale-id="{{ $order->sale_id }}" data-product-order-id="{{ $order->id }}" class="js-got-the-parcel webinar-actions btn-transparent d-block mt-10">{{ trans('update.i_got_the_parcel') }}</button>
+                                                            <button type="button" data-sale-id="{{ $order->sale_id }}" data-product-order-id="{{ $order->id }}" class="js-got-the-parcel webinar-actions btn-transparent d-block mt-10">
+                                                                <i data-feather="check-square" width="14" height="14" class="mr-8"></i>
+                                                                {{ trans('update.i_got_the_parcel') }}
+                                                            </button>
                                                         @endif
                                                     </div>
                                                 </div>

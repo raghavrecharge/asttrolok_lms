@@ -24,19 +24,37 @@ use App\Models\WebinarPartPayment;
 class AccountingController extends Controller
 {
 
-       public function index()
-{
-    try {
-        $userAuth = auth()->user();
+    public function index(Request $request)
+    {
+        try {
+            $userAuth = auth()->user();
 
-        if (!$userAuth) {
-            return redirect()->route('login')->with('error', 'Please login first');
-        }
+            if (!$userAuth) {
+                return redirect()->route('login')->with('error', 'Please login first');
+            }
 
-        $accountings = Accounting::where('user_id', $userAuth->id)
-            ->where('system', false)
-            ->where('tax', false)
-            ->with([
+            $from = $request->get('from');
+            $to = $request->get('to');
+
+            $query = Accounting::where('user_id', $userAuth->id)
+                ->where('system', false)
+                ->where('tax', false);
+
+            if (!empty($from)) {
+                $fromTimestamp = strtotime($from);
+                if ($fromTimestamp) {
+                    $query->where('created_at', '>=', $fromTimestamp);
+                }
+            }
+
+            if (!empty($to)) {
+                $toTimestamp = strtotime($to);
+                if ($toTimestamp) {
+                    $query->where('created_at', '<=', $toTimestamp);
+                }
+            }
+
+            $accountings = $query->with([
                 'webinar',
                 'subscribe',
                 'meetingTime' => function ($query) {
@@ -47,173 +65,224 @@ class AccountingController extends Controller
                     }]);
                 }
             ])
-            ->orderBy('created_at', 'desc')
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+                ->orderBy('created_at', 'desc')
+                ->orderBy('id', 'desc')
+                ->paginate(10);
 
-        $sales = Sale::where(['buyer_id' => $userAuth->id, 'status' => null])->get();
-        $amount_paid = [];
-
-        foreach ($sales as $sale) {
-            try {
-                if ($sale->webinar_id) {
-                    $webinar = Webinar::find($sale->webinar_id);
-                    if ($webinar) {
-                        $amount_paid[] = [
-                            $sale->total_amount,
-                            $sale->created_at,
-                            $webinar->title,
-                            $sale->id,
-                            $sale->webinar_id,
-                            'course',
-                            $sale->type
-                        ];
-                    }
-                }
-
-                if ($sale->meeting_id) {
-                    $amount_paid[] = [
-                        $sale->total_amount,
-                        $sale->created_at,
-                        'Meeting',
-                        $sale->id,
-                        $sale->meeting_id,
-                        'meeting',
-                        $sale->type
-                    ];
-                }
-
-                if ($sale->bundle_id) {
-                    $amount_paid[] = [
-                        $sale->total_amount,
-                        $sale->created_at,
-                        'Bundle Course',
-                        $sale->id,
-                        $sale->bundle_id,
-                        'bundle',
-                        $sale->type
-                    ];
-                }
-
-                if ($sale->subscription_id) {
-                    $subscription = Subscription::find($sale->subscription_id);
-                    if ($subscription) {
-                        $amount_paid[] = [
-                            $sale->total_amount,
-                            $sale->created_at,
-                            $subscription->title,
-                            $sale->id,
-                            $sale->subscription_id,
-                            'subscription',
-                            $sale->type
-                        ];
-                    }
-                }
-
-                if ($sale->product_order_id) {
-                    $amount_paid[] = [
-                        $sale->total_amount,
-                        $sale->created_at,
-                        'Product',
-                        $sale->id,
-                        $sale->product_order_id,
-                        'product',
-                        $sale->type
-                    ];
-                }
-            } catch (\Exception $e) {
-                \Log::error('Error processing sale: ' . $e->getMessage(), [
-                    'sale_id' => $sale->id ?? null
-                ]);
-                continue;
+            $salesQuery = Sale::where(['buyer_id' => $userAuth->id, 'status' => null]);
+            if (!empty($fromTimestamp)) {
+                $salesQuery->where('created_at', '>=', $fromTimestamp);
             }
-        }
+            if (!empty($toTimestamp)) {
+                $salesQuery->where('created_at', '<=', $toTimestamp);
+            }
+            $sales = $salesQuery->get();
 
-        try {
-            $webinarPartPayments = WebinarPartPayment::where('user_id', $userAuth->id)->get();
+            $type = $request->get('type');
 
-            foreach ($webinarPartPayments as $payment) {
+            $amount_paid = [];
+
+            foreach ($sales as $sale) {
                 try {
-                    $webinar = Webinar::find($payment->webinar_id);
-                    if ($webinar) {
+                    $skip = false;
+                    if (!empty($type) && $type != 'all') {
+                        if ($type == 'course' && !$sale->webinar_id && !$sale->bundle_id) $skip = true;
+                        if ($type == 'meeting' && !$sale->meeting_id) $skip = true;
+                        if ($type == 'subscription' && !$sale->subscription_id) $skip = true;
+                        if ($type == 'product' && !$sale->product_order_id) $skip = true;
+                    }
+
+                    if ($skip) continue;
+
+                    if ($sale->webinar_id) {
+                        $webinar = Webinar::find($sale->webinar_id);
+                        if ($webinar) {
+                            $amount_paid[] = [
+                                $sale->total_amount,
+                                $sale->created_at,
+                                $webinar->title,
+                                $sale->id,
+                                $sale->webinar_id,
+                                'course',
+                                $sale->type
+                            ];
+                        }
+                    }
+
+                    if ($sale->meeting_id) {
                         $amount_paid[] = [
-                            $payment->amount,
-                            strtotime($payment->created_at),
-                            $webinar->title,
-                            $payment->id,
-                            $payment->webinar_id,
-                            'part',
-                            ''
+                            $sale->total_amount,
+                            $sale->created_at,
+                            'Meeting',
+                            $sale->id,
+                            $sale->meeting_id,
+                            'meeting',
+                            $sale->type
+                        ];
+                    }
+
+                    if ($sale->bundle_id) {
+                        $amount_paid[] = [
+                            $sale->total_amount,
+                            $sale->created_at,
+                            'Bundle Course',
+                            $sale->id,
+                            $sale->bundle_id,
+                            'bundle',
+                            $sale->type
+                        ];
+                    }
+
+                    if ($sale->subscription_id) {
+                        $subscription = Subscription::find($sale->subscription_id);
+                        if ($subscription) {
+                            $amount_paid[] = [
+                                $sale->total_amount,
+                                $sale->created_at,
+                                $subscription->title,
+                                $sale->id,
+                                $sale->subscription_id,
+                                'subscription',
+                                $sale->type
+                            ];
+                        }
+                    }
+
+                    if ($sale->product_order_id) {
+                        $amount_paid[] = [
+                            $sale->total_amount,
+                            $sale->created_at,
+                            'Product',
+                            $sale->id,
+                            $sale->product_order_id,
+                            'product',
+                            $sale->type
                         ];
                     }
                 } catch (\Exception $e) {
-                    \Log::error('Error processing part payment: ' . $e->getMessage(), [
-                        'payment_id' => $payment->id ?? null
+                    \Log::error('Error processing sale: ' . $e->getMessage(), [
+                        'sale_id' => $sale->id ?? null
                     ]);
                     continue;
                 }
             }
-        } catch (\Exception $e) {
-            \Log::error('Error fetching part payments: ' . $e->getMessage());
-        }
 
-        // Also include UPE sales that may not have legacy Sale records
-        try {
-            $upeSales = \App\Models\PaymentEngine\UpeSale::where('user_id', $userAuth->id)
-                ->whereIn('status', ['active', 'partially_refunded', 'completed', 'pending_payment'])
-                ->with('product')
-                ->get();
+            try {
+                $partPaymentsQuery = WebinarPartPayment::where('user_id', $userAuth->id);
+                if (!empty($from)) {
+                    $partPaymentsQuery->where('created_at', '>=', $from);
+                }
+                if (!empty($to)) {
+                    $partPaymentsQuery->where('created_at', '<=', $to);
+                }
+                $webinarPartPayments = $partPaymentsQuery->get();
 
-            foreach ($upeSales as $upeSale) {
-                // Check if already covered by legacy Sale lookup
-                $alreadyCovered = false;
-                foreach ($amount_paid as $ap) {
-                    if (isset($ap[4]) && $upeSale->product && $ap[4] == $upeSale->product->external_id && $ap[5] == 'course') {
-                        $alreadyCovered = true;
-                        break;
+                foreach ($webinarPartPayments as $payment) {
+                    try {
+                        if (!empty($type) && $type != 'all' && $type != 'course') continue;
+
+                        $webinar = Webinar::find($payment->webinar_id);
+                        if ($webinar) {
+                            $amount_paid[] = [
+                                $payment->amount,
+                                strtotime($payment->created_at),
+                                $webinar->title,
+                                $payment->id,
+                                $payment->webinar_id,
+                                'part',
+                                ''
+                            ];
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error('Error processing part payment: ' . $e->getMessage(), [
+                            'payment_id' => $payment->id ?? null
+                        ]);
+                        continue;
                     }
                 }
-                if (!$alreadyCovered && $upeSale->product) {
-                    $ledgerBalance = app(\App\Services\PaymentEngine\PaymentLedgerService::class)->balance($upeSale->id);
-                    if ($ledgerBalance > 0) {
-                        $amount_paid[] = [
-                            $ledgerBalance,
-                            $upeSale->created_at ? strtotime($upeSale->created_at) : time(),
-                            $upeSale->product->name ?? 'Course',
-                            $upeSale->id,
-                            $upeSale->product->external_id ?? $upeSale->product_id,
-                            'course',
-                            $upeSale->sale_type ?? 'paid',
-                        ];
+            } catch (\Exception $e) {
+                \Log::error('Error fetching part payments: ' . $e->getMessage());
+            }
+
+            // Also include UPE sales that may not have legacy Sale records
+            try {
+                $upeSalesQuery = \App\Models\PaymentEngine\UpeSale::where('user_id', $userAuth->id)
+                    ->whereIn('status', ['active', 'partially_refunded', 'completed', 'pending_payment']);
+                
+                if (!empty($from)) {
+                    $upeSalesQuery->where('created_at', '>=', $from);
+                }
+                if (!empty($to)) {
+                    $upeSalesQuery->where('created_at', '<=', $to);
+                }
+                
+                $upeSales = $upeSalesQuery->with('product')->get();
+
+                foreach ($upeSales as $upeSale) {
+                    if (!empty($type) && $type != 'all' && $type != 'course') continue;
+
+                    // Check if already covered by legacy Sale lookup
+                    $alreadyCovered = false;
+                    foreach ($amount_paid as $ap) {
+                        if (isset($ap[4]) && $upeSale->product && $ap[4] == $upeSale->product->external_id && $ap[5] == 'course') {
+                            $alreadyCovered = true;
+                            break;
+                        }
                     }
+                    if (!$alreadyCovered && $upeSale->product) {
+                        $ledgerBalance = app(\App\Services\PaymentEngine\PaymentLedgerService::class)->balance($upeSale->id);
+                        if ($ledgerBalance > 0) {
+                            $amount_paid[] = [
+                                $ledgerBalance,
+                                $upeSale->created_at ? strtotime($upeSale->created_at) : time(),
+                                $upeSale->product->name ?? 'Course',
+                                $upeSale->id,
+                                $upeSale->product->external_id ?? $upeSale->product_id,
+                                'course',
+                                $upeSale->sale_type ?? 'paid',
+                            ];
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::error('Error fetching UPE sales for financial summary: ' . $e->getMessage());
+            }
+
+            usort($amount_paid, function ($a, $b) {
+                return $b[1] <=> $a[1];
+            });
+
+            $totalCourseAmount = 0;
+            $totalMeetingAmount = 0;
+            foreach ($amount_paid as $item) {
+                if (in_array($item[5], ['course', 'part', 'bundle'])) {
+                    $totalCourseAmount += $item[0];
+                } elseif ($item[5] == 'meeting') {
+                    $totalMeetingAmount += $item[0];
                 }
             }
+
+            $data = [
+                'pageTitle' => trans('financial.summary_page_title'),
+                'accountings' => $accountings,
+                'amount_paid' => $amount_paid,
+                'commission' => getFinancialSettings('commission') ?? 0,
+                'totalCourseAmount' => $totalCourseAmount,
+                'totalMeetingAmount' => $totalMeetingAmount,
+                'totalIncome' => $userAuth->getIncome(),
+            ];
+
+            return view(getTemplate() . '.panel.financial.summary', $data);
+
         } catch (\Exception $e) {
-            \Log::error('Error fetching UPE sales for financial summary: ' . $e->getMessage());
+            \Log::error('Financial summary error: ' . $e->getMessage(), [
+                'user_id' => auth()->id() ?? null,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->with('error', 'Something went wrong. Please try again later.');
         }
-
-        usort($amount_paid, function ($a, $b) {
-            return $b[1] <=> $a[1];
-        });
-
-        $data = [
-            'pageTitle' => trans('financial.summary_page_title'),
-            'accountings' => $accountings,
-            'amount_paid' => $amount_paid,
-            'commission' => getFinancialSettings('commission') ?? 0
-        ];
-
-        return view(getTemplate() . '.panel.financial.summary', $data);
-
-    } catch (\Exception $e) {
-        \Log::error('Financial summary error: ' . $e->getMessage(), [
-            'user_id' => auth()->id() ?? null,
-            'trace' => $e->getTraceAsString()
-        ]);
-
-        return redirect()->back()->with('error', 'Something went wrong. Please try again later.');
     }
-}
 
     public function account($id = null)
     {

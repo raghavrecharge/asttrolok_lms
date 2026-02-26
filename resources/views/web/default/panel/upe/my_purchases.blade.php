@@ -248,6 +248,19 @@
                                             Product #{{ $sale->product_id }}
                                         @endif
                                     </h3>
+
+                                    @if(isset($progress[$sale->id]))
+                                        <div class="mt-10 mb-5 progress-detail-trigger cursor-pointer" data-sale-id="{{ $sale->id }}" style="transition: all 0.2s ease;">
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <span class="font-11 font-weight-500 text-dark-blue">Learning Progress <i data-feather="external-link" width="10" height="10" class="ml-2 text-gray"></i></span>
+                                                <span class="font-11 font-weight-700 text-primary">{{ $progress[$sale->id] }}%</span>
+                                            </div>
+                                            <div class="progress" style="height: 6px; border-radius: 10px; background: rgba(0,0,0,0.05); overflow: hidden;">
+                                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $progress[$sale->id] }}%; border-radius: 10px;" aria-valuenow="{{ $progress[$sale->id] }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <small class="text-gray font-10 mt-5 d-block">Click to view lesson-wise progress</small>
+                                        </div>
+                                    @endif
                                 </div>
                                 <div class="text-right">
                                     @php
@@ -375,7 +388,107 @@
             {{ $sales->appends(request()->query())->links() }}
         </div>
     </section>
+
+    {{-- Progress Detail Modal --}}
+    <div class="modal fade" id="progressDetailModal" tabindex="-1" role="dialog" aria-labelledby="progressDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 15px 50px rgba(0,0,0,0.15);">
+                <div class="modal-header border-0 pb-0" style="padding: 25px 25px 10px;">
+                    <div>
+                        <h5 class="modal-title font-18 font-weight-bold text-dark-blue" id="progressDetailModalLabel">Course Progress Breakdown</h5>
+                        <p class="text-gray font-12 mb-0" id="modalCourseTitle">Loading course details...</p>
+                    </div>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="padding: 20px 25px 30px;">
+                    <div id="progressLoading" class="text-center py-30">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p class="mt-15 text-gray font-14">Fetching detailed progress...</p>
+                    </div>
+                    <div id="progressContent" class="d-none">
+                        {{-- Chapters and Items will be injected here --}}
+                    </div>
+                    <div id="progressError" class="d-none text-center py-20">
+                        <i data-feather="alert-circle" class="text-danger mb-10" width="40" height="40"></i>
+                        <p class="text-dark-blue font-14 font-weight-500">Failed to load progress details.</p>
+                        <button class="btn btn-sm btn-outline-primary mt-15 px-20" onclick="location.reload()">Retry</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
+
+@push('scripts_bottom')
+    <script>
+        $(document).ready(function() {
+            $('.progress-detail-trigger').on('click', function() {
+                const saleId = $(this).data('sale-id');
+                const $modal = $('#progressDetailModal');
+                const $loading = $('#progressLoading');
+                const $content = $('#progressContent');
+                const $error = $('#progressError');
+                const $title = $('#modalCourseTitle');
+
+                $modal.modal('show');
+                $loading.removeClass('d-none');
+                $content.addClass('d-none').html('');
+                $error.addClass('d-none');
+                $title.text('Loading course details...');
+
+                $.ajax({
+                    url: `/panel/upe/purchases/${saleId}/progress`,
+                    method: 'GET',
+                    success: function(response) {
+                        $loading.addClass('d-none');
+                        $title.text(response.course_title);
+                        
+                        let html = '';
+                        if (response.chapters && response.chapters.length > 0) {
+                            response.chapters.forEach(chapter => {
+                                html += `<div class="mb-20">
+                                            <h6 class="font-14 font-weight-bold text-dark-blue mb-10 d-flex align-items-center">
+                                                <i data-feather="grid" width="14" height="14" class="mr-8 text-gray"></i>
+                                                ${chapter.title}
+                                            </h6>`;
+                                
+                                chapter.items.forEach(item => {
+                                    const icon = item.type === 'file' ? 'play-circle' : (item.type === 'session' ? 'video' : 'book-open');
+                                    html += `<div class="p-12 mb-10" style="background: #f8f9fb; border-radius: 12px; border: 1px solid #f0f0f0;">
+                                                <div class="d-flex align-items-center justify-content-between mb-8">
+                                                    <div class="d-flex align-items-center">
+                                                        <i data-feather="${icon}" width="14" height="14" class="mr-10 text-gray"></i>
+                                                        <span class="font-13 font-weight-500 text-dark-blue">${item.title}</span>
+                                                    </div>
+                                                    <span class="font-12 font-weight-700 ${item.percentage >= 100 ? 'text-primary' : 'text-gray'}">${item.percentage}%</span>
+                                                </div>
+                                                <div class="progress" style="height: 4px; border-radius: 10px; background: rgba(0,0,0,0.05);">
+                                                    <div class="progress-bar ${item.percentage >= 100 ? 'bg-primary' : 'bg-gray'}" role="progressbar" style="width: ${item.percentage}%" aria-valuenow="${item.percentage}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                            </div>`;
+                                });
+                                
+                                html += `</div>`;
+                            });
+                            $content.html(html).removeClass('d-none');
+                            feather.replace(); // Refresh icons
+                        } else {
+                            $content.html('<p class="text-center text-gray py-20">No detailed items found for this course.</p>').removeClass('d-none');
+                        }
+                    },
+                    error: function() {
+                        $loading.addClass('d-none');
+                        $error.removeClass('d-none');
+                    }
+                });
+            });
+        });
+    </script>
+@endpush
 
 @push('styles_bottom')
     <style>

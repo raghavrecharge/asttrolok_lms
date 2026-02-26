@@ -328,6 +328,10 @@ public function whyChooseUsItems()
             }
         }
 
+        if ($purchaseDate instanceof \Illuminate\Support\Carbon) {
+            $purchaseDate = $purchaseDate->timestamp;
+        }
+
         return strtotime("+{$this->access_days} days", $purchaseDate);
     }
 
@@ -345,6 +349,10 @@ public function whyChooseUsItems()
         }
 
         $time = time();
+
+        if ($purchaseDate instanceof \Illuminate\Support\Carbon) {
+            $purchaseDate = $purchaseDate->timestamp;
+        }
 
         return strtotime("+{$this->access_days} days", $purchaseDate) > $time;
     }

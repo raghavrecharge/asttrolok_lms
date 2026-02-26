@@ -636,8 +636,8 @@
                                     if ($isSubscription && !empty($subscriptionAccess)) {
                                         $subAccess = $subscriptionAccess->firstWhere('subscription_id', $sale->subscription_id);
                                         if (!empty($subAccess) && !empty($subAccess->access_till_date)) {
-                                            $subAccessTill = $subAccess->access_till_date;
-                                            $subExpired = $subAccessTill < time();
+                                            $subAccessTill = is_numeric($subAccess->access_till_date) ? (int)$subAccess->access_till_date : strtotime($subAccess->access_till_date);
+                                            $subExpired = $subAccessTill && $subAccessTill < time();
                                         }
                                     }
                                 @endphp
@@ -669,7 +669,7 @@
                                                     @if($subExpired)
                                                         <span class="expiry-expired">⛔ Access Expired</span>
                                                     @else
-                                                        <span class="expiry-active">✓ Access till: {{ date('j M Y', $subAccessTill) }}</span>
+                                                        <span class="expiry-active">✓ Access till: {{ date('j M Y', (int)$subAccessTill) }}</span>
                                                     @endif
                                                 </div>
                                             @elseif($hasAccessDays)
@@ -677,9 +677,9 @@
                                                     @if($isExpired && !$hasActiveExtension)
                                                         <span class="expiry-expired">⛔ Access Expired</span>
                                                     @elseif($hasActiveExtension)
-                                                        <span class="expiry-extended">🔄 Extended till {{ date('j M Y', $extensionExpiry) }}</span>
+                                                        <span class="expiry-extended">🔄 Extended till {{ date('j M Y', (int)$extensionExpiry) }}</span>
                                                     @else
-                                                        <span class="expiry-active">✓ Expires: {{ date('j M Y', $expiryTimestamp) }}</span>
+                                                        <span class="expiry-active">✓ Expires: {{ date('j M Y', (int)$expiryTimestamp) }}</span>
                                                     @endif
                                                 </div>
                                             @endif
@@ -748,9 +748,9 @@
                                                     @if($isExpired && !$hasActiveExtension)
                                                         <span class="expiry-expired">⛔ Access Expired</span>
                                                     @elseif($hasActiveExtension)
-                                                        <span class="expiry-extended">🔄 Extended till {{ date('j M Y', $extensionExpiry) }}</span>
+                                                        <span class="expiry-extended">🔄 Extended till {{ date('j M Y', (int)$extensionExpiry) }}</span>
                                                     @else
-                                                        <span class="expiry-active">✓ Expires: {{ date('j M Y', $expiryTimestamp) }}</span>
+                                                        <span class="expiry-active">✓ Expires: {{ date('j M Y', (int)$expiryTimestamp) }}</span>
                                                     @endif
                                                 </div>
                                             @endif

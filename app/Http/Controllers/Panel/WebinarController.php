@@ -41,6 +41,10 @@ use App\Models\InstallmentStep;
 use App\Models\WebinarPartPayment;
 use App\Models\Meeting;
 use App\Models\ReserveMeeting;
+use App\Models\PaymentEngine\UpeSale;
+use App\Models\PaymentEngine\UpeProduct;
+use App\Services\PaymentEngine\AccessEngine;
+use App\Services\PaymentEngine\PaymentLedgerService;
 
 class WebinarController extends Controller
 {
@@ -1361,212 +1365,102 @@ class WebinarController extends Controller
         }
     }
 
-    public function purchases(Request $request)
+    public function purchases(Request $request, PaymentLedgerService $ledger, AccessEngine $access)
     {
         try {
             $user = auth()->user();
 
-            $giftsIds = Gift::query()->where('email', $user->email)
-                ->where('status', 'active')
-                ->whereNull('product_id')
-                ->where(function ($query) {
-                    $query->whereNull('date');
-                    $query->orWhere('date', '<', time());
-                })
-                ->whereHas('sale')
-                ->pluck('id')
-                ->toArray();
+            // Subquery: pick the best (most relevant) sale per product
+            // Priority: active > partially_refunded > pending_payment > others; then newest id
+            $bestSaleIds = UpeSale::where('user_id', $user->id)
+                ->selectRaw('MAX(CASE 
+                    WHEN status = "active" THEN 4
+                    WHEN status = "partially_refunded" THEN 3
+                    WHEN status = "pending_payment" THEN 2
+                    ELSE 1
+                END) as priority')
+                ->selectRaw('product_id')
+                ->groupBy('product_id')
+                ->pluck('product_id');
 
-            $query = Sale::query()
-                ->where(function ($query) use ($user, $giftsIds) {
-                    $query->where('sales.buyer_id', $user->id);
-                    $query->orWhereIn('sales.gift_id', $giftsIds);
-                })
-                ->whereNull('sales.refund_at')
-                ->where('access_to_purchased_item', true)
-                ->where(function ($query) {
-                    $query->where(function ($query) {
-                        $query->whereNotNull('sales.webinar_id')
-                            ->where('sales.type', 'webinar')
-                            ->whereHas('webinar', function ($query) {
-                                $query->where('status', 'active');
-                            });
-                    });
-                    $query->orWhere(function ($query) {
-                        $query->whereNotNull('sales.bundle_id')
-                            ->where('sales.type', 'bundle')
-                            ->whereHas('bundle', function ($query) {
-                                $query->where('status', 'active');
-                            });
-                    });
-                    $query->orWhere(function ($query) {
-                        $query->whereNotNull('gift_id');
-                        $query->whereHas('gift');
-                    });
-                });
+            // For each product, get the single best sale
+            $deduped = collect();
+            foreach ($bestSaleIds as $productId) {
+                $sale = UpeSale::where('user_id', $user->id)
+                    ->where('product_id', $productId)
+                    ->whereHas('product', function ($q) {
+                        $q->whereIn('product_type', ['webinar', 'course_video', 'course_live', 'bundle']);
+                    })
+                    ->orderByRaw("FIELD(status, 'active', 'partially_refunded', 'pending_payment', 'completed', 'refunded', 'expired', 'cancelled') ASC")
+                    ->orderByDesc('id')
+                    ->first();
+                if ($sale) {
+                    $deduped->push($sale->id);
+                }
+            }
 
-            $sales = deepClone($query)
-                ->with([
-                    'webinar' => function ($query) {
-                        $query->with([
-                            'files',
-                            'reviews' => function ($query) {
-                                $query->where('status', 'active');
-                            },
-                            'category',
-                            'teacher' => function ($query) {
-                                $query->select('id', 'full_name');
-                            },
-                        ]);
-                        $query->withCount([
-                            'sales' => function ($query) {
-                                $query->whereNull('refund_at');
-                            }
-                        ]);
-                    },
-                    'bundle' => function ($query) {
-                        $query->with([
-                            'reviews' => function ($query) {
-                                $query->where('status', 'active');
-                            },
-                            'category',
-                            'teacher' => function ($query) {
-                                $query->select('id', 'full_name');
-                            },
-                        ]);
-                    }
-                ])
-                ->orderBy('created_at', 'desc')
-                ->paginate(10);
+            $query = UpeSale::whereIn('id', $deduped)->with(['product', 'installmentPlan']);
+
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            $sales = $query->orderByDesc('id')->paginate(10);
+
+            // Fetch items for paginated sales to avoid N+1 queries
+            $webinarIds = $sales->where('product.product_type', '!=', 'bundle')->pluck('product.external_id');
+            $bundleIds = $sales->where('product.product_type', 'bundle')->pluck('product.external_id');
+            
+            $webinars = \App\Models\Webinar::whereIn('id', $webinarIds)->with(['teacher', 'category'])->get()->keyBy('id');
+            $bundles = \App\Models\Bundle::whereIn('id', $bundleIds)->with(['teacher', 'category'])->get()->keyBy('id');
+
+            foreach ($sales as $sale) {
+                if ($sale->product->product_type === 'bundle') {
+                    $sale->item = $bundles->get($sale->product->external_id);
+                } else {
+                    $sale->item = $webinars->get($sale->product->external_id);
+                }
+            }
 
             $time = time();
 
-            $giftDurations = 0;
-            $giftUpcoming = 0;
-            $giftPurchasedCount = 0;
+            // Calculate stats for the dashboard info widgets
+            // We use the full deduped query (not paginated) for stats
+            $allMySales = UpeSale::whereIn('id', $deduped)->with('product')->get();
+            
+            $purchasedCount = $allMySales->count();
+            $upComing = 0;
+            $hours = 0;
 
-            foreach ($sales as $sale) {
-                if (!empty($sale->gift_id)) {
-                    $gift = $sale->gift;
-
-                    $sale->webinar_id = $gift->webinar_id;
-                    $sale->bundle_id = $gift->bundle_id;
-
-                    $sale->webinar = !empty($gift->webinar_id) ? $gift->webinar : null;
-                    $sale->bundle = !empty($gift->bundle_id) ? $gift->bundle : null;
-
-                    $sale->gift_recipient = !empty($gift->receipt) ? $gift->receipt->full_name : $gift->name;
-                    $sale->gift_sender = $sale->buyer->full_name;
-                    $sale->gift_date = $gift->date;;
-
-                    $giftPurchasedCount += 1;
-
-                    if (!empty($sale->webinar)) {
-                        $giftDurations += $sale->webinar->duration;
-
-                        if ($sale->webinar->start_date > $time) {
-                            $giftUpcoming += 1;
+            foreach ($allMySales as $sale) {
+                $product = $sale->product;
+                if ($product) {
+                    if ($product->product_type === 'bundle') {
+                        $bundle = \App\Models\Bundle::find($product->external_id);
+                        if ($bundle) {
+                            $hours += $bundle->getBundleDuration();
                         }
-                    }
-
-                    if (!empty($sale->bundle)) {
-                        $bundleWebinars = $sale->bundle->bundleWebinars;
-
-                        foreach ($bundleWebinars as $bundleWebinar) {
-                            $giftDurations += $bundleWebinar->webinar->duration;
+                    } else {
+                        $webinar = \App\Models\Webinar::find($product->external_id);
+                        if ($webinar) {
+                            $hours += $webinar->duration;
+                            if ($webinar->start_date > $time) {
+                                $upComing++;
+                            }
                         }
                     }
                 }
             }
-
-            $purchasedCount = deepClone($query)
-                ->where(function ($query) {
-                    $query->whereHas('webinar');
-                    $query->orWhereHas('bundle');
-                })
-                ->count();
-
-            $webinarsHours = deepClone($query)->join('webinars', 'webinars.id', 'sales.webinar_id')
-                ->select(DB::raw('sum(webinars.duration) as duration'))
-                ->sum('duration');
-            $bundlesHours = deepClone($query)->join('bundle_webinars', 'bundle_webinars.bundle_id', 'sales.bundle_id')
-                ->join('webinars', 'webinars.id', 'bundle_webinars.webinar_id')
-                ->select(DB::raw('sum(webinars.duration) as duration'))
-                ->sum('duration');
-
-            $hours1 = $webinarsHours + $bundlesHours + $giftDurations;
-
-            $upComing = deepClone($query)->join('webinars', 'webinars.id', 'sales.webinar_id')
-                ->where('webinars.start_date', '>', $time)
-                ->count();
 
             $data = [
                 'pageTitle' => trans('webinars.webinars_purchases_page_title'),
                 'sales' => $sales,
-
-                'upComing' => $upComing + $giftUpcoming
+                'purchasedCount' => $purchasedCount,
+                'upComing' => $upComing,
+                'hours' => $hours,
+                'ledger' => $ledger,
+                'access' => $access,
             ];
-
-            $query = InstallmentOrder::query()
-                ->where('user_id', $user->id)
-                ->where('status', '!=', 'paying');
-
-            $openInstallmentsCount = deepClone($query)->where('status', 'open')->count();
-            $pendingVerificationCount = deepClone($query)->where('status', 'pending_verification')->count();
-            $finishedInstallmentsCount = $this->getFinishedInstallments($user);
-
-            $orders = $query->with([
-                'installment' => function ($query) {
-                    $query->with([
-                        'steps' => function ($query) {
-                            $query->orderBy('deadline', 'asc');
-                        }
-                    ]);
-                    $query->withCount([
-                        'steps'
-                    ]);
-                }
-            ])->orderBy('created_at', 'desc')
-                ->paginate(10);
-            $webcont=0;
-            $ordescout=count($orders);
-            foreach ($orders as $order) {
-                $webinarIdsd=$order->webinar_id;
-                $webinarsHours1 = Webinar::select('duration')
-                    ->where('id', '=', $webinarIdsd)
-                    ->first();
-                  $webcont = $webcont+ $webinarsHours1->duration;
-                $getRemainedInstallments = $this->getRemainedInstallments($order);
-
-                $order->remained_installments_count = $getRemainedInstallments['total'];
-                $order->remained_installments_amount = $getRemainedInstallments['amount'];
-
-                $order->upcoming_installment = $this->getUpcomingInstallment($order);
-
-                $hasOverdue = $order->checkOrderHasOverdue();
-                $order->has_overdue = $hasOverdue;
-                $order->overdue_count = 0;
-                $order->overdue_amount = 0;
-
-                if ($hasOverdue) {
-                    $getOrderOverdueCountAndAmount = $order->getOrderOverdueCountAndAmount();
-                    $order->overdue_count = $getOrderOverdueCountAndAmount['count'];
-                    $order->overdue_amount = $getOrderOverdueCountAndAmount['amount'];
-                }
-
-            }
-
-            $overdueInstallmentsCount = $this->getOverdueInstallments($user);
-
-              $hours = $hours1 + $webcont;
-
-                $data['openInstallmentsCount'] = $openInstallmentsCount;
-                $data['pendingVerificationCount'] = $pendingVerificationCount;
-                $data['finishedInstallmentsCount'] = $finishedInstallmentsCount;
-                $data['overdueInstallmentsCount'] = $overdueInstallmentsCount;
-                $data['orders'] = $orders;
-                $data['hours'] = $hours;
-                $data['purchasedCount'] = $purchasedCount + $giftPurchasedCount +$ordescout;
 
             return view(getTemplate() . '.panel.webinar.purchases', $data);
         } catch (\Exception $e) {

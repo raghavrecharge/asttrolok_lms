@@ -15,61 +15,76 @@ use App\Models\InstallmentOrder;
 use App\Models\InstallmentOrderPayment;
 use App\Models\InstallmentStep;
 use App\Models\SubStepInstallment;
+use App\Models\PaymentEngine\UpeSale;
+use App\Models\PaymentEngine\UpeInstallmentPlan;
+use App\Models\PaymentEngine\UpePaymentRequest;
+use App\Services\PaymentEngine\PaymentLedgerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class InstallmentsController extends Controller
 {
 
-    public function index()
+    public function index(PaymentLedgerService $ledger)
     {
         try {
             $user = auth()->user();
 
-            $query = InstallmentOrder::query()
-                ->where('user_id', $user->id)
-                ->where('status', '!=', 'paying');
-
-            $openInstallmentsCount = deepClone($query)->where('status', 'open')->count();
-            $pendingVerificationCount = deepClone($query)->where('status', 'pending_verification')->count();
-            $finishedInstallmentsCount = $this->getFinishedInstallments($user);
-
-            $orders = $query->with([
-                'installment' => function ($query) {
-                    $query->with([
-                        'steps' => function ($query) {
-                            $query->orderBy('deadline', 'asc');
-                        }
-                    ]);
-                    $query->withCount([
-                        'steps'
-                    ]);
-                }
-            ])->orderBy('created_at', 'desc')
+            // UPE logic for installments
+            $sales = UpeSale::where('user_id', $user->id)
+                ->where('pricing_mode', 'installment')
+                ->with(['product', 'installmentPlan.schedules'])
+                ->orderByDesc('id')
                 ->paginate(10);
 
-            foreach ($orders as $order) {
-                $getRemainedInstallments = $this->getRemainedInstallments($order);
+            // Fetch items for paginated sales
+            $webinarIds = $sales->where('product.product_type', '!=', 'bundle')->pluck('product.external_id');
+            $bundleIds = $sales->where('product.product_type', 'bundle')->pluck('product.external_id');
+            
+            $webinars = \App\Models\Webinar::whereIn('id', $webinarIds)->with(['teacher', 'category'])->get()->keyBy('id');
+            $bundles = \App\Models\Bundle::whereIn('id', $bundleIds)->with(['teacher', 'category'])->get()->keyBy('id');
 
-                $order->remained_installments_count = $getRemainedInstallments['total'];
-                $order->remained_installments_amount = $getRemainedInstallments['amount'];
-
-                $order->upcoming_installment = $this->getUpcomingInstallment($order);
-
-                $hasOverdue = $order->checkOrderHasOverdue();
-                $order->has_overdue = $hasOverdue;
-                $order->overdue_count = 0;
-                $order->overdue_amount = 0;
-
-                if ($hasOverdue) {
-                    $getOrderOverdueCountAndAmount = $order->getOrderOverdueCountAndAmount();
-                    $order->overdue_count = $getOrderOverdueCountAndAmount['count'];
-                    $order->overdue_amount = $getOrderOverdueCountAndAmount['amount'];
+            foreach ($sales as $sale) {
+                if ($sale->product->product_type === 'bundle') {
+                    $sale->item = $bundles->get($sale->product->external_id);
+                } else {
+                    $sale->item = $webinars->get($sale->product->external_id);
                 }
 
+                // Helper stats for each sale/plan
+                if ($sale->installmentPlan) {
+                    $plan = $sale->installmentPlan;
+                    $sale->remained_installments_count = $plan->schedules->whereIn('status', ['due', 'partial', 'overdue', 'upcoming'])->count();
+                    $sale->remained_installments_amount = $plan->totalRemaining();
+                    $sale->upcoming_installment = $plan->nextDueSchedule();
+                    $sale->has_overdue = $plan->schedules->where('status', 'overdue')->isNotEmpty();
+                    $sale->overdue_count = $plan->schedules->where('status', 'overdue')->count();
+                    $sale->overdue_amount = $plan->schedules->where('status', 'overdue')->sum('amount_due') - $plan->schedules->where('status', 'overdue')->sum('amount_paid');
+                }
             }
 
-            $overdueInstallmentsCount = $this->getOverdueInstallments($user);
+            // Summary statistics
+            $openInstallmentsCount = UpeInstallmentPlan::where('status', 'active')
+                ->whereHas('sale', function($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })->count();
+
+            $pendingVerificationCount = UpePaymentRequest::where('user_id', $user->id)
+                ->whereIn('status', ['pending', 'verified', 'approved'])
+                ->count();
+
+            $finishedInstallmentsCount = UpeInstallmentPlan::where('status', 'completed')
+                ->whereHas('sale', function($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })->count();
+
+            $overdueInstallmentsCount = UpeInstallmentPlan::where('status', 'active')
+                ->whereHas('sale', function($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                ->whereHas('schedules', function($q) {
+                    $q->where('status', 'overdue');
+                })->count();
 
             $data = [
                 'pageTitle' => trans('update.installments'),
@@ -77,7 +92,8 @@ class InstallmentsController extends Controller
                 'pendingVerificationCount' => $pendingVerificationCount,
                 'finishedInstallmentsCount' => $finishedInstallmentsCount,
                 'overdueInstallmentsCount' => $overdueInstallmentsCount,
-                'orders' => $orders,
+                'orders' => $sales, // Passing $sales as $orders for template compatibility
+                'ledger' => $ledger,
             ];
 
             return view('web.default.panel.financial.installments.lists', $data);

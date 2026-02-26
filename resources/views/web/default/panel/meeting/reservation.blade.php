@@ -2,38 +2,152 @@
 
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/daterangepicker/daterangepicker.min.css">
+    <style>
+        .stat-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f0f0f0;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+            border-color: #1f3b64;
+        }
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #6c757d;
+            font-weight: 500;
+            display: block;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1f3b64;
+            display: block;
+        }
+        .bg-glass-primary { background: rgba(31, 59, 100, 0.12) !important; color: #1f3b64 !important; }
+        .bg-glass-success { background: rgba(40, 167, 69, 0.15) !important; color: #1e7e34 !important; }
+        .bg-glass-warning { background: rgba(255, 193, 7, 0.15) !important; color: #9b7400 !important; }
+        .bg-glass-danger { background: rgba(220, 53, 69, 0.12) !important; color: #bd2130 !important; }
+        .bg-glass-gray { background: rgba(108, 117, 125, 0.12) !important; color: #495057 !important; }
+
+        .custom-table thead th {
+            border-top: none;
+            background-color: #f8faff;
+            color: #1f3b64;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            padding: 20px 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .custom-table tbody td {
+            padding: 25px 15px;
+            vertical-align: middle;
+            color: #1f3b64;
+            border-bottom: 1px solid #f9f9f9;
+        }
+        .custom-table tbody tr {
+            transition: all 0.2s ease;
+        }
+        .custom-table tbody tr:hover {
+            background-color: #fbfcfe;
+        }
+        .time-badge {
+            background: #f0f3f8;
+            color: #1f3b64;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #e1e7f0;
+        }
+        .status-badge {
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 11px;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        /* Datepicker fix */
+        .input-group .input-group-prepend .input-group-text {
+            background-color: #1f3b64;
+            border-color: #1f3b64;
+            color: #fff;
+            border-radius: 10px 0 0 10px;
+        }
+        .datepicker, .datefilter {
+            cursor: pointer !important;
+            border-radius: 0 10px 10px 0 !important;
+        }
+        .form-control {
+            border-radius: 10px;
+            height: 45px;
+        }
+    </style>
 @endpush
 
 @section('content')
     <section>
         <h2 class="section-title">{{ trans('panel.meeting_statistics') }}</h2>
 
-        <div class="activities-container mt-25 p-20 p-lg-35">
+        <div class="mt-25">
             <div class="row">
-                <div class="col-4 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/49.svg" width="64" height="64" alt="">
-                        <strong class="font-30 font-weight-bold mt-5">{{ $openReserveCount }}</strong>
-                        <span class="font-16 text-dark-blue text-gray font-weight-500">{{ trans('panel.open_meetings') }}</span>
+                <div class="col-4">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-warning">
+                            <i data-feather="calendar" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $openReserveCount }}</span>
+                            <span class="stat-label">{{ trans('panel.open_meetings') }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-4 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/50.svg" width="64" height="64" alt="">
-                        <strong class="font-30 font-weight-bold mt-5">{{ $totalReserveCount }}</strong>
-                        <span class="font-16 text-dark-blue text-gray font-weight-500">{{ trans('panel.total_meetings') }}</span>
+                <div class="col-4">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-primary">
+                            <i data-feather="users" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $totalReserveCount }}</span>
+                            <span class="stat-label">{{ trans('panel.total_meetings') }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-4 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/hours.svg" width="64" height="64" alt="">
-                        <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ $activeHoursCount }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('panel.active_hours') }}</span>
+                <div class="col-4">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-success">
+                            <i data-feather="clock" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $activeHoursCount }}</span>
+                            <span class="stat-label">{{ trans('panel.active_hours') }}</span>
+                        </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
@@ -151,11 +265,9 @@
                                 <tr>
                                     <th>{{ trans('public.instructor') }}</th>
                                     <th class="text-center">{{ trans('update.meeting_type') }}</th>
-                                    <th class="text-center">{{ trans('public.day') }}</th>
                                     <th class="text-center">{{ trans('public.date') }}</th>
                                     <th class="text-center">{{ trans('public.time') }}</th>
                                     <th class="text-center">{{ trans('public.paid_amount') }}</th>
-                                    <th class="text-center">{{ trans('update.students_count') }}</th>
                                     <th class="text-center">{{ trans('public.status') }}</th>
                                     <th></th>
                                 </tr>
@@ -166,57 +278,68 @@
                                     <tr>
                                         <td class="text-left">
                                             <div class="user-inline-avatar d-flex align-items-center">
-                                                <div class="avatar bg-gray200">
-                                                    <img loading="lazy"  src="{{ config('app.img_dynamic_url') }}{{ $ReserveMeeting->meeting->creator->getAvatar() }}" class="img-cover" alt="">
-                                                </div>
-                                                <div class=" ml-5">
-                                                    <span class="d-block font-weight-500">{{ $ReserveMeeting->meeting->creator->full_name }}</span>
-
-                                                </div>
+                                                @if(!empty($ReserveMeeting->meeting) and !empty($ReserveMeeting->meeting->creator))
+                                                    <div class="avatar bg-gray200">
+                                                        <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $ReserveMeeting->meeting->creator->getAvatar() }}" class="img-cover" alt="">
+                                                    </div>
+                                                    <div class=" ml-5">
+                                                        <span class="d-block font-weight-500">{{ $ReserveMeeting->meeting->creator->full_name }}</span>
+                                                    </div>
+                                                @else
+                                                    <div class="avatar bg-gray200">
+                                                        <img loading="lazy" src="/assets/default/img/avatar.png" class="img-cover" alt="">
+                                                    </div>
+                                                    <div class=" ml-5">
+                                                        <span class="d-block font-weight-500 text-danger">{{ trans('update.deleted_user') }}</span>
+                                                    </div>
+                                                @endif
                                             </div>
                                         </td>
-                                        <td class="align-middle">
+                                        <td class="align-middle text-center">
                                             <span class="font-weight-500">{{ trans('update.'.$ReserveMeeting->meeting_type) }}</span>
                                         </td>
-                                        <td class="align-middle">
-                                            <span class="font-weight-500">{{ dateTimeFormat($ReserveMeeting->start_at, 'D') }}</span>
+                                        <td class="align-middle text-center">
+                                            @php
+                                                $dayText = dateTimeFormat($ReserveMeeting->start_at, 'D');
+                                                $dateText = dateTimeFormat($ReserveMeeting->start_at, 'j M Y');
+                                            @endphp
+                                            <div class="text-dark-blue font-weight-bold font-14">{{ $dayText }}</div>
+                                            <div class="text-gray font-11 mt-2">{{ $dateText }}</div>
                                         </td>
-                                        <td class="align-middle">
-                                            <span>{{ dateTimeFormat($ReserveMeeting->start_at, 'j M Y') }}</span>
-                                        </td>
-                                        <td class="align-middle">
-                                            <div class="d-inline-flex align-items-center rounded bg-gray200 py-5 px-15 font-14 font-weight-500">
-                                                <span class="">{{ dateTimeFormat($ReserveMeeting->start_at, 'H:i') }}</span>
-                                                <span class="mx-1">-</span>
-                                                <span class="">{{ dateTimeFormat($ReserveMeeting->end_at, 'H:i') }}</span>
+
+                                        <td class="align-middle text-center">
+                                            <div class="time-badge">
+                                                <i data-feather="clock" width="12" height="12" class="mr-5"></i>
+                                                {{ dateTimeFormat($ReserveMeeting->start_at, 'H:i') }} - {{ dateTimeFormat($ReserveMeeting->end_at, 'H:i') }}
                                             </div>
                                         </td>
-                                        <td class="align-middle font-weight-500">
-                                            @if(!empty($ReserveMeeting->sale) and !empty($ReserveMeeting->sale->total_amount) and $ReserveMeeting->sale->total_amount > 0)
-                                                {{ handlePrice($ReserveMeeting->sale->total_amount) }}
 
-                                            @else
-                                                {{ trans('public.free') }}
-                                            @endif
+                                        <td class="align-middle text-center">
+                                            <div class="font-weight-bold text-dark-blue font-14">
+                                                @if(!empty($ReserveMeeting->sale) and !empty($ReserveMeeting->sale->total_amount) and $ReserveMeeting->sale->total_amount > 0)
+                                                    {{ handlePrice($ReserveMeeting->sale->total_amount) }}
+                                                @else
+                                                    <span class="text-success">{{ trans('public.free') }}</span>
+                                                @endif
+                                            </div>
+                                            <div class="text-gray font-11 mt-2">
+                                                {{ $ReserveMeeting->student_count ?? 1 }} {{ trans('update.students_count') }}
+                                            </div>
                                         </td>
-                                        <td class="align-middle font-weight-500">
-                                            {{ $ReserveMeeting->student_count ?? 1 }}
-                                        </td>
-                                        <td class="align-middle">
-                                            @switch($ReserveMeeting->status)
-                                                @case(\App\Models\ReserveMeeting::$pending)
-                                                    <span class="text-warning font-weight-500">{{ trans('public.pending') }}</span>
-                                                    @break
-                                                @case(\App\Models\ReserveMeeting::$open)
-                                                    <span class="text-gray font-weight-500">{{ trans('public.open') }}</span>
-                                                    @break
-                                                @case(\App\Models\ReserveMeeting::$finished)
-                                                    <span class="font-weight-500 text-primary">{{ trans('public.finished') }}</span>
-                                                    @break
-                                                @case(\App\Models\ReserveMeeting::$canceled)
-                                                    <span class="text-danger font-weight-500">{{ trans('public.canceled') }}</span>
-                                                    @break
-                                            @endswitch
+
+                                        <td class="align-middle text-center">
+                                            @php
+                                                $statusClass = 'gray';
+                                                switch($ReserveMeeting->status) {
+                                                    case \App\Models\ReserveMeeting::$pending: $statusClass = 'warning'; break;
+                                                    case \App\Models\ReserveMeeting::$open: $statusClass = 'primary'; break;
+                                                    case \App\Models\ReserveMeeting::$finished: $statusClass = 'success'; break;
+                                                    case \App\Models\ReserveMeeting::$canceled: $statusClass = 'danger'; break;
+                                                }
+                                            @endphp
+                                            <span class="status-badge bg-glass-{{ $statusClass }}">
+                                                {{ trans('public.'.$ReserveMeeting->status) }}
+                                            </span>
                                         </td>
 
                                         <td class="align-middle text-right">
