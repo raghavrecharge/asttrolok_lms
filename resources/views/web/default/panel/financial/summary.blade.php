@@ -190,7 +190,7 @@
                                     <th class="text-center">Type</th>
                                     <th class="text-center">{{ trans('panel.amount') }} ({{ $currency }})</th>
                                     <th class="text-center">{{ trans('public.date') }}</th>
-                                    <th width="120">{{ trans('admin/main.actions') }}</th>
+                                    <th class="text-center">{{ trans('admin/main.actions') }}</th>
                                 </tr>
                                 </thead>
 
@@ -234,8 +234,10 @@
 
                                             @if($invoiceUrl)
                                                 <a href="{{ $invoiceUrl }}" target="_blank" class="text-gray" title="{{ trans('admin/main.invoice') }}">
-                                                    <i data-feather="file-text" width="20"></i>
+                                                    <i data-feather="printer" width="20"></i>
                                                 </a>
+
+                                               
                                             @endif
                                         </td>
                                     </tr>
