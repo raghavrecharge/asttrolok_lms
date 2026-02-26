@@ -43,6 +43,14 @@ class UpeController extends Controller
             $sale = UpeSale::where('user_id', $user->id)
                 ->where('product_id', $productId)
                 ->when($request->filled('status'), fn($q) => $q->where('status', $request->status))
+                ->whereHas('product', function ($q) use ($request) {
+                    $type = $request->get('type', 'course');
+                    if ($type === 'course') {
+                        $q->whereIn('product_type', ['webinar', 'course_video', 'course_live', 'bundle']);
+                    } elseif ($type === 'meeting') {
+                        $q->where('product_type', 'meeting');
+                    }
+                })
                 ->orderByRaw("FIELD(status, 'active', 'partially_refunded', 'pending_payment', 'completed', 'refunded', 'expired', 'cancelled') ASC")
                 ->orderByDesc('id')
                 ->first();

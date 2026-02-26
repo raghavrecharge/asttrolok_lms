@@ -271,6 +271,31 @@ try {
     $extendedAccesses = [];
 }
 
+// Also check UPE child sales (course extensions created via SupportUpeBridge::grantCourseExtension)
+try {
+    $upeExtensionSales = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
+        ->where('sale_type', 'free')
+        ->where('pricing_mode', 'free')
+        ->whereNotNull('parent_sale_id')
+        ->whereNotNull('valid_until')
+        ->whereIn('status', ['active', 'partially_refunded'])
+        ->with('product')
+        ->get();
+
+    foreach ($upeExtensionSales as $extSale) {
+        if (!$extSale->product || !$extSale->product->external_id) continue;
+        $webinarId = $extSale->product->external_id;
+        $extExpire = $extSale->valid_until instanceof \Carbon\Carbon
+            ? $extSale->valid_until->timestamp
+            : strtotime($extSale->valid_until);
+        if (!isset($extendedAccesses[$webinarId]) || $extExpire > $extendedAccesses[$webinarId]) {
+            $extendedAccesses[$webinarId] = $extExpire;
+        }
+    }
+} catch (\Throwable $e) {
+    \Log::warning('Dashboard UPE extension sales fetch failed', ['error' => $e->getMessage()]);
+}
+
             $time = time();
 
             $giftDurations = 0;
@@ -419,7 +444,11 @@ try {
                 $amount_paid[] = [
                     $sales2->total_amount,
                     $sales2->created_at,
-                    $webinars1->title ?? 'No Title'
+                    $webinars1->title ?? 'No Title',
+                    $sales2->id,
+                    $sales2->webinar_id,
+                    'course',
+                    $sales2->type
                 ];
 
                     }elseif($sales2->installment_payment_id){
@@ -436,24 +465,28 @@ try {
                 $amount_paid[] = [
             $sales2->total_amount,
             $sales2->created_at,
-            $webinars1->title ?? null
+            $webinars1->title ?? null,
+            $sales2->id,
+            $InstallmentOrder->webinar_id,
+            'course',
+            $sales2->type
             ];
 
                 }
                     }
                     }elseif($sales2->bundle){
 
-                        $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Bundle Course' ];
+                        $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Bundle Course', $sales2->id, $sales2->bundle_id, 'bundle', $sales2->type ];
                     }elseif($sales2->subscription_id){
                         $Subscription = Subscription::where('id', $sales2->subscription_id)->first();
 
-                        $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $Subscription?->title ];
+                        $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $Subscription?->title, $sales2->id, $sales2->subscription_id, 'subscription', $sales2->type ];
                     }elseif($sales2->product_order_id){
 
-                        $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'product' ];
+                        $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Product', $sales2->id, $sales2->product_order_id, 'product', $sales2->type ];
                     }elseif($sales2->meeting_id){
 
-                        $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Meeting' ];
+                        $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Meeting', $sales2->id, $sales2->meeting_id, 'meeting', $sales2->type ];
                     }
                 }
 
@@ -465,7 +498,11 @@ try {
                 $amount_paid[] = [
             $WebinarPartPayment1->amount,
             strtotime($WebinarPartPayment1->created_at),
-            $webinars1?->title ?? null
+            $webinars1?->title ?? null,
+            $WebinarPartPayment1->id,
+            $WebinarPartPayment1->webinar_id,
+            'part',
+            ''
             ];
 
                 }
@@ -684,6 +721,73 @@ try {
                 $data['activeHoursCount'] = round($activeHoursCount / 3600, 2);
                 $data['featureWebinars']=$featureWebinars;
                 $data['subscriptionAccess'] = $subscriptionAccess;
+
+                // Certificates & Quizzes Passed counts
+                try {
+                    $data['certificatesCount'] = \App\Models\Certificate::where('student_id', $user->id)->count();
+                } catch (\Throwable $e) {
+                    $data['certificatesCount'] = 0;
+                }
+                try {
+                    $data['quizzesPassedCount'] = \App\Models\QuizzesResult::where('user_id', $user->id)->where('status', 'passed')->count();
+                } catch (\Throwable $e) {
+                    $data['quizzesPassedCount'] = 0;
+                }
+
+                // UPE Payment Engine data
+                try {
+                    $upeUserId = $user->id;
+                    $upeSaleIds = \App\Models\PaymentEngine\UpeSale::where('user_id', $upeUserId)->pluck('id');
+
+                    // Active installment plans with schedules
+                    $upeInstallmentPlans = \App\Models\PaymentEngine\UpeInstallmentPlan::whereIn('sale_id', $upeSaleIds)
+                        ->where('status', 'active')
+                        ->with(['sale.product', 'schedules'])
+                        ->orderBy('created_at', 'desc')
+                        ->limit(10)
+                        ->get();
+
+                    $upePlanIds = $upeInstallmentPlans->pluck('id');
+
+                    // Overdue schedules count
+                    $upeOverdueCount = \App\Models\PaymentEngine\UpeInstallmentSchedule::whereIn('plan_id', $upePlanIds)
+                        ->where('status', 'overdue')->count();
+
+                    // Upcoming/overdue schedules (next payments due)
+                    $upeAllPlanIds = \App\Models\PaymentEngine\UpeInstallmentPlan::whereIn('sale_id', $upeSaleIds)->pluck('id');
+                    $upeUpcomingSchedules = \App\Models\PaymentEngine\UpeInstallmentSchedule::whereIn('plan_id', $upeAllPlanIds)
+                        ->whereIn('status', ['due', 'partial', 'overdue', 'upcoming'])
+                        ->orderBy('due_date')
+                        ->with(['plan.sale.product'])
+                        ->limit(5)
+                        ->get();
+
+                    // Recent ledger entries
+                    $upeLedgerEntries = \App\Models\PaymentEngine\UpeLedgerEntry::whereIn('sale_id', $upeSaleIds)
+                        ->orderBy('created_at', 'desc')
+                        ->with('sale.product')
+                        ->limit(10)
+                        ->get();
+
+                    // Active subscription
+                    $upeSubscription = \App\Models\PaymentEngine\UpeSubscription::where('user_id', $upeUserId)
+                        ->active()
+                        ->with('product')
+                        ->first();
+
+                    $data['upeInstallmentPlans'] = $upeInstallmentPlans;
+                    $data['upeOverdueCount'] = $upeOverdueCount;
+                    $data['upeUpcomingSchedules'] = $upeUpcomingSchedules;
+                    $data['upeLedgerEntries'] = $upeLedgerEntries;
+                    $data['upeSubscription'] = $upeSubscription;
+                } catch (\Throwable $e) {
+                    \Log::warning('Dashboard UPE data fetch failed', ['error' => $e->getMessage()]);
+                    $data['upeInstallmentPlans'] = collect();
+                    $data['upeOverdueCount'] = 0;
+                    $data['upeUpcomingSchedules'] = collect();
+                    $data['upeLedgerEntries'] = collect();
+                    $data['upeSubscription'] = null;
+                }
             }
 
             

@@ -4,92 +4,106 @@
     <style>
         .panel-section-card {
             background: #fff;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            border: 1px solid #f1f1f1;
-            transition: all 0.3s ease;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f0f0f0;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
         .panel-section-card:hover {
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.07);
+            transform: translateY(-2px);
+        }
+        .bg-light-success-faded {
+            background-color: rgba(67, 212, 119, 0.03);
+        }
+        .bg-light-danger {
+            background-color: rgba(246, 59, 59, 0.03);
+            border-left: 3px solid #f63b3b;
         }
         .summary-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #f8f9fa;
+            padding: 15px;
+            background: #fcfcfc;
+            border-radius: 12px;
+            border: 1px solid #f5f5f5;
+            height: 100%;
+            transition: all 0.2s ease;
         }
-        .summary-item:last-child {
-            border-bottom: none;
+        .summary-item:hover {
+            background: #fff;
+            border-color: #43d477;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
         .summary-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: rgba(67, 212, 119, 0.1);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(67, 212, 119, 0.1) 0%, rgba(56, 179, 100, 0.1) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 12px;
+            margin-right: 15px;
             color: #43d477;
         }
         .summary-label {
             display: flex;
             align-items: center;
             color: #6c757d;
-            font-size: 14px;
+            font-size: 13px;
+            font-weight: 500;
         }
         .summary-value {
-            font-weight: 600;
+            font-weight: 700;
             color: #1f3b64;
+            font-size: 15px;
         }
         .custom-progress {
-            height: 12px;
+            height: 10px;
             border-radius: 10px;
-            background-color: #f1f1f1;
+            background-color: #ebebeb;
             overflow: hidden;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
         }
         .custom-progress-bar {
             background: linear-gradient(90deg, #43d477 0%, #38b364 100%);
-            box-shadow: 0 2px 4px rgba(67, 212, 119, 0.3);
             border-radius: 10px;
             height: 100%;
-            transition: width 0.6s ease;
         }
         .schedule-table thead th {
             border-top: none;
-            background-color: #f8f9fa;
+            background-color: #fcfcfc;
             color: #1f3b64;
             font-weight: 700;
             text-transform: uppercase;
             font-size: 11px;
-            letter-spacing: 0.5px;
-        }
-        .schedule-table tbody tr {
-            transition: background-color 0.2s;
-        }
-        .schedule-table tbody tr:hover {
-            background-color: #fcfcfc !important;
+            letter-spacing: 0.8px;
+            padding: 18px 15px;
         }
         .schedule-table td {
             vertical-align: middle;
-            padding: 15px 10px;
+            padding: 20px 15px;
+            border-bottom: 1px solid #f8f9fa;
         }
         .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 12px;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 11px;
+            display: inline-block;
         }
         .restructure-section {
-            background: linear-gradient(135deg, #fff 0%, #fff9f0 100%);
-            border-left: 4px solid #ff9800;
+            background: linear-gradient(135deg, #fff 0%, #fdfcfb 100%);
+            border-top: 4px solid #ff9800;
+        }
+        .btn-hover-shadow {
+            transition: all 0.3s ease;
         }
         .btn-hover-shadow:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
         }
+
     </style>
 @endpush
 
@@ -104,88 +118,102 @@
 
         <div class="row mt-20">
             {{-- Plan Info --}}
-            <div class="col-12 col-lg-5">
+            <div class="col-12 mb-30">
                 <div class="panel-section-card py-25 px-25">
-                    <div class="d-flex align-items-center mb-20">
+                    <div class="d-flex align-items-center mb-25">
                         <div class="summary-icon">
                             <i data-feather="info" width="18" height="18"></i>
                         </div>
                         <h3 class="font-18 font-weight-bold text-dark-blue mb-0">Plan Summary</h3>
                     </div>
 
-                    <div class="summary-item">
-                        <div class="summary-label">
-                            <i data-feather="package" width="16" height="16" class="mr-10 text-gray"></i>
-                            Product
-                        </div>
-                        <span class="summary-value">
-                            @if($plan->sale && $plan->sale->product)
-                                {{ $plan->sale->product->name }}
-                            @else
-                                Sale #{{ $plan->sale_id }}
-                            @endif
-                        </span>
-                    </div>
-
-                    <div class="summary-item">
-                        <div class="summary-label">
-                            <i data-feather="activity" width="16" height="16" class="mr-10 text-gray"></i>
-                            Plan Status
-                        </div>
-                        <span>
-                            @php
-                                $planColors = [
-                                    'active' => 'primary',
-                                    'completed' => 'primary',
-                                    'defaulted' => 'danger',
-                                    'restructured' => 'warning',
-                                ];
-                                $planStatusClass = 'badge-' . ($planColors[$plan->status] ?? 'secondary');
-                            @endphp
-                            <span class="status-badge {{ $planStatusClass }}">{{ ucfirst($plan->status) }}</span>
-                        </span>
-                    </div>
-
-                    <div class="summary-item">
-                        <div class="summary-label">
-                            <i data-feather="dollar-sign" width="16" height="16" class="mr-10 text-gray"></i>
-                            Total Amount
-                        </div>
-                        <span class="summary-value">
-                            <span class="text-primary">{{ handlePrice($plan->total_amount) }}</span>
-                            @if($plan->sale && $plan->sale->base_fee_snapshot > $plan->total_amount)
-                                <span class="font-12 text-gray font-weight-normal ml-5" style="text-decoration: line-through;">{{ handlePrice($plan->sale->base_fee_snapshot) }}</span>
-                            @endif
-                        </span>
-                    </div>
-
-                    @if($plan->sale && $plan->sale->base_fee_snapshot > $plan->total_amount)
-                        <div class="summary-item">
-                            <div class="summary-label">
-                                <i data-feather="tag" width="16" height="16" class="mr-10 text-gray"></i>
-                                Discount
+                    <div class="row">
+                        <div class="col-12 col-md-6 col-lg-4 mb-20">
+                            <div class="summary-item">
+                                <div class="summary-label">
+                                    <i data-feather="package" width="16" height="16" class="mr-10 text-gray"></i>
+                                    Product
+                                </div>
+                                <span class="summary-value">
+                                    @if($plan->sale && $plan->sale->product)
+                                        {{ $plan->sale->product->name }}
+                                    @else
+                                        Sale #{{ $plan->sale_id }}
+                                    @endif
+                                </span>
                             </div>
-                            <span>
-                                <span class="badge badge-warning">Coupon Applied</span>
-                                <span class="font-weight-600 text-primary ml-5">{{ handlePrice($plan->sale->base_fee_snapshot - $plan->total_amount) }} saved</span>
-                            </span>
                         </div>
-                    @endif
 
-                    <div class="summary-item">
-                        <div class="summary-label">
-                            <i data-feather="layers" width="16" height="16" class="mr-10 text-gray"></i>
-                            Installments
+                        <div class="col-12 col-md-6 col-lg-4 mb-20">
+                            <div class="summary-item">
+                                <div class="summary-label">
+                                    <i data-feather="activity" width="16" height="16" class="mr-10 text-gray"></i>
+                                    Plan Status
+                                </div>
+                                <span>
+                                    @php
+                                        $planColors = [
+                                            'active' => 'primary',
+                                            'completed' => 'primary',
+                                            'defaulted' => 'danger',
+                                            'restructured' => 'warning',
+                                        ];
+                                        $planStatusClass = 'badge-' . ($planColors[$plan->status] ?? 'secondary');
+                                    @endphp
+                                    <span class="status-badge {{ $planStatusClass }}">{{ ucfirst($plan->status) }}</span>
+                                </span>
+                            </div>
                         </div>
-                        <span class="summary-value">{{ $plan->num_installments }} Payments</span>
-                    </div>
 
-                    <div class="summary-item">
-                        <div class="summary-label">
-                            <i data-feather="calendar" width="16" height="16" class="mr-10 text-gray"></i>
-                            Plan Type
+                        <div class="col-12 col-md-6 col-lg-4 mb-20">
+                            <div class="summary-item">
+                                <div class="summary-label">
+                                    <i data-feather="dollar-sign" width="16" height="16" class="mr-10 text-gray"></i>
+                                    Total Amount
+                                </div>
+                                <span class="summary-value">
+                                    <span class="text-primary">{{ handlePrice($plan->total_amount) }}</span>
+                                    @if($plan->sale && $plan->sale->base_fee_snapshot > $plan->total_amount)
+                                        <span class="font-12 text-gray font-weight-normal ml-5" style="text-decoration: line-through;">{{ handlePrice($plan->sale->base_fee_snapshot) }}</span>
+                                    @endif
+                                </span>
+                            </div>
                         </div>
-                        <span class="summary-value">{{ ucfirst($plan->plan_type) }}</span>
+
+                        <div class="col-12 col-md-6 col-lg-4 mb-20">
+                            @if($plan->sale && $plan->sale->base_fee_snapshot > $plan->total_amount)
+                                <div class="summary-item">
+                                    <div class="summary-label">
+                                        <i data-feather="tag" width="16" height="16" class="mr-10 text-gray"></i>
+                                        Discount
+                                    </div>
+                                    <span>
+                                        <span class="badge badge-warning">Coupon Applied</span>
+                                        <span class="font-weight-600 text-primary ml-5">{{ handlePrice($plan->sale->base_fee_snapshot - $plan->total_amount) }} saved</span>
+                                    </span>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="col-12 col-md-6 col-lg-4 mb-20">
+                            <div class="summary-item">
+                                <div class="summary-label">
+                                    <i data-feather="layers" width="16" height="16" class="mr-10 text-gray"></i>
+                                    Installments
+                                </div>
+                                <span class="summary-value">{{ $plan->num_installments }} Payments</span>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6 col-lg-4 mb-20">
+                            <div class="summary-item">
+                                <div class="summary-label">
+                                    <i data-feather="calendar" width="16" height="16" class="mr-10 text-gray"></i>
+                                    Plan Type
+                                </div>
+                                <span class="summary-value">{{ ucfirst($plan->plan_type) }}</span>
+                            </div>
+                        </div>
                     </div>
 
                     @php
@@ -196,22 +224,32 @@
                         $paidPercent = $totalDue > 0 ? round(($totalPaid / $totalDue) * 100) : 0;
                     @endphp
 
-                    <div class="mt-25 p-15 rounded-lg bg-light">
-                        <div class="d-flex justify-content-between mb-8">
-                            <span class="text-gray font-14">Repayment Progress</span>
-                            <span class="text-dark-blue font-weight-bold">{{ $paidPercent }}%</span>
-                        </div>
-                        <div class="custom-progress mb-15">
-                            <div class="custom-progress-bar" style="width: {{ $paidPercent }}%"></div>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <div class="font-12 text-gray mb-2">Paid</div>
-                                <div class="text-primary font-16 font-weight-bold">{{ handlePrice($totalPaid) }}</div>
+                    <div class="mt-10 p-20 rounded-lg bg-light">
+                        <div class="row align-items-center">
+                            <div class="col-12 col-md-4 mb-15 mb-md-0">
+                                <div class="d-flex justify-content-between mb-8">
+                                    <span class="text-gray font-14">Repayment Progress</span>
+                                    <span class="text-dark-blue font-weight-bold">{{ $paidPercent }}%</span>
+                                </div>
+                                <div class="custom-progress">
+                                    <div class="custom-progress-bar" style="width: {{ $paidPercent }}%"></div>
+                                </div>
                             </div>
-                            <div class="text-right">
-                                <div class="font-12 text-gray mb-2">Remaining</div>
-                                <div class="text-danger font-16 font-weight-bold">{{ handlePrice(max(0, $totalRemaining)) }}</div>
+                            <div class="col-12 col-md-8">
+                                <div class="row">
+                                    <div class="col-6 col-md-4">
+                                        <div class="font-12 text-gray mb-2">Total Due</div>
+                                        <div class="text-dark-blue font-16 font-weight-bold">{{ handlePrice($totalDue) }}</div>
+                                    </div>
+                                    <div class="col-6 col-md-4">
+                                        <div class="font-12 text-gray mb-2">Total Paid</div>
+                                        <div class="text-primary font-16 font-weight-bold">{{ handlePrice($totalPaid) }}</div>
+                                    </div>
+                                    <div class="col-12 col-md-4 mt-10 mt-md-0">
+                                        <div class="font-12 text-gray mb-2">Balance Remaining</div>
+                                        <div class="text-danger font-16 font-weight-bold">{{ handlePrice(max(0, $totalRemaining)) }}</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -219,25 +257,30 @@
             </div>
 
             {{-- Schedule Table --}}
-            <div class="col-12 col-lg-7 mt-15 mt-lg-0">
+            <div class="col-12">
                 <div class="panel-section-card py-25 px-25">
-                    <div class="d-flex align-items-center mb-20">
-                        <div class="summary-icon" style="background: rgba(31, 59, 100, 0.1); color: #1f3b64;">
-                            <i data-feather="calendar" width="18" height="18"></i>
+                    <div class="d-flex align-items-center justify-content-between mb-25">
+                        <div class="d-flex align-items-center">
+                            <div class="summary-icon" style="background: rgba(31, 59, 100, 0.1); color: #1f3b64;">
+                                <i data-feather="calendar" width="18" height="18"></i>
+                            </div>
+                            <h3 class="font-18 font-weight-bold text-dark-blue mb-0">Payment Schedule</h3>
                         </div>
-                        <h3 class="font-18 font-weight-bold text-dark-blue mb-0">Payment Schedule</h3>
+                        @if($nextUnpaid && $payUrl)
+                            <a href="{{ $payUrl }}" class="btn btn-primary px-25 btn-hover-shadow d-none d-md-flex align-items-center justify-content-center">Pay Next EMI</a>
+                        @endif
                     </div>
 
                     <div class="table-responsive">
                         <table class="table schedule-table">
                             <thead>
                                 <tr>
-                                    <th class="text-left">#</th>
+                                    <th class="text-left"># Item</th>
                                     <th class="text-left">Due Date</th>
                                     <th>Amount</th>
-                                    <th>Paid</th>
+                                    <th>Paid Amount</th>
                                     <th>Status</th>
-                                    <th></th>
+                                    <th class="text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -256,15 +299,16 @@
                                         $schedStatusClass = 'badge-' . ($schedColors[$schedule->status] ?? 'secondary');
                                         $emiLabel = $displayIndex === 1 ? 'Upfront' : 'EMI ' . ($displayIndex - 1);
                                     @endphp
-<<<<<<< HEAD
-                                    <tr class="{{ $schedule->status === 'overdue' ? 'bg-light-danger' : '' }}">
-                                        <td class="font-weight-bold text-dark-blue">{{ $schedule->sequence ?? $schedule->installment_number }}</td>
-                                        <td class="text-left">
-=======
-                                    <tr class="{{ $schedule->status === 'overdue' ? 'bg-light' : '' }}">
-                                        <td class="font-weight-500">{{ $emiLabel }}</td>
+                                    <tr class="{{ $schedule->status === 'overdue' ? 'bg-light-danger' : ($schedule->status === 'paid' ? 'bg-light-success-faded' : '') }}">
                                         <td>
->>>>>>> 0e7d69c168339003315a5a94c23904236bf15530
+                                            <div class="d-flex align-items-center">
+                                                <div class="mr-10 font-weight-bold text-dark-blue">{{ $emiLabel }}</div>
+                                                @if($schedule->status === 'paid')
+                                                    <i data-feather="check-circle" width="14" class="text-primary"></i>
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td>
                                             @if($schedule->due_date)
                                                 <div class="font-weight-500">{{ \Carbon\Carbon::parse($schedule->due_date)->format('d M Y') }}</div>
                                                 @if($schedule->status === 'overdue')
@@ -290,7 +334,11 @@
                                         </td>
                                         <td class="text-right">
                                             @if($nextUnpaid && $schedule->id === $nextUnpaid->id && $payUrl)
-                                                <a href="{{ $payUrl }}" class="btn btn-sm btn-primary px-15 btn-hover-shadow">Pay Now</a>
+                                                <a href="{{ $payUrl }}" class="btn btn-sm btn-primary px-15 btn-hover-shadow d-inline-flex align-items-center justify-content-center">Pay Now</a>
+                                            @elseif($schedule->status === 'paid')
+                                                <span class="text-gray font-12 d-inline-flex align-items-center justify-content-center"><i data-feather="lock" width="12" class="mr-5"></i> Completed</span>
+                                            @else
+                                                <span class="text-gray font-12">Wait for Turn</span>
                                             @endif
                                         </td>
                                     </tr>
@@ -301,6 +349,7 @@
                 </div>
             </div>
         </div>
+
     </section>
 
     {{-- Restructure Request --}}
@@ -418,11 +467,6 @@
         @endif
     @endif
 
-<<<<<<< HEAD
-    <div class="mt-30 d-flex flex-column flex-md-row">
-        <a href="/panel/upe/installments" class="btn btn-sm btn-secondary d-flex align-items-center justify-content-center mb-10 mb-md-0 px-20 py-10"><i data-feather="arrow-left" width="16" height="16" class="mr-8"></i> Back to EMI Plans</a>
-        <a href="/panel/upe/purchases/{{ $plan->sale_id }}" class="btn btn-sm btn-primary ml-md-15 d-flex align-items-center justify-content-center px-20 py-10"><i data-feather="shopping-bag" width="16" height="16" class="mr-8"></i> View Purchase Details</a>
-=======
     <div class="mt-20 d-flex">
         <a href="/panel/upe/installments" class="btn btn-sm btn-secondary"><i data-feather="arrow-left" width="14" height="14"></i> Back to EMI Plans</a>
         <a href="/panel/upe/purchases/{{ $plan->sale_id }}" class="btn btn-sm btn-primary ml-10">View Purchase</a>
@@ -434,7 +478,6 @@
                 </a>
             @endif
         @endif
->>>>>>> 0e7d69c168339003315a5a94c23904236bf15530
     </div>
 @endsection
 
