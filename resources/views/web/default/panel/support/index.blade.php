@@ -1,3 +1,4 @@
+@extends(getTemplate() .'.panel.layouts.panel_layout')
 @push('styles_top')
     <style>
         .stat-card {
@@ -49,23 +50,30 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
             border: 1px solid #f8f8f8;
         }
+        .custom-table {
+            min-width: 700px;
+        }
         .custom-table thead th {
             background: #f8faff;
             border: none;
-            padding: 15px;
+            padding: 12px 10px;
             font-size: 12px;
             font-weight: 700;
             color: #1f3b64;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            white-space: nowrap;
         }
         .custom-table tbody td {
-            padding: 20px 15px;
+            padding: 16px 10px;
             vertical-align: middle;
             border-bottom: 1px solid #f4f4f4;
             font-size: 14px;
             color: #1f3b64;
         }
+        .custom-table .col-title { max-width: 200px; }
+        .custom-table .col-scenario { max-width: 160px; }
+        .custom-table .col-action { white-space: nowrap; }
         .status-badge {
             padding: 6px 12px;
             border-radius: 10px;
@@ -146,11 +154,11 @@
                         <thead>
                             <tr>
                                 <th>Ticket #</th>
-                                <th class="text-left">Title/Course</th>
-                                <th class="text-left">Scenario</th>
+                                <th class="text-left col-title">Title/Course</th>
+                                <th class="text-left col-scenario">Scenario</th>
                                 <th>Status</th>
                                 <th>Date</th>
-                                <th>Action</th>
+                                <th class="col-action">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -159,7 +167,7 @@
                                 <td>
                                     <span class="font-weight-bold">#{{ $request->ticket_number }}</span>
                                 </td>
-                                <td class="text-left">
+                                <td class="text-left col-title">
                                     <div class="d-flex flex-column">
                                         <span class="font-weight-bold text-dark-blue">{{ $request->title }}</span>
                                         @if($request->webinar)
@@ -167,7 +175,7 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td class="text-left">
+                                <td class="text-left col-scenario">
                                     <span class="font-13 text-gray">{{ $request->getScenarioLabel() }}</span>
                                 </td>
                                 <td>
@@ -185,7 +193,7 @@
                                     <span class="d-block font-13 font-weight-bold">{{ $request->created_at->format('d M Y') }}</span>
                                     <small class="text-gray">{{ $request->created_at->diffForHumans() }}</small>
                                 </td>
-                                <td>
+                                <td class="col-action">
                                     <a href="{{ route('newsuportforasttrolok.show', $request->ticket_number) }}" 
                                        class="btn btn-sm btn-border-white">
                                         View
