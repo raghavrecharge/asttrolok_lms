@@ -1888,7 +1888,7 @@ class WebinarController extends Controller
                         'created_at' => time()
                     ]);
 
-                    if (!empty($user->email) and env('APP_ENV') == 'production') {
+                    if (!empty($user->email) and isProductionDomain()) {
                         try{
 
                     } catch (\Exception $e) {

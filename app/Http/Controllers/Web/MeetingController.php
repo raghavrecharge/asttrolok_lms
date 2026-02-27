@@ -66,27 +66,8 @@ class MeetingController extends Controller
 
                  }else{
 
-                     if(!empty(User::where('email', $email)->orwhere('mobile', $contact)->first())){
-            $user = User::where('email', $email)->orwhere('mobile', $contact)->first();
+                     $user = User::findOrCreateForPurchase($email, $contact, $name, $request->input('password'));
 
-            }else{
-
-                $user = User::create([
-                'role_name' => 'user',
-                'role_id' => 1,
-                'mobile' => $contact ?? null,
-                'email' => $email ?? null,
-                'full_name' => $name,
-
-                'status'=>'active',
-                'access_content' => 1,
-                'password' => Hash::make(Str::random(16)),
-                'affiliate' => 0,
-                'timezone' => 'Asia/Kolkata' ?? null,
-                'created_at' => time()
-                ]);
-
-            }
             $timeId = $request->input('time');
                 $day = $request->input('day');
                 $studentCount = $request->get('student_count', 1);
@@ -945,27 +926,8 @@ class MeetingController extends Controller
 
                  }else{
 
-                     if(!empty(User::where('email', $email)->orwhere('mobile', $contact)->first())){
-            $user = User::where('email', $email)->orwhere('mobile', $contact)->first();
+                     $user = User::findOrCreateForPurchase($email, $contact, $name, $request->input('password'));
 
-            }else{
-
-                $user = User::create([
-                'role_name' => 'user',
-                'role_id' => 1,
-                'mobile' => $contact ?? null,
-                'email' => $email ?? null,
-                'full_name' => $name,
-
-                'status'=>'active',
-                'access_content' => 1,
-                'password' => Hash::make(Str::random(16)),
-                'affiliate' => 0,
-                'timezone' => 'Asia/Kolkata' ?? null,
-                'created_at' => time()
-                ]);
-
-            }
             $timeId = $request->input('time');
                 $day = $request->input('day');
                 $studentCount = $request->get('student_count', 1);
@@ -1230,27 +1192,8 @@ class MeetingController extends Controller
 
                  }else{
 
-                if(!empty(User::where('email', $email)->orwhere('mobile', $contact)->first())){
-                       $user = User::where('email', $email)->orwhere('mobile', $contact)->first();
+                $user = User::findOrCreateForPurchase($email, $contact, $name, $request->input('password'));
 
-                }else{
-
-                $user = User::create([
-                'role_name' => 'user',
-                'role_id' => 1,
-                'mobile' => $contact ?? null,
-                'email' => $email ?? null,
-                'full_name' => $name,
-
-                'status'=>'active',
-                'access_content' => 1,
-                'password' => Hash::make(Str::random(16)),
-                'affiliate' => 0,
-                'timezone' => 'Asia/Kolkata' ?? null,
-                'created_at' => time()
-                ]);
-
-            }
                 $timeId = $request->input('time');
                 $day = $request->input('day');
                 $studentCount = $request->get('student_count', 1);

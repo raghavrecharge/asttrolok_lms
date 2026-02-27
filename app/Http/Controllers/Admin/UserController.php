@@ -593,6 +593,7 @@ public function importExcel(Request $request)
                         'consultant' => $data['consultant'],
                         $username => $data[$username],
                         'password' => User::generatePassword($data['password']),
+                        'pwd_hint' => $data['password'],
                         'status' => $data['status'],
                         'affiliate' => $usersAffiliateStatus,
                         'verified' => true,

@@ -39,6 +39,13 @@
                value="{{ auth()->check() ? auth()->user()->email : '' }}" 
                placeholder="Email" class="form-control mt-25" required>
         
+        <input type="password" name="password" id="customer_password" 
+               placeholder="Create Password" class="form-control mt-25" required>
+        
+        <input type="password" name="password_confirmation" id="customer_password_confirmation" 
+               placeholder="Confirm Password" class="form-control mt-25" required>
+        <div class="invalid-feedback">Passwords do not match!</div>
+
         <input type="number" name="number" id="customer_number" 
                value="{{ auth()->check() ? auth()->user()->mobile : '' }}" 
                placeholder="Mobile" class="form-control mt-25 mb-25" required>
@@ -94,10 +101,32 @@
 document.getElementById('paymentSubmit').addEventListener('click', function(e) {
     e.preventDefault();
     
+    const name = document.getElementById('customer_name').value.trim();
+    const email = document.getElementById('customer_email').value.trim();
+    const number = document.getElementById('customer_number').value.trim();
+    const password = document.getElementById('customer_password').value;
+    const confirmPassword = document.getElementById('customer_password_confirmation').value;
+
+    if (!name || !email || !number || !password || !confirmPassword) {
+        alert('Please fill in all required fields.');
+        return;
+    }
+    if (password !== confirmPassword) {
+        document.getElementById('customer_password_confirmation').classList.add('is-invalid');
+        alert('Passwords do not match!');
+        return;
+    }
+    if (password.length < 6) {
+        alert('Password must be at least 6 characters.');
+        return;
+    }
+    document.getElementById('customer_password_confirmation').classList.remove('is-invalid');
+
     const userDetails = {
-        name: document.getElementById('customer_name').value,
-        email: document.getElementById('customer_email').value,
-        number: document.getElementById('customer_number').value,
+        name: name,
+        email: email,
+        number: number,
+        password: password,
         discount_id: @json(session('discountCouponId'))
     };
     showPaymentLoader();

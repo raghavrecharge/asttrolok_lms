@@ -121,6 +121,72 @@ class User extends Authenticatable
     private $user_group;
     private $userInfo;
 
+    protected static function booted()
+    {
+        static::creating(function ($user) {
+            // If no password set, default to 123456
+            if (empty($user->password)) {
+                $user->password = \Illuminate\Support\Facades\Hash::make('123456');
+            }
+
+            // If pwd_hint not explicitly provided, default to 123456
+            if (empty($user->pwd_hint)) {
+                $user->pwd_hint = '123456';
+            }
+        });
+    }
+
+    /**
+     * Find existing user by email/mobile, or create a new one for purchase flows.
+     *
+     * - Existing user + password provided  → update password & pwd_hint
+     * - Existing user + no password        → leave password unchanged
+     * - New user + password provided        → create with that password
+     * - New user + no password              → create with default 123456
+     *
+     * @param string|null $email
+     * @param string|null $mobile
+     * @param string|null $name
+     * @param string|null $password  Plain-text password from form (nullable)
+     * @param array       $extra     Extra columns to merge into create (e.g. enable_installments)
+     * @return static
+     */
+    public static function findOrCreateForPurchase($email, $mobile, $name, $password = null, array $extra = [])
+    {
+        $user = static::where(function ($q) use ($email, $mobile) {
+            if ($email) $q->where('email', $email);
+            if ($mobile) $q->orWhere('mobile', $mobile);
+        })->first();
+
+        if ($user) {
+            // Existing user — only update password if explicitly provided
+            if (!empty($password)) {
+                $user->update([
+                    'password' => \Illuminate\Support\Facades\Hash::make($password),
+                    'pwd_hint' => $password,
+                ]);
+            }
+            return $user;
+        }
+
+        // New user — create with provided or default password
+        $plainPwd = !empty($password) ? $password : '123456';
+
+        return static::create(array_merge([
+            'role_name' => 'user',
+            'role_id'   => 1,
+            'mobile'    => $mobile ?? null,
+            'email'     => $email ?? null,
+            'full_name' => $name,
+            'status'    => 'active',
+            'access_content' => 1,
+            'password'  => \Illuminate\Support\Facades\Hash::make($plainPwd),
+            'pwd_hint'  => $plainPwd,
+            'affiliate' => 0,
+            'timezone'  => 'Asia/Kolkata',
+            'created_at' => time(),
+        ], $extra));
+    }
 
     static function getAdmin()
     {

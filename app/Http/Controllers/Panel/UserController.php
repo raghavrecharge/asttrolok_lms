@@ -687,6 +687,7 @@ class UserController extends Controller
                     'email' => $data['email'],
                     'organ_id' => $organization->id,
                     'password' => Hash::make($data['password']),
+                    'pwd_hint' => $data['password'],
                     'full_name' => $data['full_name'],
                     'mobile' => $data['mobile'],
                     'language' => $data['language'],

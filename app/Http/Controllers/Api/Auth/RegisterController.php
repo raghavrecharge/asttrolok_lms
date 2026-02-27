@@ -98,6 +98,7 @@ class RegisterController extends Controller
             $username => $data[$username],
             'status' => User::$pending,
             'password' => Hash::make($data['password']),
+            'pwd_hint' => $data['password'],
             'affiliate' => $usersAffiliateStatus,
             'created_at' => time()
         ]);
@@ -211,6 +212,7 @@ class RegisterController extends Controller
                 'mobile' => $data['mobile'],
                 'status' => User::$pending,
                 'password' => Hash::make($data['password']),
+                'pwd_hint' => $data['password'],
                 'affiliate' => $usersAffiliateStatus,
                 'created_at' => time()
             ]);

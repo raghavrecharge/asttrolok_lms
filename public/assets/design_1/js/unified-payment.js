@@ -24,6 +24,7 @@ class UnifiedPaymentHandler {
                     name: userDetails.name,
                     email: userDetails.email,
                     number: userDetails.number,
+                    password: userDetails.password || null,
                     discount_id: userDetails.discount_id || null,
                     installment_id: userDetails.installment_id || null,
                     Country: userDetails.Country || null,

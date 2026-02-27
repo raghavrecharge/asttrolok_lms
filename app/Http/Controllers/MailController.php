@@ -13,6 +13,10 @@ class MailController extends Controller
     public function index()
 {
         try {
+            if (!isProductionDomain()) {
+                return 'Mail skipped — non-production environment';
+            }
+
             $data = [
             'title' => 'The Title',
             'body' => 'The Body',
