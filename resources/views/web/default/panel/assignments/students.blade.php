@@ -7,42 +7,62 @@
 
 @section('content')
     <section>
-        <h2 class="section-title">{{ $webinar->title }} | {{ $assignment->title }}</h2>
+        <div class="d-flex align-items-center mb-15">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(31, 59, 100, 0.08); display: flex; align-items: center; justify-content: center; margin-right: 15px; color: #1f3b64;">
+                <i data-feather="bar-chart-2" width="22" height="22"></i>
+            </div>
+            <h2 class="section-title mb-0">{{ trans('update.assignment_statistics') }}</h2>
+        </div>
 
-        <div class="activities-container mt-25 p-20 p-lg-35">
+        <div class="mt-20 px-15 py-30 rounded-lg" style="background: #f8faff; border: 1px solid #e8edf5; border-radius: 20px;">
             <div class="row">
-                <div class="col-3 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/homework.svg" width="64" height="64" alt="">
-                        <strong class="font-30 font-weight-bold mt-5">{{ $courseAssignmentsCount }}</strong>
-                        <span class="font-16 text-dark-blue text-gray font-weight-500">{{ trans('update.course_assignments') }}</span>
+                <div class="col-12 col-md-6 col-lg-3 mb-15 mb-lg-0">
+                    <div class="d-flex align-items-center p-20 h-100" style="background: #ffffff; border-radius: 20px; box-shadow: 0 4px 16px rgba(31,59,100,0.05); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)';" onmouseout="this.style.transform='translateY(0)';" >
+                        <div style="width: 64px; height: 64px; border-radius: 18px; background: #eef2f7; display: flex; align-items: center; justify-content: center; margin-right: 18px; color: #1f3b64;">
+                            <i data-feather="book-open" width="28" height="28"></i>
+                        </div>
+                        <div class="text-left">
+                            <div style="font-size: 28px; font-weight: 800; color: #1f3b64; line-height: 1;">{{ $courseAssignmentsCount }}</div>
+                            <div style="font-size: 13px; color: #6b7280; font-weight: 500; margin-top: 4px;">{{ trans('update.course_assignments') }}</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-3 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/58.svg" width="64" height="64" alt="">
-                        <strong class="font-30 font-weight-bold mt-5">{{ $pendingReviewCount }}</strong>
-                        <span class="font-16 text-dark-blue text-gray font-weight-500">{{ trans('update.pending_review') }}</span>
+                <div class="col-12 col-md-6 col-lg-3 mb-15 mb-lg-0">
+                    <div class="d-flex align-items-center p-20 h-100" style="background: #ffffff; border-radius: 20px; box-shadow: 0 4px 16px rgba(31,59,100,0.05); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)';" onmouseout="this.style.transform='translateY(0)';" >
+                        <div style="width: 64px; height: 64px; border-radius: 18px; background: #fff8e1; display: flex; align-items: center; justify-content: center; margin-right: 18px; color: #b5850b;">
+                            <i data-feather="clock" width="28" height="28"></i>
+                        </div>
+                        <div class="text-left">
+                            <div style="font-size: 28px; font-weight: 800; color: #1f3b64; line-height: 1;">{{ $pendingReviewCount }}</div>
+                            <div style="font-size: 13px; color: #6b7280; font-weight: 500; margin-top: 4px;">{{ trans('update.pending_review') }}</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-3 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/45.svg" width="64" height="64" alt="">
-                        <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ $passedCount }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('quiz.passed') }}</span>
+                <div class="col-12 col-md-6 col-lg-3 mb-15 mb-md-0">
+                    <div class="d-flex align-items-center p-20 h-100" style="background: #ffffff; border-radius: 20px; box-shadow: 0 4px 16px rgba(31,59,100,0.05); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)';" onmouseout="this.style.transform='translateY(0)';" >
+                        <div style="width: 64px; height: 64px; border-radius: 18px; background: #e8f5e9; display: flex; align-items: center; justify-content: center; margin-right: 18px; color: #2e7d32;">
+                            <i data-feather="check-circle" width="28" height="28"></i>
+                        </div>
+                        <div class="text-left">
+                            <div style="font-size: 28px; font-weight: 800; color: #1f3b64; line-height: 1;">{{ $passedCount }}</div>
+                            <div style="font-size: 13px; color: #6b7280; font-weight: 500; margin-top: 4px;">{{ trans('quiz.passed') }}</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-3 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/pin.svg" width="64" height="64" alt="">
-                        <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ $failedCount }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('quiz.failed') }}</span>
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="d-flex align-items-center p-20 h-100" style="background: #ffffff; border-radius: 20px; box-shadow: 0 4px 16px rgba(31,59,100,0.05); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)';" onmouseout="this.style.transform='translateY(0)';" >
+                        <div style="width: 64px; height: 64px; border-radius: 18px; background: #ffebee; display: flex; align-items: center; justify-content: center; margin-right: 18px; color: #c62828;">
+                            <i data-feather="x-circle" width="28" height="28"></i>
+                        </div>
+                        <div class="text-left">
+                            <div style="font-size: 28px; font-weight: 800; color: #1f3b64; line-height: 1;">{{ $failedCount }}</div>
+                            <div style="font-size: 13px; color: #6b7280; font-weight: 500; margin-top: 4px;">{{ trans('quiz.failed') }}</div>
+                        </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
