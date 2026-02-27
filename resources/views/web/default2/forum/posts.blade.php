@@ -1,111 +1,259 @@
-@extends('web.default.layouts.app')
+@extends('web.default.panel.layouts.panel_layout')
 
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/vendors/summernote/summernote-bs4.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --chat-bg: #fdfdfd;
+            --bubble-me: linear-gradient(135deg, #43d477 0%, #2ecc71 100%);
+            --bubble-other: #ffffff;
+            --text-me: #ffffff;
+            --text-other: #1e293b;
+        }
+
+        /* Summernote Forced Light Mode & Icon Fix */
+        @font_face {
+            font-family: "summernote";
+            src: url("/assets/vendors/summernote/font/summernote.eot");
+            src: url("/assets/vendors/summernote/font/summernote.eot#iefix") format("embedded-opentype"),
+                 url("/assets/vendors/summernote/font/summernote.woff2") format("woff2"),
+                 url("/assets/vendors/summernote/font/summernote.woff") format("woff"),
+                 url("/assets/vendors/summernote/font/summernote.ttf") format("truetype");
+        }
+
+        .note-editor.note-frame {
+            border-radius: 12px !important;
+            border: 1px solid #e2e8f0 !important;
+            background: #fff !important;
+        }
+        
+        .note-editable {
+            background-color: #ffffff !important;
+            color: #1e293b !important;
+        }
+
+        .note-toolbar { background: #f8fafc !important; border-bottom: 1px solid #eef2f7 !important; }
+
+        .note-btn {
+            background: #fff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 6px !important;
+            color: #475569 !important;
+        }
+        
+        .note-btn [class^="note-icon-"], .note-btn [class*=" note-icon-"] {
+            font-family: "summernote" !important;
+        }
+
+        /* Chat Layout */
+        /* Modern Forum Suggestion System Styles */
+        .forum-suggestion-container {
+            background: #fff;
+            border-radius: 20px;
+            /* Removed overflow: hidden to allow dropdowns to pop out */
+            box-shadow: 0 10px 40px rgba(0,0,0,0.02);
+            border: 1px solid #f1f5f9;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .forum-header-section {
+            background: #fff;
+            border-bottom: 2px solid #f8fafc;
+            padding: 20px 30px;
+        }
+
+        .forum-posts-list {
+            padding: 30px;
+            background: #fdfdfd;
+        }
+
+        .forum-input-section {
+            background: #fff;
+            padding: 25px 30px;
+            border-top: 2px solid #f8fafc;
+            border-radius: 0 0 20px 20px;
+        }
+
+        /* Summernote Custom Styling for Suggestion Box */
+        .suggestion-input-box .note-editor.note-frame {
+            border: 1.5px solid #edf2f7 !important;
+            border-radius: 16px !important;
+            overflow: hidden !important;
+            box-shadow: none !important;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-input-box .note-editor.note-frame:focus-within {
+            border-color: #43d477 !important;
+            box-shadow: 0 10px 25px rgba(67, 212, 119, 0.08) !important;
+        }
+
+        .suggestion-input-box .note-toolbar {
+            background: #f8fafc !important;
+            border-bottom: 1.5px solid #edf2f7 !important;
+            padding: 10px 15px !important;
+        }
+
+        .suggestion-input-box .note-editable {
+            background: #fff !important;
+            min-height: 150px !important;
+            padding: 20px !important;
+            font-size: 15px !important;
+            line-height: 1.6 !important;
+        }
+
+        .suggestion-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .btn-attachment-custom {
+            color: #64748b;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .btn-attachment-custom:hover {
+            background: #f8fafc;
+            color: #1e293b;
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
+        }
+
+        .btn-send-suggestion {
+            background: #000;
+            color: #fff !important;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn-send-suggestion:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            opacity: 0.9;
+        }
+
+        .forum-sidebar-refined {
+            position: sticky;
+            top: 100px;
+        }
+
+        .topics-right-side-title:after {
+            content: "";
+            width: 30px;
+            height: 2px;
+            background: var(--primary);
+            position: absolute;
+            left: 0;
+            bottom: -8px;
+        }
+    </style>
 @endpush
 
 @section('content')
-    <div class="container mt-35 mt-md-50">
-        <section class="d-flex align-items-center justify-content-between px-15 px-md-30 py-15 py-md-25 border rounded-lg">
-            <div class="flex-grow-1">
-                <h2 class="font-20 font-weight-bold text-secondary">{{ $topic->title }}</h2>
+    <div class="container-fluid mb-50">
+        <div class="forum-suggestion-container">
+            {{-- Header Section Inside Forum Box --}}
+            <div class="forum-header-section">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        {{-- Back Button --}}
+                        <a href="javascript:void(0);" onclick="window.history.back();" class="btn btn-transparent p-5 mr-15 text-gray hover-primary" title="Back">
+                            <i data-feather="arrow-left" width="22" height="22"></i>
+                        </a>
 
-                <span class="d-block font-14 font-weight-500 text-gray mt-5">{{ trans('public.by') }} <span class="font-weight-bold">{{ $topic->creator->full_name }}</span> {{ trans('public.in') }} {{ dateTimeFormat($topic->created_at, 'j M Y | H:i') }}</span>
+                        <div class="d-flex flex-column">
+                            <h2 class="font-18 font-weight-bold text-secondary mb-0">{{ $topic->title }}</h2>
+                        </div>
+                    </div>
 
-                <div class="mt-15 ">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb p-0 m-0">
-                            <li class="breadcrumb-item font-12 text-gray"><a href="/">{{ getGeneralSettings('site_name') }}</a></li>
-                            <li class="breadcrumb-item font-12 text-gray"><a href="/forums">{{ trans('update.forum') }}</a></li>
-                            <li class="breadcrumb-item font-12 text-gray"><a href="{{ $topic->forum->getUrl() }}">{{ $topic->forum->title }}</a></li>
-                            <li class="breadcrumb-item font-12 text-gray font-weight-bold" aria-current="page">{{ $topic->title }}</li>
-                        </ol>
-                    </nav>
+                    <div class="d-flex align-items-center">
+                        <button type="button" data-action="{{ $topic->getBookmarkUrl() }}" class="{{ !empty($authUser) ? 'js-topic-bookmark' : 'login-to-access' }} btn-transparent {{ $topic->bookmarked ? 'text-warning' : '' }} d-flex flex-column align-items-center px-10">
+                            <i data-feather="bookmark" width="20" height="20" class="{{ $topic->bookmarked ? 'text-warning' : 'text-gray' }}"></i>
+                            <span class="font-10 mt-5 {{ $topic->bookmarked ? 'text-warning' : 'text-gray' }}">{{ trans('update.bookmark') }}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <button type="button" data-action="{{ $topic->getBookmarkUrl() }}" class="{{ !empty($authUser) ? 'js-topic-bookmark' : 'login-to-access' }} d-flex align-items-center flex-column btn-transparent {{ $topic->bookmarked ? 'text-warning' : '' }}">
-                <i data-feather="bookmark" class="text-gray" width="22" height="22"></i>
-                <span class="font-12 mt-5 text-gray">{{ trans('update.bookmark') }}</span>
-            </button>
-        </section>
+            <div class="forum-posts-list">
+                {{-- Starting Topic Message --}}
+                @include('web.default.forum.post_card')
 
-        @include('web.default.forum.post_card')
-
-        @if(!empty($topic->posts) and count($topic->posts))
-            @foreach($topic->posts as $postRow)
-                @include('web.default.forum.post_card',['post' => $postRow])
-            @endforeach
-        @endif
-
-        @if(!auth()->check())
-            <div class="reply-login-close-card d-flex flex-column align-items-center w-100 p-15 rounded-lg border bg-white mt-15 p-40">
-                <div class="icon-card">
-                    <img src="{{ config('app.js_css_url') }}/assets/default/img/topics/login.svg" alt="login icon" class="img-cover">
-                </div>
-
-                <h4 class="font-20 font-weight-bold text-secondary">{{ trans('update.login_to_reply') }}</h4>
-                <p class="font-14 font-weight-500 text-gray mt-5">{{ trans('update.login_to_reply_hint') }}</p>
+                {{-- Topic Posts --}}
+                @if(!empty($topic->posts) and count($topic->posts))
+                    @foreach($topic->posts as $postRow)
+                        @include('web.default.forum.post_card', ['post' => $postRow])
+                    @endforeach
+                @endif
             </div>
-        @elseif($topic->close or $forum->close)
-            <div class="reply-login-close-card d-flex flex-column align-items-center w-100 p-15 rounded-lg border bg-white mt-15 p-40">
-                <div class="icon-card">
-                    <img src="{{ config('app.js_css_url') }}/assets/default/img/topics/closed.svg" alt="closed icon" class="img-cover">
-                </div>
 
-                <h4 class="font-20 font-weight-bold text-secondary">{{ trans('update.topic_closed') }}</h4>
-                <p class="font-14 font-weight-500 text-gray mt-5">{{ trans('update.topic_closed_hint') }}</p>
-            </div>
-        @else
-            <div class="mt-30">
-                <h3 class="font-16 font-weight-bold text-secondary">{{ trans('update.reply_to_the_topic') }}</h3>
-
-                <div class="p-15 rounded-lg border bg-white mt-15">
-                    <form action="{{ $topic->getPostsUrl() }}" method="post">
+            <div class="forum-input-section">
+                @if(!auth()->check())
+                    <div class="text-center py-20 bg-info-light rounded-lg">
+                        <p class="font-14 text-gray mb-10">{{ trans('update.login_to_reply_hint') }}</p>
+                        <a href="/login" class="btn btn-primary btn-sm px-30">{{ trans('auth.login') }}</a>
+                    </div>
+                @elseif($topic->close or $forum->close)
+                    <div class="text-center py-20 bg-danger-light rounded-lg border border-danger">
+                        <p class="font-14 text-danger font-weight-bold mb-0">
+                            <i data-feather="lock" width="16" height="16" class="mr-5"></i>
+                            {{ trans('update.topic_closed') }}
+                        </p>
+                    </div>
+                @else
+                    <form action="{{ $topic->getPostsUrl() }}" method="post" id="chat-reply-form">
                         {{ csrf_field() }}
 
-                        <div class="topic-posts-reply-card d-none position-relative px-20 py-15 rounded-sm bg-info-light mb-15">
+                        <div class="topic-posts-reply-card d-none position-relative px-15 py-10 rounded-lg bg-info-light mb-15 border border-info">
                             <input type="hidden" name="reply_post_id" class="js-reply-post-id">
-                            <div class="js-reply-post-title font-14 font-weight-500 text-gray">{!! trans('update.you_are_replying_to_the_message') !!}</div>
-                            <div class="js-reply-post-description mt-5 font-14 text-gray"></div>
-
-                            <button type="button" class="js-close-reply-post btn-transparent">
-                                <i data-feather="x" width="22" height="22"></i>
+                            <div class="js-reply-post-title font-12 font-weight-bold text-secondary">Replying to message...</div>
+                            <button type="button" class="js-close-reply-post btn-transparent position-absolute" style="top:5px; right:5px;">
+                                <i data-feather="x" width="16" height="16" class="text-danger"></i>
                             </button>
                         </div>
 
-                        <div class="form-group">
-                            <label class="input-label">{{ trans('public.description') }}</label>
-                            <textarea id="summernote" name="description" class="form-control"></textarea>
-                            <div class="invalid-feedback"></div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-12 col-md-6">
-
-                                <div class="form-group">
-                                    <label class="input-label">{{ trans('update.attach_a_file') }} ({{ trans('public.optional') }})</label>
-
-                                    <div class="d-flex align-items-center">
-                                        <div class="input-group mr-10">
-                                            <div class="input-group-prepend">
-                                                <button type="button" class="input-group-text panel-file-manager" data-input="postAttachmentInput" data-preview="holder">
-                                                    <i data-feather="upload" width="18" height="18" class="text-white"></i>
-                                                </button>
-                                            </div>
-                                            <input type="text" name="attach" id="postAttachmentInput" value="" class="form-control" placeholder="{{ trans('update.assignment_attachments_placeholder') }}"/>
-                                        </div>
-
-                                        <button type="button" class="js-save-post btn btn-primary btn-sm">{{ trans('update.send') }}</button>
-                                    </div>
+                        <div class="suggestion-input-box">
+                            <textarea id="summernote" name="description" class="form-control" placeholder="Write your suggestion or reply here..."></textarea>
+                            
+                            <div class="suggestion-footer">
+                                <div class="suggestion-attachments">
+                                    <button type="button" class="panel-file-manager btn-attachment-custom" data-input="postAttachmentInput" data-preview="holder">
+                                        <i data-feather="paperclip" width="16" height="16" class="mr-8"></i>
+                                        <span>Attach Files</span>
+                                    </button>
+                                    <input type="hidden" name="attach" id="postAttachmentInput" value=""/>
                                 </div>
 
+                                <button type="button" id="sendMessage" class="js-save-post btn-send-suggestion">
+                                    <span>Post Suggestion</span>
+                                    <i data-feather="send" width="16" height="16" class="ml-10"></i>
+                                </button>
                             </div>
                         </div>
+                        <div id="holder" class="font-11 text-gray mt-5 ml-15"></div>
                     </form>
-                </div>
+                @endif
             </div>
-        @endif
+        </div>
     </div>
 
     <div id="topicReportModal" class="d-none">
@@ -146,9 +294,77 @@
         var topicBookmarkedSuccessfullyLang = '{{ trans('update.topic_bookmarked_successfully') }}';
         var topicUnBookmarkedSuccessfullyLang = '{{ trans('update.topic_un_bookmarked_successfully') }}';
         var editPostLang = '{{ trans('update.edit_post') }}';
-    </script>
 
-    <script src="{{ config('app.js_css_url') }}/assets/vendors/summernote/summernote-bs4.min.js"></script>
+    <script src="/assets/default/vendors/summernote/summernote-bs4.min.js"></script>
+
+    <script>
+        (function($) {
+            "use strict";
+
+            $(document).ready(function() {
+                // Initialize Summernote
+                if ($('#summernote').length) {
+                    $('#summernote').summernote({
+                        placeholder: 'Write your suggestion or reply here...',
+                        tabsize: 2,
+                        height: 150,
+                        toolbar: [
+                            ['style', ['style']],
+                            ['font', ['bold', 'underline', 'clear']],
+                            ['color', ['color']],
+                            ['para', ['ul', 'ol', 'paragraph']],
+                            ['insert', ['link', 'picture']],
+                            ['view', ['fullscreen', 'codeview', 'help']]
+                        ],
+                        callbacks: {
+                            onChange: function(contents, $editable) {
+                                $('#summernote').val(contents);
+                            }
+                        }
+                    });
+                }
+
+                // Handle Reply Button (Sync with core logic)
+                $('body').on('click', '.js-reply-post-btn', function(e) {
+                    if ($('#summernote').length) {
+                        $('#summernote').summernote('focus');
+                        
+                        $('html, body').animate({
+                            scrollTop: $(".forum-input-section").offset().top - 100
+                        }, 500);
+                    }
+                });
+
+                // Update Like Button Visuals (Instant feedback only - real action handled by core script)
+                $('body').on('click', '.js-topic-post-like', function() {
+                    const $btn = $(this);
+                    const $icon = $btn.find('.heart-icon');
+                    const $count = $btn.find('.js-like-count');
+                    
+                    if ($btn.hasClass('active')) {
+                        $btn.removeClass('active');
+                        $icon.removeClass('fill-danger text-danger').addClass('text-gray');
+                        $count.removeClass('text-danger').addClass('text-gray');
+                    } else {
+                        $btn.addClass('active');
+                        $icon.addClass('fill-danger text-danger').removeClass('text-gray');
+                        $count.addClass('text-danger').removeClass('text-gray');
+                    }
+                    
+                    if (typeof feather !== 'undefined') {
+                        feather.replace();
+                    }
+                });
+
+                // Periodic feather check
+                setInterval(function() {
+                    if (typeof feather !== 'undefined') {
+                        feather.replace();
+                    }
+                }, 2000);
+            });
+        })(jQuery);
+    </script>
     <script src="{{ config('app.js_css_url') }}/vendor/laravel-filemanager/js/stand-alone-button.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets/default/js/parts/topic_posts.min.js"></script>
 @endpush

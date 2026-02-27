@@ -383,7 +383,7 @@
                         @endif
 
                         <li class="mt-5 {{ (request()->is('panel/store/purchases')) ? 'active' : '' }}">
-                            <a href="/panel/store/purchases">{{ trans('panel.my_purchases') }}</a>
+                            <a href="/panel/store/purchases">My Products</a>
                         </li>
 
                         @if($authUser->isOrganization() || $authUser->isTeacher())

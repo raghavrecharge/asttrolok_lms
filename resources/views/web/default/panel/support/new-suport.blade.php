@@ -130,6 +130,7 @@
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/daterangepicker/daterangepicker.min.css">
 @endpush
 
 @push('scripts_bottom')
@@ -357,7 +358,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="input-label">Date <span class="text-danger">*</span></label>
-                                    <input type="date" name="payment_date" class="form-control" disabled>
+                                    <input type="text" name="payment_date" class="form-control datefilter" disabled>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -514,6 +515,8 @@
 @endsection
 
 @push('scripts_bottom')
+    <script src="{{ config('app.js_css_url') }}/assets/default/vendors/moment.min.js"></script>
+    <script src="{{ config('app.js_css_url') }}/assets/default/vendors/daterangepicker/daterangepicker.min.js"></script>
     <script src="{{ config('app.js_css_url') }}/assets/default/vendors/select2/select2.min.js"></script>
     
     <script>
@@ -772,4 +775,31 @@
 
         })();
     </script>
+@endpush
+
+@push("scripts_bottom2")
+<script>
+$(document).ready(function() {
+    if (typeof $.fn.daterangepicker !== "undefined") {
+        $(".datefilter").each(function() {
+            $(this).daterangepicker({
+                singleDatePicker: true,
+                autoUpdateInput: false,
+                drops: "down",
+                opens: "right",
+                locale: {
+                    cancelLabel: "Clear",
+                    format: "YYYY-MM-DD"
+                }
+            });
+            $(this).on("apply.daterangepicker", function(ev, picker) {
+                $(this).val(picker.startDate.format("YYYY-MM-DD"));
+            });
+            $(this).on("cancel.daterangepicker", function(ev, picker) {
+                $(this).val("");
+            });
+        });
+    }
+});
+</script>
 @endpush
