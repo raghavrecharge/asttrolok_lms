@@ -796,12 +796,16 @@ class ForumController extends Controller
                     }
 
                     $data = [
+                        'authUser' => $user,
                         'pageTitle' => $topic->title,
                         'pageDescription' => $topic->description,
                         'pageRobot' => '',
                         'forum' => $forum,
                         'topic' => $topic,
                         'likedPostsIds' => $likedPostsIds,
+                        'topUsers' => $this->getTopUsers(),
+                        'popularTopics' => $this->getPopularTopics(),
+                        'forumTopics' => $forum->topics()->where('status', 'active')->orderBy('created_at', 'desc')->get(),
                     ];
 
                     return view('web.default2.forum.posts', $data);

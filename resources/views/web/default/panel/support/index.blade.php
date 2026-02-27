@@ -169,7 +169,7 @@
             </div>
         </div>
 
-        <div class="mt-20" style="background: linear-gradient(135deg, #f8faff 0%, #fff 100%); border-radius: 20px; border: 1px solid #e8edf5; padding: 22px 28px; box-shadow: 0 4px 24px rgba(31,59,100,0.06);">
+        <!-- <div class="mt-20" style="background: linear-gradient(135deg, #f8faff 0%, #fff 100%); border-radius: 20px; border: 1px solid #e8edf5; padding: 22px 28px; box-shadow: 0 4px 24px rgba(31,59,100,0.06);">
             <form action="/panel/newsuportforasttrolok" method="get">
                 <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;">
 
@@ -270,7 +270,7 @@
 
                 </div>
             </form>
-        </div>
+        </div> -->
 
         <div class="mt-30 premium-table-container">
             @if($supportRequests->count() > 0)

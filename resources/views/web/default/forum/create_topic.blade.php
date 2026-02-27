@@ -366,12 +366,12 @@
             // Initialize Summernote in Light Mode
             if (jQuery().summernote) {
                 $('#summernote').summernote({
-                    placeholder: '{{ trans('update.topic_description_placeholder') }}',
+                    placeholder: 'Topic Description Placeholder',
                     height: 300,
                     styleTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
                     toolbar: [
                         ['style', ['style']],
-                        ['font', ['bold', 'italic', 'underline', 'clear']],
+                        ['font', ['bold', 'italic', 'underline', 'clear']], 
                         ['fontname', ['fontname']],
                         ['color', ['color']],
                         ['para', ['ul', 'ol', 'paragraph']],

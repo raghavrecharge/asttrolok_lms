@@ -121,23 +121,35 @@
                         <span class="detail-label">Status History</span>
                         <div class="mt-10">
                             @if(in_array($supportRequest->status, ['rejected', 'approved', 'executed', 'closed', 'verified']))
-                                <div class="p-15 rounded-15" style="background: #f8faff; border: 1px dashed #ddd;">
-                                    <div class="d-flex align-items-center">
-                                        <h6 class="font-14 font-weight-bold mb-0">
+                                <div class="p-15 rounded-15" style="background: #f8faff; border: 1px solid #eef2f7; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+                                    <div class="d-flex align-items-center flex-wrap">
+                                        <div class="d-flex align-items-center mr-15">
                                             @if($supportRequest->status === 'rejected')
-                                                <i data-feather="x-circle" width="20" height="20" class="text-danger mr-10" style="stroke-width: 3px;"></i> Rejected
+                                                <div class="mr-10 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(246, 59, 59, 0.1); border-radius: 50%;">
+                                                    <i data-feather="x-circle" width="18" height="18" class="text-danger" style="stroke-width: 3px;"></i>
+                                                </div>
+                                                <span class="font-16 font-weight-bold text-danger">Rejected</span>
                                             @elseif($supportRequest->status === 'approved' || $supportRequest->status === 'executed')
-                                                <i data-feather="check-circle" width="20" height="20" class="text-success mr-10" style="stroke-width: 3px;"></i> Complete
+                                                <div class="mr-10 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(33, 191, 115, 0.15); border-radius: 50%;">
+                                                    <i data-feather="check-circle" width="18" height="18" style="color: #21bf73; stroke-width: 3px;"></i>
+                                                </div>
+                                                <span class="font-16 font-weight-bold" style="color: #1a202c;">Complete</span>
                                             @else
-                                                <i data-feather="info" width="20" height="20" class="text-primary mr-10" style="stroke-width: 3px;"></i> {{ ucfirst($supportRequest->status) }}
+                                                <div class="mr-10 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(0, 123, 255, 0.1); border-radius: 50%;">
+                                                    <i data-feather="info" width="18" height="18" class="text-primary" style="stroke-width: 3px;"></i>
+                                                </div>
+                                                <span class="font-16 font-weight-bold text-primary">{{ ucfirst($supportRequest->status) }}</span>
                                             @endif
-                                        </h6>
-                                        <span class="ml-10 font-13 text-gray">by {{ $supportRequest->supportHandler?->full_name ?? $supportRequest->subAdmin?->full_name ?? 'admin' }}</span>
+                                        </div>
+                                        <span class="font-14 text-gray" style="margin-top: 1px;">by {{ $supportRequest->supportHandler?->full_name ?? $supportRequest->subAdmin?->full_name ?? 'admin' }}</span>
                                     </div>
                                     @if($supportRequest->rejection_reason || $supportRequest->approval_remarks || $supportRequest->execution_notes)
-                                        <p class="font-13 text-gray mb-0">
-                                            {{ $supportRequest->rejection_reason ?? $supportRequest->approval_remarks ?? $supportRequest->execution_notes }}
-                                        </p>
+                                        <div class="mt-10 pt-10 border-top border-dashed">
+                                            <p class="font-13 text-gray mb-0">
+                                                <i data-feather="message-square" width="12" height="12" class="mr-5"></i>
+                                                {{ $supportRequest->rejection_reason ?? $supportRequest->approval_remarks ?? $supportRequest->execution_notes }}
+                                            </p>
+                                        </div>
                                     @endif
                                 </div>
                             @else

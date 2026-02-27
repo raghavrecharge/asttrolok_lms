@@ -1,163 +1,198 @@
 @php
     $cardUser = !empty($post) ? $post->user : $topic->creator;
-    $cardUserBadges = $cardUser->getBadges();
+    $isMe = (auth()->check() and auth()->id() == $cardUser->id);
+    $isTopicCreator = ($cardUser->id == $topic->creator_id);
 @endphp
-<div class="topics-post-card py-15 rounded-lg border bg-white mt-15">
-    <div class="d-flex flex-wrap">
-        <div class="col-12 col-md-3">
-            <div class="position-relative bg-info-light d-flex flex-column align-items-center justify-content-start rounded-lg w-100 h-100 p-20">
-                <div class="user-avatar rounded-circle {{ ($cardUser->id == $topic->creator_id) ? 'green-ring' : '' }}">
-                    <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $cardUser->getAvatar(72) }}" class="img-cover rounded-circle" alt="{{ $cardUser->full_name }}">
+
+<div class="topics-post-card forum-suggestion-card mb-30 w-100">
+    <div class="suggestion-card-wrapper bg-white rounded-xl shadow-sm border border-light p-20 p-lg-25 position-relative transition-all hover-shadow">
+        
+        {{-- User Info Header --}}
+        <div class="d-flex align-items-center justify-content-between mb-20">
+            <div class="d-flex align-items-center">
+                <div class="suggestion-avatar rounded-circle overflow-hidden mr-12 shadow-sm" style="width: 50px; height: 50px; border: 2.5px solid {{ $isTopicCreator ? '#43d477' : '#f1f5f9' }};">
+                    <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{$cardUser->getAvatar(50)}}" class="img-cover" alt="{{ $cardUser->full_name }}">
                 </div>
-                <a href="{{ $cardUser->getProfileUrl() }}" target="_blank">
-                    <h4 class="js-post-user-name font-14 text-secondary mt-15 font-weight-bold w-100 text-center">{{ $cardUser->full_name }}</h4>
-                </a>
-
-                <span class="px-10 py-5 mt-5 rounded-lg border bg-info-light text-center font-12 text-gray">
-                            @if($cardUser->isUser())
-                        {{ trans('quiz.student') }}
-                    @elseif($cardUser->isTeacher())
-                        {{ trans('public.instructor') }}
-                    @elseif($cardUser->isOrganization())
-                        {{ trans('home.organization') }}
-                    @elseif($cardUser->isAdmin())
-                        {{ trans('panel.staff') }}
-                    @endif
-                        </span>
-
-                @if(!empty($cardUserBadges) and count($cardUserBadges))
-                    <div class="d-flex flex-wrap align-items-center justify-content-center mt-20 w-100">
-                        @foreach($cardUserBadges as $badge)
-                            <div class="mr-10 mt-10" data-toggle="tooltip" data-placement="bottom" data-html="true" title="{!! (!empty($badge->badge_id) ? nl2br($badge->badge->description) : nl2br($badge->description)) !!}">
-                                <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ !empty($badge->badge_id) ? $badge->badge->image : $badge->image }}" width="32" height="32" alt="{{ !empty($badge->badge_id) ? $badge->badge->title : $badge->title }}">
-                            </div>
-                        @endforeach
+                <div class="d-flex flex-column">
+                    <span class="font-16 font-weight-bold text-secondary lh-1.2">{{ $cardUser->full_name }}</span>
+                    <div class="d-flex align-items-center mt-2">
+                        <span class="font-12 text-gray">{{ dateTimeFormat(!empty($post) ? $post->created_at : $topic->created_at, 'j M Y | H:i') }}</span>
+                        @if($isTopicCreator)
+                            <span class="badge badge-primary-light text-primary font-11 ml-10 px-10 py-2">Author</span>
+                        @endif
                     </div>
-                @endif
+                </div>
+            </div>
 
-                <div class="mt-20 w-100">
-                    @if($cardUser->getTopicsPostsCount() > 0)
-                        <div class="d-flex align-items-center justify-content-between font-12 text-gray">
-                            <span class="">{{ trans('site.posts') }}:</span>
-                            <span class="">{{ $cardUser->getTopicsPostsCount() }}</span>
-                        </div>
-                    @endif
-
-                    @if($cardUser->getTopicsPostsLikesCount() > 0)
-                        <div class="d-flex align-items-center justify-content-between font-12 text-gray mt-10">
-                            <span class="">{{ trans('update.likes') }}:</span>
-                            <span class="">{{ $cardUser->getTopicsPostsLikesCount() }}</span>
-                        </div>
-                    @endif
-
-                    @if(count($cardUser->followers()))
-                        <div class="d-flex align-items-center justify-content-between font-12 text-gray mt-10">
-                            <span class="">{{ trans('panel.followers') }}:</span>
-                            <span class="">{{ count($cardUser->followers()) }}</span>
-                        </div>
-                    @endif
-
-                    <div class="d-flex align-items-center justify-content-between font-12 text-gray mt-10">
-                        <span class="">{{ trans('update.member_since') }}:</span>
-                        <span class="">{{ dateTimeFormat($cardUser->created_at,'j M Y') }}</span>
-                    </div>
-
-                    @if(!empty($cardUser->getCountryAndState()))
-                        <div class="d-flex align-items-center justify-content-between font-12 text-gray mt-10">
-                            <span class="">{{ trans('update.location') }}:</span>
-                            <span class="">{{ $cardUser->getCountryAndState() }}</span>
-                        </div>
-                    @endif
+            <div class="suggestion-actions-top d-flex align-items-center">
+                {{-- Premium Like Button (Pill Style) --}}
+                <div class="topic-post-like-btn mr-15">
+                    <button type="button" class="{{ !empty($authUser) ? 'js-topic-post-like' : 'login-to-access' }} btn-suggestion-like d-flex align-items-center px-15 py-8 rounded-pill transition-all {{ ((!empty($post) and in_array($post->id,$likedPostsIds)) or (empty($post) and $topic->liked)) ? 'active' : '' }}" data-action="{{ !empty($post) ? $post->getLikeUrl($forum->slug,$topic->slug) : $topic->getLikeUrl($forum->slug) }}">
+                        <i data-feather="heart" width="18" height="18" class="heart-icon {{ ((!empty($post) and in_array($post->id,$likedPostsIds)) or (empty($post) and $topic->liked)) ? 'fill-danger text-danger' : 'text-gray' }}"></i>
+                        <span class="font-14 font-weight-bold ml-8 js-like-count {{ ((!empty($post) and in_array($post->id,$likedPostsIds)) or (empty($post) and $topic->liked)) ? 'text-danger' : 'text-gray' }}">{{ !empty($post) ? $post->likes->count() : $topic->likes->count() }}</span>
+                    </button>
                 </div>
 
-                @if(!empty($post) and $post->pin)
-                    <span class="pinned-icon d-flex align-items-center justify-content-center">
-                        <img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/learning/un_pin.svg" alt="pin icon" class="">
-                    </span>
+                @if(!empty($authUser) and !$topic->close)
+                    <div class="dropdown custom-dropdown">
+                        <button class="btn btn-transparent p-5 text-gray hover-secondary transition-all" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i data-feather="more-vertical" width="22" height="22"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right shadow-20 border-0 rounded-15 py-10 mt-10">
+                            @if($authUser->id == $cardUser->id)
+                                <a class="dropdown-item js-post-edit font-14" href="javascript:void(0)" data-action="{{ !empty($post) ? $post->getEditUrl($forum->slug,$topic->slug) : $topic->getEditUrl($forum->slug) }}">
+                                    <i data-feather="edit-2" width="16" height="16" class="mr-12 text-primary"></i> {{ trans('public.edit') }}
+                                </a>
+                            @endif
+                            @if(!empty($post) and $authUser->id == $topic->creator_id)
+                                <a class="dropdown-item font-14 js-btn-post-pin-un-pin {{ $post->pin ? 'js-btn-post-un-pin' : 'js-btn-post-pin' }}" href="javascript:void(0)" data-action="{{ $topic->getPostsUrl() }}/{{ $post->id }}/{{ $post->pin ? 'un_pin' : 'pin' }}">
+                                    <i data-feather="pin" width="16" height="16" class="mr-12 {{ $post->pin ? 'text-warning' : 'text-gray' }}"></i> {{ $post->pin ? trans('update.un_pin') : trans('update.pin') }}
+                                </a>
+                            @endif
+                            @if(!empty($post))
+                                <a class="dropdown-item js-reply-post-btn font-14" href="javascript:void(0)" data-id="{{ $post->id }}" data-name="{{ $cardUser->full_name }}">
+                                    <i data-feather="corner-up-left" width="16" height="16" class="mr-12 text-secondary"></i> {{ trans('panel.reply') }}
+                                </a>
+                            @endif
+                            <a class="dropdown-item js-topic-post-report font-14" href="javascript:void(0)" data-id="{{ !empty($post) ? $post->id : $topic->id }}" data-type="{{ !empty($post) ? 'topic_post' : 'topic' }}">
+                                <i data-feather="alert-triangle" width="16" height="16" class="mr-12 text-danger"></i> {{ trans('panel.report') }}
+                            </a>
+                        </div>
+                    </div>
                 @endif
             </div>
         </div>
 
-        <div class="col-12 col-md-9 mt-15 mt-md-0">
-            <div class="d-flex flex-column justify-content-between h-100">
-                <div class="d-flex flex-column h-100">
-                    @if(!empty($post) and !empty($post->parent))
-                        <div class="post-quotation p-15 rounded-sm border mb-15">
-                            <div class="d-flex align-items-center">
-                                <div class="post-quotation-icon rounded-circle">
-                                    <img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/icons/quote-right.svg" class="img-cover" alt="quote-right">
-                                </div>
-                                <div class="ml-10">
-                                    <span class="d-block font-12 text-gray">{{ trans('update.reply_to') }}</span>
-                                    <span class="font-12 font-weight-bold text-gray">{{ $post->parent->user->full_name }}</span>
-                                </div>
-                            </div>
-
-                            <div class="topic-post-description mt-15">{!! truncate($post->parent->description, 200) !!}</div>
-                        </div>
-                    @endif
-
-                    <div class="topic-post-description">{!! !empty($post) ? $post->description : $topic->description !!}</div>
-
-                    @if(!empty($post) and !empty($post->attach))
-                        <div class="mt-auto d-inline-flex">
-                            <a href="{{ $post->getAttachmentUrl($forum->slug,$topic->slug) }}" target="_blank" class="d-flex align-items-center text-gray bg-info-light border px-10 py-5 rounded-pill">
-                                <i data-feather="paperclip" class="text-gray" width="16" height="16"></i>
-                                <span class="ml-5">{{ truncate($post->getAttachmentName(),24) }}</span>
-                            </a>
-                        </div>
-                    @elseif(empty($post) and !empty($topic->attachments) and count($topic->attachments))
-                        <div class="mt-auto d-inline-flex align-items-center">
-                            @foreach($topic->attachments as $attachment)
-                                <a href="{{ $attachment->getDownloadUrl($forum->slug,$topic->slug) }}" target="_blank" class="d-flex align-items-center text-gray bg-info-light border px-10 py-5 rounded-pill mr-15">
-                                    <i data-feather="paperclip" class="text-gray" width="16" height="16"></i>
-                                    <span class="ml-5 text-gray font-12">{{ truncate($attachment->getName(),24) }}</span>
-                                </a>
-                            @endforeach
-                        </div>
-                    @endif
+        {{-- Quote/Reply section if applicable --}}
+        @if(!empty($post) and !empty($post->parent))
+            <div class="suggestion-quotation p-15 rounded-15 mb-20 bg-light border-left-primary shadow-xs">
+                <div class="font-13 font-weight-bold text-primary mb-5 d-flex align-items-center">
+                    <i data-feather="corner-up-right" width="14" height="14" class="mr-8"></i>
+                    {{ trans('update.reply_to') }} {{ $post->parent->user->full_name }}
                 </div>
-
-                <div class="d-flex align-items-center justify-content-between mt-15 pt-15 border-top">
-                    <span class="font-14 font-weight-500 text-gray">{{ dateTimeFormat(!empty($post) ? $post->created_at : $topic->created_at,'j M Y | H:i') }}</span>
-
-                    <div class="d-flex align-items-center">
-                        @if(!empty($authUser) and !$topic->close)
-                            @if($authUser->id == $cardUser->id)
-                                @if(!empty($post))
-                                    <button type="button" data-action="{{ $post->getEditUrl($forum->slug,$topic->slug) }}" class="js-post-edit btn-transparent mr-25 font-14 font-weight-500 text-gray">{{ trans('public.edit') }}</button>
-                                @else
-                                    <a href="{{ $topic->getEditUrl($forum->slug) }}" class="mr-25 font-14 font-weight-500 text-gray">{{ trans('public.edit') }}</a>
-                                @endif
-                            @endif
-
-                            @if(!empty($post) and $authUser->id == $topic->creator_id)
-                                @if($post->pin)
-                                    <button type="button" data-action="{{ $topic->getPostsUrl() }}/{{ $post->id }}/un_pin" class="js-btn-post-un-pin btn-transparent font-14 font-weight-500 text-warning mr-25">{{ trans('update.un_pin') }}</button>
-                                @else
-                                    <button type="button" data-action="{{ $topic->getPostsUrl() }}/{{ $post->id }}/pin" class="js-btn-post-pin btn-transparent font-14 font-weight-500 text-gray mr-25">{{ trans('update.pin') }}</button>
-                                @endif
-                            @endif
-
-                            @if(!empty($post))
-                                <button type="button" data-id="{{ $post->id }}" class="js-reply-post-btn btn-transparent mr-25 font-14 font-weight-500 text-gray">{{ trans('panel.reply') }}</button>
-                            @endif
-
-                            <button type="button" data-id="{{ !empty($post) ? $post->id : $topic->id }}" data-type="{{ !empty($post) ? 'topic_post' : 'topic' }}" class="js-topic-post-report btn-transparent mr-25 font-14 font-weight-500 text-gray">{{ trans('panel.report') }}</button>
-                        @endif
-
-                        <div class="topic-post-like-btn d-flex align-items-center">
-                            <button type="button" class="{{ !empty($authUser) ? 'js-topic-post-like' : 'login-to-access' }} badge-icon d-flex align-items-center justify-content-center {{ ((!empty($post) and in_array($post->id,$likedPostsIds)) or (empty($post) and $topic->liked)) ? 'liked' : '' }}" data-action="{{ !empty($post) ? $post->getLikeUrl($forum->slug,$topic->slug) : $topic->getLikeUrl($forum->slug) }}">
-                                <i data-feather="heart" width="20" height="20"></i>
-                            </button>
-                            <div class="font-12 font-weight-normal">
-                                <span class="js-like-count">{{ !empty($post) ? $post->likes->count() : $topic->likes->count() }}</span>
-                                {{ trans('update.likes') }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <div class="font-13 text-gray lh-1.6 italic">{!! truncate(strip_tags($post->parent->description), 150) !!}</div>
             </div>
+        @endif
+
+        {{-- Content Area --}}
+        <div class="suggestion-content-area pl-lg-62 mt-5">
+            <div class="topic-post-description font-15 text-secondary lh-1.8">
+                {!! !empty($post) ? $post->description : $topic->description !!}
+            </div>
+
+            {{-- Attachments --}}
+            @php
+                $attachments = !empty($post) ? ( !empty($post->attach) ? [$post] : [] ) : ($topic->attachments ?? []);
+            @endphp
+
+            @if(count($attachments))
+                <div class="mt-25 d-flex flex-wrap">
+                    @foreach($attachments as $attachment)
+                        @php
+                            $url = !empty($post) ? $post->getAttachmentUrl($forum->slug, $topic->slug) : $attachment->getDownloadUrl($forum->slug, $topic->slug);
+                            $name = !empty($post) ? $post->getAttachmentName() : $attachment->getName();
+                        @endphp
+                        <a href="{{ $url }}" target="_blank" class="attachment-item d-inline-flex align-items-center bg-light px-15 py-10 rounded-12 mr-10 mb-10 border border-transparent transition-all hover-border-primary shadow-xs">
+                            <i data-feather="file" width="16" height="16" class="mr-10 text-primary"></i>
+                            <span class="font-13 font-weight-bold text-secondary">{{ truncate($name, 30) }}</span>
+                        </a>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </div>
 </div>
+
+<style>
+    .forum-suggestion-card {
+        transition: all 0.3s ease;
+    }
+
+    .hover-shadow:hover {
+        box-shadow: 0 15px 45px rgba(0,0,0,0.06) !important;
+        transform: translateY(-3px);
+    }
+
+    .suggestion-card-wrapper {
+        border-radius: 20px;
+    }
+
+    .border-left-primary {
+        border-left: 4px solid #43d477 !important;
+    }
+
+    .bg-light {
+        background-color: #f8fafc !important;
+    }
+
+    .attachment-item:hover {
+        background-color: #edf2f7 !important;
+        transform: translateY(-1px);
+    }
+
+    .btn-suggestion-like {
+        border: 1px solid #f1f5f9;
+        background: #fff;
+        transition: all 0.2s;
+        min-width: 65px; /* Ensure space for heart and count */
+        justify-content: center;
+    }
+
+    .btn-suggestion-like:hover {
+        background: #fdf2f2 !important;
+        border-color: #fee2e2 !important;
+    }
+
+    .btn-suggestion-like.active {
+        background: #fef2f2 !important;
+        border-color: #fecaca !important;
+        color: #ef4444 !important;
+    }
+
+    .fill-danger {
+        fill: #ef4444 !important;
+        stroke: #ef4444 !important;
+        color: #ef4444 !important;
+    }
+
+    .heart-icon {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    .shadow-20 {
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+        z-index: 1050 !important; /* Ensure popup is above everything */
+    }
+
+    .custom-dropdown .dropdown-menu {
+        margin-top: 10px !important;
+        transform: translate3d(0, 0, 0); /* Force hardware acceleration */
+    }
+
+    .rounded-15 {
+        border-radius: 15px !important;
+    }
+
+    .lh-1.2 { line-height: 1.2; }
+    .lh-1.6 { line-height: 1.6; }
+    .lh-1.8 { line-height: 1.8; }
+
+    .dropdown-item {
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s;
+        white-space: nowrap; /* Prevent text wrapping in popup */
+    }
+
+    .dropdown-item:hover {
+        background-color: #f8fafc;
+        color: #1e293b;
+    }
+
+    .shadow-xs {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+</style>

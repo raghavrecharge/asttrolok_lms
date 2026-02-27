@@ -79,6 +79,7 @@
             box-shadow: 0 5px 15px rgba(67, 212, 119, 0.3);
         }
     </style>
+    <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/daterangepicker/daterangepicker.min.css">
 @endpush
 
 @section('content')
@@ -152,7 +153,7 @@
                             <div style="position:absolute;left:0;top:0;bottom:0;width:38px;background:#1f3b64;display:flex;align-items:center;justify-content:center;border-radius:9px 0 0 9px;z-index:1;">
                                 <i data-feather="calendar" width="14" height="14" style="color:#fff;"></i>
                             </div>
-                            <input type="text" name="from" autocomplete="off" class="form-control datepicker"
+                            <input type="text" name="from" autocomplete="off" class="form-control datefilter"
                                    style="height:40px;padding-left:48px;font-size:12px;font-weight:600;color:#1f3b64;border:1.5px solid #e8edf5;border-radius:9px;box-shadow:0 2px 6px rgba(31,59,100,0.06);background:#fff;"
                                    value="{{ request()->get('from') }}"/>
                         </div>
@@ -167,7 +168,7 @@
                             <div style="position:absolute;left:0;top:0;bottom:0;width:38px;background:#1f3b64;display:flex;align-items:center;justify-content:center;border-radius:9px 0 0 9px;z-index:1;">
                                 <i data-feather="calendar" width="14" height="14" style="color:#fff;"></i>
                             </div>
-                            <input type="text" name="to" autocomplete="off" class="form-control datepicker"
+                            <input type="text" name="to" autocomplete="off" class="form-control datefilter"
                                    style="height:40px;padding-left:48px;font-size:12px;font-weight:600;color:#1f3b64;border:1.5px solid #e8edf5;border-radius:9px;box-shadow:0 2px 6px rgba(31,59,100,0.06);background:#fff;"
                                    value="{{ request()->get('to') }}"/>
                         </div>
@@ -292,3 +293,9 @@
         </div>
     </section>
 @endsection
+
+@push('scripts_bottom')
+    <script src="{{ config('app.js_css_url') }}/assets/default/vendors/moment.min.js"></script>
+    <script src="{{ config('app.js_css_url') }}/assets/default/vendors/daterangepicker/daterangepicker.min.js"></script>
+    <script src="{{ config('app.js_css_url') }}/assets/default/vendors/select2/select2.min.js"></script>
+@endpush
