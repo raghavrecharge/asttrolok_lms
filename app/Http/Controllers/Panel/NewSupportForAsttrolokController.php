@@ -435,6 +435,22 @@ class NewSupportForAsttrolokController extends Controller
         $scenario = $request->support_scenario;
         $attachmentPaths = [];
         
+        // Ensure webinar_id is required for scenarios that need it
+        $scenariosNeedingWebinar = [
+            'course_extension', 'temporary_access', 'mentor_access', 
+            'relatives_friends_access', 'free_course_grant', 'offline_cash_payment',
+            'installment_restructure', 'new_service_access', 'wrong_course_correction'
+        ];
+        
+        if (in_array($scenario, $scenariosNeedingWebinar)) {
+            if ($scenario === 'wrong_course_correction') {
+                $rules['wrong_course_id'] = 'required|exists:webinars,id';
+                $rules['correct_course_id'] = 'required|exists:webinars,id';
+            } else if ($scenario !== 'new_service_access') {
+                $rules['webinar_id'] = 'required|exists:webinars,id';
+            }
+        }
+        
         switch ($scenario) {
                case 'course_extension':
                     $rules['extension_days'] = 'required|integer|min:1|max:365';

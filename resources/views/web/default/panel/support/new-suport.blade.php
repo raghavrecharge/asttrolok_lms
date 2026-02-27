@@ -222,7 +222,7 @@
                     {{-- Temporary Access --}}
                     <div class="scenario-field" data-scenario="temporary_access">
                         <div class="glass-alert-info mb-20">
-                            <i data-feather="alert-circle" width="18" height="18" class="mr-5"></i>
+                            <i data-feather="alert-circle justify-content-center" width="18" height="18" class="mr-5"></i>
                             <span class="font-14">Request brief access while payment is being processed.</span>
                         </div>
                         <div class="row">
@@ -256,15 +256,28 @@
                     <div class="scenario-field" data-scenario="offline_cash_payment">
                         <div class="glass-alert mb-20">Submit payment screenshot for verification.</div>
                         <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="input-label">Select Course <span class="text-danger">*</span></label>
+                                    <select name="webinar_id" class="form-control select2" disabled>
+                                        <option value="">{{ trans('panel.select_course') }}</option>
+                                        @foreach($webinars as $w)
+                                            <option value="{{ $w->id }}">{{ $w->title }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="input-label">Amount Paid (₹)</label>
+                                    <label class="input-label">Amount Paid (₹) <span class="text-danger">*</span></label>
                                     <input type="number" name="cash_amount" class="form-control" disabled>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="input-label">Transaction ID / UTR</label>
+                                    <label class="input-label">Transaction ID / UTR <span class="text-danger">*</span></label>
                                     <input type="text" name="payment_receipt_number" class="form-control" disabled>
                                 </div>
                             </div>
@@ -272,16 +285,50 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="input-label">Date</label>
+                                    <label class="input-label">Date <span class="text-danger">*</span></label>
                                     <input type="date" name="payment_date" class="form-control" disabled>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="input-label">Upload Receipt</label>
-                                    <input type="file" name="payment_screenshot" class="form-control-file" disabled>
+                                    <label class="input-label">Bank Name/Location <span class="text-danger">*</span></label>
+                                    <input type="text" name="payment_location" class="form-control" placeholder="e.g. HDFC Bank, Delhi" disabled>
                                 </div>
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">Upload Receipt <span class="text-danger">*</span></label>
+                            <input type="file" name="payment_screenshot" class="form-control-file" id="paymentScreenshot" disabled>
+                            <div id="screenshotPreview" class="mt-10"></div>
+                        </div>
+                    </div>
+
+                    {{-- Free Course Grant --}}
+                    <div class="scenario-field" data-scenario="free_course_grant">
+                        <div class="form-group">
+                            <label class="input-label">Select Course <span class="text-danger">*</span></label>
+                            <select name="webinar_id" class="form-control select2" disabled>
+                                <option value="">{{ trans('panel.select_course') }}</option>
+                                @foreach($webinars as $w)
+                                    <option value="{{ $w->id }}">{{ $w->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group mt-15">
+                            <label class="input-label">Reason for Request <span class="text-danger">*</span></label>
+                            <textarea name="free_course_reason" class="form-control" rows="4" placeholder="Describe why you should be granted this course..." disabled></textarea>
+                        </div>
+                    </div>
+
+                    {{-- New Service Access --}}
+                    <div class="scenario-field" data-scenario="new_service_access">
+                        <div class="form-group">
+                            <label class="input-label">Requested Service Name <span class="text-danger">*</span></label>
+                            <input type="text" name="requested_service" class="form-control" placeholder="e.g. Personal Project Review" disabled>
+                        </div>
+                        <div class="form-group mt-15">
+                            <label class="input-label">Service Details <span class="text-danger">*</span></label>
+                            <textarea name="service_details" class="form-control" rows="4" placeholder="Describe the service you are looking for..." disabled></textarea>
                         </div>
                     </div>
                     
@@ -294,45 +341,83 @@
                             @if($scen == 'wrong_course_correction')
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <label class="input-label">Wrong Course</label>
+                                        <label class="input-label">Wrong Course <span class="text-danger">*</span></label>
                                         <select name="wrong_course_id" class="form-control select2" disabled>
+                                            <option value="">Select Wrong Course</option>
                                             @foreach($userPurchases as $p) <option value="{{ $p->id }}">{{ $p->title }}</option> @endforeach
                                         </select>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="input-label">Correct Course</label>
+                                        <label class="input-label">Correct Course <span class="text-danger">*</span></label>
                                         <select name="correct_course_id" class="form-control select2" disabled>
+                                            <option value="">Select Correct Course</option>
                                             @foreach($webinars as $w) <option value="{{ $w->id }}">{{ $w->title }}</option> @endforeach
                                         </select>
                                     </div>
                                 </div>
                             @elseif($scen == 'relatives_friends_access' || $scen == 'mentor_access')
                                 <div class="form-group">
-                                    <label class="input-label">Select Course</label>
+                                    <label class="input-label">Select Course <span class="text-danger">*</span></label>
                                     <select name="webinar_id" class="form-control select2" disabled>
+                                        <option value="">{{ trans('panel.select_course') }}</option>
                                         @foreach($webinars as $w) <option value="{{ $w->id }}">{{ $w->title }}</option> @endforeach
                                     </select>
                                 </div>
                             @elseif($scen == 'installment_restructure' || $scen == 'refund_payment' || $scen == 'post_purchase_coupon')
                                 <div class="form-group">
-                                    <label class="input-label">Select Course</label>
+                                    <label class="input-label">Select Purchased Course <span class="text-danger">*</span></label>
                                     <select name="webinar_id" class="form-control select2" disabled>
+                                        <option value="">{{ trans('panel.select_course') }}</option>
                                         @foreach($userPurchases as $p) <option value="{{ $p->id }}">{{ $p->title }}</option> @endforeach
                                     </select>
                                 </div>
                             @endif
                             <div class="form-group mt-15">
-                                <label class="input-label">Details / Reason</label>
+                                <label class="input-label">Details / Reason <span class="text-danger">*</span></label>
                                 @if($scen == 'relatives_friends_access')
                                     <textarea name="relative_description" class="form-control" rows="4" placeholder="Describe your request..." disabled></textarea>
                                 @elseif($scen == 'mentor_access')
                                     <textarea name="mentor_change_reason" class="form-control" rows="4" placeholder="Describe your request..." disabled></textarea>
                                 @elseif($scen == 'wrong_course_correction')
                                     <textarea name="correction_reason" class="form-control" rows="4" placeholder="Describe your request..." disabled></textarea>
+                                @elseif($scen == 'post_purchase_coupon')
+                                    <textarea name="coupon_apply_reason" class="form-control" rows="4" placeholder="Reason for applying coupon post-purchase..." disabled></textarea>
+                                @elseif($scen == 'installment_restructure')
+                                    <textarea name="restructure_reason" class="form-control" rows="4" placeholder="Reason for installment restructuring..." disabled></textarea>
+                                @elseif($scen == 'refund_payment')
+                                    <textarea name="refund_reason" class="form-control" rows="4" placeholder="Reason for refund..." disabled></textarea>
                                 @else
                                     <textarea name="description" class="form-control" rows="4" placeholder="Describe your request..." disabled></textarea>
                                 @endif
                             </div>
+
+                            @if($scen == 'refund_payment')
+                                <div class="glass-alert-info mt-20 mb-20 text-dark">
+                                    <strong>Bank Details for Refund</strong>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="input-label">Bank Account Number <span class="text-danger">*</span></label>
+                                            <input type="text" name="bank_account_number" class="form-control" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="input-label">IFSC Code <span class="text-danger">*</span></label>
+                                            <input type="text" name="ifsc_code" class="form-control" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label class="input-label">Account Holder Name <span class="text-danger">*</span></label>
+                                            <input type="text" name="account_holder_name" class="form-control" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     @endforeach
                 </div>
@@ -392,10 +477,10 @@
                 'free_course_grant': ['webinar_id', 'free_course_reason'],
                 'offline_cash_payment': ['webinar_id', 'cash_amount', 'payment_receipt_number', 'payment_date', 'payment_location', 'payment_screenshot'],
                 'installment_restructure': ['webinar_id', 'restructure_reason'], // Uses purchased courses dropdown
-                'new_service_access': ['webinar_id', 'requested_service', 'service_details'],
-                'refund_payment': ['purchase_to_refund', 'refund_reason', 'bank_account_number', 'ifsc_code', 'account_holder_name'],
-                'post_purchase_coupon': ['webinar_id'],
-                'wrong_course_correction': ['wrong_course_id', 'correct_course_id']
+                'new_service_access': ['requested_service', 'service_details'],
+                'refund_payment': ['webinar_id', 'refund_reason', 'bank_account_number', 'ifsc_code', 'account_holder_name'],
+                'post_purchase_coupon': ['webinar_id', 'coupon_apply_reason'],
+                'wrong_course_correction': ['wrong_course_id', 'correct_course_id', 'correction_reason']
             };
 
             // Handle scenario change
@@ -462,31 +547,6 @@
                 $(document).on('change', '.extension-course-select', checkExtensionLimit);
                 $('#supportScenario').on('change', checkExtensionLimit);
 
-            // Extension limit check
-            // function checkExtensionLimit() {
-            //     const scenario = $('#supportScenario').val();
-            //     const webinarId = $('.scenario-field[data-scenario="course_extension"] select[name="webinar_id"]').val();
-            //     const warning = $('#extensionLimitWarning');
-            //     const submitBtn = $('#supportSubmitBtn');
-
-            //     if (scenario === 'course_extension' && webinarId) {
-            //         const usedCount = window.courseExtensionCounts[webinarId] || 0;
-                    
-            //         if (usedCount >= 3) {
-            //             warning.show();
-            //             submitBtn.prop('disabled', true);
-            //             return;
-            //         }
-            //     }
-                
-            //     warning.hide();
-            //     submitBtn.prop('disabled', false);
-            // }
-
-            // // Watch for webinar selection in course extension
-            // $(document).on('change', '.scenario-field[data-scenario="course_extension"] select[name="webinar_id"]', checkExtensionLimit);
-            // $('#supportScenario').on('change', checkExtensionLimit);
-
             // Debug: Check if elements are found
             console.log('Form:', form);
             console.log('Support Scenario:', supportScenario);
@@ -498,152 +558,6 @@
                     width: '100%'
                 });
             }
-
-            // Function to get scenario-specific fields
-            function getScenarioFields(scenario) {
-                const scenarioFields = {
-                    'course_extension': ['extension_days', 'extension_reason'],
-                    'temporary_access': ['pending_amount', 'expected_payment_date'],
-                    'mentor_access': ['mentor_change_reason'],
-                    'relatives_friends_access': ['description'],
-                    'free_course_grant': ['free_course_reason'],
-                    'offline_cash_payment': ['cash_amount', 'payment_receipt_number', 'payment_date', 'payment_location', 'payment_screenshot'],
-                    'installment_restructure': ['installment_amount'],
-                    'new_service_access': ['requested_service', 'service_details'],
-                    'refund_payment': ['purchase_to_refund', 'refund_reason', 'bank_account_number', 'ifsc_code', 'account_holder_name'],
-                    'post_purchase_coupon': [ 'coupon_apply_reason'],
-                    'wrong_course_correction': ['wrong_course_id', 'correct_course_id', 'correction_reason']
-                };
-                
-                return scenarioFields[scenario] || [];
-            }
-
-            // Simple jQuery change listener as backup
-            $(document).ready(function() {
-                // Initially set proper states - hide both fields
-                $('#messageField').hide();
-                $('#courseSelectionField').hide();
-                
-                $('#supportScenario').on('change', function() {
-                    const selectedScenario = $(this).val();
-
-                    console.log('Scenario selected:', selectedScenario);
-                    
-                    // Define scenarios that need course selection
-                    const scenariosNeedingCourse = [
-                        'course_extension', 
-                        'temporary_access', 
-                        'mentor_access', 
-                        'relatives_friends_access', 
-                        'free_course_grant', 
-                        'offline_cash_payment', 
-                        'installment_restructure', 
-                        'new_service_access', 
-                        'wrong_course_correction'
-                    ];
-                    
-                    // Define scenarios that DON'T need course selection
-                    const scenariosNotNeedingCourse = [
-                        'refund_payment', 
-                        'post_purchase_coupon'
-                    ];
-                    
-                    // Hide/Show course selection field based on scenario
-                    if (scenariosNeedingCourse.includes(selectedScenario)) {
-                        $('#courseSelectionField').show();
-                        $('#webinarSelect').attr('required', 'required');
-                        console.log('Showing course field for scenario:', selectedScenario);
-                    } else if (scenariosNotNeedingCourse.includes(selectedScenario)) {
-                        $('#courseSelectionField').hide();
-                        $('#webinarSelect').removeAttr('required');
-                        $('#webinarSelect').val('').trigger('change');
-                        console.log('Hiding course field for scenario:', selectedScenario);
-                    } else {
-                        // For general support or no scenario, show course field but not required
-                        $('#courseSelectionField').show();
-                        $('#webinarSelect').removeAttr('required');
-                        console.log('Showing course field (optional) for scenario:', selectedScenario);
-                    }
-                    
-                    // Hide message field when any scenario is selected (especially relatives_friends_access and mentor_access)
-                    if (selectedScenario && (selectedScenario === 'relatives_friends_access' || selectedScenario === 'mentor_access')) {
-                        $('#messageField').hide();  // Always hide when scenario selected
-                        $('#messageField textarea').removeAttr('required');
-                        // Add class to body for CSS targeting
-                        $('body').addClass('scenario-' + selectedScenario);
-                        // Add direct class and inline style to message field
-                        $('#messageField').addClass('hide-relative').attr('style', 'display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; overflow: hidden !important;');
-                        console.log('Hiding message field for scenario:', selectedScenario);
-                    } else if (selectedScenario) {
-                        $('#messageField').hide();  // Hide for other scenarios too
-                        $('#messageField textarea').removeAttr('required');
-                        // Add class to body for CSS targeting
-                        $('body').addClass('scenario-' + selectedScenario);
-                        console.log('Hiding message field for scenario:', selectedScenario);
-                    } else {
-                        $('#messageField').show();  // Only show when no scenario
-                        $('#messageField textarea').attr('required', 'required');
-                        // Remove scenario classes from body and message field
-                        $('body').removeClass(function(index, className) {
-                            return (className.match(/(^|\s)scenario-\S+/g) || []).join(' ');
-                        });
-                        $('#messageField').removeClass('hide-relative').removeAttr('style');
-                        console.log('Showing message field (no scenario)');
-                    }
-                    
-                    // Hide all scenario fields
-                    $('.scenario-field').removeClass('active debug-visible');
-                    
-                    // Show selected scenario field
-                    if (selectedScenario) {
-                        const targetField = $(`.scenario-field[data-scenario="${selectedScenario}"]`);
-                        targetField.addClass('active debug-visible');
-                        console.log('Showing scenario field for:', selectedScenario);
-                    }
-
-                    // Handle special cases for webinar_id capture
-                    const selectedWebinar = $('#webinarSelect').val();
-                    if (selectedWebinar && (selectedScenario === 'relatives_friends_access' || selectedScenario === 'mentor_access')) {
-                        // Remove any existing selectedWebinarDiv
-                        $('#selectedWebinarDiv').remove();
-                        
-                        const inputDiv = `
-                            <div class="form-group mt-2" id="selectedWebinarDiv">
-                                <input type="hidden"
-                                    name="selected_webinar_id"
-                                    value="${selectedWebinar}">
-                            </div>
-                        `;
-
-                        $('#courseSelectionField').after(inputDiv);
-                        console.log('Added hidden input for webinar_id:', selectedWebinar, 'scenario:', selectedScenario);
-                    } else {
-                        // Remove the div if scenario changed
-                        $('#selectedWebinarDiv').remove();
-                    }
-                });
-                
-                // Also listen to webinar select change to ensure value is captured
-                $('#webinarSelect').on('change', function() {
-                    const selectedWebinar = $(this).val();
-                    const selectedScenario = $('#supportScenario').val();
-                    
-                    console.log('Webinar selected:', selectedWebinar, 'for scenario:', selectedScenario);
-                    
-                    if (selectedWebinar && (selectedScenario === 'relatives_friends_access' || selectedScenario === 'mentor_access')) {
-                        $('#selectedWebinarDiv').remove();
-                        const inputDiv = `
-                            <div class="form-group mt-2" id="selectedWebinarDiv">
-                                <input type="hidden"
-                                    name="selected_webinar_id"
-                                    value="${selectedWebinar}">
-                            </div>
-                        `;
-                        $('#courseSelectionField').after(inputDiv);
-                        console.log('Updated hidden input for webinar_id:', selectedWebinar, 'scenario:', selectedScenario);
-                    }
-                });
-            });
 
             // File attachments display
             $('#attachments').on('change', function() {
@@ -716,251 +630,72 @@
             });
 
             // Form submission handler
-            form.addEventListener("submit", function(event) {
-                const selectedScenario = supportScenario.value;
-                
-                console.log('Form submitting with scenario:', selectedScenario);
-                
-                // Copy relative_description to description field for relatives scenario
-                if (selectedScenario === 'relatives_friends_access') {
-                    const relativeDesc = document.querySelector('textarea[name="relative_description"]');
-                    const mainDesc = document.querySelector('textarea[name="description"]');
-                    if (relativeDesc && mainDesc) {
-                        mainDesc.value = relativeDesc.value;
-                        console.log('Copied relative_description to description field');
-                    }
-                }
-                
-                // Collect all errors
+            document.getElementById("support-form").addEventListener("submit", function(event) {
+                const selectedScenario = $('#supportScenario').val();
                 let allErrors = [];
                 
-                // Basic validation
-                const title = document.querySelector('input[name="title"]');
-                const description = document.querySelector('textarea[name="description"]');
-                
-                if (!title || !title.value.trim()) {
-                    allErrors.push('Title is required');
-                }
-                
-                // Only validate description if no scenario is selected
-                if (!selectedScenario) {
-                    if (!description || !description.value.trim()) {
-                        allErrors.push('Description is required');
-                    }
-                }
-                
-                if (!selectedScenario) {
-                    alert('Please select a support scenario');
-                    e.preventDefault();
-                    return false;
+                // Subject is always required
+                const title = $('input[name="title"]').val();
+                if (!title || !title.trim()) {
+                    allErrors.push('Subject/Summary is required');
                 }
 
-                // Method 1: Disable all inactive scenario fields
-                $('.scenario-field:not(.active)').find('input, select, textarea').prop('disabled', true).removeAttr('name');
-                
-                // Method 2: Ensure active scenario fields are enabled and have names
-                $('.scenario-field.active').find('input, select, textarea').prop('disabled', false);
-
-                // Method 3: Get active webinar_id if exists
-                const activeWebinarId = $('.scenario-field.active [name="webinar_id"]').val();
-                
-                // Log for debugging
-                // console.log('Selected Scenario:', selectedScenario);
-                // console.log('Active webinar_id:', activeWebinarId);
-                // console.log('All form data:', $(this).serialize());
-                
-                // Final validation - check if webinar_id is required for this scenario
-                const scenariosNeedingWebinar = [
-                    'course_extension', 'temporary_access', 'mentor_access', 
-                    'relatives_friends_access', 'free_course_grant', 'offline_cash_payment',
-                    'installment_restructure', 'new_service_access', 'wrong_course_correction'
-                ];
-                
-                if (scenariosNeedingWebinar.includes(selectedScenario)) {
-                    if (!activeWebinarId || activeWebinarId === '' ) {
-                        if (selectedScenario === 'wrong_course_correction') {
-                        return true;
-                        } else {
-                        alert('Please select a course for this scenario');
-                        }
-                        e.preventDefault();
-                        return false;
+                if (!selectedScenario) {
+                    allErrors.push('Please select a support scenario');
+                } else {
+                    const $activeField = $(`.scenario-field[data-scenario="${selectedScenario}"]`);
+                    
+                    // Scenario-specific mandatory validation
+                    if (selectedScenario === 'offline_cash_payment') {
+                        if (!$activeField.find('select[name="webinar_id"]').val()) allErrors.push('Please select a course');
+                        if (!$activeField.find('input[name="cash_amount"]').val()) allErrors.push('Payment amount is required');
+                        if (!$activeField.find('input[name="payment_receipt_number"]').val()) allErrors.push('UTR/Transaction number is required');
+                        if (!$activeField.find('input[name="payment_date"]').val()) allErrors.push('Payment date is required');
+                        if (!$activeField.find('input[name="payment_location"]').val()) allErrors.push('Bank name/location is required');
+                        if (!$activeField.find('input[name="payment_screenshot"]').val()) allErrors.push('Payment receipt screenshot is required');
+                    } else if (selectedScenario === 'refund_payment') {
+                        if (!$activeField.find('select[name="webinar_id"]').val()) allErrors.push('Please select a purchase to refund');
+                        if (!$activeField.find('textarea[name="refund_reason"]').val().trim()) allErrors.push('Reason for refund is required');
+                        if (!$activeField.find('input[name="bank_account_number"]').val().trim()) allErrors.push('Bank account number is required');
+                        if (!$activeField.find('input[name="ifsc_code"]').val().trim()) allErrors.push('IFSC code is required');
+                        if (!$activeField.find('input[name="account_holder_name"]').val().trim()) allErrors.push('Account holder name is required');
+                    } else if (selectedScenario === 'wrong_course_correction') {
+                        if (!$activeField.find('select[name="wrong_course_id"]').val()) allErrors.push('Please select the wrong course');
+                        if (!$activeField.find('select[name="correct_course_id"]').val()) allErrors.push('Please select the correct course');
+                        if (!$activeField.find('textarea[name="correction_reason"]').val().trim()) allErrors.push('Reason for correction is required');
+                    } else if (selectedScenario === 'course_extension') {
+                        if (!$activeField.find('select[name="webinar_id"]').val()) allErrors.push('Please select a course to extend');
+                        if (!$activeField.find('textarea[name="extension_reason"]').val().trim()) allErrors.push('Reason for extension is required');
+                    } else if (selectedScenario === 'free_course_grant') {
+                        if (!$activeField.find('select[name="webinar_id"]').val()) allErrors.push('Please select a course');
+                        if (!$activeField.find('textarea[name="free_course_reason"]').val().trim()) allErrors.push('Reason for request is required');
+                    } else if (selectedScenario === 'new_service_access') {
+                        if (!$activeField.find('input[name="requested_service"]').val().trim()) allErrors.push('Service name is required');
+                        if (!$activeField.find('textarea[name="service_details"]').val().trim()) allErrors.push('Service details are required');
+                    } else if (selectedScenario === 'relatives_friends_access' || selectedScenario === 'mentor_access') {
+                        if (!$activeField.find('select[name="webinar_id"]').val()) allErrors.push('Please select a course');
+                        const reasonField = selectedScenario === 'mentor_access' ? 'mentor_change_reason' : 'relative_description';
+                        if (!$activeField.find(`textarea[name="${reasonField}"]`).val().trim()) allErrors.push('Reason/Description is required');
+                    } else if (selectedScenario === 'post_purchase_coupon' || selectedScenario === 'installment_restructure' || selectedScenario === 'temporary_access') {
+                        if (!$activeField.find('select[name="webinar_id"]').val()) allErrors.push('Please select a course');
+                        const reasonField = (selectedScenario === 'post_purchase_coupon') ? 'coupon_apply_reason' : ((selectedScenario === 'installment_restructure') ? 'restructure_reason' : 'temporary_access_reason');
+                        if (!$activeField.find(`textarea[name="${reasonField}"]`).val().trim()) allErrors.push('Reason/Description is required');
                     }
                 }
                 
-                // Scenario-specific validations
-                if (selectedScenario === 'offline_cash_payment') {
-                    const cashAmount = document.querySelector('input[name="cash_amount"]');
-                    const receiptNumber = document.querySelector('input[name="payment_receipt_number"]');
-                    const paymentDate = document.querySelector('input[name="payment_date"]');
-                    const paymentLocation = document.querySelector('input[name="payment_location"]');
-                    const paymentScreenshot = document.querySelector('input[name="payment_screenshot"]');
-                    
-                    if (!cashAmount || !cashAmount.value || cashAmount.value <= 0) {
-                        allErrors.push('Payment amount is required and must be greater than 0');
-                    }
-                    
-                    if (!receiptNumber || !receiptNumber.value.trim()) {
-                        allErrors.push('UTR/Transaction number is required');
-                    }
-                    
-                    if (!paymentDate || !paymentDate.value) {
-                        allErrors.push('Payment date is required');
-                    }
-                    
-                    if (!paymentLocation || !paymentLocation.value.trim()) {
-                        allErrors.push('Bank name is required');
-                    }
-                    
-                    if (!paymentScreenshot || !paymentScreenshot.files || paymentScreenshot.files.length === 0) {
-                        allErrors.push('Payment screenshot is required');
-                    }
-                }
-                
-                if (selectedScenario === 'refund_payment') {
-                    const purchaseToRefund = document.querySelector('select[name="webinar_id"]');
-                    const refundReason = document.querySelector('textarea[name="refund_reason"]');
-                    const bankAccount = document.querySelector('input[name="bank_account_number"]');
-                    const ifscCode = document.querySelector('input[name="ifsc_code"]');
-                    const accountHolder = document.querySelector('input[name="account_holder_name"]');
-                    
-                    if (!purchaseToRefund || !purchaseToRefund.value) {
-                        allErrors.push('Please select a purchase to refund');
-                    }
-                    
-                    
-                    
-                    if (!refundReason || !refundReason.value || refundReason.value.trim() === '') {
-                        allErrors.push('Reason for refund is required');
-                    }
-                    
-                    if (!bankAccount || !bankAccount.value || bankAccount.value.trim() === '') {
-                        allErrors.push('Bank account number is required');
-                    }
-                    
-                    if (!ifscCode || !ifscCode.value || ifscCode.value.trim() === '') {
-                        allErrors.push('IFSC code is required');
-                    }
-                    
-                    if (!accountHolder || !accountHolder.value || accountHolder.value.trim() === '') {
-                        allErrors.push('Account holder name is required');
-                    }
-                }
-                
-                if (selectedScenario === 'wrong_course_correction') {
-                    const wrongCourse = document.querySelector('select[name="wrong_course_id"]');
-                    const correctCourse = document.querySelector('select[name="correct_course_id"]');
-                    const correctionReason = document.querySelector('textarea[name="correction_reason"]');
-                    
-                    if (!wrongCourse || !wrongCourse.value) {
-                        allErrors.push('Please select the wrong course you purchased');
-                    }
-                    
-                    if (!correctCourse || !correctCourse.value) {
-                        allErrors.push('Please select the correct course you need');
-                    }
-                    
-                    if (wrongCourse && correctCourse && wrongCourse.value === correctCourse.value) {
-                        allErrors.push('Wrong course and correct course cannot be the same');
-                    }
-                    
-                    if (!correctionReason || !correctionReason.value.trim()) {
-                        allErrors.push('Reason for correction is required');
-                    }
-                }
-                
-                if (selectedScenario === 'course_extension') {
-                    const extensionDays = document.querySelector('select[name="extension_days"]');
-                    const extensionReason = document.querySelector('textarea[name="extension_reason"]');
-                    
-                    if (!extensionDays || !extensionDays.value || extensionDays.value <= 0) {
-                        allErrors.push('Extension days must be greater than 0');
-                    }
-                    
-                    if (!extensionReason || !extensionReason.value.trim()) {
-                        allErrors.push('Reason for extension is required');
-                    }
-                }
-                
-                if (selectedScenario === 'temporary_access') {
-                    // const pendingAmount = document.querySelector('input[name="pending_amount"]');
-                    // const expectedPaymentDate = document.querySelector('input[name="expected_payment_date"]');
-                    
-                    // if (!pendingAmount || !pendingAmount.value || pendingAmount.value <= 0) {
-                    //     allErrors.push('Pending amount must be greater than 0');
-                    // }
-                    
-                    // if (!expectedPaymentDate || !expectedPaymentDate.value) {
-                    //     allErrors.push('Expected payment date is required');
-                    // }
-                }
-                
-                if (selectedScenario === 'mentor_access') {
-                    const mentorChangeReason = document.querySelector('textarea[name="mentor_change_reason"]');
-                    
-                    if (!mentorChangeReason || !mentorChangeReason.value.trim()) {
-                        allErrors.push('Reason for mentor change is required');
-                    }
-                }
-                
-                if (selectedScenario === 'relatives_friends_access') {
-                    const description = document.querySelector('textarea[name="relative_description"]');
-                    
-                    if (!description || !description.value.trim()) {
-                        allErrors.push('Description is required for relatives/friends access');
-                    }
-                }
-                
-                if (selectedScenario === 'free_course_grant') {
-                    const freeCourseReason = document.querySelector('textarea[name="free_course_reason"]');
-                    
-                    if (!freeCourseReason || !freeCourseReason.value.trim()) {
-                        allErrors.push('Reason for free course grant is required');
-                    }
-                }
-                
-                
-                if (selectedScenario === 'new_service_access') {
-                    const requestedService = document.querySelector('input[name="requested_service"]');
-                    const serviceDetails = document.querySelector('textarea[name="service_details"]');
-                    
-                    if (!requestedService || !requestedService.value.trim()) {
-                        allErrors.push('Service name is required');
-                    }
-                    
-                    if (!serviceDetails || !serviceDetails.value.trim()) {
-                        allErrors.push('Service details are required');
-                    }
-                }
-                
-                
-                // Show errors if any
                 if (allErrors.length > 0) {
                     event.preventDefault();
-                    // Remove any existing error alert
-                    const existingAlert = document.getElementById('jsValidationErrors');
-                    if (existingAlert) existingAlert.remove();
-                    
-                    // Build error HTML
+                    $('#jsValidationErrors').remove();
                     let errorHtml = '<div id="jsValidationErrors" class="alert alert-danger shadow-sm mb-20" style="border-radius: 8px; border-left: 4px solid #dc3545;">';
                     errorHtml += '<h6 class="font-weight-bold mb-2"><i class="fa fa-exclamation-triangle"></i> Please fix the following errors:</h6><ul class="mb-0 pl-3">';
                     allErrors.forEach(function(err) { errorHtml += '<li>' + err + '</li>'; });
                     errorHtml += '</ul></div>';
                     
-                    // Insert before the form
-                    form.insertAdjacentHTML('beforebegin', errorHtml);
+                    document.getElementById("support-form").insertAdjacentHTML('beforebegin', errorHtml);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     return false;
                 }
                 
-                // Show loading
-                if (screenBlocker && submissionPopup) {
-                    screenBlocker.style.display = 'block';
-                    submissionPopup.style.display = 'block';
-                }
-                
-                // Allow normal form submission
-                console.log('Form submitting successfully...');
                 return true;
             });
 
