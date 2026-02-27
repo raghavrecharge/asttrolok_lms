@@ -775,7 +775,7 @@ class User extends Authenticatable
         $webinarIds = [];
         $bundleIds = [];
 
-        // Get all active UPE sales for this user
+        // 1. Get all active UPE sales for this user
         $upeSales = \App\Models\PaymentEngine\UpeSale::where('user_id', $this->id)
             ->whereIn('status', ['active', 'partially_refunded', 'pending_payment'])
             ->with('product')
@@ -800,7 +800,21 @@ class User extends Authenticatable
             }
         }
 
+        // 2. Get traditional sales (non-UPE)
+        $traditionalSales = Sale::where('buyer_id', $this->id)
+            ->whereNull('refund_at')
+            ->get();
+
+        foreach ($traditionalSales as $sale) {
+            if ($sale->webinar_id) {
+                $webinarIds[] = $sale->webinar_id;
+            } elseif ($sale->bundle_id) {
+                $bundleIds[] = $sale->bundle_id;
+            }
+        }
+
         // Expand bundle IDs into webinar IDs
+        $bundleIds = array_unique($bundleIds);
         if (!empty($bundleIds)) {
             $bundleWebinarIds = BundleWebinar::query()->whereIn('bundle_id', $bundleIds)
                 ->pluck('webinar_id')

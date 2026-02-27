@@ -514,14 +514,15 @@ try {
             $user = auth()->user();
 
             // Collect webinar_ids already shown via $sales to avoid duplicates
-            $saleWebinarIds = $sales->pluck('webinar_id')->filter()->unique()->toArray();
+            // LMS FIX: Use the complete purchased list (including UPE) for filtering to avoid double counting installments
+            $purchasedWebinarsIdsForFiltering = $user->getPurchasedCoursesIds();
 
             $query = InstallmentOrder::query()
                 ->where('user_id', $user->id)
                 ->where('status', '!=', 'paying')
-                ->whereNotIn('webinar_id', $saleWebinarIds);
+                ->whereNotIn('webinar_id', $purchasedWebinarsIdsForFiltering);
 
-            $openInstallmentsCount = deepClone($query)->where('status', 'open')->count();
+            $openInstallmentsCount = (clone $query)->where('status', 'open')->count();
             $pendingVerificationCount = deepClone($query)->where('status', 'pending_verification')->count();
             $finishedInstallmentsCount = $this->getFinishedInstallments($user);
 
@@ -704,9 +705,17 @@ try {
 
             $featureWebinars = $query->get();
 
-                $data['openSupportsCount1'] = $openSupportsCount1;
+                $data['openInstallmentsCount'] = $openInstallmentsCount;
                 $data['closeSupportsCount1'] = $closeSupportsCount1;
-                $data['webinarsCount'] = count($webinars)+$openInstallmentsCount;
+                
+                // LMS FIX: Calculate webinarsCount more holistically
+                // Include: 1. Unique Purchased Webinar IDs (Total count, matches UPE logic)
+                //          2. Open Installment Orders (for courses not yet in sales)
+                //          3. Active Subscriptions
+                $subscriptionsCount = count($subscriptionAccess);
+                $purchasedCoursesCount = count($user->getPurchasedCoursesIds());
+                $data['webinarsCount'] = $purchasedCoursesCount + $openInstallmentsCount + $subscriptionsCount;
+                
                 $data['supportsCount'] = count($supports);
                 $data['commentsCount'] = count($comments);
                 $data['reserveMeetingsCount'] = count($reserveMeetings);

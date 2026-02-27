@@ -895,6 +895,108 @@
             </div>
             @endif
 
+            <div class="row">
+                <div class="col-12 col-md-6">
+                    {{-- My Assignments --}}
+                    <div class="db-card">
+                        <div class="db-card-header">
+                            <h3 class="db-card-title">My Assignments</h3>
+                            <a href="/panel/assignments/my-assignments" class="db-card-link">View All <i data-feather="arrow-right" width="13" height="13"></i></a>
+                        </div>
+
+                        @if(!empty($sales) and !$sales->isEmpty())
+                            @php $assignmentCards = collect(); @endphp
+                            @foreach($sales->take(4) as $sale)
+                                @php
+                                    $aItem = !empty($sale->webinar) ? $sale->webinar : null;
+                                    if(!empty($aItem)) { $assignmentCards->push(['item' => $aItem, 'sale' => $sale]); }
+                                @endphp
+                            @endforeach
+
+                            @if($assignmentCards->count() > 0)
+                                <div class="db-scroll-sm">
+                                    @foreach($assignmentCards->take(4) as $ac)
+                                        <a href="/panel/assignments/my-assignments" class="db-course-item text-decoration-none" style="display:flex;">
+                                            <div style="width:40px;height:40px;border-radius:10px;background:#fef3c7;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                                <i data-feather="clipboard" width="18" height="18" style="color:#d97706;"></i>
+                                            </div>
+                                            <div class="course-info">
+                                                <span class="course-name">{{ $ac['item']->title }}</span>
+                                                <span class="course-teacher">{{ $ac['item']->teacher->full_name }} · {{ dateTimeFormat($ac['sale']->created_at, 'j M Y') }}</span>
+                                            </div>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="db-empty-state" style="padding: 20px;">
+                                    <div class="empty-icon"><i data-feather="clipboard" width="22" height="22"></i></div>
+                                    <p>Visit your assignments page to view all tasks.</p>
+                                </div>
+                            @endif
+                        @else
+                            <div class="db-empty-state" style="padding: 20px;">
+                                <div class="empty-icon"><i data-feather="clipboard" width="22" height="22"></i></div>
+                                <p>No assignments yet.</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    {{-- Meetings --}}
+                    <div class="db-card">
+                        <div class="db-card-header">
+                            <h3 class="db-card-title">Meetings</h3>
+                        </div>
+
+                        @php $finishedMeetingsCount = ($totalReserveCount ?? 0) - ($openReserveCount ?? 0); @endphp
+                        <div style="display:flex;gap:12px;margin-bottom:14px;">
+                            <div class="db-meeting-count-box" style="flex:1;margin-bottom:0;">
+                                <div class="db-meeting-count-icon"><i data-feather="video" width="18" height="18"></i></div>
+                                <div>
+                                    <div class="db-meeting-count-num">{{ $openReserveCount ?? 0 }}</div>
+                                    <div class="db-meeting-count-label">Open</div>
+                                </div>
+                            </div>
+                            <div class="db-meeting-count-box" style="flex:1;margin-bottom:0;background:#f0fdf4;border-color:#bbf7d0;">
+                                <div class="db-meeting-count-icon" style="background:#dcfce7;"><i data-feather="check-circle" width="18" height="18" style="color:#22c55e;"></i></div>
+                                <div>
+                                    <div class="db-meeting-count-num">{{ $finishedMeetingsCount >= 0 ? $finishedMeetingsCount : 0 }}</div>
+                                    <div class="db-meeting-count-label">Finished</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if(!empty($reserveMeetings) and !$reserveMeetings->isEmpty())
+                            <div class="db-scroll-sm">
+                                @foreach($reserveMeetings->take(5) as $reserveMeeting)
+                                    <div class="db-meeting-item">
+                                        @if(!empty($reserveMeeting->meeting) && !empty($reserveMeeting->meeting->creator))
+                                            <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $reserveMeeting->meeting->creator->getAvatar() }}" class="meeting-avatar" alt="">
+                                            <div class="meeting-info">
+                                                <div class="meeting-name">{{ $reserveMeeting->meeting->creator->full_name }}</div>
+                                                <div class="meeting-time">
+                                                    @if(!empty($reserveMeeting->meetingTime))
+                                                        {{ $reserveMeeting->meetingTime->day_label }} | {{ $reserveMeeting->meetingTime->time }}
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <span class="db-meeting-status {{ $reserveMeeting->status }}">
+                                                {{ ucfirst($reserveMeeting->status) }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="db-empty-state" style="padding: 20px;">
+                                <div class="empty-icon"><i data-feather="video" width="22" height="22"></i></div>
+                                <p>No meetings yet</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         {{-- ═══════ RIGHT COLUMN (col-lg-4) ═══════ --}}
@@ -1124,103 +1226,6 @@
                 </div>
             </div>
             @endif
-
-            {{-- My Assignments (moved from left column) --}}
-            <div class="db-card">
-                <div class="db-card-header">
-                    <h3 class="db-card-title">My Assignments</h3>
-                    <a href="/panel/assignments/my-assignments" class="db-card-link">View All <i data-feather="arrow-right" width="13" height="13"></i></a>
-                </div>
-
-                @if(!empty($sales) and !$sales->isEmpty())
-                    @php $assignmentCards = collect(); @endphp
-                    @foreach($sales->take(4) as $sale)
-                        @php
-                            $aItem = !empty($sale->webinar) ? $sale->webinar : null;
-                            if(!empty($aItem)) { $assignmentCards->push(['item' => $aItem, 'sale' => $sale]); }
-                        @endphp
-                    @endforeach
-
-                    @if($assignmentCards->count() > 0)
-                        <div class="db-scroll-sm">
-                            @foreach($assignmentCards->take(4) as $ac)
-                                <a href="/panel/assignments/my-assignments" class="db-course-item text-decoration-none" style="display:flex;">
-                                    <div style="width:40px;height:40px;border-radius:10px;background:#fef3c7;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                                        <i data-feather="clipboard" width="18" height="18" style="color:#d97706;"></i>
-                                    </div>
-                                    <div class="course-info">
-                                        <span class="course-name">{{ $ac['item']->title }}</span>
-                                        <span class="course-teacher">{{ $ac['item']->teacher->full_name }} · {{ dateTimeFormat($ac['sale']->created_at, 'j M Y') }}</span>
-                                    </div>
-                                </a>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="db-empty-state" style="padding: 20px;">
-                            <div class="empty-icon"><i data-feather="clipboard" width="22" height="22"></i></div>
-                            <p>Visit your assignments page to view all tasks.</p>
-                        </div>
-                    @endif
-                @else
-                    <div class="db-empty-state" style="padding: 20px;">
-                        <div class="empty-icon"><i data-feather="clipboard" width="22" height="22"></i></div>
-                        <p>No assignments yet.</p>
-                    </div>
-                @endif
-            </div>
-
-            {{-- Meetings --}}
-            <div class="db-card">
-                <div class="db-card-header">
-                    <h3 class="db-card-title">Meetings</h3>
-                </div>
-
-                @php $finishedMeetingsCount = ($totalReserveCount ?? 0) - ($openReserveCount ?? 0); @endphp
-                <div style="display:flex;gap:12px;margin-bottom:14px;">
-                    <div class="db-meeting-count-box" style="flex:1;margin-bottom:0;">
-                        <div class="db-meeting-count-icon"><i data-feather="video" width="18" height="18"></i></div>
-                        <div>
-                            <div class="db-meeting-count-num">{{ $openReserveCount ?? 0 }}</div>
-                            <div class="db-meeting-count-label">Open</div>
-                        </div>
-                    </div>
-                    <div class="db-meeting-count-box" style="flex:1;margin-bottom:0;background:#f0fdf4;border-color:#bbf7d0;">
-                        <div class="db-meeting-count-icon" style="background:#dcfce7;"><i data-feather="check-circle" width="18" height="18" style="color:#22c55e;"></i></div>
-                        <div>
-                            <div class="db-meeting-count-num">{{ $finishedMeetingsCount >= 0 ? $finishedMeetingsCount : 0 }}</div>
-                            <div class="db-meeting-count-label">Finished</div>
-                        </div>
-                    </div>
-                </div>
-
-                @if(!empty($reserveMeetings) and !$reserveMeetings->isEmpty())
-                    <div class="db-scroll-sm">
-                        @foreach($reserveMeetings->take(5) as $reserveMeeting)
-                            <div class="db-meeting-item">
-                                @if(!empty($reserveMeeting->meeting) && !empty($reserveMeeting->meeting->creator))
-                                    <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $reserveMeeting->meeting->creator->getAvatar() }}" class="meeting-avatar" alt="">
-                                    <div class="meeting-info">
-                                        <div class="meeting-name">{{ $reserveMeeting->meeting->creator->full_name }}</div>
-                                        <div class="meeting-time">
-                                            @if(!empty($reserveMeeting->meetingTime))
-                                                {{ $reserveMeeting->meetingTime->day_label }} | {{ $reserveMeeting->meetingTime->time }}
-                                            @endif
-                                        </div>
-                                    </div>
-                                    <span class="db-meeting-status {{ $reserveMeeting->status }}">
-                                        {{ ucfirst($reserveMeeting->status) }}
-                                    </span>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="db-empty-state" style="padding: 20px;">
-                        <div class="empty-icon"><i data-feather="video" width="22" height="22"></i></div>
-                        <p>No meetings yet</p>
-                    </div>
-                @endif
-            </div>
 
             {{-- Side Banner --}}
             @if(!empty($sidebanner['studentdashboard']['image']))
