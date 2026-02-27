@@ -43,6 +43,22 @@
                value="{{ auth()->check() ? auth()->user()->mobile : '' }}" 
                placeholder="Mobile" class="form-control mt-25 mb-25" required>
 
+        @if(!empty($subscription->razorpay_plan_id) && auth()->check())
+        <div class="mt-15 mb-15 p-15" style="border: 1px solid #e0e0e0; border-radius: 8px; background: #f9f9f9;">
+            <p class="font-14 font-weight-bold mb-10">Choose Payment Method:</p>
+            <label style="display:block; padding:10px; margin-bottom:8px; border:1px solid #ddd; border-radius:6px; background:#fff; cursor:pointer;">
+                <input type="radio" name="payment_mode" value="one_time" checked style="margin-right:8px;">
+                <strong>Pay {{ handlePrice($subscription->getPrice()) }} for this month only</strong>
+                <br><small style="color:#666; margin-left:24px;">Manual renewal each month</small>
+            </label>
+            <label style="display:block; padding:10px; border:1px solid #ddd; border-radius:6px; background:#fff; cursor:pointer;">
+                <input type="radio" name="payment_mode" value="autopay" style="margin-right:8px;">
+                <strong>Enable AutoPay — {{ handlePrice($subscription->getPrice()) }}/month</strong>
+                <br><small style="color:#666; margin-left:24px;">Auto-deducted every month, cancel anytime</small>
+            </label>
+        </div>
+        @endif
+
         <button type="button" id="paymentSubmit" class="btn btn-primary">
             Pay {{ handlePrice($subscription->getPrice()) }}
         </button>
@@ -63,6 +79,7 @@
 @push('scripts_bottom')
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="/assets/design_1/js/unified-payment.js"></script>
+<script src="/js/subscription-payment.js"></script>
 <script>
 
     const loaderEl = document.getElementById('paymentLoader');
@@ -83,10 +100,17 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
         number: document.getElementById('customer_number').value,
         discount_id: @json(session('discountCouponId'))
     };
-     showPaymentLoader();
+    showPaymentLoader();
 
-    // Call unified payment handler
-    initiatePayment('subscription_one_time', {{ $subscription->id }}, userDetails);
+    // Check payment mode
+    const paymentModeEl = document.querySelector('input[name="payment_mode"]:checked');
+    const paymentMode = paymentModeEl ? paymentModeEl.value : 'one_time';
+
+    if (paymentMode === 'autopay') {
+        initiateAutoPaySubscription({{ $subscription->id }}, userDetails);
+    } else {
+        initiatePayment('subscription', {{ $subscription->id }}, userDetails);
+    }
 });
 </script>
 @endpush

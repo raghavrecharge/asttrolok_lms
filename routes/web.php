@@ -354,7 +354,12 @@ return \Illuminate\Support\Facades\Redirect::to('llm.txt');
         Route::get('/direct-payment1/{slug}', 'SubscriptionController@directPayment1');
         Route::get('/{slug}/installments', 'SubscriptionController@getInstallmentsByCourse');
          Route::get('/update-status', 'SubscriptionController@updateStatus');
-       
+
+        // AutoPay routes
+        Route::post('/autopay/create', 'SubscriptionAutoPayController@createSubscription')->middleware('web.auth');
+        Route::get('/autopay/verify', 'SubscriptionAutoPayController@verifySubscription')->middleware('web.auth');
+        Route::post('/autopay/cancel', 'SubscriptionAutoPayController@cancelSubscription')->middleware('web.auth');
+        Route::post('/autopay/webhook', 'SubscriptionAutoPayController@webhook');
 
         Route::group(['middleware' => 'web.auth'], function () {
             
@@ -570,7 +575,7 @@ return \Illuminate\Support\Facades\Redirect::to('llm.txt');
 
     Route::get('/classes', 'ClassesController@index');
     
-    Route::get('/verifysubscriptionaccess', 'PaymentController@directaccess123456');
+    // Route removed: /verifysubscriptionaccess → directaccess123456() method does not exist
 
     Route::get('/reward-courses', 'RewardCoursesController@index');
 

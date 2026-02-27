@@ -721,7 +721,7 @@
             </div>
             
             @if($hasBought)
-              <a href="{{ $subscription->getLearningPageUrl1() }}" style="text-decoration: none; color: inherit;">
+              <a href="{{ $subscription->getLearningPageUrl() }}" style="text-decoration: none; color: inherit;">
             <div class="frame1000001692-background13" style="align-items: center; justify-content:center;">
               <img
                 src="/public/course_detail/svg1178-8ycu.svg"
@@ -1178,7 +1178,7 @@
     {{-- Button: Start One‑Month Free Trial / Join Pathshala --}}
     <div class="frame1000001692-link18">
         @if($hasBought)
-        <a href="{{ $subscription->getLearningPageUrl1() }}"
+        <a href="{{ $subscription->getLearningPageUrl() }}"
            style="text-decoration:none;display:block;"> 
             <span class="frame1000001692-text209">
                            Start Learning
@@ -1413,7 +1413,7 @@
                       <input type="hidden" name="item_id" value="{{ $subscription->id }}">
                       <input type="hidden" name="item_name" value="webinar_id">
                       @if($hasBought)
-                       <a href="{{ $subscription->getLearningPageUrl1() }}"
+                       <a href="{{ $subscription->getLearningPageUrl() }}"
            style="text-decoration:none;display:block;"> 
                       <button type="button" class="frame1000001692-link19 btn-success buy_now js-course-direct-payment">
                           <span class="frame1000001692-text258">
@@ -1802,7 +1802,7 @@
 
 @if($hasBought)
     {{-- User enrolled - Show "Start Learning" button --}}
-    <a href="{{ $subscription->getLearningPageUrl1() }}"
+    <a href="{{ $subscription->getLearningPageUrl() }}"
        style="text-decoration:none;display:block;"> 
         <button type="button" class="frame1000001692-link20 btn-success buy_now js-course-direct-payment">
             <span class="frame1000001692-text284">

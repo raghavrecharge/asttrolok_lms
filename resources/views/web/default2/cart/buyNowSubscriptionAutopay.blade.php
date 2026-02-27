@@ -92,8 +92,8 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
         discount_id: {{ session('discountCouponId') ?? 0 }}
     };
 showPaymentLoader();
-    // Call unified payment handler
-    initiatePayment('subscription' , {{ $subscription_id }} , userDetails);
+    // Call AutoPay subscription handler
+    initiateAutoPaySubscription({{ $subscription_id }}, userDetails);
 });
 </script>
 @endpush

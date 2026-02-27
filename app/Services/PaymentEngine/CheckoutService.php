@@ -304,20 +304,22 @@ class CheckoutService
             ]);
         }
 
-        $this->ledger->append(
-            $upeSale->id,
-            UpeLedgerEntry::TYPE_PAYMENT,
-            UpeLedgerEntry::DIR_CREDIT,
-            $amount,
-            $paymentMethod,
-            $razorpayPaymentId,
-            null, // gatewayResponse
-            null, // referenceType
-            null, // referenceId
-            "Subscription payment: {$subscription->slug}",
-            null, // processedBy
-            $razorpayPaymentId ? "rp_{$razorpayPaymentId}_sub_{$subscriptionId}" : "checkout_sub_{$userId}_{$subscriptionId}_" . time()
-        );
+        if ($amount > 0) {
+            $this->ledger->append(
+                $upeSale->id,
+                UpeLedgerEntry::TYPE_PAYMENT,
+                UpeLedgerEntry::DIR_CREDIT,
+                $amount,
+                $paymentMethod,
+                $razorpayPaymentId,
+                null, // gatewayResponse
+                null, // referenceType
+                null, // referenceId
+                "Subscription payment: {$subscription->slug}",
+                null, // processedBy
+                $razorpayPaymentId ? "rp_{$razorpayPaymentId}_sub_{$subscriptionId}" : "checkout_sub_{$userId}_{$subscriptionId}_" . time()
+            );
+        }
 
         $this->audit->logSaleCreated($userId, 'student', $upeSale->toArray());
 

@@ -20,6 +20,7 @@ class VerifyCsrfToken extends Middleware
         '/events',
         '/g/collect',
         '/webhooks/razorpay',
+        '/subscriptions/autopay/webhook',
         'api/*',
         'ppt/download/*',
         'video/stream/*',

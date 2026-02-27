@@ -99,7 +99,7 @@
 
 @push('scripts_bottom')
 <script defer src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script defer src="/assets/design_1/js/unified-payment.js"></script>
+<script defer src="/js/subscription-payment.js"></script>
 <script defer>
     const loaderEl = document.getElementById('paymentLoader');
 
@@ -121,8 +121,8 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
     };
 
     showPaymentLoader();
-    // Call unified payment handler
-    initiatePayment('subscription', {{ $subscription_id }}, userDetails);
+    // Call AutoPay subscription handler
+    initiateAutoPaySubscription({{ $subscription_id }}, userDetails);
 });
 </script>
 @endpush

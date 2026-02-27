@@ -485,7 +485,7 @@
                     <span style="color: #32A128;">{{ $subscription->extraDetails->extra_description }}</span>
                   </span>
                   @if($hasBought)
-                       <a href="{{ $subscription->getLearningPageUrl1() }}" style="text-decoration: none;">
+                       <a href="{{ $subscription->getLearningPageUrl() }}" style="text-decoration: none;">
                   <button class="frame427322615-button1">
                     <span class="frame427322615-text112">
                                                 Start Learning
@@ -924,7 +924,7 @@
             </div>
             <div class="frame427322615-link24">
                 @if($hasBought)
-                      <a href="{{ $subscription->getLearningPageUrl1() }}" style="text-decoration: none;">
+                      <a href="{{ $subscription->getLearningPageUrl() }}" style="text-decoration: none;">
               <span class="frame427322615-text250">
                                  Start Learning
 
@@ -1077,7 +1077,7 @@
               </div>
               <div class="frame427322615-link25">
                   @if($hasBought)
-                  <a href="{{ $subscription->getLearningPageUrl1() }}" style="text-decoration: none;">
+                  <a href="{{ $subscription->getLearningPageUrl() }}" style="text-decoration: none;">
                 <span class="frame427322615-text297">
                Start Learning
                 </span>
@@ -1160,7 +1160,7 @@
             <div class="frame427322615-frame427322579">
               <div class="frame427322615-link25">
                   @if($hasBought)
-                   <a href="{{ $subscription->getLearningPageUrl1() }}" style="text-decoration: none;">
+                   <a href="{{ $subscription->getLearningPageUrl() }}" style="text-decoration: none;">
                 <span class="frame427322615-text297">
                                      Start Learning
 
@@ -1502,7 +1502,7 @@
                 <div class="frame427322615-group57 mt-20">
                   <div class="frame427322615-link26">
                       @if($hasBought)
-                              <a href="{{ $subscription->getLearningPageUrl1() }}" style="text-decoration: none;">
+                              <a href="{{ $subscription->getLearningPageUrl() }}" style="text-decoration: none;">
                     <span class="frame427322615-text320">Start Learning</span>
 </a>
   @else                    
@@ -1582,7 +1582,7 @@
                   }
               </style>
               @if($hasBought)
-              <a href="{{ $subscription->getLearningPageUrl1() }}" style="text-decoration: none;">
+              <a href="{{ $subscription->getLearningPageUrl() }}" style="text-decoration: none;">
             <div class="frame427322615-background15" style="
     justify-content: center;
 ">

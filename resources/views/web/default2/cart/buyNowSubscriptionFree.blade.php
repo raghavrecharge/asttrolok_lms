@@ -13,6 +13,7 @@
         <input type="email" name="email" id="customer_email" 
                value="{{ auth()->check() ? auth()->user()->email : '' }}" 
                placeholder="Email" class="form-control mt-25" required>
+        @if(!auth()->check())
         <input type="password" 
        name="password" 
        id="customer_password" 
@@ -26,6 +27,7 @@
        placeholder="Confirm Password" 
        class="form-control mt-25" 
        required>
+        @endif
 
         <input type="number" name="number" id="customer_number" 
                value="{{ auth()->check() ? auth()->user()->mobile : '' }}" 

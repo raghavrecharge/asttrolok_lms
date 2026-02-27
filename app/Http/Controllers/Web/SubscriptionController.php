@@ -27,6 +27,8 @@ use App\Models\WebinarReport;
 use App\Models\SubscriptionExtraDetails;
 use App\Models\Webinar;
 use App\Models\Subscription;
+use App\Models\SubscriptionAccess;
+use App\Services\PaymentEngine\CheckoutService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -103,6 +105,9 @@ class SubscriptionController extends Controller
 
                 return $justReturnData ? false : back();
             }
+
+            // No auto-redirect — enrolled users can still view the subscription details page.
+            // The "Start Learning" button on the page links to the learning page.
 
             $isFavorite = false;
 
@@ -846,68 +851,89 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
     public function free(Request $request, $slug)
     {
         try {
-            if (auth()->check()) {
-                $user = auth()->user();
-
-                $subscription = Webinar::where('slug', $slug)
-                    ->where('status', 'active')
-                    ->first();
-
-                if (!empty($subscription)) {
-                    $checkCourseForSale = checkCourseForSale($subscription, $user);
-
-                    if ($checkCourseForSale != 'ok') {
-                        return $checkCourseForSale;
-                    }
-
-                    if (!empty($subscription->price) and $subscription->price > 0) {
-                        $toastData = [
-                            'title' => trans('cart.fail_purchase'),
-                            'msg' => trans('cart.subscription_not_free'),
-                            'status' => 'error'
-                        ];
-                        return back()->with(['toast' => $toastData]);
-                    }
-
-                    Sale::create([
-                        'buyer_id' => $user->id,
-                        'seller_id' => $subscription->creator_id,
-                        'webinar_id' => $subscription->id,
-                        'type' => Sale::$webinar,
-                        'payment_method' => Sale::$credit,
-                        'amount' => 0,
-                        'total_amount' => 0,
-                        'created_at' => time(),
-                    ]);
-
-                    $notifyOptions = [
-                        '[u.name]' => $user->full_name,
-                        '[c.title]' => $subscription->title,
-                        '[amount]' => trans('public.free'),
-                        '[time.date]' => dateTimeFormat(time(), 'j M Y H:i'),
-                    ];
-                    sendNotification("new_subscription_enrollment", $notifyOptions, 1);
-
-                    $toastData = [
-                        'title' => '',
-                        'msg' => trans('cart.success_pay_msg_for_free_subscription'),
-                        'status' => 'success'
-                    ];
-                    return back()->with(['toast' => $toastData]);
-                }
-
-                abort(404);
-            } else {
+            if (!auth()->check()) {
                 return redirect('/login');
             }
+
+            $user = auth()->user();
+
+            $subscription = Subscription::where('slug', $slug)
+                ->where('status', 'active')
+                ->first();
+
+            if (empty($subscription)) {
+                abort(404);
+            }
+
+            // Check if already enrolled — prevent duplicate free enrollment
+            $existingAccess = SubscriptionAccess::where('subscription_id', $subscription->id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if ($existingAccess) {
+                return redirect($subscription->getLearningPageUrl())->with(['toast' => [
+                    'title' => '',
+                    'msg' => 'You are already enrolled in this subscription.',
+                    'status' => 'info'
+                ]]);
+            }
+
+            DB::beginTransaction();
+
+            // Create SubscriptionAccess with free video access
+            // access_content_count = 0 means only free_video_count videos are accessible
+            // (Learning page calculates total as: access_content_count + free_video_count)
+            $accessTillDate = time() + ($subscription->access_days * 24 * 60 * 60);
+
+            SubscriptionAccess::create([
+                'user_id' => $user->id,
+                'subscription_id' => $subscription->id,
+                'access_till_date' => $accessTillDate,
+                'access_content_count' => 0,
+                'paid_no_of_subscriptions' => 0,
+                'created_at' => time(),
+            ]);
+
+            // UPE: Create free subscription sale (also handles legacy Sale dual-write)
+            $checkout = app(CheckoutService::class);
+            $checkout->processSubscriptionPurchase($user->id, $subscription->id, 0, 'free', null);
+
+            DB::commit();
+
+            $notifyOptions = [
+                '[u.name]' => $user->full_name,
+                '[c.title]' => $subscription->title,
+                '[amount]' => trans('public.free'),
+                '[time.date]' => dateTimeFormat(time(), 'j M Y H:i'),
+            ];
+            sendNotification("new_subscription_enrollment", $notifyOptions, 1);
+
+            Log::info('Free subscription enrollment', [
+                'user_id' => $user->id,
+                'subscription_id' => $subscription->id,
+                'free_video_count' => $subscription->free_video_count,
+                'access_till_date' => date('Y-m-d', $accessTillDate),
+            ]);
+
+            return redirect($subscription->getLearningPageUrl())->with(['toast' => [
+                'title' => 'Welcome!',
+                'msg' => 'You have been enrolled successfully! You have access to ' . $subscription->free_video_count . ' free videos for ' . $subscription->access_days . ' days.',
+                'status' => 'success'
+            ]]);
+
         } catch (\Exception $e) {
-            \Log::error('free error: ' . $e->getMessage(), [
+            DB::rollBack();
+            \Log::error('free enrollment error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
             
-            throw $e;
+            return back()->with(['toast' => [
+                'title' => 'Error',
+                'msg' => 'Something went wrong during enrollment. Please try again.',
+                'status' => 'error'
+            ]]);
         }
     }
 
@@ -1099,15 +1125,41 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
                     ->where('status', 'active')
                     ->first();
 
-                $item = $subscription;
+                if (empty($subscription)) {
+                    abort(404);
+                }
 
-                $itemPrice = $item->getPrice();
-                $price = $item->price;
+                $user = auth()->user();
+
+                // Check if user has already enrolled (has SubscriptionAccess record)
+                $hasEnrolled = false;
+                if ($user) {
+                    $subscriptionAccess = SubscriptionAccess::where('subscription_id', $subscription->id)
+                        ->where('user_id', $user->id)
+                        ->first();
+                    $hasEnrolled = !empty($subscriptionAccess);
+                }
+
+                // New user (never enrolled) → show FREE enrollment page
+                if (!$hasEnrolled) {
+                    $data = [
+                        'subscription' => $subscription,
+                    ];
+
+                    $agent = new Agent();
+                    if ($agent->isMobile()){
+                        return view(getTemplate() . '.cart.buyNowSubscriptionFree', $data);
+                    }else{
+                        return view('web.default2' . '.cart.buyNowSubscriptionFree', $data);
+                    }
+                }
+
+                // Already enrolled → show PAID options (one-time + AutoPay)
+                $itemPrice = $subscription->getPrice();
 
                     $data = [
-
                         'subscription' => $subscription,
-                        'total' => $itemPrice1 ?? $itemPrice,
+                        'total' => $itemPrice,
                     ];
 
                     $agent = new Agent();
@@ -1117,7 +1169,6 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
                         return view('web.default2' . '.cart.buyNowSubscription', $data);
                     }
 
-            abort(404);
         } catch (\Exception $e) {
             \Log::error('directPayment error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
