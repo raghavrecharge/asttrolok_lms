@@ -11,7 +11,7 @@
 
             <div class="activities-container mt-25 p-20 p-lg-35">
                 <div class="row">
-                    <div class="col-4 d-flex align-items-center justify-content-center">
+                    <div class="col-12 col-md-4 d-flex align-items-center justify-content-center">
                         <div class="d-flex flex-column align-items-center text-center">
                             <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/homework.svg" width="64" height="64" alt="">
                             <strong class="font-30 font-weight-bold mt-5">{{ $totalNoticeboards }}</strong>
@@ -19,7 +19,7 @@
                         </div>
                     </div>
 
-                    <div class="col-4 d-flex align-items-center justify-content-center">
+                    <div class="col-12 col-md-4 d-flex align-items-center justify-content-center mt-20 mt-md-0">
                         <div class="d-flex flex-column align-items-center text-center">
                             <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/58.svg" width="64" height="64" alt="">
                             <strong class="font-30 font-weight-bold mt-5">{{ $totalCourseNotices }}</strong>
@@ -27,7 +27,7 @@
                         </div>
                     </div>
 
-                    <div class="col-4 d-flex align-items-center justify-content-center">
+                    <div class="col-12 col-md-4 d-flex align-items-center justify-content-center mt-20 mt-md-0">
                         <div class="d-flex flex-column align-items-center text-center">
                             <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/45.svg" width="64" height="64" alt="">
                             <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ $totalGeneralNotices }}</strong>
@@ -139,12 +139,12 @@
                                     <th class="text-center text-gray">{{ trans('site.message') }}</th>
 
                                     @if(!empty($isCourseNotice) and $isCourseNotice)
-                                        <th class="text-center text-gray">{{ trans('update.color') }}</th>
+                                        <th class="text-center text-gray d-none d-md-table-cell">{{ trans('update.color') }}</th>
                                     @else
-                                        <th class="text-center text-gray">{{ trans('public.type') }}</th>
+                                        <th class="text-center text-gray d-none d-md-table-cell">{{ trans('public.type') }}</th>
                                     @endif
 
-                                    <th class="text-center text-gray">{{ trans('public.date') }}</th>
+                                    <th class="text-center text-gray d-none d-lg-table-cell">{{ trans('public.date') }}</th>
                                     <th></th>
                                 </tr>
                                 </thead>
@@ -162,7 +162,7 @@
                                             <button type="button" class="js-view-message btn btn-sm btn-gray200">{{ trans('public.view') }}</button>
                                             <input type="hidden" class="js-noticeboard-message" value="{{ nl2br($noticeboard->message) }}">
                                         </td>
-                                        <td class="text-dark-blue font-weight-500 align-middle">
+                                        <td class="text-dark-blue font-weight-500 align-middle d-none d-md-table-cell">
                                             @if(!empty($isCourseNotice) and $isCourseNotice)
                                                 {{ trans('update.course_noticeboard_color_'.$noticeboard->color) }}
                                             @else
@@ -173,7 +173,7 @@
                                                 @endif
                                             @endif
                                         </td>
-                                        <td class="js-noticeboard-time text-dark-blue font-weight-500 align-middle">{{ dateTimeFormat($noticeboard->created_at,'j M Y | H:i') }}</td>
+                                        <td class="js-noticeboard-time text-dark-blue font-weight-500 align-middle d-none d-lg-table-cell">{{ dateTimeFormat($noticeboard->created_at,'j M Y | H:i') }}</td>
                                         <td class="text-right align-middle">
                                             <div class="btn-group dropdown table-actions">
                                                 <button type="button" class="btn-transparent dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

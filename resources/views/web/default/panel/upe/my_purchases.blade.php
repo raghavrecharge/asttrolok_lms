@@ -276,7 +276,7 @@
 
         <div class="mt-25">
             <div class="row">
-                <div class="col-12 col-md-4">
+                <div class="col-6 col-md-4">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-primary">
                             <i data-feather="monitor" width="24" height="24"></i>
@@ -288,7 +288,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4 mt-15 mt-md-0">
+                <div class="col-6 col-md-4">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-success">
                             <i data-feather="clock" width="24" height="24"></i>
@@ -300,7 +300,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4 mt-15 mt-md-0">
+                <div class="col-6 col-md-4 mt-15 mt-md-0">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-warning">
                             <i data-feather="video" width="24" height="24"></i>
@@ -315,7 +315,7 @@
         </div>
     </section>
 
-    <section class="mt-25">
+    <section class="mt-25 panel-filter-section">
         <!-- <h2 class="section-title">My Purchases</h2> -->
 
         <div class="mt-20" style="background: linear-gradient(135deg, #f8faff 0%, #fff 100%); border-radius: 20px; border: 1px solid #e8edf5; padding: 22px 28px; box-shadow: 0 4px 24px rgba(31,59,100,0.06);">
@@ -380,7 +380,7 @@
                         && $sale->installmentPlan
                         && $sale->installmentPlan->schedules->whereIn('status', ['due','partial','overdue','upcoming'])->count() > 0;
                 @endphp
-                <div class="col-6 col-lg-4 mt-15">
+                <div class="col-12 col-lg-4 mt-15">
                     <div class="upe-card">
                         <div class="image-box">
                             @if($item)

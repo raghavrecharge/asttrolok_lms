@@ -9,7 +9,48 @@
     border-bottom: 1px solid #ececec;
 }
 </style>
-{{-- xs-panel-nav removed: main site header shown on all screens via panel_layout.blade.php --}}
+@push('styles_top')
+<style>
+    /* ── Mobile Sidebar Drawer (overrides panel.css) ── */
+    @media (max-width: 991px) {
+        .panel-sidebar {
+            position: fixed !important;
+            top: 0 !important;
+            left: -280px !important;
+            width: 280px !important;
+            height: 100vh !important;
+            z-index: 9999 !important;
+            background: #ffffff !important;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.15) !important;
+            transition: left 0.32s cubic-bezier(0.4,0,0.2,1) !important;
+            overflow-y: auto !important;
+            padding: 20px 15px 0 !important;
+        }
+        .panel-sidebar.mobile-open {
+            left: 0 !important;
+        }
+        /* Hide the X close button from panel.css if needed, or style it specifically */
+        .panel-sidebar .panel-sidebar-close {
+            display: none !important;
+        }
+        /* Overlay backdrop */
+        .mobile-sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 9998;
+            backdrop-filter: blur(2px);
+        }
+        .mobile-sidebar-overlay.active {
+            display: block;
+        }
+    }
+</style>
+@endpush
+
+{{-- Mobile sidebar overlay backdrop --}}
+<div class="mobile-sidebar-overlay" id="mobileSidebarOverlay"></div>
 
 <div class="panel-sidebar pt-50 pb-25 px-25" id="panelSidebar">
     <button class="btn-transparent panel-sidebar-close sidebarNavToggle">
@@ -641,3 +682,51 @@
     </ul>
 
 </div>
+
+<script>
+(function() {
+    var sidebar   = document.getElementById('panelSidebar');
+    var overlay   = document.getElementById('mobileSidebarOverlay');
+    var toggleBtn = document.getElementById('panelMobileHamburger');
+    var closeBtns = document.querySelectorAll('.sidebarNavToggle');
+
+    function openSidebar() {
+        if (sidebar)  sidebar.classList.add('mobile-open');
+        if (overlay)  overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+        if (sidebar)  sidebar.classList.remove('mobile-open');
+        if (overlay)  overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', openSidebar);
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', closeSidebar);
+    }
+
+    closeBtns.forEach(function(btn) {
+        btn.addEventListener('click', closeSidebar);
+    });
+
+    // Close on link click inside sidebar (mobile)
+    if (sidebar) {
+        sidebar.querySelectorAll('a').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                var href = link.getAttribute('href');
+                var isCollapse = link.getAttribute('data-toggle') === 'collapse';
+                
+                // If it's a submenu toggle or an anchor, don't close the sidebar
+                if (window.innerWidth < 992 && !isCollapse && href && !href.startsWith('#')) {
+                    closeSidebar();
+                }
+            });
+        });
+    }
+})();
+</script>

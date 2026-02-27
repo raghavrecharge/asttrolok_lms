@@ -47,7 +47,7 @@
         </div>
     </section>
 
-    <section class="mt-25">
+    <section class="mt-25 panel-filter-section">
         <h2 class="section-title">{{ trans('quiz.filter_results') }}</h2>
 
         <div class="panel-section-card py-20 px-25 mt-20">

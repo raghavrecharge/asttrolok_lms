@@ -129,7 +129,7 @@
         </div>
     </section>
 
-    <section class="mt-25">
+    <section class="mt-25 panel-filter-section">
         <h2 class="section-title">{{ trans('update.purchases_report') }}</h2>
 
         <div class="mt-20" style="background: linear-gradient(135deg, #f8faff 0%, #fff 100%); border-radius: 20px; border: 1px solid #e8edf5; padding: 22px 28px; box-shadow: 0 4px 24px rgba(31,59,100,0.06);">

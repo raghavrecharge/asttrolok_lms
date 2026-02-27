@@ -38,19 +38,21 @@
 @endpush
 
 @section('content')
-    <section>
+    <section class="panel-filter-section">
         <h2 class="section-title">{{ trans('quiz.filter_results') }}</h2>
 
         <div class="mt-20" style="background: linear-gradient(135deg, #f8faff 0%, #fff 100%); border-radius: 20px; border: 1px solid #e8edf5; padding: 22px 28px; box-shadow: 0 4px 24px rgba(31,59,100,0.06);">
             <form action="/panel/quizzes/opens" method="get">
-                <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;">
+        <div class="mt-20" style="background: linear-gradient(135deg, #f8faff 0%, #fff 100%); border-radius: 20px; border: 1px solid #e8edf5; padding: 22px 28px; box-shadow: 0 4px 24px rgba(31,59,100,0.06);">
+            <form action="/panel/quizzes/opens" method="get">
+                <div class="row align-items-end">
 
                     {{-- From --}}
-                    <div style="flex:0 0 auto;">
+                    <div class="col-12 col-sm-4 col-md-2">
                         <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
                             <i data-feather="calendar" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.from') }}
                         </label>
-                        <div style="position:relative;width:150px;">
+                        <div style="position:relative;width:100%;">
                             <div style="position:absolute;left:0;top:0;bottom:0;width:38px;background:#1f3b64;display:flex;align-items:center;justify-content:center;border-radius:9px 0 0 9px;z-index:1;">
                                 <i data-feather="calendar" width="14" height="14" style="color:#fff;"></i>
                             </div>
@@ -62,11 +64,11 @@
                     </div>
 
                     {{-- To --}}
-                    <div style="flex:0 0 auto;">
+                    <div class="col-12 col-sm-4 col-md-2 mt-15 mt-sm-0">
                         <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
                             <i data-feather="calendar" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.to') }}
                         </label>
-                        <div style="position:relative;width:150px;">
+                        <div style="position:relative;width:100%;">
                             <div style="position:absolute;left:0;top:0;bottom:0;width:38px;background:#1f3b64;display:flex;align-items:center;justify-content:center;border-radius:9px 0 0 9px;z-index:1;">
                                 <i data-feather="calendar" width="14" height="14" style="color:#fff;"></i>
                             </div>
@@ -78,32 +80,28 @@
                     </div>
 
                     {{-- Quiz or Webinar --}}
-                    <div style="flex:1 1 200px;min-width:180px;">
+                    <div class="col-12 col-sm-4 col-md-3 mt-15 mt-sm-0">
                         <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
                             <i data-feather="help-circle" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('quiz.quiz_or_webinar') }}
                         </label>
-                        <div style="position:relative;">
-                            <input type="text" name="quiz_or_webinar" class="form-control"
-                                   style="height:40px;padding:0 12px;font-size:12px;font-weight:600;color:#1f3b64;border:1.5px solid #e8edf5;border-radius:9px;box-shadow:0 2px 6px rgba(31,59,100,0.06);background:#fff;"
-                                   value="{{ request()->get('quiz_or_webinar','') }}"/>
-                        </div>
+                        <input type="text" name="quiz_or_webinar" class="form-control"
+                               style="height:40px;padding:0 12px;font-size:12px;font-weight:600;color:#1f3b64;border:1.5px solid #e8edf5;border-radius:9px;box-shadow:0 2px 6px rgba(31,59,100,0.06);background:#fff;"
+                               value="{{ request()->get('quiz_or_webinar','') }}"/>
                     </div>
 
                     {{-- Instructor --}}
-                    <div style="flex:1 1 200px;min-width:180px;">
+                    <div class="col-12 col-sm-6 col-md-3 mt-15 mt-md-0">
                         <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
                             <i data-feather="user" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.instructor') }}
                         </label>
-                        <div style="position:relative;">
-                            <input type="text" name="instructor" class="form-control"
-                                   style="height:40px;padding:0 12px;font-size:12px;font-weight:600;color:#1f3b64;border:1.5px solid #e8edf5;border-radius:9px;box-shadow:0 2px 6px rgba(31,59,100,0.06);background:#fff;"
-                                   value="{{ request()->get('instructor','') }}"/>
-                        </div>
+                        <input type="text" name="instructor" class="form-control"
+                               style="height:40px;padding:0 12px;font-size:12px;font-weight:600;color:#1f3b64;border:1.5px solid #e8edf5;border-radius:9px;box-shadow:0 2px 6px rgba(31,59,100,0.06);background:#fff;"
+                               value="{{ request()->get('instructor','') }}"/>
                     </div>
 
                     {{-- Submit --}}
-                    <div style="flex:0 0 auto;">
-                        <button type="submit" style="height:40px;background:linear-gradient(135deg,#43d477 0%,#2ecc71 100%);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(67,212,119,0.25);white-space:nowrap;padding:0 20px;transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(67,212,119,0.35)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(67,212,119,0.25)'">
+                    <div class="col-12 col-sm-6 col-md-2 mt-20 mt-md-0">
+                        <button type="submit" style="height:40px;width:100%;background:linear-gradient(135deg,#43d477 0%,#2ecc71 100%);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 14px rgba(67,212,119,0.25);white-space:nowrap;padding:0 20px;transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(67,212,119,0.35)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(67,212,119,0.25)'">
                             <i data-feather="search" width="13" height="13"></i>
                             {{ trans('public.show_results') }}
                         </button>
@@ -127,9 +125,9 @@
                             <table class="table custom-table">
                                 <thead>
                                 <tr>
-                                    <th>{{ trans('public.instructor') }}</th>
+                                    <th class="d-none d-lg-table-cell">{{ trans('public.instructor') }}</th>
                                     <th>{{ trans('quiz.quiz') }}</th>
-                                    <th class="text-center">{{ trans('quiz.quiz_grade') }}</th>
+                                    <th class="text-center d-none d-md-table-cell">{{ trans('quiz.quiz_grade') }}</th>
                                     <th class="text-center">{{ trans('public.date') }}</th>
                                     <th></th>
                                 </tr>
@@ -137,7 +135,7 @@
                                 <tbody>
                                 @foreach($quizzes as $quiz)
                                     <tr>
-                                        <td class="text-left">
+                                        <td class="text-left d-none d-lg-table-cell">
                                             <div class="user-inline-avatar d-flex align-items-center">
                                                 <div class="avatar bg-gray200">
                                                     <img loading="lazy"  src="{{ config('app.img_dynamic_url') }}{{ $quiz->creator->getAvatar() }}" class="img-cover" alt="">
@@ -152,18 +150,18 @@
                                             <span class="d-block text-dark-blue font-weight-500">{{ $quiz->title }}</span>
                                             <span class="font-12 mt-5 text-gray d-block">{{ $quiz->webinar->title }}</span>
                                         </td>
-                                        <td class="align-middle">
+                                        <td class="align-middle text-center d-none d-md-table-cell">
                                             <span class="grade-badge">
                                                 {{ $quiz->quizQuestions->sum('grade') }}
                                             </span>
                                         </td>
 
                                         <td class="align-middle text-gray font-13">
-                                            <div class="d-flex align-items-center">
+                                            <div class="d-flex align-items-center text-nowrap">
                                                 <i data-feather="calendar" width="14" height="14" class="mr-5"></i>
                                                 {{ dateTimeFormat($quiz->created_at,'j M Y') }}
                                             </div>
-                                            <div class="font-11 text-gray mt-5">{{ dateTimeFormat($quiz->created_at,'H:i') }}</div>
+                                            <div class="font-11 text-gray mt-5 d-none d-md-block">{{ dateTimeFormat($quiz->created_at,'H:i') }}</div>
                                         </td>
 
                                         <td class="align-middle text-right font-weight-normal">

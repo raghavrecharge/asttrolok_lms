@@ -27,9 +27,9 @@
         <h2 class="section-title">{{ trans('update.registration_bonus') }}</h2>
 
         <div class="activities-container mt-25 p-20 p-lg-35">
-            <div class="row">
+            <div class="row stat-card-row">
 
-                <div class="col-4 d-flex align-items-center justify-content-center">
+                <div class="col-12 col-md-4 d-flex align-items-center justify-content-center">
                     <div class="d-flex flex-column align-items-center text-center">
                         <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/36.svg" width="64" height="64" alt="">
                         <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ handlePrice($registrationBonusSettings['registration_bonus_amount'] ?? 0) }}</strong>
@@ -37,7 +37,7 @@
                     </div>
                 </div>
 
-                <div class="col-4 d-flex align-items-center justify-content-center">
+                <div class="col-12 col-md-4 mt-20 mt-md-0 d-flex align-items-center justify-content-center">
                     <div class="d-flex flex-column align-items-center text-center">
                         <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/rank.png" width="64" height="64" alt="">
                         <strong class="font-36 font-weight-bold mt-5 {{ !empty($accounting) ? 'text-primary' : 'text-danger' }}">{{ !empty($accounting) ? trans('update.unlocked') : trans('update.locked') }}</strong>
@@ -45,7 +45,7 @@
                     </div>
                 </div>
 
-                <div class="col-4 d-flex align-items-center justify-content-center">
+                <div class="col-12 col-md-4 mt-20 mt-md-0 d-flex align-items-center justify-content-center">
                     <div class="d-flex flex-column align-items-center text-center">
                         <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/computer.png" width="64" height="64" alt="">
                         <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ !empty($accounting) ? dateTimeFormat($accounting->created_at, 'j M Y') : '-' }}</strong>
@@ -169,7 +169,7 @@
                                         @if($purchaseAmountCount)
                                             <th class="text-center">{{ trans('update.purchase_status') }}</th>
                                         @endif
-                                        <th class="text-right">{{ trans('panel.registration_date') }}</th>
+                                        <th class="text-right d-none d-md-table-cell">{{ trans('panel.registration_date') }}</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -197,7 +197,7 @@
                                                 </td>
                                             @endif
 
-                                            <td class="text-right">{{ dateTimeFormat($user->created_at, 'Y M j | H:i') }}</td>
+                                            <td class="text-right d-none d-md-table-cell">{{ dateTimeFormat($user->created_at, 'Y M j | H:i') }}</td>
                                         </tr>
                                     @endforeach
                                     </tbody>

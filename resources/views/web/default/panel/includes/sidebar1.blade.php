@@ -715,8 +715,12 @@
     // Close on link click inside sidebar (mobile)
     if (sidebar) {
         sidebar.querySelectorAll('a').forEach(function(link) {
-            link.addEventListener('click', function() {
-                if (window.innerWidth < 992) {
+            link.addEventListener('click', function(e) {
+                var href = link.getAttribute('href');
+                var isCollapse = link.getAttribute('data-toggle') === 'collapse';
+                
+                // If it's a submenu toggle or an anchor, don't close the sidebar
+                if (window.innerWidth < 992 && !isCollapse && href && !href.startsWith('#')) {
                     closeSidebar();
                 }
             });

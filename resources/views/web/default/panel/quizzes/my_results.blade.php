@@ -89,7 +89,7 @@
         <h2 class="section-title">{{ trans('quiz.results_statistics') }}</h2>
 
         <div class="mt-25">
-            <div class="row">
+            <div class="row stat-card-row">
                 <div class="col-6 col-md-3">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-primary">
@@ -141,19 +141,19 @@
         </div>
     </section>
 
-    <section class="mt-25">
+    <section class="mt-25 panel-filter-section">
         <h2 class="section-title">{{ trans('quiz.filter_results') }}</h2>
 
         <div class="mt-20" style="background: linear-gradient(135deg, #f8faff 0%, #fff 100%); border-radius: 20px; border: 1px solid #e8edf5; padding: 22px 28px; box-shadow: 0 4px 24px rgba(31,59,100,0.06);">
             <form action="/panel/quizzes/my-results" method="get">
-                <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;">
+                <div class="row align-items-end">
 
                     {{-- From --}}
-                    <div style="flex:0 0 auto;">
+                    <div class="col-12 col-sm-4 col-md-2">
                         <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
                             <i data-feather="calendar" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.from') }}
                         </label>
-                        <div style="position:relative;width:150px;">
+                        <div style="position:relative;width:100%;">
                             <div style="position:absolute;left:0;top:0;bottom:0;width:38px;background:#1f3b64;display:flex;align-items:center;justify-content:center;border-radius:9px 0 0 9px;z-index:1;">
                                 <i data-feather="calendar" width="14" height="14" style="color:#fff;"></i>
                             </div>
@@ -165,11 +165,11 @@
                     </div>
 
                     {{-- To --}}
-                    <div style="flex:0 0 auto;">
+                    <div class="col-12 col-sm-4 col-md-2 mt-15 mt-sm-0">
                         <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
                             <i data-feather="calendar" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.to') }}
                         </label>
-                        <div style="position:relative;width:150px;">
+                        <div style="position:relative;width:100%;">
                             <div style="position:absolute;left:0;top:0;bottom:0;width:38px;background:#1f3b64;display:flex;align-items:center;justify-content:center;border-radius:9px 0 0 9px;z-index:1;">
                                 <i data-feather="calendar" width="14" height="14" style="color:#fff;"></i>
                             </div>
@@ -181,7 +181,7 @@
                     </div>
 
                     {{-- Quiz or Webinar --}}
-                    <div style="flex:1 1 180px;min-width:160px;">
+                    <div class="col-12 col-sm-4 col-md-2 mt-15 mt-sm-0">
                         <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
                             <i data-feather="help-circle" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('quiz.quiz_or_webinar') }}
                         </label>
@@ -189,7 +189,7 @@
                     </div>
 
                     {{-- Instructor --}}
-                    <div style="flex:1 1 180px;min-width:160px;">
+                    <div class="col-12 col-sm-6 col-md-2 mt-15 mt-md-0">
                         <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
                             <i data-feather="user" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.instructor') }}
                         </label>
@@ -197,26 +197,21 @@
                     </div>
 
                     {{-- Status --}}
-                    <div style="flex:0 0 auto;">
+                    <div class="col-12 col-sm-6 col-md-2 mt-15 mt-md-0">
                         <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
                             <i data-feather="sliders" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.status') }}
                         </label>
-                        <div style="position:relative;width:110px;">
-                            <select name="status" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;cursor:pointer;">
-                                <option value="all">{{ trans('public.all') }}</option>
-                                <option value="passed" {{ request()->get('status') === "passed" ? 'selected' : '' }}>{{ trans('quiz.passed') }}</option>
-                                <option value="failed" {{ request()->get('status') === "failed" ? 'selected' : '' }}>{{ trans('quiz.failed') }}</option>
-                                <option value="waiting" {{ request()->get('status') === "waiting" ? 'selected' : '' }}>{{ trans('quiz.waiting') }}</option>
-                            </select>
-                            <div style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:#8c98a4;">
-                                <i data-feather="chevron-down" width="13" height="13"></i>
-                            </div>
-                        </div>
+                        <select name="status" class="form-control" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;cursor:pointer;">
+                            <option value="all">{{ trans('public.all') }}</option>
+                            <option value="passed" {{ request()->get('status') === "passed" ? 'selected' : '' }}>{{ trans('quiz.passed') }}</option>
+                            <option value="failed" {{ request()->get('status') === "failed" ? 'selected' : '' }}>{{ trans('quiz.failed') }}</option>
+                            <option value="waiting" {{ request()->get('status') === "waiting" ? 'selected' : '' }}>{{ trans('quiz.waiting') }}</option>
+                        </select>
                     </div>
 
                     {{-- Submit --}}
-                    <div style="flex:0 0 auto;">
-                        <button type="submit" style="height:40px;background:linear-gradient(135deg,#43d477 0%,#2ecc71 100%);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(67,212,119,0.25);white-space:nowrap;padding:0 20px;transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(67,212,119,0.35)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(67,212,119,0.25)'">
+                    <div class="col-12 col-md-2 mt-20 mt-md-0">
+                        <button type="submit" style="height:40px;width:100%;background:linear-gradient(135deg,#43d477 0%,#2ecc71 100%);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 14px rgba(67,212,119,0.25);white-space:nowrap;padding:0 20px;transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(67,212,119,0.35)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(67,212,119,0.25)'">
                             <i data-feather="search" width="13" height="13"></i>
                             {{ trans('public.show_results') }}
                         </button>
@@ -240,19 +235,19 @@
                             <table class="table custom-table">
                                 <thead>
                                 <tr>
-                                    <th>{{ trans('public.instructor') }}</th>
+                                    <th class="d-none d-lg-table-cell">{{ trans('public.instructor') }}</th>
                                     <th>{{ trans('quiz.quiz') }}</th>
-                                    <th class="text-center">{{ trans('quiz.quiz_grade') }}</th>
+                                    <th class="text-center d-none d-md-table-cell">{{ trans('quiz.quiz_grade') }}</th>
                                     <th class="text-center">{{ trans('quiz.my_grade') }}</th>
                                     <th class="text-center">{{ trans('public.status') }}</th>
-                                    <th class="text-center">{{ trans('public.date') }}</th>
+                                    <th class="text-center d-none d-md-table-cell">{{ trans('public.date') }}</th>
                                     <th></th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 @foreach($quizzesResults as $result)
                                     <tr>
-                                        <td class="text-left">
+                                        <td class="text-left d-none d-lg-table-cell">
                                             <div class="user-inline-avatar d-flex align-items-center">
                                                 <div class="avatar bg-gray200">
                                                     <img loading="lazy"  src="{{ config('app.img_dynamic_url') }}{{ $result->quiz->creator->getAvatar() }}" class="img-cover" alt="">
@@ -267,11 +262,11 @@
                                             <span class="d-block">{{ $result->quiz->title }}</span>
                                             <span class="font-12 text-gray d-block">{{ $result->quiz->webinar->title }}</span>
                                         </td>
-                                        <td class="align-middle">{{ $result->quiz->quizQuestions->sum('grade') }}</td>
+                                        <td class="align-middle d-none d-md-table-cell">{{ $result->quiz->quizQuestions->sum('grade') }}</td>
 
-                                        <td class="align-middle">{{ $result->user_grade }}</td>
+                                        <td class="align-middle text-center">{{ $result->user_grade }}</td>
 
-                                        <td class="align-middle">
+                                        <td class="align-middle text-center">
                                             @php
                                                 $statusClass = ($result->status == 'passed') ? 'success' : ($result->status == 'waiting' ? 'warning' : 'danger');
                                                 $statusText = trans('quiz.'.$result->status);
@@ -285,7 +280,7 @@
                                             @endif
                                         </td>
 
-                                        <td class="align-middle">
+                                        <td class="align-middle d-none d-md-table-cell">
                                             <div class="d-flex align-items-center text-gray font-13">
                                                 <i data-feather="calendar" width="14" height="14" class="mr-5"></i>
                                                 {{ dateTimeFormat($result->created_at,'j M Y') }}

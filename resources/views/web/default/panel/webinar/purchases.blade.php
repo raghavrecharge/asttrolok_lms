@@ -203,8 +203,8 @@
         <h2 class="section-title">{{ trans('panel.my_activity') }}</h2>
 
         <div class="mt-25">
-            <div class="row">
-                <div class="col-4">
+            <div class="row stat-card-row">
+                <div class="col-12 col-sm-4">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-primary">
                             <i data-feather="monitor" width="24" height="24"></i>
@@ -216,7 +216,7 @@
                     </div>
                 </div>
 
-                <div class="col-4">
+                <div class="col-12 col-sm-4 mt-15 mt-sm-0">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-success">
                             <i data-feather="clock" width="24" height="24"></i>
@@ -228,7 +228,7 @@
                     </div>
                 </div>
 
-                <div class="col-4">
+                <div class="col-12 col-sm-4 mt-15 mt-sm-0">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-warning">
                             <i data-feather="calendar" width="24" height="24"></i>

@@ -64,8 +64,8 @@
                                 <tr>
                                     <th class="text-left text-gray">{{ trans('panel.webinar') }}</th>
                                     <th class="text-center text-gray">{{ trans('panel.plan') }}</th>
-                                    <th class="text-center text-gray">{{ trans('public.price') }}</th>
-                                    <th class="text-center text-gray">{{ trans('public.date') }}</th>
+                                    <th class="text-center text-gray d-none d-md-table-cell">{{ trans('public.price') }}</th>
+                                    <th class="text-center text-gray d-none d-lg-table-cell">{{ trans('public.date') }}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -75,10 +75,10 @@
                                         <td class="align-middle">
                                             <span class="text-dark-blue font-weight-500">{{ $promotionSale->promotion->title }}</span>
                                         </td>
-                                        <td class="align-middle">
+                                        <td class="align-middle d-none d-md-table-cell">
                                             <span class="text-dark-blue font-weight-500">{{ (!empty($promotionSale->promotion->price) and $promotionSale->promotion->price > 0) ? handlePrice($promotionSale->promotion->price) : trans('public.free') }}</span>
                                         </td>
-                                        <td class="text-dark-blue font-weight-500 align-middle">{{ dateTimeFormat($promotionSale->created_at, 'j M Y | H:i') }}</td>
+                                        <td class="text-dark-blue font-weight-500 align-middle d-none d-lg-table-cell">{{ dateTimeFormat($promotionSale->created_at, 'j M Y | H:i') }}</td>
                                     </tr>
                                 @endforeach
                                 </tbody>

@@ -112,8 +112,8 @@
         <h2 class="section-title">{{ trans('panel.meeting_statistics') }}</h2>
 
         <div class="mt-25">
-            <div class="row">
-                <div class="col-4">
+            <div class="row stat-card-row">
+                <div class="col-12 col-sm-4">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-warning">
                             <i data-feather="calendar" width="24" height="24"></i>
@@ -125,7 +125,7 @@
                     </div>
                 </div>
 
-                <div class="col-4">
+                <div class="col-12 col-sm-4 mt-15 mt-sm-0">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-primary">
                             <i data-feather="users" width="24" height="24"></i>
@@ -137,7 +137,7 @@
                     </div>
                 </div>
 
-                <div class="col-4">
+                <div class="col-12 col-sm-4 mt-15 mt-sm-0">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-success">
                             <i data-feather="clock" width="24" height="24"></i>
@@ -152,19 +152,19 @@
         </div>
     </section>
 
-    <section class="mt-25">
+    <section class="mt-25 panel-filter-section">
         <h2 class="section-title">{{ trans('panel.filter_meetings') }}</h2>
 
         <div class="mt-20" style="background: linear-gradient(135deg, #f8faff 0%, #fff 100%); border-radius: 20px; border: 1px solid #e8edf5; padding: 22px 28px; box-shadow: 0 4px 24px rgba(31,59,100,0.06);">
             <form action="/panel/meetings/reservation" method="get">
-                <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;">
+                <div class="row align-items-end">
 
                     {{-- From --}}
-                    <div style="flex:0 0 auto;">
+                    <div class="col-12 col-sm-4 col-md-2">
                         <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
                             <i data-feather="calendar" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.from') }}
                         </label>
-                        <div style="position:relative;width:150px;">
+                        <div style="position:relative;width:100%;">
                             <div style="position:absolute;left:0;top:0;bottom:0;width:38px;background:#1f3b64;display:flex;align-items:center;justify-content:center;border-radius:9px 0 0 9px;z-index:1;">
                                 <i data-feather="calendar" width="14" height="14" style="color:#fff;"></i>
                             </div>
@@ -176,11 +176,11 @@
                     </div>
 
                     {{-- To --}}
-                    <div style="flex:0 0 auto;">
+                    <div class="col-12 col-sm-4 col-md-2 mt-15 mt-sm-0">
                         <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
                             <i data-feather="calendar" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.to') }}
                         </label>
-                        <div style="position:relative;width:150px;">
+                        <div style="position:relative;width:100%;">
                             <div style="position:absolute;left:0;top:0;bottom:0;width:38px;background:#1f3b64;display:flex;align-items:center;justify-content:center;border-radius:9px 0 0 9px;z-index:1;">
                                 <i data-feather="calendar" width="14" height="14" style="color:#fff;"></i>
                             </div>
@@ -192,12 +192,12 @@
                     </div>
 
                     {{-- Day --}}
-                    <div style="flex:0 0 auto;">
+                    <div class="col-12 col-sm-4 col-md-2 mt-15 mt-sm-0">
                         <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
                             <i data-feather="sun" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.day') }}
                         </label>
-                        <div style="position:relative;width:130px;">
-                            <select name="day" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;cursor:pointer;">
+                        <div style="position:relative;">
+                            <select name="day" class="form-control" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;cursor:pointer;">
                                 <option value="all">{{ trans('public.all_days') }}</option>
                                 <option value="saturday" {{ request()->get('day') === 'saturday' ? 'selected' : '' }}>{{ trans('public.saturday') }}</option>
                                 <option value="sunday" {{ request()->get('day') === 'sunday' ? 'selected' : '' }}>{{ trans('public.sunday') }}</option>
@@ -207,50 +207,39 @@
                                 <option value="thursday" {{ request()->get('day') === 'thursday' ? 'selected' : '' }}>{{ trans('public.thursday') }}</option>
                                 <option value="friday" {{ request()->get('day') === 'friday' ? 'selected' : '' }}>{{ trans('public.friday') }}</option>
                             </select>
-                            <div style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:#8c98a4;">
-                                <i data-feather="chevron-down" width="13" height="13"></i>
-                            </div>
                         </div>
                     </div>
 
                     {{-- Instructor --}}
-                    <div style="flex:1 1 160px;min-width:140px;">
+                    <div class="col-12 col-sm-6 col-md-2 mt-15 mt-md-0">
                         <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
                             <i data-feather="user" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.instructor') }}
                         </label>
                         <div style="position:relative;">
-                            <select name="instructor_id" class="select2" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;">
+                            <select name="instructor_id" class="form-control select2" style="width:100%;">
                                 <option value="all">{{ trans('webinars.all_instructors') }}</option>
                                 @foreach($instructors as $instructor)
                                     <option value="{{ $instructor->id }}" @if(request()->get('instructor_id') == $instructor->id) selected @endif>{{ $instructor->full_name }}</option>
                                 @endforeach
                             </select>
-                            <div style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:#8c98a4;">
-                                <i data-feather="chevron-down" width="13" height="13"></i>
-                            </div>
                         </div>
                     </div>
 
                     {{-- Status --}}
-                    <div style="flex:0 0 auto;">
+                    <div class="col-12 col-sm-6 col-md-2 mt-15 mt-md-0">
                         <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
                             <i data-feather="sliders" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.status') }}
                         </label>
-                        <div style="position:relative;width:110px;">
-                            <select name="status" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;cursor:pointer;">
-                                <option value="all">{{ trans('public.all') }}</option>
-                                <option value="open" {{ request()->get('status') === 'open' ? 'selected' : '' }}>{{ trans('public.open') }}</option>
-                                <option value="finished" {{ request()->get('status') === 'finished' ? 'selected' : '' }}>{{ trans('public.finished') }}</option>
-                            </select>
-                            <div style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:#8c98a4;">
-                                <i data-feather="chevron-down" width="13" height="13"></i>
-                            </div>
-                        </div>
+                        <select name="status" class="form-control" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;cursor:pointer;">
+                            <option value="all">{{ trans('public.all') }}</option>
+                            <option value="open" {{ request()->get('status') === 'open' ? 'selected' : '' }}>{{ trans('public.open') }}</option>
+                            <option value="finished" {{ request()->get('status') === 'finished' ? 'selected' : '' }}>{{ trans('public.finished') }}</option>
+                        </select>
                     </div>
 
                     {{-- Submit Button --}}
-                    <div style="flex:0 0 auto;">
-                        <button type="submit" style="height:40px;background:linear-gradient(135deg,#43d477 0%,#2ecc71 100%);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(67,212,119,0.25);white-space:nowrap;padding:0 20px;transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(67,212,119,0.35)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(67,212,119,0.25)'">
+                    <div class="col-12 col-md-2 mt-20 mt-md-0">
+                        <button type="submit" style="height:40px;width:100%;background:linear-gradient(135deg,#43d477 0%,#2ecc71 100%);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 14px rgba(67,212,119,0.25);white-space:nowrap;padding:0 20px;transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(67,212,119,0.35)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(67,212,119,0.25)'">
                             <i data-feather="search" width="13" height="13"></i>
                             {{ trans('public.show_results') }}
                         </button>
@@ -284,10 +273,10 @@
                                 <thead>
                                 <tr>
                                     <th>{{ trans('public.instructor') }}</th>
-                                    <th class="text-center">{{ trans('update.meeting_type') }}</th>
+                                    <th class="text-center d-none d-md-table-cell">{{ trans('update.meeting_type') }}</th>
                                     <th class="text-center">{{ trans('public.date') }}</th>
                                     <th class="text-center">{{ trans('public.time') }}</th>
-                                    <th class="text-center">{{ trans('public.paid_amount') }}</th>
+                                    <th class="text-center d-none d-md-table-cell">{{ trans('public.paid_amount') }}</th>
                                     <th class="text-center">{{ trans('public.status') }}</th>
                                     <th></th>
                                 </tr>
@@ -315,7 +304,7 @@
                                                 @endif
                                             </div>
                                         </td>
-                                        <td class="align-middle text-center">
+                                        <td class="align-middle text-center d-none d-md-table-cell">
                                             <span class="font-weight-500">{{ trans('update.'.$ReserveMeeting->meeting_type) }}</span>
                                         </td>
                                         <td class="align-middle text-center">
@@ -324,17 +313,17 @@
                                                 $dateText = dateTimeFormat($ReserveMeeting->start_at, 'j M Y');
                                             @endphp
                                             <div class="text-dark-blue font-weight-bold font-14">{{ $dayText }}</div>
-                                            <div class="text-gray font-11 mt-2">{{ $dateText }}</div>
+                                            <div class="text-gray font-11 mt-2 text-nowrap">{{ $dateText }}</div>
                                         </td>
 
-                                        <td class="align-middle text-center">
+                                        <td class="align-middle text-center text-nowrap">
                                             <div class="time-badge">
                                                 <i data-feather="clock" width="12" height="12" class="mr-5"></i>
                                                 {{ dateTimeFormat($ReserveMeeting->start_at, 'H:i') }} - {{ dateTimeFormat($ReserveMeeting->end_at, 'H:i') }}
                                             </div>
                                         </td>
 
-                                        <td class="align-middle text-center">
+                                        <td class="align-middle text-center d-none d-md-table-cell">
                                             <div class="font-weight-bold text-dark-blue font-14">
                                                 @if(!empty($ReserveMeeting->sale) and !empty($ReserveMeeting->sale->total_amount) and $ReserveMeeting->sale->total_amount > 0)
                                                     {{ handlePrice($ReserveMeeting->sale->total_amount) }}
