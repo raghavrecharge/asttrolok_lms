@@ -449,11 +449,11 @@ class NewSupportForAsttrolokController extends Controller
                     break;
                     
                 case 'mentor_access':
-                    $rules['mentor_change_reason'] = 'required|string';
+                    $rules['mentor_change_reason'] = 'nullable|string';
                     break;
                         
                 case 'relatives_friends_access':
-                    $rules['relative_description'] = 'required|string';
+                    $rules['relative_description'] = 'nullable|string';
                     break;
                             
                 case 'free_course_grant':
@@ -494,9 +494,9 @@ class NewSupportForAsttrolokController extends Controller
                     break;
                     
                 case 'wrong_course_correction':
-                    $rules['wrong_course_id'] = 'required|exists:webinars,id';
-                    $rules['correct_course_id'] = 'required|exists:webinars,id';
-                    $rules['correction_reason'] = 'required|string';
+                    $rules['wrong_course_id'] = 'required';
+                    $rules['correct_course_id'] = 'required';
+                    $rules['correction_reason'] = 'nullable|string';
                     break;
             }
 
@@ -530,7 +530,8 @@ class NewSupportForAsttrolokController extends Controller
         }
     }
 
-            $webinar_id = $request->webinar_id ?? $request->selected_webinar_id ?? $request->wrong_course_id ?? null;
+            $webinar_id = $request->webinar_id ?? $request->selected_webinar_id ?? $request->wrong_course_id ?? $request->webinar_id_generic ?? null;
+            
                 if(isset($webinar_id)){
                     $flowType = $this->determineFlowType($webinar_id);
                     $purchaseInfo = $this->getPurchaseInfo($webinar_id);

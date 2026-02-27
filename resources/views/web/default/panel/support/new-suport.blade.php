@@ -323,7 +323,15 @@
                             @endif
                             <div class="form-group mt-15">
                                 <label class="input-label">Details / Reason</label>
-                                <textarea name="description" class="form-control" rows="4" placeholder="Describe your request..." disabled></textarea>
+                                @if($scen == 'relatives_friends_access')
+                                    <textarea name="relative_description" class="form-control" rows="4" placeholder="Describe your request..." disabled></textarea>
+                                @elseif($scen == 'mentor_access')
+                                    <textarea name="mentor_change_reason" class="form-control" rows="4" placeholder="Describe your request..." disabled></textarea>
+                                @elseif($scen == 'wrong_course_correction')
+                                    <textarea name="correction_reason" class="form-control" rows="4" placeholder="Describe your request..." disabled></textarea>
+                                @else
+                                    <textarea name="description" class="form-control" rows="4" placeholder="Describe your request..." disabled></textarea>
+                                @endif
                             </div>
                         </div>
                     @endforeach
@@ -415,12 +423,16 @@
                         width: '100%'
                     });
 
-                    // Special handling for installment_restructure - ensure purchased courses dropdown is used
-                    if (selectedScenario === 'installment_restructure') {
-                        console.log('Installment Restructure selected - showing purchased courses');
-                        // Make sure the purchased courses dropdown in this scenario is enabled
-                        $activeField.find('.installment-purchased-courses').prop('disabled', false).attr('required', 'required');
-                    }
+                    // Update generic webinar_id hidden field if a select inside the scenario has name="webinar_id"
+                    $activeField.find('select[name="webinar_id"]').on('change', function() {
+                        const val = $(this).val();
+                        if (val) {
+                             if ($('#webinar_id_generic_hidden').length === 0) {
+                                 $('#support-form').append('<input type="hidden" name="webinar_id_generic" id="webinar_id_generic_hidden">');
+                             }
+                             $('#webinar_id_generic_hidden').val(val);
+                        }
+                    });
                 }
             });
 
