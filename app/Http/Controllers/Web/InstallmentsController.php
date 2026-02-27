@@ -636,25 +636,7 @@ class InstallmentsController extends Controller
              $paymentChannel = PaymentChannel::where('status', 'active')
                 ->first();
 
-            if(!empty(User::where('email', $email)->orwhere('mobile', $contact)->first())){
-            $user = User::where('email', $email)->orwhere('mobile', $contact)->first();
-            }else{
-                $user = User::create([
-                'role_name' => 'user',
-                'role_id' => 1,
-                'mobile' => $contact ?? null,
-                'email' => $email ?? null,
-                'full_name' => $name,
-
-                'status'=>'active',
-                'access_content' => 1,
-                'password' => Hash::make(Str::random(16)),
-                'affiliate' => 0,
-                'timezone' => 'Asia/Kolkata' ?? null,
-                'created_at' => time(),
-                'enable_installments' =>1
-                ]);
-            }
+            $user = User::findOrCreateForPurchase($email, $contact, $name, $request->password ?? null, ['enable_installments' => 1]);
 
             $item = $this->getItem($itemId, $itemType, $user);
             $itemPrice = round($item->getPrice());
@@ -1634,25 +1616,7 @@ class InstallmentsController extends Controller
             $expire = $data1['expire'];
 
             $expirenew=$expire.' '.date('h:i:s');
-            if(!empty(User::where('email', $email)->orwhere('mobile', $contact)->first())){
-                $user = User::where('email', $email)->orwhere('mobile', $contact)->first();
-            }else{
-                $user = User::create([
-                'role_name' => 'user',
-                'role_id' => 1,
-                'mobile' => $contact ?? null,
-                'email' => $email ?? null,
-                'full_name' => $name,
-
-                'status'=>'active',
-                'access_content' => 1,
-                'password' => Hash::make(Str::random(16)),
-                'affiliate' => 0,
-                'timezone' => 'Asia/Kolkata' ?? null,
-                'created_at' => time(),
-                'enable_installments' =>1
-                ]);
-            }
+            $user = User::findOrCreateForPurchase($email, $contact, $name, null, ['enable_installments' => 1]);
              $itemId = $data1['course'];
 
              $data = [
@@ -2941,25 +2905,7 @@ class InstallmentsController extends Controller
 
             $amount = $data1[4];
 
-            if(!empty(User::where('email', $email)->orwhere('mobile', $contact)->first())){
-            $user = User::where('email', $email)->orwhere('mobile', $contact)->first();
-            }else{
-                $user = User::create([
-                'role_name' => 'user',
-                'role_id' => 1,
-                'mobile' => $contact ?? null,
-                'email' => $email ?? null,
-                'full_name' => $name,
-
-                'status'=>'active',
-                'access_content' => 1,
-                'password' => Hash::make(Str::random(16)),
-                'affiliate' => 0,
-                'timezone' => 'Asia/Kolkata' ?? null,
-                'created_at' => time(),
-                'enable_installments' =>1
-                ]);
-            }
+            $user = User::findOrCreateForPurchase($email, $contact, $name, null, ['enable_installments' => 1]);
             $WebinarPartPayment = WebinarPartPayment::where([
                         'user_id' => $user->id,
                         'installment_id' => $installmentId,
@@ -3330,25 +3276,7 @@ class InstallmentsController extends Controller
 
             $launch_date =null;
 
-            if(!empty(User::where('email', $email)->orwhere('mobile', $contact)->first())){
-                $user = User::where('email', $email)->orwhere('mobile', $contact)->first();
-            }else{
-                $user = User::create([
-                'role_name' => 'user',
-                'role_id' => 1,
-                'mobile' => $contact ?? null,
-                'email' => $email ?? null,
-                'full_name' => $name,
-
-                'status'=>'active',
-                'access_content' => 1,
-                'password' => Hash::make(Str::random(16)),
-                'affiliate' => 0,
-                'timezone' => 'Asia/Kolkata' ?? null,
-                'created_at' => time(),
-                'enable_installments' =>1
-                ]);
-            }
+            $user = User::findOrCreateForPurchase($email, $contact, $name, $request->password ?? null, ['enable_installments' => 1]);
 
             $userId = $user->id;
             $webinarId = $validatedData['course'];
@@ -4132,25 +4060,7 @@ class InstallmentsController extends Controller
             print_r($email);
             echo"<br>";
 
-            if(!empty(User::where('email', $email)->orwhere('mobile', $contact)->first())){
-                $user = User::where('email', $email)->orwhere('mobile', $contact)->first();
-            }else{
-                $user = User::create([
-                'role_name' => 'user',
-                'role_id' => 1,
-                'mobile' => $contact ?? null,
-                'email' => $email ?? null,
-                'full_name' => $name,
-
-                'status'=>'active',
-                'access_content' => 1,
-                'password' => Hash::make(Str::random(16)),
-                'affiliate' => 0,
-                'timezone' => 'Asia/Kolkata' ?? null,
-                'created_at' => time(),
-                'enable_installments' =>1
-                ]);
-            }
+            $user = User::findOrCreateForPurchase($email, $contact, $name, null, ['enable_installments' => 1]);
              $itemId = 2070;
              $itemType = 'course';
              $courses = Webinar::where('id',$itemId)->where('status', 'active')
@@ -5210,26 +5120,7 @@ class InstallmentsController extends Controller
              $paymentChannel = PaymentChannel::where('status', 'active')
                 ->first();
 
-            if(!empty(User::where('email', $email)->orwhere('mobile', $contact)->first())){
-
-                $user = User::where('email', $email)->orwhere('mobile', $contact)->first();
-            }else{
-
-                $user = User::create([
-                'role_name' => 'user',
-                'role_id' => 1,
-                'mobile' => $contact ?? null,
-                'email' => $email ?? null,
-                'full_name' => $name,
-                'status'=>'active',
-                'access_content' => 1,
-                'password' => Hash::make(Str::random(16)),
-                'affiliate' => 0,
-                'timezone' => 'Asia/Kolkata' ?? null,
-                'created_at' => time(),
-                'enable_installments' =>1
-                ]);
-            }
+            $user = User::findOrCreateForPurchase($email, $contact, $name, $request->password ?? null, ['enable_installments' => 1]);
             Log::info('paid by user id '.$user->id);
 
             $item = $this->getItem($itemId, $itemType, $user);

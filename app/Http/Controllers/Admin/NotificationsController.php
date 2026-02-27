@@ -127,7 +127,7 @@ class NotificationsController extends Controller
             'created_at' => time()
         ]);
 
-        if (!empty($data['user_id']) and env('APP_ENV') == 'production') {
+        if (!empty($data['user_id']) and isProductionDomain()) {
             $user = \App\User::where('id', $data['user_id'])->first();
             if (!empty($user) and !empty($user->email)) {
                 try{

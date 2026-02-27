@@ -118,6 +118,10 @@ class NewslettersController extends Controller
 
         $newsletters = Newsletter::orderBy('created_at', 'desc')->get();
 
+        if (!isProductionDomain()) {
+            return count($newsletters);
+        }
+
         try {
             foreach ($newsletters as $newsletter) {
                 \Mail::to($newsletter->email)->send(new SendNotifications(['title' => $title, 'message' => $description]));
@@ -141,6 +145,10 @@ class NewslettersController extends Controller
 
         $ccEmails = Newsletter::orderBy('created_at', 'desc')->pluck('email')->toArray();
 
+        if (!isProductionDomain()) {
+            return count($ccEmails);
+        }
+
         try {
             \Mail::to($email)->send(new SendNotifications(['title' => $title, 'message' => $description, 'cc' => $ccEmails]));
 
@@ -159,6 +167,10 @@ class NewslettersController extends Controller
         $title = $data['title'];
         $description = $data['description'];
         $excel = $data['excel'];
+
+        if (!isProductionDomain()) {
+            return 0;
+        }
 
         try {
             $rows = Excel::toArray(null, $excel);

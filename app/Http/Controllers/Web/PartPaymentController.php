@@ -423,24 +423,12 @@ class PartPaymentController extends Controller
 
         if(empty($userId)){
             $input=$paymentData['user_data'];
-            $user = User::where(function($q) use ($input) { $q->where('email', $input['email'])->orWhere('mobile', $input['number']); })->first();
-
-            if(empty($user)){
-                 $user = User::create([
-                'role_name' => 'user',
-                'role_id' => 1,
-                'mobile' => $input['number'],
-                'email' => $input['email'],
-                'full_name' => $input['name'],
-
-                'status'=>'active',
-                'access_content' => 1,
-                'password' => Hash::make(Str::random(16)),
-                'affiliate' => 0,
-                'timezone' => 'Asia/Kolkata' ?? null,
-                'created_at' => time()
-              ]);
-            }
+            $user = User::findOrCreateForPurchase(
+                $input['email'],
+                $input['number'],
+                $input['name'],
+                $input['password'] ?? null
+            );
             $userId = $user->id;
         }
 

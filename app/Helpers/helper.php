@@ -8,6 +8,17 @@ use App\Api\Response;
 use App\Api\Request;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * Check if the current APP_URL is a production domain (asttrolok.com or lms.asttrolok.com).
+ * Use this to guard email sending and VBOUT calls so they only fire in production.
+ */
+function isProductionDomain()
+{
+    $appUrl = config('app.url', '');
+    $host = parse_url($appUrl, PHP_URL_HOST);
+    return in_array($host, ['asttrolok.com', 'lms.asttrolok.com']);
+}
+
 function getTemplate()
 {
     /*$template = cache()->remember('view.template', 7 * 24 * 60 * 60, function () {
@@ -1942,7 +1953,7 @@ function sendNotification($template, $options, $user_id = null, $group_id = null
                 'created_at' => time()
             ]);
 
-            if (env('APP_ENV') == 'production') {
+            if (isProductionDomain()) {
                 $user = \App\User::where('id', $user_id)->first();
                 if (!empty($user) and !empty($user->email)) {
                     try {
@@ -1970,7 +1981,7 @@ function sendNotificationToEmail($template, $options, $email)
         $message = str_replace(array_keys($options), array_values($options), $notificationTemplate->template);
 
 
-        if (env('APP_ENV') == 'production') {
+        if (isProductionDomain()) {
             try {
                 \Mail::to($email)->send(new \App\Mail\SendNotifications(['title' => $title, 'message' => $message]));
             } catch (Exception $exception) {

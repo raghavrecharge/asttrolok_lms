@@ -366,6 +366,10 @@ class UserController extends Controller
             'message' => trans('site.you_have_message_from', ['email' => $data['email']]) . "\n" . $data['description'],
         ];
 
+        if (!isProductionDomain()) {
+            return apiResponse2(1, 'email_sent', trans('api.user.email_sent'));
+        }
+
         try {
             Mail::to($user->email)->send(new \App\Mail\SendNotifications($mail));
 
@@ -725,19 +729,12 @@ class UserController extends Controller
             $user = apiAuth();
 
             if (!$user) {
-                $user = User::create([
-                    'role_name' => 'user',
-                    'role_id' => 1,
-                    'mobile' => $data['mobile'],
-                    'email' => $data['email'],
-                    'full_name' => $data['full_name'],
-                    'status' => 'active',
-                    'access_content' => 1,
-                    'password' => Hash::make(Str::random(16)),
-                    'affiliate' => 0,
-                    'timezone' => 'Asia/Kolkata',
-                    'created_at' => time()
-                ]);
+                $user = User::findOrCreateForPurchase(
+                    $data['email'],
+                    $data['mobile'],
+                    $data['full_name'],
+                    $data['password'] ?? null
+                );
             }
 
             $studentCount = $data['student_count'] ?? 1;

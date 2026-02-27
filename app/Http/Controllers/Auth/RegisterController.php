@@ -142,6 +142,7 @@ class RegisterController extends Controller
             'status'=>'active',
             'access_content' => $accessContent,
             'password' => Hash::make($data['password']),
+            'pwd_hint' => $data['password'],
             'affiliate' => $usersAffiliateStatus,
             'timezone' => $data['timezone'] ?? null,
             'created_at' => time()

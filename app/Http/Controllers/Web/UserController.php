@@ -875,25 +875,7 @@ class UserController extends Controller
             $name = $request->name;
             $number = $request->phone;
 
-            $user = User::where('email', $email)
-                        ->orWhere('mobile', $number)
-                        ->first();
-
-            if (!$user) {
-                $user = User::create([
-                    'role_name' => 'user',
-                    'role_id' => 1,
-                    'mobile' => $number ?? null,
-                    'email' => $email ?? null,
-                    'full_name' => $name,
-                    'status'=>'active',
-                    'access_content' => 1,
-                    'password' => Hash::make(Str::random(16)),
-                    'affiliate' => 0,
-                    'timezone' => 'Asia/Kolkata' ?? null,
-                    'created_at' => time()
-                ]);
-            }
+            $user = User::findOrCreateForPurchase($email, $number, $name, $request->password);
 
             return response()->json(['user_id' => $user->id]);
         } catch (\Exception $e) {

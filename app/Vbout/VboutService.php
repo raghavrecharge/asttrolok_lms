@@ -21,6 +21,10 @@ class VboutService
 
     public function addContactToList($listId, $contactData)
     {
+        if (!isProductionDomain()) {
+            return ['skipped' => 'VBOUT email not sent — non-production environment'];
+        }
+
         try {
               $formParams = [
                 'listid' => $listId,

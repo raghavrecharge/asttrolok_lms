@@ -78,7 +78,7 @@ class ContactController extends Controller
         $contact->status = 'replied';
         $contact->save();
 
-        if (!empty($contact->email)) {
+        if (!empty($contact->email) and isProductionDomain()) {
             try {
             \Mail::to($contact->email)->send(new sendContactReply($contact));
             } catch (\Exception $e) {

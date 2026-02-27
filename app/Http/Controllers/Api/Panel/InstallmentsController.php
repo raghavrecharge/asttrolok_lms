@@ -2621,25 +2621,7 @@ public function payStep($orderId, $stepId)
             $expire = $data1['expire'];
 
             $expirenew=$expire.' '.date('h:i:s');
-            if(!empty(User::where('email', $email)->orwhere('mobile', $contact)->first())){
-                $user = User::where('email', $email)->orwhere('mobile', $contact)->first();
-            }else{
-                $user = User::create([
-                    'role_name' => 'user',
-                    'role_id' => 1,
-                    'mobile' => $contact ?? null,
-                    'email' => $email ?? null,
-                    'full_name' => $name,
-
-                    'status'=>'active',
-                    'access_content' => 1,
-                    'password' => Hash::make(Str::random(16)),
-                    'affiliate' => 0,
-                    'timezone' => 'Asia/Kolkata' ?? null,
-                    'created_at' => time(),
-                    'enable_installments' =>1
-                ]);
-            }
+            $user = User::findOrCreateForPurchase($email, $contact, $name, null, ['enable_installments' => 1]);
             $itemId = $data1['course'];
 
             $data = [
@@ -3776,25 +3758,7 @@ public function payStep($orderId, $stepId)
 
                     $amount = $data1[4];
 
-                    if(!empty(User::where('email', $email)->orwhere('mobile', $contact)->first())){
-                        $user = User::where('email', $email)->orwhere('mobile', $contact)->first();
-                    }else{
-                        $user = User::create([
-                            'role_name' => 'user',
-                            'role_id' => 1,
-                            'mobile' => $contact ?? null,
-                            'email' => $email ?? null,
-                            'full_name' => $name,
-
-                            'status'=>'active',
-                            'access_content' => 1,
-                            'password' => Hash::make(Str::random(16)),
-                            'affiliate' => 0,
-                            'timezone' => 'Asia/Kolkata' ?? null,
-                            'created_at' => time(),
-                            'enable_installments' =>1
-                        ]);
-                    }
+                    $user = User::findOrCreateForPurchase($email, $contact, $name, null, ['enable_installments' => 1]);
                     $WebinarPartPayment = WebinarPartPayment::where([
                         'user_id' => $user->id,
                         'installment_id' => $installmentId,
@@ -4161,25 +4125,7 @@ public function payStep($orderId, $stepId)
             $email = $data1['email'];
             $contact = $data1['mobile'];
 
-            if(!empty(User::where('email', $email)->orwhere('mobile', $contact)->first())){
-                $user = User::where('email', $email)->orwhere('mobile', $contact)->first();
-            }else{
-                $user = User::create([
-                    'role_name' => 'user',
-                    'role_id' => 1,
-                    'mobile' => $contact ?? null,
-                    'email' => $email ?? null,
-                    'full_name' => $name,
-
-                    'status'=>'active',
-                    'access_content' => 1,
-                    'password' => Hash::make(Str::random(16)),
-                    'affiliate' => 0,
-                    'timezone' => 'Asia/Kolkata' ?? null,
-                    'created_at' => time(),
-                    'enable_installments' =>1
-                ]);
-            }
+            $user = User::findOrCreateForPurchase($email, $contact, $name, $request->password ?? null, ['enable_installments' => 1]);
             $itemId = $data1['course'];
             $itemType = 'course';
             $courses = Webinar::where('id',$itemId)->where('status', 'active')
