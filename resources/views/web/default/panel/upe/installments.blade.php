@@ -466,16 +466,12 @@
         <div class="modal fade" id="progressDetailModal" tabindex="-1" role="dialog" aria-labelledby="progressDetailModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 15px 50px rgba(0,0,0,0.15);">
-                    <div class="modal-header border-0 pb-0" style="padding: 25px 25px 10px;">
-                        <div>
-                            <h5 class="modal-title font-18 font-weight-bold text-dark-blue" id="progressDetailModalLabel">Course Progress Breakdown</h5>
+                    <div class="modal-body" style="padding: 30px 25px;">
+                        <div class="mb-20">
+                            <h5 class="font-18 font-weight-bold text-dark-blue mb-5">Course Progress Breakdown</h5>
                             <p class="text-gray font-12 mb-0" id="modalCourseTitle">Loading course details...</p>
                         </div>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body" style="padding: 20px 25px 30px;">
+
                         <div id="progressLoading" class="text-center py-30">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="sr-only">Loading...</span>
@@ -487,6 +483,10 @@
                             <i data-feather="alert-circle" class="text-danger mb-10" width="40" height="40"></i>
                             <p class="text-dark-blue font-14 font-weight-500">Failed to load progress details.</p>
                             <button class="btn btn-sm btn-outline-primary mt-15 px-20" onclick="location.reload()">Retry</button>
+                        </div>
+
+                        <div class="mt-30 text-center">
+                            <button type="button" class="btn btn-sm btn-outline-danger px-25" data-dismiss="modal" style="border-radius: 12px; font-weight: 700;">Close</button>
                         </div>
                     </div>
                 </div>
