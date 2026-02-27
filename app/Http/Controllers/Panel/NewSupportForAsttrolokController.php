@@ -890,6 +890,7 @@ class NewSupportForAsttrolokController extends Controller
             'pending' => (clone $statsQuery)->where('status', 'pending')->count(),
             'in_review' => (clone $statsQuery)->whereIn('status', ['in_review', 'verified'])->count(),
             'approved' => (clone $statsQuery)->whereIn('status', ['approved', 'executed'])->count(),
+            'rejected' => (clone $statsQuery)->where('status', 'rejected')->count(),
         ];
         
         $data = [

@@ -906,7 +906,7 @@
                 <div class="balance-label">Current Balance</div>
                 <div class="balance-date">{{ date('d M Y h:i A') }}</div>
                 <div class="balance-amount">{{ handlePrice($authUser->getAccountingBalance()) }}</div>
-                <div class="balance-sub">{{ handlePrice($authUser->getAccountingBalance()) }} ready to withdraw</div>
+                <div class="balance-sub">{{ handlePrice($authUser->getAccountingBalance()) }} Available to use</div>
             </div>
 
             {{-- Wallet (image: simple link row) --}}

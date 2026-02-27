@@ -58,6 +58,11 @@
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.05);
         }
+        .bg-glass-primary { background: rgba(31, 59, 100, 0.1); color: #1f3b64; }
+        .bg-glass-warning { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+        .bg-glass-info { background: rgba(0, 123, 255, 0.1); color: #007bff; }
+        .bg-glass-success { background: rgba(67, 212, 119, 0.1); color: #2ecc71; }
+        .bg-glass-danger { background: rgba(246, 59, 59, 0.1); color: #f63b3b; }
     </style>
 @endpush
 @section('content')
@@ -99,13 +104,13 @@
                 </div>
                 <div>
                     @php
-                        $badgeClass = 'bg-primary';
-                        if($supportRequest->status == 'pending') $badgeClass = 'bg-warning';
-                        elseif($supportRequest->status == 'approved' || $supportRequest->status == 'executed') $badgeClass = 'bg-success';
-                        elseif($supportRequest->status == 'rejected') $badgeClass = 'bg-danger';
+                        $badgeClass = 'bg-glass-primary';
+                        if($supportRequest->status == 'pending') $badgeClass = 'bg-glass-warning';
+                        elseif($supportRequest->status == 'approved' || $supportRequest->status == 'executed') $badgeClass = 'bg-glass-success';
+                        elseif($supportRequest->status == 'rejected') $badgeClass = 'bg-glass-danger';
                     @endphp
-                    <span class="badge {{ $badgeClass }} text-white font-14 px-20 py-10" style="border-radius: 12px;">
-                        {{ ucfirst(str_replace('_', ' ', $supportRequest->status)) }}
+                    <span class="badge {{ $badgeClass }} font-14 px-20 py-10" style="border-radius: 12px;">
+                        {{ $supportRequest->status == 'approved' || $supportRequest->status == 'executed' ? 'Complete' : ucfirst(str_replace('_', ' ', $supportRequest->status)) }}
                     </span>
                 </div>
             </div>
@@ -117,15 +122,18 @@
                         <div class="mt-10">
                             @if(in_array($supportRequest->status, ['rejected', 'approved', 'executed', 'closed', 'verified']))
                                 <div class="p-15 rounded-15" style="background: #f8faff; border: 1px dashed #ddd;">
-                                    <h6 class="font-14 font-weight-bold mb-5">
-                                        @if($supportRequest->status === 'rejected')
-                                            <i data-feather="x-circle" width="16" height="16" class="text-danger mr-5"></i> Rejected
-                                        @elseif($supportRequest->status === 'approved' || $supportRequest->status === 'executed')
-                                            <i data-feather="check-circle" width="16" height="16" class="text-success mr-5"></i> Approved/Executed
-                                        @else
-                                            <i data-feather="info" width="16" height="16" class="text-primary mr-5"></i> {{ ucfirst($supportRequest->status) }}
-                                        @endif
-                                    </h6>
+                                    <div class="d-flex align-items-center">
+                                        <h6 class="font-14 font-weight-bold mb-0">
+                                            @if($supportRequest->status === 'rejected')
+                                                <i data-feather="x-circle" width="20" height="20" class="text-danger mr-10" style="stroke-width: 3px;"></i> Rejected
+                                            @elseif($supportRequest->status === 'approved' || $supportRequest->status === 'executed')
+                                                <i data-feather="check-circle" width="20" height="20" class="text-success mr-10" style="stroke-width: 3px;"></i> Complete
+                                            @else
+                                                <i data-feather="info" width="20" height="20" class="text-primary mr-10" style="stroke-width: 3px;"></i> {{ ucfirst($supportRequest->status) }}
+                                            @endif
+                                        </h6>
+                                        <span class="ml-10 font-13 text-gray">by {{ $supportRequest->supportHandler?->full_name ?? $supportRequest->subAdmin?->full_name ?? 'admin' }}</span>
+                                    </div>
                                     @if($supportRequest->rejection_reason || $supportRequest->approval_remarks || $supportRequest->execution_notes)
                                         <p class="font-13 text-gray mb-0">
                                             {{ $supportRequest->rejection_reason ?? $supportRequest->approval_remarks ?? $supportRequest->execution_notes }}
@@ -166,7 +174,19 @@
             {{-- Message Content --}}
             <div class="mt-30 message-box">
                 <span class="detail-label mb-10">Description / Request Message</span>
-                <p class="mb-0">{!! nl2br(e($supportRequest->description)) !!}</p>
+                @php
+                    $displayDescription = $supportRequest->description;
+                    if (empty($displayDescription)) {
+                        $displayDescription = $supportRequest->relative_description 
+                            ?? $supportRequest->extension_reason 
+                            ?? $supportRequest->free_course_reason 
+                            ?? $supportRequest->correction_reason
+                            ?? $supportRequest->service_details
+                            ?? $supportRequest->temporary_access_reason
+                            ?? $supportRequest->mentor_change_reason;
+                    }
+                @endphp
+                <p class="mb-0">{!! nl2br(e($displayDescription ?? 'No description provided.')) !!}</p>
                 
                 @if($supportRequest->support_scenario === 'course_extension')
                     <div class="mt-15 pt-15 border-top">

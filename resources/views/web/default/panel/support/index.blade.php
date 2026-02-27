@@ -3,45 +3,55 @@
     <style>
         .stat-card {
             background: #fff;
-            border-radius: 20px;
-            padding: 25px;
+            border-radius: 18px;
+            padding: 18px 15px;
             display: flex;
             align-items: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.03);
             border: 1px solid #f0f0f0;
             height: 100%;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
         }
         .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
-            border-color: #1f3b64;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+            border-color: #43d477;
         }
         .stat-icon {
-            width: 54px;
-            height: 54px;
-            border-radius: 14px;
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 15px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .stat-icon i {
+            width: 20px;
+            height: 20px;
         }
         .stat-label {
-            font-size: 13px;
-            color: #6c757d;
-            font-weight: 500;
+            font-size: 12px;
+            color: #8c98a4;
+            font-weight: 600;
             display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
         .stat-value {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 800;
             color: #1f3b64;
             display: block;
+            line-height: 1.2;
         }
-        .bg-glass-primary { background: rgba(31, 59, 100, 0.1); color: #1f3b64; }
-        .bg-glass-warning { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
-        .bg-glass-info { background: rgba(0, 123, 255, 0.1); color: #007bff; }
-        .bg-glass-success { background: rgba(67, 212, 119, 0.1); color: #43d477; }
+        .bg-glass-primary { background: rgba(31, 59, 100, 0.08); color: #1f3b64; }
+        .bg-glass-warning { background: rgba(255, 193, 7, 0.08); color: #ffc107; }
+        .bg-glass-info { background: rgba(0, 123, 255, 0.08); color: #007bff; }
+        .bg-glass-success { background: rgba(67, 212, 119, 0.08); color: #2ecc71; }
+        .bg-glass-danger { background: rgba(246, 59, 59, 0.08); color: #f63b3b; }
 
         .premium-table-container {
             background: #fff;
@@ -96,11 +106,11 @@
 
         {{-- Statistics --}}
         <div class="mt-25">
-            <div class="row">
-                <div class="col-6 col-md-3">
+            <div class="row" style="margin-left: -10px; margin-right: -10px;">
+                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px; flex: 0 0 20%; max-width: 20%;">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-primary">
-                            <i data-feather="box" width="24" height="24"></i>
+                            <i data-feather="box"></i>
                         </div>
                         <div>
                             <span class="stat-value">{{ $stats['total'] }}</span>
@@ -109,10 +119,10 @@
                     </div>
                 </div>
 
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px; flex: 0 0 20%; max-width: 20%;">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-warning">
-                            <i data-feather="clock" width="24" height="24"></i>
+                            <i data-feather="clock"></i>
                         </div>
                         <div>
                             <span class="stat-value">{{ $stats['pending'] }}</span>
@@ -121,10 +131,10 @@
                     </div>
                 </div>
 
-                <div class="col-6 col-md-3 mt-20 mt-md-0">
+                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px; flex: 0 0 20%; max-width: 20%;">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-info">
-                            <i data-feather="eye" width="24" height="24"></i>
+                            <i data-feather="eye"></i>
                         </div>
                         <div>
                             <span class="stat-value">{{ $stats['in_review'] }}</span>
@@ -133,14 +143,26 @@
                     </div>
                 </div>
 
-                <div class="col-6 col-md-3 mt-20 mt-md-0">
+                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px; flex: 0 0 20%; max-width: 20%;">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-success">
-                            <i data-feather="check-circle" width="24" height="24"></i>
+                            <i data-feather="check-circle" style="stroke-width: 3px;"></i>
                         </div>
                         <div>
                             <span class="stat-value">{{ $stats['approved'] }}</span>
-                            <span class="stat-label">Approved</span>
+                            <span class="stat-label">Complete</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px; flex: 0 0 20%; max-width: 20%;">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-danger">
+                            <i data-feather="x-circle" style="stroke-width: 3px;"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $stats['rejected'] }}</span>
+                            <span class="stat-label">Reject</span>
                         </div>
                     </div>
                 </div>
@@ -229,7 +251,7 @@
                                 <option value="all">{{ trans('public.all') }}</option>
                                 <option value="pending" {{ request()->get('status') === 'pending' ? 'selected' : '' }}>Pending</option>
                                 <option value="in_review" {{ request()->get('status') === 'in_review' ? 'selected' : '' }}>In Review</option>
-                                <option value="approved" {{ request()->get('status') === 'approved' ? 'selected' : '' }}>Approved</option>
+                                <option value="approved" {{ request()->get('status') === 'approved' ? 'selected' : '' }}>Complete</option>
                                 <option value="rejected" {{ request()->get('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
                             </select>
                             <div style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:#8c98a4;">
@@ -283,13 +305,13 @@
                                 </td>
                                 <td>
                                     @php
-                                        $badgeClass = 'bg-primary text-white';
-                                        if($request->status == 'pending') $badgeClass = 'bg-warning text-white';
-                                        elseif($request->status == 'approved' || $request->status == 'executed') $badgeClass = 'bg-success text-white';
-                                        elseif($request->status == 'rejected') $badgeClass = 'bg-danger text-white';
+                                        $badgeClass = 'bg-glass-primary';
+                                        if($request->status == 'pending') $badgeClass = 'bg-glass-warning';
+                                        elseif($request->status == 'approved' || $request->status == 'executed') $badgeClass = 'bg-glass-success';
+                                        elseif($request->status == 'rejected') $badgeClass = 'bg-glass-danger';
                                     @endphp
                                     <span class="status-badge {{ $badgeClass }}">
-                                        {{ ucfirst(str_replace('_', ' ', $request->status)) }}
+                                        {{ $request->status == 'approved' || $request->status == 'executed' ? 'Complete' : ucfirst(str_replace('_', ' ', $request->status)) }}
                                     </span>
                                 </td>
                                 <td>

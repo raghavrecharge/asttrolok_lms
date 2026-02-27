@@ -58,7 +58,78 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* Aggressive Summernote Light Mode & Icon Fix */
+        @font-face {
+            font-family: "summernote";
+            src: url("/assets/vendors/summernote/font/summernote.eot");
+            src: url("/assets/vendors/summernote/font/summernote.eot#iefix") format("embedded-opentype"),
+                 url("/assets/vendors/summernote/font/summernote.woff2") format("woff2"),
+                 url("/assets/vendors/summernote/font/summernote.woff") format("woff"),
+                 url("/assets/vendors/summernote/font/summernote.ttf") format("truetype");
+        }
+
+        .note-editor.note-frame {
+            border-radius: 16px !important; 
+            border: 1px solid #e5e7eb !important; 
+            overflow: hidden;
+            background-color: #ffffff !important;
+            color: #334155 !important;
+        }
+        
+        .note-editable {
+            background-color: #ffffff !important;
+            color: #1e293b !important;
+            min-height: 200px;
+        }
+
+        .note-toolbar { 
+            background: #f8fafc !important; 
+            border-bottom: 1px solid #eef2f7 !important; 
+            padding: 8px !important;
+        }
+
+        .note-btn {
+            background: #fff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            color: #475569 !important;
+            margin-right: 3px !important;
+            padding: 5px 9px !important;
+        }
+        
+        /* Force Summernote font for icons */
+        .note-btn [class^="note-icon-"], .note-btn [class*=" note-icon-"] {
+            font-family: "summernote" !important;
+            font-style: normal !important;
+            font-weight: normal !important;
+            text-decoration: inherit;
+        }
+        
+        .note-btn:hover { background: #f1f5f9 !important; }
+        .note-btn.active { background: #e2e8f0 !important; }
+        
+        .note-dropdown-menu {
+            background: #fff !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+        }
+        .btn-green {
+            background: linear-gradient(135deg, #43d477 0%, #2ecc71 100%) !important;
+            border: none !important;
+            color: #fff !important;
+            font-weight: 700 !important;
+            border-radius: 12px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 4px 14px rgba(67, 212, 119, 0.2) !important;
+        }
+        .btn-green:hover {
+            box-shadow: 0 6px 20px rgba(67, 212, 119, 0.3) !important;
+            transform: translateY(-2px) !important;
+            color: #fff !important;
+        }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 @endpush
 
 @push('scripts_bottom')
@@ -301,7 +372,7 @@
                             <input type="file" name="payment_screenshot" class="form-control-file" id="paymentScreenshot" disabled>
                             <div id="screenshotPreview" class="mt-10"></div>
                         </div>
-                    </div>
+                    </div>`
 
                     {{-- Free Course Grant --}}
                     <div class="scenario-field" data-scenario="free_course_grant">
@@ -432,7 +503,7 @@
                 </div>
 
                 <div class="mt-30 text-right">
-                    <button type="submit" id="supportSubmitBtn" class="btn btn-primary px-30">
+                    <button type="submit" id="supportSubmitBtn" class="btn btn-green px-30">
                         {{ trans('site.send_message') }}
                     </button>
                 </div>

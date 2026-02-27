@@ -131,7 +131,7 @@
             </li>
         @endif
 
-        <li class="sidenav-item {{ (request()->is('panel/webinars') or request()->is('panel/webinars/*')) ? 'sidenav-item-active' : '' }}">
+        <li class="sidenav-item {{ (request()->is('panel/webinars') or request()->is('panel/webinars/*') or request()->is('panel/upe/purchases*') or request()->is('panel/upe/installments*')) ? 'sidenav-item-active' : '' }}">
             <a class="d-flex align-items-center" data-toggle="collapse" href="#webinarCollapse" role="button" aria-expanded="false" aria-controls="webinarCollapse">
                 <span class="sidenav-item-icon mr-10">
                     @include('web.default.panel.includes.sidebar_icons.webinars')
@@ -139,7 +139,7 @@
                 <span class="font-14 text-dark-blue font-weight-500">{{ trans('panel.webinars') }}</span>
             </a>
 
-            <div class="collapse {{ (request()->is('panel/webinars') or request()->is('panel/webinars/*')) ? 'show' : '' }}" id="webinarCollapse">
+            <div class="collapse {{ (request()->is('panel/webinars') or request()->is('panel/webinars/*') or request()->is('panel/upe/purchases*') or request()->is('panel/upe/installments*')) ? 'show' : '' }}" id="webinarCollapse">
                 <ul class="sidenav-item-collapse">
                     @if($authUser->isOrganization() || $authUser->isTeacher())
                         <li class="mt-5 {{ (request()->is('panel/webinars/new')) ? 'active' : '' }}">
@@ -396,7 +396,7 @@
             </li>
         @endif
 
-        <li class="sidenav-item {{ (request()->is('panel/financial') or request()->is('panel/financial/*') or request()->is('panel/upe/*')) ? 'sidenav-item-active' : '' }}">
+        <li class="sidenav-item {{ (request()->is('panel/financial') or request()->is('panel/financial/*')) ? 'sidenav-item-active' : '' }}">
             <a class="d-flex align-items-center" data-toggle="collapse" href="#financialCollapse" role="button" aria-expanded="false" aria-controls="financialCollapse">
                 <span class="sidenav-item-icon mr-10">
                     @include('web.default.panel.includes.sidebar_icons.financial')
@@ -404,7 +404,7 @@
                 <span class="font-14 text-dark-blue font-weight-500">{{ trans('panel.financial') }}</span>
             </a>
 
-            <div class="collapse {{ (request()->is('panel/financial') or request()->is('panel/financial/*') or request()->is('panel/upe/*')) ? 'show' : '' }}" id="financialCollapse">
+            <div class="collapse {{ (request()->is('panel/financial') or request()->is('panel/financial/*')) ? 'show' : '' }}" id="financialCollapse">
                 <ul class="sidenav-item-collapse">
 
                     @if($authUser->isOrganization() || $authUser->isTeacher())
@@ -422,15 +422,11 @@
                             <a href="{{ route('panelRegistrationPackagesLists') }}">{{ trans('update.registration_packages') }}</a>
                         </li>
                     @endif
-
-                    <li class="mt-5 {{ (request()->is('panel/upe/requests*')) ? 'active' : '' }}">
-                        <a href="/panel/upe/requests">My Requests</a>
-                    </li>
                 </ul>
             </div>
         </li>
 
-        <li class="sidenav-item {{ (request()->is('panel/support') or request()->is('panel/support/*')) ? 'sidenav-item-active' : '' }}">
+        <li class="sidenav-item {{ (request()->is('panel/support') or request()->is('panel/support/*') or request()->is('panel/upe/requests*')) ? 'sidenav-item-active' : '' }}">
             <a class="d-flex align-items-center" data-toggle="collapse" href="#supportCollapse" role="button" aria-expanded="false" aria-controls="supportCollapse">
                 <span class="sidenav-item-icon assign-fill mr-10">
                     @include('web.default.panel.includes.sidebar_icons.support')
@@ -438,7 +434,7 @@
                 <span class="font-14 text-dark-blue font-weight-500">{{ trans('panel.support') }}</span>
             </a>
 
-            <div class="collapse {{ (request()->is('panel/support') or request()->is('panel/support/*')) ? 'show' : '' }}" id="supportCollapse">
+            <div class="collapse {{ (request()->is('panel/support') or request()->is('panel/support/*') or request()->is('panel/upe/requests*')) ? 'show' : '' }}" id="supportCollapse">
                 <ul class="sidenav-item-collapse">
                     <!-- <li class="mt-5 {{ (request()->is('panel/support/new')) ? 'active' : '' }}">
                         <a href="/panel/support/new">{{ trans('public.new') }}</a>
@@ -449,12 +445,9 @@
                      <li class="mt-5 {{ (request()->is('panel/support/newsuportforasttrolok')) ? 'active' : '' }}">
                         <a href="/panel/support/newsuportforasttrolok">Support List</a>
                     </li>
-                    <!-- <li class="mt-5 {{ (request()->is('panel/support')) ? 'active' : '' }}">
-                        <a href="/panel/support">{{ trans('panel.classes_support') }}</a>
+                     <li class="mt-5 {{ (request()->is('panel/upe/requests*')) ? 'active' : '' }}">
+                        <a href="/panel/upe/requests">My Requests</a>
                     </li>
-                    <li class="mt-5 {{ (request()->is('panel/support/tickets')) ? 'active' : '' }}">
-                        <a href="/panel/support/tickets">{{ trans('panel.support_tickets') }}</a>
-                    </li> -->
                 </ul>
             </div>
         </li>

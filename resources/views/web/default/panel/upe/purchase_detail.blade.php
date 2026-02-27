@@ -427,7 +427,7 @@
         @endif
 
         {{-- Action Forms --}}
-        @if(in_array($sale->status, ['active', 'partially_refunded']))
+        <!-- @if(in_array($sale->status, ['active', 'partially_refunded']))
             <section class="mt-30">
                 <h2 class="section-title">Actions</h2>
                 <div class="row mt-15">
@@ -522,10 +522,10 @@
                     </div>
                 </div>
             </section>
-        @endif
+        @endif -->
 
         <div class="mt-30 pb-30">
-            <a href="/panel/upe/my-purchases" class="btn btn-outline-secondary px-25" style="border-radius: 10px;">
+            <a href="/panel/upe/purchases" class="btn btn-outline-secondary px-25" style="border-radius: 10px;">
                 <i data-feather="arrow-left" width="14" class="mr-5"></i> Back to My Purchases
             </a>
         </div>
