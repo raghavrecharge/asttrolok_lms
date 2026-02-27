@@ -132,6 +132,10 @@
                                         <i class="fa fa-play-circle"></i> Learning Page
                                     </a>
                                 @endif
+                            @elseif($sale->product && $sale->product->product_type === 'subscription' && $sale->item)
+                                <a href="{{ $sale->item->getLearningPageUrl() }}" target="_blank" class="btn btn-sm btn-success mr-10">
+                                    <i class="fa fa-play-circle"></i> Learning Page
+                                </a>
                             @endif
                         </div>
                     </div>

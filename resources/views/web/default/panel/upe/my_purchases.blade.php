@@ -479,6 +479,10 @@
                                         <i data-feather="play-circle" width="12" height="12"></i> Learn
                                     </a>
                                 @endif
+                            @elseif($item && $sale->product && $sale->product->product_type === 'subscription')
+                                <a href="{{ $item->getLearningPageUrl() }}" target="_blank" class="btn-upe-learn">
+                                    <i data-feather="play-circle" width="12" height="12"></i> Learn
+                                </a>
                             @endif
                         </div>
                     </div>

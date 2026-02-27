@@ -46,7 +46,7 @@ class UpeController extends Controller
                 ->whereHas('product', function ($q) use ($request) {
                     $type = $request->get('type', 'course');
                     if ($type === 'course') {
-                        $q->whereIn('product_type', ['webinar', 'course_video', 'course_live', 'bundle']);
+                        $q->whereIn('product_type', ['webinar', 'course_video', 'course_live', 'bundle', 'subscription']);
                     } elseif ($type === 'meeting') {
                         $q->where('product_type', 'meeting');
                     }
@@ -67,11 +67,13 @@ class UpeController extends Controller
 
         $sales = $query->orderByDesc('id')->paginate(15);
 
-        // Batch-load webinar/bundle items to avoid N+1
-        $webinarIds = $sales->filter(fn($s) => $s->product && $s->product->product_type !== 'bundle')->pluck('product.external_id')->filter();
+        // Batch-load webinar/bundle/subscription items to avoid N+1
+        $webinarIds = $sales->filter(fn($s) => $s->product && !in_array($s->product->product_type, ['bundle', 'subscription']))->pluck('product.external_id')->filter();
         $bundleIds = $sales->filter(fn($s) => $s->product && $s->product->product_type === 'bundle')->pluck('product.external_id')->filter();
+        $subscriptionIds = $sales->filter(fn($s) => $s->product && $s->product->product_type === 'subscription')->pluck('product.external_id')->filter();
         $webinars = \App\Models\Webinar::whereIn('id', $webinarIds)->with(['teacher', 'category'])->get()->keyBy('id');
         $bundles = \App\Models\Bundle::whereIn('id', $bundleIds)->with(['teacher', 'category'])->get()->keyBy('id');
+        $subscriptions = \App\Models\Subscription::whereIn('id', $subscriptionIds)->get()->keyBy('id');
 
         $accessResults = [];
         $balances = [];
@@ -80,10 +82,12 @@ class UpeController extends Controller
             $accessResults[$sale->id] = $access->computeAccess($user->id, $sale->product_id);
             $balances[$sale->id] = $ledger->balance($sale->id);
 
-            // Attach webinar/bundle item
+            // Attach webinar/bundle/subscription item
             if ($sale->product) {
                 if ($sale->product->product_type === 'bundle') {
                     $sale->item = $bundles->get($sale->product->external_id);
+                } elseif ($sale->product->product_type === 'subscription') {
+                    $sale->item = $subscriptions->get($sale->product->external_id);
                 } else {
                     $sale->item = $webinars->get($sale->product->external_id);
                 }

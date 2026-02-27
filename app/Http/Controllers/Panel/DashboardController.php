@@ -167,7 +167,23 @@ class DashboardController extends Controller
                     });
                 });
 
+            // Deduplicate: for subscriptions, only keep the latest sale per subscription_id
+            // to avoid showing 3 entries (free + autopay + one-time) for the same subscription
+            $allMatchingIds = deepClone($query)->pluck('id', 'id');
+            $subscriptionSales = Sale::whereIn('id', $allMatchingIds)
+                ->whereNotNull('subscription_id')
+                ->where('type', 'subscription')
+                ->orderByDesc('id')
+                ->get()
+                ->groupBy('subscription_id');
+            $duplicateIds = collect();
+            foreach ($subscriptionSales as $subId => $group) {
+                // Keep only the latest sale (first after orderByDesc), exclude the rest
+                $duplicateIds = $duplicateIds->merge($group->slice(1)->pluck('id'));
+            }
+
             $sales = deepClone($query)
+                ->when($duplicateIds->isNotEmpty(), fn($q) => $q->whereNotIn('id', $duplicateIds))
                 ->with([
                     'webinar' => function ($query) {
                         $query->with([
