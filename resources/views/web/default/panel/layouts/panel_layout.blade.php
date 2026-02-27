@@ -39,7 +39,6 @@
     .header-logo {
         max-height: 50px;
     }
-    
     @media (max-width: 768px) {
         .header-logo {
             max-height: 40px;
@@ -48,6 +47,52 @@
             width: 100%;
             text-align: center;
             margin-bottom: 10px;
+        }
+    }
+
+    /* ── Panel mobile header ── */
+    .panel-mobile-topbar {
+        display: none;
+    }
+    @media (max-width: 991px) {
+        /* Hide the shared green top-nav and navbar on mobile */
+        #panel_app > .shared-header-wrapper {
+            display: none !important;
+        }
+        /* Show the clean mobile header */
+        .panel-mobile-topbar {
+            display: flex !important;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            position: fixed !important; /* Make it sticky */
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1100; /* Higher than sidebar overlay if needed */
+        }
+        .panel-mobile-topbar__logo img {
+            height: 35px; /* Slightly larger */
+            width: auto;
+        }
+        .panel-mobile-topbar__hamburger {
+            background: none;
+            border: none;
+            padding: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Reduce the top gap on mobile */
+        .panel-content {
+            padding-top: 70px !important; /* Adjust based on sticky header height */
+        }
+        #panel_app .container.mt-30 {
+            margin-top: 0 !important;
         }
     }
 </style>
@@ -65,10 +110,42 @@
 @endphp
 
 <div id="panel_app">
-    <div>
+
+    {{-- Clean mobile header for panel (visible only on mobile) --}}
+    <div class="panel-mobile-topbar">
+        <a href="/" class="panel-mobile-topbar__logo">
+            <img src="/assets/design_1/img/home_mobile_image/public/asttroloklogo11171-ou4-200h.png" alt="logo">
+        </a>
+        <button class="panel-mobile-topbar__hamburger" id="panelMobileHamburger" aria-label="Open menu">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                <line x1="3" y1="5.5" x2="21" y2="5.5" stroke="#171347" stroke-width="2.2" stroke-linecap="round"/>
+                <line x1="3" y1="12" x2="21" y2="12" stroke="#171347" stroke-width="2.2" stroke-linecap="round"/>
+                <line x1="3" y1="18.5" x2="21" y2="18.5" stroke="#171347" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+        </button>
+    </div>
+
+    {{-- Shared header (visible on desktop, hidden on mobile via CSS above) --}}
+    <div class="shared-header-wrapper">
         @include('web.default2.includes.top_nav')
         @include('web.default2.includes.navbar')
     </div>
+
+    {{-- Hook mobile hamburger to panel sidebar --}}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var btn = document.getElementById('panelMobileHamburger');
+        var sidebar = document.getElementById('panelSidebar');
+        var overlay = document.getElementById('mobileSidebarOverlay');
+        if (btn && sidebar) {
+            btn.addEventListener('click', function() {
+                sidebar.classList.add('mobile-open');
+                if (overlay) overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        }
+    });
+    </script>
        @if($authUser->isUser())
 <div class="container mt-30">
     

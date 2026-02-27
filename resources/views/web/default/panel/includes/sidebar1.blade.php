@@ -5,43 +5,87 @@
 
 <style>
     .panel-sidebar {
-    position: relative;
-    top: 35px;
-    left: 0;
-    bottom: 0;
-    width: 254px;
-    height: 100%;
-    box-shadow: 18px 0 35px 0 rgba(0, 0, 0, 0.02);
-    background-color: #ffffff;
-}
-@media (min-width: 1200px){
-.container-xl, .container-lg, .container-md, .container-sm, .container {
-    max-width: 1265px !important;
-}
-}
-   .panel-sidebar {
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
+        position: relative;
+        top: 35px;
+        left: 0;
+        bottom: 0;
+        width: 254px;
+        height: 100%;
+        box-shadow: 18px 0 35px 0 rgba(0, 0, 0, 0.02);
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    @media (min-width: 1200px) {
+        .container-xl, .container-lg, .container-md, .container-sm, .container {
+            max-width: 1265px !important;
         }
-       .pratul.sticky {
-    position: fixed;
-    height:100%;
-    border-bottom: 1px solid #ececec;
-    background-color: #ffffff;
-}
-.navbar.sticky {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    border-bottom: 1px solid #ececec;
-}
-.panel-sidebar .sidebar-menu {
-    height: calc(100% - 60px) !important;
-    overflow: auto;
-    padding-bottom: 35px;
-}
+    }
+    .pratul.sticky {
+        position: fixed;
+        height: 100%;
+        border-bottom: 1px solid #ececec;
+        background-color: #ffffff;
+    }
+    .navbar.sticky {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        border-bottom: 1px solid #ececec;
+    }
+    .panel-sidebar .sidebar-menu {
+        height: calc(100% - 60px) !important;
+        overflow: auto;
+        padding-bottom: 35px;
+    }
+
+    /* ── Mobile Sidebar Drawer (overrides panel.css) ── */
+    @media (max-width: 991px) {
+        .panel-sidebar {
+            position: fixed !important;
+            top: 0 !important;
+            left: -280px !important;
+            width: 280px !important;
+            height: 100vh !important;
+            z-index: 9999 !important;
+            background: #ffffff !important;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.15) !important;
+            transition: left 0.32s cubic-bezier(0.4,0,0.2,1) !important;
+            overflow-y: auto !important;
+            padding: 20px 15px 0 !important;
+        }
+        .panel-sidebar.mobile-open {
+            left: 0 !important;
+        }
+        .pratul.sticky {
+            position: relative !important;
+            height: auto !important;
+        }
+        /* Hide the X close button from panel.css */
+        .panel-sidebar .panel-sidebar-close {
+            display: none !important;
+        }
+        /* Overlay backdrop */
+        .mobile-sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 9998;
+            backdrop-filter: blur(2px);
+        }
+        .mobile-sidebar-overlay.active {
+            display: block;
+        }
+    }
+
+
 </style>
+
+{{-- Mobile sidebar overlay backdrop --}}
+<div class="mobile-sidebar-overlay" id="mobileSidebarOverlay"></div>
+
 <div class="panel-sidebar" id="panelSidebar">
      <div class="pratul sticky pt-5 pb-25 pl-25">
     <button class="btn-transparent panel-sidebar-close sidebarNavToggle">
@@ -636,3 +680,47 @@
 
     </div>
 </div>
+
+<script>
+(function() {
+    var sidebar   = document.getElementById('panelSidebar');
+    var overlay   = document.getElementById('mobileSidebarOverlay');
+    var toggleBtn = document.getElementById('navHamburgerBtn');
+    var closeBtns = document.querySelectorAll('.sidebarNavToggle');
+
+    function openSidebar() {
+        if (sidebar)  sidebar.classList.add('mobile-open');
+        if (overlay)  overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+        if (sidebar)  sidebar.classList.remove('mobile-open');
+        if (overlay)  overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', openSidebar);
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', closeSidebar);
+    }
+
+    closeBtns.forEach(function(btn) {
+        btn.addEventListener('click', closeSidebar);
+    });
+
+    // Close on link click inside sidebar (mobile)
+    if (sidebar) {
+        sidebar.querySelectorAll('a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth < 992) {
+                    closeSidebar();
+                }
+            });
+        });
+    }
+})();
+</script>

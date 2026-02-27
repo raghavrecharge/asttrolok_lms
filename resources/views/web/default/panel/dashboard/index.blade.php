@@ -1097,7 +1097,7 @@
             <div class="db-card">
                 <div class="db-card-header">
                     <h3 class="db-card-title">Installments</h3>
-                    <a href="/panel/financial/installments" class="db-card-link">Details</a>
+                    <a href="/panel/upe/installments" class="db-card-link">Details</a>
                 </div>
 
                 <div class="db-installment-stats">
@@ -1137,7 +1137,7 @@
             <div class="db-card">
                 <div class="db-card-header">
                     <h3 class="db-card-title">Installments</h3>
-                    <a href="/panel/financial/installments" class="db-card-link">Details</a>
+                    <a href="/panel/upe/installments" class="db-card-link">Details</a>
                 </div>
                 <div class="db-installment-stats">
                     <div class="db-installment-pill">
