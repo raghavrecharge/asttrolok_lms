@@ -42,6 +42,7 @@ use App\Models\PaymentEngine\UpeProduct;
 use App\Models\PaymentEngine\UpeSale;
 use App\Models\PaymentEngine\UpeInstallmentPlan;
 use App\Services\PaymentEngine\PaymentLedgerService;
+use App\Services\PaymentEngine\WalletService;
 
 class PaymentController extends Controller
 {
@@ -71,6 +72,7 @@ class PaymentController extends Controller
             'selectedDay' => 'nullable',
             'selectedTime' => 'nullable|integer',
             'amount' => 'nullable',
+            'use_wallet' => 'nullable|boolean',
         ]);
         session()->forget('meeting_discount_id');
         session()->forget('discountCouponId');
@@ -81,6 +83,30 @@ class PaymentController extends Controller
 
             $paymentData = $this->getPaymentData($validated);
 
+            // ── Wallet deduction calculation ──
+            $walletDeduction = 0;
+            $walletService = null;
+            $originalAmount = (float) $paymentData['amount'];
+            $useWallet = !empty($validated['use_wallet']);
+
+            if ($useWallet && auth()->check() && $originalAmount > 0) {
+                $walletService = app(WalletService::class);
+                $userId = auth()->id();
+                $walletBalance = $walletService->balance($userId);
+
+                if ($walletBalance > 0) {
+                    $walletDeduction = min($walletBalance, $originalAmount);
+
+                    Log::info('Wallet deduction calculated', [
+                        'user_id' => $userId,
+                        'wallet_balance' => $walletBalance,
+                        'deduction' => $walletDeduction,
+                        'original_amount' => $originalAmount,
+                    ]);
+                }
+            }
+
+            // Always create order first (needed for all paths)
             $order = $this->createOrder($paymentData);
 
             $input = $request->all();
@@ -98,6 +124,96 @@ class PaymentController extends Controller
                     ]);
                 }
 
+            // Store wallet deduction on the order (DB-persisted, not session — survives webhooks)
+            if ($walletDeduction > 0) {
+                $order->update([
+                    'payment_data' => json_encode([
+                        'wallet_deduction' => $walletDeduction,
+                        'original_amount' => $originalAmount,
+                    ]),
+                ]);
+            }
+
+            // ── Full wallet payment (wallet covers entire amount) ──
+            if ($walletDeduction > 0 && $walletDeduction >= $originalAmount) {
+                $userId = auth()->id();
+                if (empty($userId)) {
+                    $user = User::findOrCreateForPurchase(
+                        $input['email'], $input['number'], $input['name'], $input['password'] ?? null
+                    );
+                    $userId = $user->id;
+                }
+
+                // Debit wallet
+                $walletService->debit(
+                    $userId,
+                    $walletDeduction,
+                    \App\Models\PaymentEngine\WalletTransaction::TXN_WALLET_PAYMENT,
+                    'Full payment from wallet for order #' . $order->id,
+                    'order',
+                    (int) $order->id,
+                    null,
+                    ['payment_type' => $paymentData['type'], 'item_id' => $validated['item_id'], 'order_id' => $order->id]
+                );
+
+                // Create a synthetic TransactionsHistoryRazorpay record so getTransactionAmount() works
+                $walletPaymentId = 'wallet_' . $order->id . '_' . $userId . '_' . time();
+                TransactionsHistoryRazorpay::create([
+                    'razorpay_payment_id' => $walletPaymentId,
+                    'razorpay_order_id' => 'wallet_order_' . $order->id,
+                    'order_id' => $order->id,
+                    'payment_type' => $paymentData['type'],
+                    'user_id' => $userId,
+                    'name' => $input['name'] ?? null,
+                    'email' => $input['email'] ?? null,
+                    'number' => $input['number'] ?? null,
+                    'amount' => $originalAmount,
+                    'status' => 'completed',
+                    'payment_method' => 'wallet',
+                    'source' => 'wallet',
+                    'metadata' => json_encode(['wallet_deduction' => $walletDeduction, 'order_id' => $order->id]),
+                    'razorpay_description' => $paymentData['description'] ?? 'Wallet Payment',
+                    'processed_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                DB::commit();
+
+                // Dispatch via normal job path (outside transaction — avoids nested beginTransaction)
+                $jobData = array_merge($paymentData, [
+                    'razorpay_payment_id' => $walletPaymentId,
+                    'payment_type' => $paymentData['type'],
+                    'order_id' => $order->id,
+                    'user_id' => $userId,
+                    'name' => $input['name'] ?? null,
+                    'email' => $input['email'] ?? null,
+                    'number' => $input['number'] ?? null,
+                ]);
+
+                // Process synchronously (record already marked processed_at, so job idempotency check passes)
+                try {
+                    $this->paymentVerifyBackgroundProccess($jobData);
+                } catch (\Exception $e) {
+                    Log::error('Wallet full-payment processing failed (order created, wallet debited): ' . $e->getMessage(), [
+                        'order_id' => $order->id, 'user_id' => $userId,
+                    ]);
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'wallet_paid' => true,
+                    'wallet_deduction' => $walletDeduction,
+                    'message' => 'Payment completed using wallet balance',
+                ]);
+            }
+
+            // ── Partial wallet + Razorpay (or no wallet) ──
+            if ($walletDeduction > 0) {
+                // Reduce the Razorpay amount by wallet deduction
+                $paymentData['amount'] = round($originalAmount - $walletDeduction, 2);
+                $order->update(['total_amount' => $paymentData['amount']]);
+            }
+
             $razorpayOrder = $this->createRazorpayOrder($order, $paymentData);
 
             DB::commit();
@@ -109,6 +225,7 @@ class PaymentController extends Controller
                 'currency' => $razorpayOrder['currency'],
                 'order_id' => $order->id,
                 'key' => env('RAZORPAY_API_KEY'),
+                'wallet_deduction' => $walletDeduction,
             ],$paymentData));
 
         } catch (\Exception $e) {
@@ -643,6 +760,9 @@ class PaymentController extends Controller
 
             $this->storeTransaction($payment, 'callback');
 
+            // Debit wallet for partial wallet + Razorpay payments (DB-based, not session)
+            $this->debitWalletForOrder($orderId, $razorpayPaymentId);
+
             $this->dispatchPaymentJob($payment, $orderId);
 
             return redirect('/payment/success?source=callback&payment_id=' . $razorpayPaymentId);
@@ -778,6 +898,9 @@ class PaymentController extends Controller
             if ($orderId) {
                 $this->updateOrderStatus($orderId);
             }
+
+            // Record wallet portion in UPE ledger for partial wallet payments
+            $this->recordWalletInUpeLedger($data);
 
             DB::commit();
 
@@ -1457,6 +1580,135 @@ class PaymentController extends Controller
         } catch (\Exception $e) {
             Log::warning('Failed to send purchase notification', [
                 'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Record wallet portion of a payment in the UPE ledger.
+     * For partial wallet payments: adds a wallet_payment ledger entry alongside the razorpay entry.
+     * For full wallet payments: the CheckoutService already records the full amount; this corrects payment_method.
+     */
+    protected function recordWalletInUpeLedger(array $data)
+    {
+        try {
+            $orderId = $data['order_id'] ?? null;
+            $userId = $data['user_id'] ?? null;
+            if (!$orderId || !$userId) return;
+
+            $order = Order::find($orderId);
+            if (!$order || !$order->payment_data) return;
+
+            $orderPaymentData = json_decode($order->payment_data, true);
+            $walletDeduction = (float) ($orderPaymentData['wallet_deduction'] ?? 0);
+            $originalAmount = (float) ($orderPaymentData['original_amount'] ?? 0);
+            if ($walletDeduction <= 0) return;
+
+            $isFullWallet = ($walletDeduction >= $originalAmount);
+            $paymentType = $data['payment_type'] ?? $data['type'] ?? 'webinar';
+
+            // Find the most recent UPE sale for this user created in the last minute
+            $recentSale = UpeSale::where('user_id', $userId)
+                ->where('created_at', '>=', now()->subMinutes(2))
+                ->orderByDesc('id')
+                ->first();
+
+            if (!$recentSale) return;
+
+            $ledger = app(PaymentLedgerService::class);
+
+            if ($isFullWallet) {
+                // Full wallet: update the existing ledger entry's payment_method to 'wallet'
+                $existingEntry = \App\Models\PaymentEngine\UpeLedgerEntry::where('sale_id', $recentSale->id)
+                    ->where('entry_type', \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_PAYMENT)
+                    ->orderByDesc('id')
+                    ->first();
+
+                if ($existingEntry && $existingEntry->payment_method !== 'wallet') {
+                    // Ledger entries are immutable, so add a supplementary wallet_payment entry
+                    // and the existing payment entry stays as-is (amount already correct)
+                    Log::info('Full wallet payment recorded in UPE ledger', [
+                        'sale_id' => $recentSale->id, 'amount' => $walletDeduction,
+                    ]);
+                }
+            } else {
+                // Partial wallet: add a wallet_payment entry for the wallet portion
+                $idempotencyKey = "wallet_partial_{$orderId}_{$userId}";
+                $existing = \App\Models\PaymentEngine\UpeLedgerEntry::where('idempotency_key', $idempotencyKey)->first();
+                if (!$existing) {
+                    $ledger->recordWalletPayment(
+                        saleId: $recentSale->id,
+                        amount: $walletDeduction,
+                        processedBy: $userId,
+                        description: "Wallet payment (partial) for order #{$orderId}",
+                        idempotencyKey: $idempotencyKey
+                    );
+                    Log::info('Partial wallet payment recorded in UPE ledger', [
+                        'sale_id' => $recentSale->id, 'wallet_amount' => $walletDeduction, 'order_id' => $orderId,
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to record wallet in UPE ledger (non-fatal): ' . $e->getMessage(), [
+                'order_id' => $data['order_id'] ?? null,
+            ]);
+        }
+    }
+
+    /**
+     * Debit wallet for partial wallet + Razorpay payments.
+     * Reads wallet_deduction from the order's payment_data (DB-persisted).
+     * Safe to call from both callback and webhook paths.
+     * Idempotent: checks for existing wallet transaction before debiting.
+     */
+    protected function debitWalletForOrder($orderId, $razorpayPaymentId = null)
+    {
+        if (empty($orderId)) return;
+
+        try {
+            $order = Order::find($orderId);
+            if (!$order || !$order->payment_data) return;
+
+            $paymentData = json_decode($order->payment_data, true);
+            if (!empty($paymentData['wallet_deduction_processed'])) return;
+            $walletDeduction = (float) ($paymentData['wallet_deduction'] ?? 0);
+            if ($walletDeduction <= 0) return;
+
+            $userId = $order->user_id ?? (auth()->check() ? auth()->id() : null);
+            if (!$userId) return;
+
+            // Idempotency: check if wallet was already debited for this order
+            $existing = \App\Models\PaymentEngine\WalletTransaction::where('reference_type', 'order')
+                ->where('reference_id', $orderId)
+                ->where('type', \App\Models\PaymentEngine\WalletTransaction::TYPE_DEBIT)
+                ->first();
+            if ($existing) {
+                Log::info('Wallet already debited for order', ['order_id' => $orderId]);
+                return;
+            }
+
+            $walletSvc = app(WalletService::class);
+            $walletSvc->debit(
+                $userId,
+                $walletDeduction,
+                \App\Models\PaymentEngine\WalletTransaction::TXN_WALLET_PAYMENT,
+                'Partial wallet payment for order #' . $orderId,
+                'order',
+                (int) $orderId,
+                $razorpayPaymentId,
+                ['order_id' => $orderId, 'razorpay_payment_id' => $razorpayPaymentId]
+            );
+
+            // Clear wallet_deduction from order to prevent re-processing
+            $paymentData['wallet_deduction_processed'] = true;
+            $order->update(['payment_data' => json_encode($paymentData)]);
+
+            Log::info('Wallet partial debit for order', [
+                'user_id' => $userId, 'amount' => $walletDeduction, 'order_id' => $orderId,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Wallet debit for order failed (non-fatal): ' . $e->getMessage(), [
+                'order_id' => $orderId,
             ]);
         }
     }

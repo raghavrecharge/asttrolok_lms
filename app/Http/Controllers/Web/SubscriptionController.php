@@ -1157,9 +1157,16 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
                 // Already enrolled → show PAID options (one-time + AutoPay)
                 $itemPrice = $subscription->getPrice();
 
+                // Get wallet balance for logged-in users
+                $walletBalance = 0;
+                if (auth()->check()) {
+                    $walletBalance = app(\App\Services\PaymentEngine\WalletService::class)->balance(auth()->id());
+                }
+
                     $data = [
                         'subscription' => $subscription,
                         'total' => $itemPrice,
+                        'walletBalance' => $walletBalance,
                     ];
 
                     $agent = new Agent();

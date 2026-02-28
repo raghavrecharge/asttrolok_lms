@@ -108,6 +108,25 @@ class PaymentLedgerService
         );
     }
 
+    public function recordWalletPayment(
+        int $saleId,
+        float $amount,
+        ?int $processedBy = null,
+        ?string $description = null,
+        ?string $idempotencyKey = null
+    ): UpeLedgerEntry {
+        return $this->append(
+            saleId: $saleId,
+            entryType: UpeLedgerEntry::TYPE_WALLET_PAYMENT,
+            direction: UpeLedgerEntry::DIR_CREDIT,
+            amount: $amount,
+            paymentMethod: 'wallet',
+            description: $description ?? "Wallet payment of {$amount}",
+            processedBy: $processedBy,
+            idempotencyKey: $idempotencyKey ?? "wallet_payment_{$saleId}_" . time()
+        );
+    }
+
     public function recordRefund(
         int $saleId,
         float $amount,

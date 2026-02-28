@@ -603,29 +603,58 @@ class SupportRequestService
             'access_to_purchased_item' => 0,
         ]);
 
+        // Calculate actual amount paid (total_amount - discount)
+        $actualAmountPaid = $sale->total_amount - ($sale->discount ?? 0);
+        
+        // Use verified amount if provided, otherwise use actual amount paid
+        $refundAmount = $request->verified_amount ?? $actualAmountPaid;
+
         Accounting::create([
             'user_id' => $sale->buyer_id,
-            'amount' => -1 * abs($sale->amount),
+            'amount' => -1 * abs($refundAmount),
             'type' => 'deduction',
             'type_account' => Accounting::$asset,
             'description' => "Refund: Support #{$request->ticket_number} - Course #{$request->webinar_id}",
             'created_at' => time(),
         ]);
 
-        $refundAmount = $request->verified_amount ?? $sale->amount;
-
+        // Create refund record
         Refund::create([
             'user_id' => $sale->buyer_id,
             'sale_id' => $sale->id,
             'support_request_id' => $request->id,
             'refund_amount' => $refundAmount,
-            'refund_method' => $data['refund_method'] ?? 'bank_transfer',
+            'refund_method' => $data['refund_method'] ?? 'wallet_credit', // Default to wallet credit
             'bank_account_number' => $data['bank_account_number'] ?? null,
             'ifsc_code' => $data['ifsc_code'] ?? null,
             'account_holder_name' => $data['account_holder_name'] ?? null,
             'processed_by' => $user->id,
-            'status' => 'pending',
+            'status' => 'processed', // Mark as processed immediately for wallet credits
         ]);
+
+        // Credit refund to new wallet system
+        try {
+            $walletService = app(\App\Services\PaymentEngine\WalletService::class);
+            $walletService->refundToWallet(
+                $sale->buyer_id,
+                $refundAmount,
+                $sale->id,
+                "Refund for support request #{$request->ticket_number}"
+            );
+            Log::info('SupportRequestService: Refund credited to wallet', [
+                'user_id' => $sale->buyer_id,
+                'amount' => $refundAmount,
+                'sale_id' => $sale->id,
+                'support_request_id' => $request->id,
+            ]);
+        } catch (\Exception $walletErr) {
+            Log::error('SupportRequestService: Failed to credit refund to wallet', [
+                'user_id' => $sale->buyer_id,
+                'amount' => $refundAmount,
+                'error' => $walletErr->getMessage(),
+            ]);
+            // Don't throw - continue with legacy refund process
+        }
 
         try {
             $accessControl = WebinarAccessControl::where('user_id', $request->user_id)
@@ -655,7 +684,9 @@ class SupportRequestService
             'support_request_id' => $request->id,
             'sale_id' => $sale->id,
             'user_id' => $request->user_id,
+            'actual_amount_paid' => $actualAmountPaid,
             'refund_amount' => $refundAmount,
+            'refund_method' => $data['refund_method'] ?? 'wallet_credit',
         ]);
     }
 
@@ -776,6 +807,11 @@ class SupportRequestService
             throw new \RuntimeException('User already has access to the correct course.');
         }
 
+        // Calculate price difference
+        $wrongCoursePrice = $oldSale->total_amount - ($oldSale->discount ?? 0);
+        $correctCoursePrice = $correctCourse->getPrice();
+        $priceDifference = $wrongCoursePrice - $correctCoursePrice;
+
         $oldSale->update([
             'refund_at' => time(),
             'access_to_purchased_item' => 0,
@@ -783,21 +819,22 @@ class SupportRequestService
 
         Accounting::create([
             'user_id' => $oldSale->buyer_id,
-            'amount' => -1 * abs($oldSale->amount),
+            'amount' => -1 * abs($wrongCoursePrice),
             'type' => 'deduction',
             'type_account' => Accounting::$asset,
             'description' => "Wrong course reversal: Course #{$wrongCourseId} - Support #{$request->ticket_number}",
             'created_at' => time(),
         ]);
 
+        // Create new sale with correct course price
         $newSale = Sale::create([
             'buyer_id' => $request->user_id,
             'seller_id' => $correctCourse->creator_id,
             'webinar_id' => $correctCourseId,
             'type' => Sale::$webinar,
             'payment_method' => $oldSale->payment_method,
-            'amount' => $oldSale->amount,
-            'total_amount' => $oldSale->total_amount,
+            'amount' => $correctCoursePrice,
+            'total_amount' => $correctCoursePrice,
             'access_to_purchased_item' => 1,
             'support_request_id' => $request->id,
             'granted_by_admin_id' => $user->id,
@@ -806,12 +843,52 @@ class SupportRequestService
 
         Accounting::create([
             'user_id' => $request->user_id,
-            'amount' => $oldSale->amount,
+            'amount' => $correctCoursePrice,
             'type' => Accounting::$addiction,
             'type_account' => Accounting::$asset,
             'description' => "Wrong course correction: Course #{$correctCourseId} - Support #{$request->ticket_number}",
             'created_at' => time(),
         ]);
+
+        // Credit price difference to wallet if correct course is cheaper
+        if ($priceDifference > 0.01) { // More than 1 paisa difference
+            try {
+                $walletService = app(\App\Services\PaymentEngine\WalletService::class);
+                $walletService->credit(
+                    $request->user_id,
+                    $priceDifference,
+                    \App\Models\PaymentEngine\WalletTransaction::TXN_COURSE_CHANGE_REFUND,
+                    "Price difference refunded for wrong course correction: {$wrongCourseId} → {$correctCourseId}",
+                    'support_request',
+                    $request->id,
+                    null,
+                    [
+                        'wrong_course_id' => $wrongCourseId,
+                        'correct_course_id' => $correctCourseId,
+                        'old_price' => $wrongCoursePrice,
+                        'new_price' => $correctCoursePrice,
+                        'price_difference' => $priceDifference,
+                        'old_sale_id' => $oldSale->id,
+                        'new_sale_id' => $newSale->id,
+                    ]
+                );
+                
+                Log::info('SupportRequestService: Price difference credited to wallet for wrong course correction', [
+                    'user_id' => $request->user_id,
+                    'price_difference' => $priceDifference,
+                    'wrong_course_id' => $wrongCourseId,
+                    'correct_course_id' => $correctCourseId,
+                    'support_request_id' => $request->id,
+                ]);
+            } catch (\Exception $walletErr) {
+                Log::error('SupportRequestService: Failed to credit price difference to wallet', [
+                    'user_id' => $request->user_id,
+                    'price_difference' => $priceDifference,
+                    'error' => $walletErr->getMessage(),
+                ]);
+                // Don't throw - continue with course correction
+            }
+        }
 
         $oldInstallment = InstallmentOrder::where('user_id', $request->user_id)
             ->where('webinar_id', $wrongCourseId)
@@ -866,6 +943,9 @@ class SupportRequestService
             'user_id' => $request->user_id,
             'wrong_course_id' => $wrongCourseId,
             'correct_course_id' => $correctCourseId,
+            'old_price' => $wrongCoursePrice,
+            'new_price' => $correctCoursePrice,
+            'price_difference' => $priceDifference,
             'old_sale_id' => $oldSale->id,
             'new_sale_id' => $newSale->id,
         ]);

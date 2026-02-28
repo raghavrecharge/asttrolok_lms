@@ -129,6 +129,31 @@
         </div>
         @endif
 
+        {{-- Wallet Section --}}
+        @if(auth()->check())
+            @php
+                $walletBalance = app(\App\Services\PaymentEngine\WalletService::class)->balance(auth()->id());
+            @endphp
+            @if($walletBalance > 0)
+                <div class="mt-15 mb-15 p-15 rounded-lg" style="background: #f0f7ff; border: 1px solid #d0e3ff;">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="font-14 font-weight-bold text-dark-blue">
+                                <i data-feather="credit-card" width="16" height="16" class="mr-5"></i>
+                                Use Wallet Balance
+                            </div>
+                            <div class="font-12 text-gray mt-5">Available: <strong>{{ handlePrice($walletBalance) }}</strong></div>
+                        </div>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="useWalletToggle">
+                            <label class="custom-control-label" for="useWalletToggle"></label>
+                        </div>
+                    </div>
+                    <div id="walletDeductionInfo" class="mt-10 font-12 text-success" style="display:none;"></div>
+                </div>
+            @endif
+        @endif
+
              <h2 class="section-title d-none">Payment Option</h2>
              <br>
 
@@ -253,12 +278,14 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
     }
     document.getElementById('customer_password_confirmation').classList.remove('is-invalid');
 
+    var wToggle = document.getElementById('useWalletToggle');
     const userDetails = {
         name: name,
         email: email,
         number: number,
         password: password,
-        discount_id: @json(session('discountCouponId'))
+        discount_id: @json(session('discountCouponId')),
+        use_wallet: wToggle ? wToggle.checked : false
     };
 
     showPaymentLoader();
@@ -273,5 +300,27 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
         initiatePayment('subscription', {{ $subscription->id }}, userDetails);
     }
 });
+
+// Wallet toggle info
+var walletToggleEl = document.getElementById('useWalletToggle');
+var walletInfoEl = document.getElementById('walletDeductionInfo');
+if (walletToggleEl) {
+    walletToggleEl.addEventListener('change', function() {
+        if (this.checked && walletInfoEl) {
+            var total = {{ $subscription->getPrice() ?? 0 }};
+            var walletBal = {{ $walletBalance ?? 0 }};
+            var deduction = Math.min(walletBal, total);
+            var remaining = Math.max(total - deduction, 0);
+            walletInfoEl.setAttribute('style', 'display: block !important;');
+            if (remaining > 0) {
+                walletInfoEl.innerHTML = '\u20b9' + deduction.toLocaleString('en-IN') + ' will be deducted from wallet. Remaining \u20b9' + remaining.toLocaleString('en-IN') + ' via Razorpay.';
+            } else {
+                walletInfoEl.innerHTML = '\u20b9' + deduction.toLocaleString('en-IN') + ' will be deducted from wallet. No Razorpay payment needed!';
+            }
+        } else if (walletInfoEl) {
+            walletInfoEl.setAttribute('style', 'display: none !important;');
+        }
+    });
+}
 </script>
 @endpush

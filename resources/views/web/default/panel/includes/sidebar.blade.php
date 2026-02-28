@@ -479,6 +479,15 @@
             </div>
         </li>
 
+        <li class="sidenav-item {{ (request()->is('panel/wallet*')) ? 'sidenav-item-active' : '' }}">
+            <a href="/panel/wallet" class="d-flex align-items-center">
+                <span class="sidenav-item-icon mr-10">
+                    <i data-feather="credit-card" stroke="#1f3b64" stroke-width="1.5" width="24" height="24" class="webinar-icon"></i>
+                </span>
+                <span class="font-14 text-dark-blue font-weight-500">My Wallet</span>
+            </a>
+        </li>
+
         <li class="sidenav-item {{ (request()->is('panel/support') or request()->is('panel/support/*')) ? 'sidenav-item-active' : '' }}">
             <a class="d-flex align-items-center" data-toggle="collapse" href="#supportCollapse" role="button" aria-expanded="false" aria-controls="supportCollapse">
                 <span class="sidenav-item-icon assign-fill mr-10">

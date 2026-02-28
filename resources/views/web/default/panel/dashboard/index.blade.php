@@ -902,10 +902,10 @@
 
             {{-- Current Balance (image: dark card with big $ amount) --}}
             <div class="db-balance-card">
-                <div class="balance-label">Current Balance</div>
+                <div class="balance-label">Wallet Balance</div>
                 <div class="balance-date">{{ date('d M Y h:i A') }}</div>
-                <div class="balance-amount">{{ handlePrice($authUser->getAccountingBalance()) }}</div>
-                <div class="balance-sub">{{ handlePrice($authUser->getAccountingBalance()) }} Available to use</div>
+                <div class="balance-amount">{{ handlePrice($walletBalance) }}</div>
+                <div class="balance-sub">{{ handlePrice($walletBalance) }} Available to use</div>
             </div>
 
             {{-- Wallet (image: simple link row) --}}

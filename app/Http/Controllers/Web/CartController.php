@@ -1033,6 +1033,12 @@ class CartController extends Controller
 
                     $totalCashbackAmount = $this->getTotalCashbackAmount($carts, $user, $calculate["sub_total"]);
 
+                // Get wallet balance for logged-in users
+                $walletBalance = 0;
+                if (auth()->check()) {
+                    $walletBalance = app(\App\Services\PaymentEngine\WalletService::class)->balance(auth()->id());
+                }
+
                     $data = [
                         'pageTitle' => trans('public.checkout_page_title'),
                         'paymentChannels' => $paymentChannels,
@@ -1048,6 +1054,7 @@ class CartController extends Controller
                         'userCharge' => $user->getAccountingCharge(),
                         'razorpay' => $razorpay,
                         'totalCashbackAmount' => $totalCashbackAmount,
+                        'walletBalance' => $walletBalance,
                     ];
 
                     $agent = new Agent();

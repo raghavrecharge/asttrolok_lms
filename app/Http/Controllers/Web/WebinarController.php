@@ -1157,8 +1157,8 @@ class WebinarController extends Controller
                     $Discount = Discount::where('id', $discountCouponId)->where('status', 'active')->first();
                 }
 
-                // Fallback: check if course has a linked discount
-                if (!$Discount) {
+                // Only apply linked discount if no session coupon was explicitly applied
+                if (!$Discount && $discountCouponId == 0) {
                     $DiscountCourse = DiscountCourse::where('course_id', $webinarId)->first();
                     if ($DiscountCourse) {
                         $Discount = Discount::where('id', $DiscountCourse->discount_id)->where('status', 'active')->first();
@@ -1167,17 +1167,17 @@ class WebinarController extends Controller
 
                 $item = $this->getItem($webinarId, 'course');
 
+                // Use getPrice() which already includes special offers
                 $itemPrice = $webinar ? $webinar->getPrice() : 0;
-                $price = $webinar ? $webinar->price : 0;
                 $totalDiscount = 0;
                 $itemPrice1 = $itemPrice;
 
                 if (isset($Discount) && $Discount) {
                     $percent = $Discount->percent ?? 0;
                     if ($Discount->discount_type == 'fixed_amount') {
-                        $totalDiscount = min($Discount->amount, $price);
+                        $totalDiscount = min($Discount->amount, $itemPrice);
                     } else {
-                        $totalDiscount = ($price > 0) ? round($price * $percent / 100, 2) : 0;
+                        $totalDiscount = ($itemPrice > 0) ? round($itemPrice * $percent / 100, 2) : 0;
                         if (!empty($Discount->max_amount) && $totalDiscount > $Discount->max_amount) {
                             $totalDiscount = $Discount->max_amount;
                         }
@@ -1188,6 +1188,12 @@ class WebinarController extends Controller
                     }
                 }
 
+                    // Get wallet balance for logged-in users
+                    $walletBalance = 0;
+                    if (auth()->check()) {
+                        $walletBalance = app(\App\Services\PaymentEngine\WalletService::class)->balance(auth()->id());
+                    }
+
                     $data = [
 
                         'totalDiscount' => $totalDiscount,
@@ -1195,6 +1201,7 @@ class WebinarController extends Controller
                         'discount' => $Discount ?? null,
                         'webinar' => $webinar,
                         'total' => $itemPrice1 ?? $itemPrice,
+                        'walletBalance' => $walletBalance,
                     ];
 
                     $agent = new Agent();

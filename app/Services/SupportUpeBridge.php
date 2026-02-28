@@ -523,11 +523,47 @@ class SupportUpeBridge
             \App\Models\Accounting::create([
                 'user_id' => $userId,
                 'webinar_id' => $webinarId,
-                'amount' => $cashAmount,
+                'amount' => $finalPayable, // Only record actual payable amount
                 'type' => \App\Models\Accounting::$addiction,
                 'description' => "Admin Offline Payment: {$webinar->title}",
                 'created_at' => time(),
             ]);
+
+            // Handle overpayment: credit excess cash to wallet
+            $excessAmount = $cashAmount - $finalPayable;
+            if ($excessAmount > 0.01) { // More than 1 paisa excess
+                try {
+                    $walletService = app(\App\Services\PaymentEngine\WalletService::class);
+                    $walletService->credit(
+                        $userId,
+                        $excessAmount,
+                        \App\Models\PaymentEngine\WalletTransaction::TXN_OVERPAYMENT_REFUND,
+                        "Excess cash from offline payment for {$webinar->title}",
+                        'support_request',
+                        $supportRequestId,
+                        null,
+                        [
+                            'sale_id' => $sale->id,
+                            'cash_amount' => $cashAmount,
+                            'final_payable' => $finalPayable,
+                            'excess_amount' => $excessAmount,
+                        ]
+                    );
+                    
+                    Log::info('SupportUpeBridge: Excess cash credited to wallet', [
+                        'user_id' => $userId,
+                        'excess_amount' => $excessAmount,
+                        'sale_id' => $sale->id,
+                        'support_request_id' => $supportRequestId,
+                    ]);
+                } catch (\Exception $walletErr) {
+                    Log::error('SupportUpeBridge: Failed to credit excess cash to wallet', [
+                        'user_id' => $userId,
+                        'excess_amount' => $excessAmount,
+                        'error' => $walletErr->getMessage(),
+                    ]);
+                }
+            }
 
             $this->access->invalidate($userId, $product->id);
 
@@ -537,11 +573,13 @@ class SupportUpeBridge
                 'cash_amount' => $cashAmount,
                 'discount' => $discountAmount,
                 'final_payable' => $finalPayable,
+                'excess_amount' => $excessAmount,
                 'admin_id' => $adminId,
                 'support_request_id' => $supportRequestId,
             ]);
 
-            return $this->offlineResult(true, 'Full payment processed. Access granted.', $priceBreakdown, $sale, null, [], true);
+            $message = 'Full payment processed. Access granted.' . ($excessAmount > 0.01 ? " Excess ₹" . number_format($excessAmount, 2) . " credited to wallet." : '');
+            return $this->offlineResult(true, $message, $priceBreakdown, $sale, null, [], true);
         });
     }
 
@@ -719,6 +757,43 @@ class SupportUpeBridge
                 ];
             }
 
+            // Handle overpayment: credit excess cash to wallet
+            $overpaymentAmount = $engineResult['overpayment'] ?? 0;
+            if ($overpaymentAmount > 0.01) { // More than 1 paisa excess
+                try {
+                    $walletService = app(\App\Services\PaymentEngine\WalletService::class);
+                    $walletService->credit(
+                        $userId,
+                        $overpaymentAmount,
+                        \App\Models\PaymentEngine\WalletTransaction::TXN_OVERPAYMENT_REFUND,
+                        "Excess cash from offline installment payment for {$webinar->title}",
+                        'support_request',
+                        $supportRequestId,
+                        null,
+                        [
+                            'sale_id' => $sale->id,
+                            'plan_id' => $plan->id,
+                            'cash_amount' => $cashAmount,
+                            'overpayment_amount' => $overpaymentAmount,
+                        ]
+                    );
+                    
+                    Log::info('SupportUpeBridge: Excess installment cash credited to wallet', [
+                        'user_id' => $userId,
+                        'overpayment_amount' => $overpaymentAmount,
+                        'sale_id' => $sale->id,
+                        'plan_id' => $plan->id,
+                        'support_request_id' => $supportRequestId,
+                    ]);
+                } catch (\Exception $walletErr) {
+                    Log::error('SupportUpeBridge: Failed to credit excess installment cash to wallet', [
+                        'user_id' => $userId,
+                        'overpayment_amount' => $overpaymentAmount,
+                        'error' => $walletErr->getMessage(),
+                    ]);
+                }
+            }
+
             // Update price breakdown with installment-specific info
             $priceBreakdown['installment_total'] = (float) $plan->total_amount;
             $priceBreakdown['upfront_amount'] = $upfrontSchedule ? (float) $upfrontSchedule->amount_due : 0;
@@ -731,13 +806,14 @@ class SupportUpeBridge
                 'discount' => $discountAmount,
                 'access_granted' => $accessGranted,
                 'engine_result' => $engineResult,
+                'overpayment_amount' => $overpaymentAmount,
                 'admin_id' => $adminId,
                 'support_request_id' => $supportRequestId,
             ]);
 
             $msg = $accessGranted
-                ? 'Installment payment processed. Upfront covered — access granted.'
-                : 'Installment payment recorded. Upfront NOT fully covered — access NOT granted yet.';
+                ? 'Installment payment processed. Upfront covered — access granted.' . ($overpaymentAmount > 0.01 ? " Excess ₹" . number_format($overpaymentAmount, 2) . " credited to wallet." : '')
+                : 'Installment payment recorded. Upfront NOT fully covered — access NOT granted yet.' . ($overpaymentAmount > 0.01 ? " Excess ₹" . number_format($overpaymentAmount, 2) . " credited to wallet." : '');
 
             return $this->offlineResult(true, $msg, $priceBreakdown, $sale, $plan, $allocation, $accessGranted);
         });
@@ -879,6 +955,24 @@ class SupportUpeBridge
                 description: "Refund via admin support #{$supportRequestId}",
                 idempotencyKey: $idempotencyKey
             );
+
+            // Credit refund amount to user's wallet
+            try {
+                $walletService = app(\App\Services\PaymentEngine\WalletService::class);
+                $walletService->refundToWallet(
+                    $userId,
+                    $balance,
+                    $sale->id,
+                    "Refund for support request #{$supportRequestId}"
+                );
+                Log::info('SupportUpeBridge: Refund credited to wallet', [
+                    'user_id' => $userId, 'amount' => $balance, 'sale_id' => $sale->id,
+                ]);
+            } catch (\Exception $walletErr) {
+                Log::error('SupportUpeBridge: Failed to credit refund to wallet (non-fatal)', [
+                    'user_id' => $userId, 'amount' => $balance, 'error' => $walletErr->getMessage(),
+                ]);
+            }
         }
 
         $sale->update(['status' => 'refunded']);
@@ -908,13 +1002,73 @@ class SupportUpeBridge
             ->whereIn('status', ['active', 'partially_refunded'])
             ->first();
 
+        $priceDifference = 0;
         if ($wrongSale) {
+            // Get the actual amount paid for wrong course
+            $wrongCoursePrice = $this->ledger->balance($wrongSale->id);
+            
+            // Get correct course price
+            $correctCoursePrice = $correctProduct->base_fee;
+            $priceDifference = $wrongCoursePrice - $correctCoursePrice;
+            
             $wrongSale->update(['status' => 'refunded']);
             $this->access->invalidate($userId, $wrongProduct->id);
+            
+            // Credit price difference to wallet if correct course is cheaper
+            if ($priceDifference > 0.01) { // More than 1 paisa difference
+                try {
+                    $walletService = app(\App\Services\PaymentEngine\WalletService::class);
+                    $walletService->credit(
+                        $userId,
+                        $priceDifference,
+                        \App\Models\PaymentEngine\WalletTransaction::TXN_COURSE_CHANGE_REFUND,
+                        "Price difference refunded for wrong course correction: {$wrongWebinarId} → {$correctWebinarId}",
+                        'support_request',
+                        $supportRequestId,
+                        null,
+                        [
+                            'wrong_course_id' => $wrongWebinarId,
+                            'correct_course_id' => $correctWebinarId,
+                            'wrong_sale_id' => $wrongSale->id,
+                            'wrong_price' => $wrongCoursePrice,
+                            'new_price' => $correctCoursePrice,
+                            'price_difference' => $priceDifference,
+                        ]
+                    );
+                    
+                    Log::info('SupportUpeBridge: Price difference credited to wallet for wrong course correction', [
+                        'user_id' => $userId,
+                        'price_difference' => $priceDifference,
+                        'wrong_course_id' => $wrongWebinarId,
+                        'correct_course_id' => $correctWebinarId,
+                        'support_request_id' => $supportRequestId,
+                    ]);
+                } catch (\Exception $walletErr) {
+                    Log::error('SupportUpeBridge: Failed to credit price difference to wallet', [
+                        'user_id' => $userId,
+                        'price_difference' => $priceDifference,
+                        'error' => $walletErr->getMessage(),
+                    ]);
+                    // Don't throw - continue with course correction
+                }
+            }
         }
 
         // Create UPE sale for correct course
-        return $this->grantRelativeAccess($userId, $correctWebinarId, $supportRequestId, $adminId);
+        $correctSale = $this->grantRelativeAccess($userId, $correctWebinarId, $supportRequestId, $adminId);
+        
+        // Log the price difference handling
+        if ($priceDifference != 0) {
+            Log::info('SupportUpeBridge: Wrong course correction with price difference', [
+                'user_id' => $userId,
+                'wrong_course_id' => $wrongWebinarId,
+                'correct_course_id' => $correctWebinarId,
+                'price_difference' => $priceDifference,
+                'support_request_id' => $supportRequestId,
+            ]);
+        }
+        
+        return $correctSale;
     }
 
     // ══════════════════════════════════════════════════════════════

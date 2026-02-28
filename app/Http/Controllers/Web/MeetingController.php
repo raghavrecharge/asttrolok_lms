@@ -139,16 +139,17 @@ class MeetingController extends Controller
                                     $discountAmount = ($hourlyAmount * $meetingTime->meeting->discount)/100;
 
                                 }
-                                if(session('meeting_discount_id')){
+                                // Only apply session discount if user explicitly applied it
+                                if(session('meeting_discount_id') && session('meeting_discount_id') > 0){
                                     $discount_id=session('meeting_discount_id');
                                     session(['meeting_discount_id' => 0]);
                                     $discount = Discount::where('id', $discount_id)->where('source', 'meeting')->where('status', 'active')->first();
 
-                                     if($discount->expired_at>time()){
+                                     if($discount && $discount->expired_at>time() && $discount->checkValidDiscount() === 'ok'){
                                     $discountCouponAmount = ($hourlyAmount * $discount->percent)/100;
                                     $discountAmount = $discountAmount +  ($discountCouponAmount);
                                      }
-                                    }
+                                }
 
                                 $explodetime = explode('-', $meetingTime->time);
 
@@ -1009,16 +1010,17 @@ class MeetingController extends Controller
                                     $discountAmount = ($hourlyAmount * $meetingTime->meeting->discount)/100;
 
                                 }
-                                if(session('meeting_discount_id')){
+                                // Only apply session discount if user explicitly applied it
+                                if(session('meeting_discount_id') && session('meeting_discount_id') > 0){
                                     $discount_id=session('meeting_discount_id');
                                     session(['meeting_discount_id' => 0]);
                                     $discount = Discount::where('id', $discount_id)->where('source', 'meeting')->where('status', 'active')->first();
 
-                                     if($discount->expired_at>time()){
+                                     if($discount && $discount->expired_at>time() && $discount->checkValidDiscount() === 'ok'){
                                     $discountCouponAmount = ($hourlyAmount * $discount->percent)/100;
                                     $discountAmount = $discountAmount +  ($discountCouponAmount);
                                      }
-                                    }
+                                }
 
                                 $explodetime = explode('-', $meetingTime->time);
 
