@@ -121,8 +121,23 @@ class ReserveMeetingController extends Controller
                 }
             ]);
 
+            $sort = $request->get('sort', 'newest');
+            switch ($sort) {
+                case 'oldest':
+                    $reserveMeetingsQuery->orderBy('created_at', 'asc');
+                    break;
+                case 'amount_high':
+                    $reserveMeetingsQuery->orderBy('paid_amount', 'desc');
+                    break;
+                case 'amount_low':
+                    $reserveMeetingsQuery->orderBy('paid_amount', 'asc');
+                    break;
+                default:
+                    $reserveMeetingsQuery->orderBy('created_at', 'desc');
+                    break;
+            }
+
             $reserveMeetings = $reserveMeetingsQuery
-                ->orderBy('created_at', 'desc')
                 ->paginate(10);
 
             $activeMeetingTimeIds = ReserveMeeting::whereIn('meeting_id', $meetingIds)
@@ -212,6 +227,11 @@ class ReserveMeetingController extends Controller
 
             if (!empty($openMeetings) and $openMeetings == 'on') {
                 $query->where('status', 'open');
+            }
+
+            $meetingType = $request->get('meeting_type');
+            if (!empty($meetingType)) {
+                $query->where('meeting_type', $meetingType);
             }
 
             return $query;

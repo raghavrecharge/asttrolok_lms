@@ -60,17 +60,18 @@ class ReserveMeeting extends Model
 
     public function addToCalendarLink()
     {
-        $day = $this->day;
-        $times = $this->meetingTime->time;
-        $times = explode('-', $times);
-        $start_time = date("H:i", strtotime($times[0]));
-        $end_time = date("H:i", strtotime($times[1]));
+        try {
+            $date = date('Y-m-d', $this->start_at);
+            $startTime = date('H:i', $this->start_at);
+            $endTime = date('H:i', $this->end_at);
 
-        $startDate = \DateTime::createFromFormat('Y-m-d H:i', $day . ' ' . $start_time);
-        $endDate = \DateTime::createFromFormat('Y-m-d H:i', $day . ' ' . $end_time);
+            $link = Link::create(trans('public.reserve_meeting'), \DateTime::createFromFormat('Y-m-d H:i', $date . ' ' . $startTime), \DateTime::createFromFormat('Y-m-d H:i', $date . ' ' . $endTime))
+                ->description(trans('public.reserve_meeting_on_asttrolok'))
+                ->google();
 
-        $link = Link::create('Meeting', $startDate, $endDate);
-
-        return $link->google();
+            return $link;
+        } catch (\Exception $e) {
+            return '';
+        }
     }
 }

@@ -712,6 +712,13 @@ class MeetingController extends Controller
                                 $startAt = $this->handleUtcDate($day, $explodetime[0], $instructorTimezone);
                                 $endAt = $this->handleUtcDate($day, $explodetime[1], $instructorTimezone);
 
+                                // Adjust start_at and end_at for 15-minute slots
+                                if ($slot_id == 1) {
+                                    $endAt = $startAt + 900; // 15 mins = 900 seconds
+                                } elseif ($slot_id == 2) {
+                                    $startAt = $startAt + 900;
+                                }
+
                                 $reserveMeeting = ReserveMeeting::updateOrCreate([
                                     'user_id' => $user->id,
                                     'meeting_time_id' => $meetingTime->id,
@@ -1030,6 +1037,13 @@ class MeetingController extends Controller
 
                                 $startAt = $this->handleUtcDate($day, $explodetime[0], $instructorTimezone);
                                 $endAt = $this->handleUtcDate($day, $explodetime[1], $instructorTimezone);
+
+                                // Adjust start_at and end_at for 15-minute slots
+                                if ($slot_id == 1) {
+                                    $endAt = $startAt + 900; // 15 mins = 900 seconds
+                                } elseif ($slot_id == 2) {
+                                    $startAt = $startAt + 900;
+                                }
 
                                 $reserveMeeting = ReserveMeeting::updateOrCreate([
                                     'user_id' => $user->id,
