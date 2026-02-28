@@ -271,6 +271,14 @@ Route::group(['namespace' => 'Panel', 'prefix' => 'panel', 'middleware' => ['che
         });
     });
 
+    // ── Wallet ──
+    Route::group(['prefix' => 'wallet'], function () {
+        Route::get('/', 'WalletController@index');
+        Route::post('/add-funds', 'WalletController@addFunds');
+        Route::post('/verify-topup', 'WalletController@verifyTopUp');
+        Route::get('/balance', 'WalletController@getBalance');
+    });
+
     // ── UPE User Panel ──
     Route::group(['prefix' => 'upe'], function () {
         Route::get('/purchases', 'UpeController@myPurchases');

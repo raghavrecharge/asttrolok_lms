@@ -942,14 +942,16 @@ class PaymentsController extends Controller
                     ->where('status', 'active')
                     ->first();
 
-                $DiscountCourse = DiscountCourse::where('course_id', $webinarId)
-                    ->first();
+                // Only apply linked discount if no session coupon was explicitly applied
+                if($discountCouponId == 0){
+                    $DiscountCourse = DiscountCourse::where('course_id', $webinarId)
+                        ->first();
 
                     if($DiscountCourse){
-
-                $Discount = Discount::where('id', $DiscountCourse->discount_id )->where('status', 'active' )
-                    ->first();
+                        $Discount = Discount::where('id', $DiscountCourse->discount_id )->where('status', 'active' )
+                            ->first();
                     }
+                }
 
                 $item = $this->getItem($webinarId, 'course');
 

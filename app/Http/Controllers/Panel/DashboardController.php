@@ -822,6 +822,18 @@ try {
             $data['sidebanner'] = $sidebanner;
             $data['giftModal'] = $this->showGiftModal($user);
 
+            // Get wallet balance using new WalletService
+            try {
+                $walletBalance = 0;
+                if (auth()->check()) {
+                    $walletBalance = app(\App\Services\PaymentEngine\WalletService::class)->balance(auth()->id());
+                }
+                $data['walletBalance'] = $walletBalance;
+            } catch (\Throwable $e) {
+                \Log::warning('Dashboard wallet balance fetch failed', ['error' => $e->getMessage()]);
+                $data['walletBalance'] = 0;
+            }
+
                 if($user->role_name=='user'){
 
                      return view(getTemplate() . '.panel.dashboard.index', $data);

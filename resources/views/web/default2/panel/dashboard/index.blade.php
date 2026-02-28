@@ -221,7 +221,7 @@ height: 100%;
                         <img src="{{ config('app.js_css_url') }}/assets/default/img/activity/36.svg" alt="">
                     </div>
                     <div class="d-flex flex-column ml-1">
-                        <span class="font-30 text-secondary">{{ handlePrice($authUser->getAccountingBalance()) }}</span>
+                        <span class="font-30 text-secondary">{{ handlePrice($walletBalance) }}</span>
                         <span class="font-14 text-gray dash-box font-weight-500"  style="min-height: 30px;">Wallet Balance</span>
                           <a href="/panel/financial/account" class="font-14 font-weight-bold text-dark-blue">{{ trans('financial.charge_account') }}</a>
                     </div>

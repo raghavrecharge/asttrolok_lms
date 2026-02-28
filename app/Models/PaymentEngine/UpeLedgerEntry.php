@@ -68,6 +68,7 @@ class UpeLedgerEntry extends Model
     const TYPE_SUBSCRIPTION_CHARGE = 'subscription_charge';
     const TYPE_PENALTY = 'penalty';
     const TYPE_WRITE_OFF = 'write_off';
+    const TYPE_WALLET_PAYMENT = 'wallet_payment';
 
     const DIR_CREDIT = 'credit';
     const DIR_DEBIT = 'debit';

@@ -34,7 +34,8 @@ class UnifiedPaymentHandler {
                     address: userDetails.address || null,
                     message: userDetails.message || null,
                     amount: userDetails.amount || null,
-                    selectedDay: userDetails.selectedDay || null
+                    selectedDay: userDetails.selectedDay || null,
+                    use_wallet: userDetails.use_wallet || false
                 })
             });
 
@@ -46,6 +47,15 @@ class UnifiedPaymentHandler {
             }
 
             const data = await response.json();
+
+            // If wallet covered the full amount, no Razorpay needed
+            if (data.wallet_paid) {
+                this.hideLoader();
+                alert(data.message || 'Payment completed using wallet balance!');
+                window.location.href = '/payment/success?source=wallet';
+                return;
+            }
+
             this.openRazorpayCheckout(data, userDetails);
 
         } catch (error) {

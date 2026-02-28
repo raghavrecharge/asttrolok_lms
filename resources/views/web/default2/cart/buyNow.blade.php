@@ -138,12 +138,12 @@
 
         @endphp
 
-        <span class="payment-hint font-20 text-white d-block"> {{ handlePrice($total) }} item 1</span>
+        <span class="payment-hint font-20 text-white d-block" id="itemPriceDisplay"> {{ handlePrice($total) }} item 1</span>
         @else
         @php
         $total=$webinar->price;
         @endphp
-        <span class="payment-hint font-20 text-white d-block"> {{ handlePrice($total) }}  item 1</span>
+        <span class="payment-hint font-20 text-white d-block" id="itemPriceDisplay"> {{ handlePrice($total) }}  item 1</span>
         @endif
     </section>
 
@@ -185,6 +185,31 @@
                     <button type="submit" id="checkCoupon1" class="btn btn-sm btn-primary mt-10"style="font-family: 'Inter', sans-serif !important;">{{ trans('cart.validate') }}</button>
                     </div></div>
                 </form>
+
+        {{-- Wallet Section --}}
+        @if(auth()->check())
+            @php
+                $walletBalance = app(\App\Services\PaymentEngine\WalletService::class)->balance(auth()->id());
+            @endphp
+            @if($walletBalance > 0)
+                <div class="mt-20 p-15 rounded-lg" style="background: #f0f7ff; border: 1px solid #d0e3ff;">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="font-14 font-weight-bold text-dark-blue">
+                                <i data-feather="credit-card" width="16" height="16" class="mr-5"></i>
+                                Use Wallet Balance
+                            </div>
+                            <div class="font-12 text-gray mt-5">Available: <strong>{{ handlePrice($walletBalance) }}</strong></div>
+                        </div>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="useWalletToggle">
+                            <label class="custom-control-label" for="useWalletToggle"></label>
+                        </div>
+                    </div>
+                    <div id="walletDeductionInfo" class="mt-10 font-12 text-success" style="display:none;"></div>
+                </div>
+            @endif
+        @endif
 
         <h2 class="section-title">Please Fill The Form</h2>
 {{session()->forget('discountCoupon')}}
@@ -263,7 +288,7 @@
             </div></center>
 
             <div class="d-flex align-items-center justify-content-between mt-45">
-                <span class="font-16 font-weight-500 text-gray">{{ trans('financial.total_amount') }} {{ handlePrice($total) }}</span>
+                <span class="font-16 font-weight-500 text-gray">{{ trans('financial.total_amount') }} <span id="totalAmountDisplay">{{ handlePrice($total) }}</span></span>
                 <button type="button" id="paymentSubmit"  class="btn btn-sm btn-primary " style="font-family: 'Inter', sans-serif !important;">{{ trans('public.start_payment') }}</button>
             </div>
         </form>
@@ -310,12 +335,14 @@
 document.getElementById('paymentSubmit').addEventListener('click', function(e) {
     e.preventDefault();
 
+    var wToggle = document.getElementById('useWalletToggle');
     const userDetails = {
         name: document.getElementById('customer_name').value,
         email: document.getElementById('customer_email').value,
         number: document.getElementById('customer_number').value,
         password: document.getElementById('customer_password').value,
-        discount_id: @json(session('discountCouponId'))
+        discount_id: @json(session('discountCouponId')),
+        use_wallet: wToggle ? wToggle.checked : false
     };
      showPaymentLoader();
 
@@ -416,18 +443,78 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             }
 
+            // Check if wallet toggle is on
+            const walletToggle = document.getElementById('useWalletToggle');
+            const useWallet = walletToggle ? walletToggle.checked : false;
+
             const userDetails = {
                 name: name,
                 email: email,
                 number: number,
                 password: password,
                 password_confirmation: confirmPassword,
-                discount_id: @json(session('discountCouponId'))
+                discount_id: @json(session('discountCouponId')),
+                use_wallet: useWallet
             };
 
             showPaymentLoader();
 
             initiatePayment('webinar', {{ $webinar->id }}, userDetails);
+        });
+    }
+
+    // Wallet toggle info
+    const walletToggle = document.getElementById('useWalletToggle');
+    const walletInfo = document.getElementById('walletDeductionInfo');
+    
+        
+    if (walletToggle) {
+        walletToggle.addEventListener('change', function() {
+                        if (this.checked && walletInfo) {
+                const total = {{ $total ?? 0 }};
+                const walletBal = {{ $walletBalance ?? 0 }};
+                const deduction = Math.min(walletBal, total);
+                const remaining = Math.max(total - deduction, 0);
+                walletInfo.setAttribute('style', 'display: block !important;');
+                
+                const message = remaining > 0 
+                    ? '₹' + deduction.toLocaleString('en-IN') + ' will be deducted from wallet. Remaining ₹' + remaining.toLocaleString('en-IN') + ' via Razorpay.'
+                    : '₹' + deduction.toLocaleString('en-IN') + ' will be deducted from wallet. No Razorpay payment needed!';
+                    
+                walletInfo.innerHTML = message;
+                
+                // Update the displayed amounts
+                const itemPriceEl = document.getElementById('itemPriceDisplay');
+                const totalAmountEl = document.getElementById('totalAmountDisplay');
+                
+                if (itemPriceEl) {
+                    const originalPrice = {{ $total }};
+                    const newPrice = remaining;
+                    itemPriceEl.innerHTML = '₹' + newPrice.toLocaleString('en-IN') + ' item 1';
+                }
+                
+                if (totalAmountEl) {
+                    totalAmountEl.innerHTML = '₹' + remaining.toLocaleString('en-IN');
+                }
+            } else if (walletInfo) {
+                walletInfo.setAttribute('style', 'display: none !important;');
+                
+                // Restore original amounts
+                const itemPriceEl = document.getElementById('itemPriceDisplay');
+                const totalAmountEl = document.getElementById('totalAmountDisplay');
+                
+                if (itemPriceEl) {
+                    const originalPrice = {{ $total }};
+                    itemPriceEl.innerHTML = '₹' + originalPrice.toLocaleString('en-IN') + ' item 1';
+                    console.log('Restored item price to:', '₹' + originalPrice.toLocaleString('en-IN') + ' item 1');
+                }
+                
+                if (totalAmountEl) {
+                    const originalPrice = {{ $total }};
+                    totalAmountEl.innerHTML = '₹' + originalPrice.toLocaleString('en-IN');
+                    console.log('Restored total amount to:', '₹' + originalPrice.toLocaleString('en-IN'));
+                }
+            }
         });
     }
 });

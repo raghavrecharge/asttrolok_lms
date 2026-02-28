@@ -81,16 +81,17 @@ class InstallmentsController extends Controller
 
                         $itemPrice = $item->getPrice();
                 $price = $item->price;
-                if(!empty(session('discountCouponId'))){
-                $discountId=session('discountCouponId');
-                $discountCoupon = Discount::where('id', $discountId)->first();
-                 $percent = $discountCoupon->percent ?? 0;
-                $totalDiscount = ($price > 0) ? $price * $percent / 100 : 0;
-                $itemPrice1=$itemPrice-$totalDiscount;
-                }else{
-                    $totalDiscount = 0;
-                    $itemPrice1=$itemPrice-$totalDiscount;
+                // Only apply session coupon if user explicitly applied it
+                $totalDiscount = 0;
+                if(!empty(session('discountCouponId')) && !empty(session('discountCoupon')) && session('discountCoupon') !== 'no'){
+                    $discountId=session('discountCouponId');
+                    $discountCoupon = Discount::where('id', $discountId)->where('status', 'active')->first();
+                    if($discountCoupon && $discountCoupon->checkValidDiscount() === 'ok'){
+                        $percent = $discountCoupon->percent ?? 0;
+                        $totalDiscount = ($price > 0) ? $price * $percent / 100 : 0;
+                    }
                 }
+                $itemPrice1=$itemPrice-$totalDiscount;
 
                         $hasPhysicalProduct = false;
                         if ($itemType == 'product') {
@@ -249,16 +250,17 @@ class InstallmentsController extends Controller
 
                         $itemPrice = $item->getPrice();
                 $price = $item->price;
-                if(!empty(session('discountCouponId'))){
-                $discountId=session('discountCouponId');
-                $discountCoupon = Discount::where('id', $discountId)->first();
-                 $percent = $discountCoupon->percent ?? 0;
-                $totalDiscount = ($price > 0) ? $price * $percent / 100 : 0;
-                $itemPrice1=$itemPrice-$totalDiscount;
-                }else{
-                    $totalDiscount = 0;
-                    $itemPrice1=$itemPrice-$totalDiscount;
+                // Only apply session coupon if user explicitly applied it
+                $totalDiscount = 0;
+                if(!empty(session('discountCouponId')) && !empty(session('discountCoupon')) && session('discountCoupon') !== 'no'){
+                    $discountId=session('discountCouponId');
+                    $discountCoupon = Discount::where('id', $discountId)->where('status', 'active')->first();
+                    if($discountCoupon && $discountCoupon->checkValidDiscount() === 'ok'){
+                        $percent = $discountCoupon->percent ?? 0;
+                        $totalDiscount = ($price > 0) ? $price * $percent / 100 : 0;
+                    }
                 }
+                $itemPrice1=$itemPrice-$totalDiscount;
 
                         $hasPhysicalProduct = false;
                         if ($itemType == 'product') {
@@ -377,16 +379,17 @@ class InstallmentsController extends Controller
 
                         $itemPrice = $item->getPrice();
                 $price = $item->price;
-                if(!empty(session('discountCouponId'))){
-                $discountId=session('discountCouponId');
-                $discountCoupon = Discount::where('id', $discountId)->first();
-                 $percent = $discountCoupon->percent ?? 0;
-                $totalDiscount = ($price > 0) ? $price * $percent / 100 : 0;
-                $itemPrice1=$itemPrice-$totalDiscount;
-                }else{
-                    $totalDiscount = 0;
-                    $itemPrice1=$itemPrice-$totalDiscount;
+                // Only apply session coupon if user explicitly applied it
+                $totalDiscount = 0;
+                if(!empty(session('discountCouponId')) && !empty(session('discountCoupon')) && session('discountCoupon') !== 'no'){
+                    $discountId=session('discountCouponId');
+                    $discountCoupon = Discount::where('id', $discountId)->where('status', 'active')->first();
+                    if($discountCoupon && $discountCoupon->checkValidDiscount() === 'ok'){
+                        $percent = $discountCoupon->percent ?? 0;
+                        $totalDiscount = ($price > 0) ? $price * $percent / 100 : 0;
+                    }
                 }
+                $itemPrice1=$itemPrice-$totalDiscount;
 
                         $hasPhysicalProduct = false;
                         if ($itemType == 'product') {
