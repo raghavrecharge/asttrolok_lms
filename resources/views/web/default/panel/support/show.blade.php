@@ -58,11 +58,51 @@
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.05);
         }
-        .bg-glass-primary { background: rgba(31, 59, 100, 0.1); color: #1f3b64; }
-        .bg-glass-warning { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
-        .bg-glass-info { background: rgba(0, 123, 255, 0.1); color: #007bff; }
-        .bg-glass-success { background: rgba(67, 212, 119, 0.1); color: #2ecc71; }
-        .bg-glass-danger { background: rgba(246, 59, 59, 0.1); color: #f63b3b; }
+        .bg-glass-primary { background: rgba(31, 59, 100, 0.08); color: #1f3b64; }
+        .bg-glass-warning { background: rgba(255, 193, 7, 0.08); color: #ffc107; }
+        .bg-glass-info { background: rgba(0, 123, 255, 0.08); color: #007bff; }
+        .bg-glass-success { background: rgba(67, 212, 119, 0.08); color: #2ecc71; }
+        .bg-glass-danger { background: rgba(246, 59, 59, 0.08); color: #f63b3b; }
+
+        .history-card {
+            background: #ffffff;
+            border: 1px solid #edf2f7;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+        .history-status-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .history-badge {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 15px;
+        }
+        .history-badge i {
+            margin-right: 8px;
+            stroke-width: 2.5px;
+        }
+        .history-author {
+            font-size: 13px;
+            color: #718096;
+            font-weight: 500;
+        }
+        .history-notes {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.5;
+        }
     </style>
 @endpush
 @section('content')
@@ -110,7 +150,7 @@
                         elseif($supportRequest->status == 'rejected') $badgeClass = 'bg-glass-danger';
                     @endphp
                     <span class="badge {{ $badgeClass }} font-14 px-20 py-10" style="border-radius: 12px;">
-                        {{ $supportRequest->status == 'approved' || $supportRequest->status == 'executed' ? 'Complete' : ucfirst(str_replace('_', ' ', $supportRequest->status)) }}
+                        {{ $supportRequest->status == 'approved' || $supportRequest->status == 'executed' || $supportRequest->status == 'verified' ? 'Approved' : ucfirst(str_replace('_', ' ', $supportRequest->status)) }}
                     </span>
                 </div>
             </div>
@@ -121,34 +161,29 @@
                         <span class="detail-label">Status History</span>
                         <div class="mt-10">
                             @if(in_array($supportRequest->status, ['rejected', 'approved', 'executed', 'closed', 'verified']))
-                                <div class="p-15 rounded-15" style="background: #f8faff; border: 1px solid #eef2f7; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
-                                    <div class="d-flex align-items-center flex-wrap">
-                                        <div class="d-flex align-items-center mr-15">
+                                <div class="history-card">
+                                    <div class="history-status-indicator">
+                                        <div class="history-badge">
                                             @if($supportRequest->status === 'rejected')
-                                                <div class="mr-10 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(246, 59, 59, 0.1); border-radius: 50%;">
-                                                    <i data-feather="x-circle" width="18" height="18" class="text-danger" style="stroke-width: 3px;"></i>
-                                                </div>
-                                                <span class="font-16 font-weight-bold text-danger">Rejected</span>
-                                            @elseif($supportRequest->status === 'approved' || $supportRequest->status === 'executed')
-                                                <div class="mr-10 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(33, 191, 115, 0.15); border-radius: 50%;">
-                                                    <i data-feather="check-circle" width="18" height="18" style="color: #21bf73; stroke-width: 3px;"></i>
-                                                </div>
-                                                <span class="font-16 font-weight-bold" style="color: #1a202c;">Complete</span>
+                                                <i data-feather="x-circle" width="18" height="18" class="text-danger"></i>
+                                                <span class="text-danger">Rejected</span>
+                                            @elseif(in_array($supportRequest->status, ['approved', 'executed', 'verified']))
+                                                <i data-feather="check-circle" width="18" height="18" style="color: #2ecc71;"></i>
+                                                <span style="color: #2d3748;">Approved</span>
                                             @else
-                                                <div class="mr-10 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(0, 123, 255, 0.1); border-radius: 50%;">
-                                                    <i data-feather="info" width="18" height="18" class="text-primary" style="stroke-width: 3px;"></i>
-                                                </div>
-                                                <span class="font-16 font-weight-bold text-primary">{{ ucfirst($supportRequest->status) }}</span>
+                                                <i data-feather="info" width="18" height="18" class="text-primary"></i>
+                                                <span class="text-primary">{{ ucfirst($supportRequest->status) }}</span>
                                             @endif
                                         </div>
-                                        <span class="font-14 text-gray" style="margin-top: 1px;">by {{ $supportRequest->supportHandler?->full_name ?? $supportRequest->subAdmin?->full_name ?? 'admin' }}</span>
+                                        <div class="history-author">
+                                            by {{ $supportRequest->supportHandler?->full_name ?? $supportRequest->subAdmin?->full_name ?? 'Asttrolok' }}
+                                        </div>
                                     </div>
+
                                     @if($supportRequest->rejection_reason || $supportRequest->approval_remarks || $supportRequest->execution_notes)
-                                        <div class="mt-10 pt-10 border-top border-dashed">
-                                            <p class="font-13 text-gray mb-0">
-                                                <i data-feather="message-square" width="12" height="12" class="mr-5"></i>
-                                                {{ $supportRequest->rejection_reason ?? $supportRequest->approval_remarks ?? $supportRequest->execution_notes }}
-                                            </p>
+                                        <div class="history-notes">
+                                            <i data-feather="message-square" width="12" height="12" class="mr-5" style="opacity: 0.7;"></i>
+                                            {{ $supportRequest->rejection_reason ?? $supportRequest->approval_remarks ?? $supportRequest->execution_notes }}
                                         </div>
                                     @endif
                                 </div>

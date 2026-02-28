@@ -2,6 +2,59 @@
 
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/daterangepicker/daterangepicker.min.css">
+    <style>
+        .stat-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 18px 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.03);
+            border: 1px solid #f0f0f0;
+            height: 100%;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+            border-color: #43d477;
+        }
+        .stat-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .stat-icon i {
+            width: 20px;
+            height: 20px;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #8c98a4;
+            font-weight: 600;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .stat-value {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1f3b64;
+            display: block;
+            line-height: 1.2;
+        }
+        .bg-glass-primary { background: rgba(31, 59, 100, 0.08); color: #1f3b64; }
+        .bg-glass-warning { background: rgba(255, 193, 7, 0.08); color: #ffc107; }
+        .bg-glass-info { background: rgba(0, 123, 255, 0.08); color: #007bff; }
+        .bg-glass-success { background: rgba(67, 212, 119, 0.08); color: #2ecc71; }
+        .bg-glass-danger { background: rgba(246, 59, 59, 0.08); color: #f63b3b; }
+    </style>
 @endpush
 
 @section('content')
@@ -13,57 +66,64 @@
             <h2 class="section-title mb-0">{{ trans('update.assignment_statistics') }}</h2>
         </div>
 
-        <!-- <div class="mt-20 px-15 py-30 rounded-lg" style="background: #f8faff; border: 1px solid #e8edf5; border-radius: 20px;"> -->
-            <div class="row stat-card-row">
-                <div class="col-12 col-md-6 col-lg-3">
+        <div class="mt-20">
+            <div class="row stat-card-row" style="margin-left: -10px; margin-right: -10px;">
+                {{-- Total --}}
+                <div class="col-6 col-md-4 col-lg mb-20 mb-lg-0" style="padding: 0 10px;">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-primary">
-                            <i data-feather="book-open" width="24" height="24"></i>
+                            <i data-feather="book-open"></i>
                         </div>
-                        <div class="text-left">
+                        <div>
                             <span class="stat-value">{{ $courseAssignmentsCount }}</span>
-                            <span class="stat-label">{{ trans('update.course_assignments') }}</span>
+                            <span class="stat-label">Total</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-12 col-md-6 col-lg-3">
+                {{-- Pending Review (Optional: user wants removed but maybe keep for clarity? No, prompt says "removed In Review card") --}}
+                {{-- I will remove Pending Review as requested --}}
+
+                {{-- Completed --}}
+                <div class="col-6 col-md-4 col-lg mb-20 mb-lg-0" style="padding: 0 10px;">
                     <div class="stat-card">
-                        <div class="stat-icon bg-glass-warning">
-                            <i data-feather="clock" width="24" height="24"></i>
+                        <div class="stat-icon bg-glass-info">
+                            <i data-feather="check-square"></i>
                         </div>
-                        <div class="text-left">
-                            <span class="stat-value">{{ $pendingReviewCount }}</span>
-                            <span class="stat-label">{{ trans('update.pending_review') }}</span>
+                        <div>
+                            <span class="stat-value">{{ $completedCount }}</span>
+                            <span class="stat-label">Completed</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-12 col-md-6 col-lg-3">
+                {{-- Passed --}}
+                <div class="col-6 col-md-4 col-lg mb-20 mb-lg-0" style="padding: 0 10px;">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-success">
-                            <i data-feather="check-circle" width="24" height="24"></i>
+                            <i data-feather="check-circle"></i>
                         </div>
-                        <div class="text-left">
+                        <div>
                             <span class="stat-value">{{ $passedCount }}</span>
-                            <span class="stat-label">{{ trans('quiz.passed') }}</span>
+                            <span class="stat-label">Passed</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-12 col-md-6 col-lg-3">
+                {{-- Failed --}}
+                <div class="col-6 col-md-4 col-lg mb-20 mb-lg-0" style="padding: 0 10px;">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-danger">
-                            <i data-feather="x-circle" width="24" height="24"></i>
+                            <i data-feather="x-circle"></i>
                         </div>
-                        <div class="text-left">
+                        <div>
                             <span class="stat-value">{{ $failedCount }}</span>
-                            <span class="stat-label">{{ trans('quiz.failed') }}</span>
+                            <span class="stat-label">Failed</span>
                         </div>
                     </div>
                 </div>
             </div>
-        <!-- </div> -->
+        </div>
     </section>
 
     <section class="mt-25 panel-filter-section">

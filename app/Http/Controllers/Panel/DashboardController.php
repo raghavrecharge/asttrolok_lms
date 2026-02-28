@@ -75,7 +75,9 @@ class DashboardController extends Controller
                     ->count();
 
                 $userWebinarsIds = $user->webinars->pluck('id')->toArray();
-                $supports = Support::whereIn('webinar_id', $userWebinarsIds)->where('status', 'open')->get();
+                $supports = \App\Models\NewSupportForAsttrolok::whereIn('webinar_id', $userWebinarsIds)
+                    ->whereIn('status', ['pending', 'approved', 'verified', 'executed'])
+                    ->get();
 
                 $comments = Comment::whereIn('webinar_id', $userWebinarsIds)
                     ->where('status', 'active')
@@ -111,9 +113,8 @@ class DashboardController extends Controller
                     ->where('status', ReserveMeeting::$open)
                     ->get();
 
-                $supports = Support::where('user_id', $user->id)
-
-                    ->where('status', 'open')
+                $supports = \App\Models\NewSupportForAsttrolok::where('user_id', $user->id)
+                    ->whereIn('status', ['pending', 'approved', 'verified', 'executed'])
                     ->get();
 
                 $comments = Comment::where('user_id', $user->id)
@@ -216,7 +217,7 @@ class DashboardController extends Controller
                     'subscription',
                 ])
                 ->orderBy('created_at', 'desc')
-                ->paginate(15);
+                ->get(); // Changed to get() to allow merging; pagination not used on dashboard index
 
 $extendedAccesses = [];
 
@@ -535,8 +536,8 @@ try {
 
             $query = InstallmentOrder::query()
                 ->where('user_id', $user->id)
-                ->where('status', '!=', 'paying')
-                ->whereNotIn('webinar_id', $purchasedWebinarsIdsForFiltering);
+                ->where('status', '!=', 'paying');
+                // Removed whereNotIn to allow merging all accessible courses
 
             $openInstallmentsCount = (clone $query)->where('status', 'open')->count();
             $pendingVerificationCount = deepClone($query)->where('status', 'pending_verification')->count();
@@ -604,20 +605,19 @@ try {
             $purchasedWebinarsIds = $user->getPurchasedCoursesIds();
             $webinarIds = array_merge($purchasedWebinarsIds, $userWebinarsIds);
 
-            $query = Support::whereNull('department_id')
+            $query = \App\Models\NewSupportForAsttrolok::query()
                 ->where(function ($query) use ($user, $userWebinarsIds) {
                     $query->where('user_id', $user->id)
                         ->orWhereIn('webinar_id', $userWebinarsIds);
                 });
 
-            $supportsCount = deepClone($query)->count();
-            $openSupportsCount = deepClone($query)->where('status', '!=', 'close')->count();
-            $closeSupportsCount = deepClone($query)->where('status', 'close')->count();
+            $supportsCount = (clone $query)->count();
+            $openSupportsCount = (clone $query)->whereIn('status', ['pending', 'approved', 'verified'])->count();
+            $closeSupportsCount = (clone $query)->where('status', 'closed')->count();
 
             $query = $this->filters1($query, $request, $userWebinarsIds);
 
             $supports = $query->orderBy('created_at', 'desc')
-                ->orderBy('status', 'asc')
                 ->with([
                     'user' => function ($query) {
                         $query->select('id', 'full_name', 'avatar', 'avatar_settings', 'role_name');
@@ -626,10 +626,6 @@ try {
                         $query->with(['teacher' => function ($query) {
                             $query->select('id', 'full_name', 'avatar');
                         }]);
-                    },
-                    'conversations' => function ($query) {
-                        $query->orderBy('created_at', 'desc')
-                            ->first();
                     }
                 ])->get();
 
@@ -736,7 +732,48 @@ try {
                 $data['commentsCount'] = count($comments);
                 $data['reserveMeetingsCount'] = count($reserveMeetings);
                 $data['monthlyChart'] = $this->getMonthlySalesOrPurchase($user);
-                $data['sales'] = $sales;
+                $consolidatedSales = collect();
+                $seenCourseIds = [];
+                $seenBundleIds = [];
+
+                foreach ($sales as $sale) {
+                    if ($sale->webinar_id) {
+                        if (in_array($sale->webinar_id, $seenCourseIds)) continue;
+                        $seenCourseIds[] = $sale->webinar_id;
+                    } elseif ($sale->bundle_id) {
+                        if (in_array($sale->bundle_id, $seenBundleIds)) continue;
+                        $seenBundleIds[] = $sale->bundle_id;
+                    }
+                    $consolidatedSales->push($sale);
+                }
+
+                foreach ($orders as $order) {
+                    if ($order->webinar_id) {
+                        if (in_array($order->webinar_id, $seenCourseIds)) continue;
+                        $seenCourseIds[] = $order->webinar_id;
+                    } elseif ($order->bundle_id) {
+                        if (in_array($order->bundle_id, $seenBundleIds)) continue;
+                        $seenBundleIds[] = $order->bundle_id;
+                    }
+                    
+                    // Transform InstallmentOrder to look like a Sale for the view
+                    $mockSale = new \App\Models\Sale([
+                        'buyer_id' => $order->user_id,
+                        'webinar_id' => $order->webinar_id,
+                        'bundle_id' => $order->bundle_id,
+                        'created_at' => $order->created_at,
+                        'type' => $order->webinar_id ? 'webinar' : ($order->bundle_id ? 'bundle' : 'other'),
+                    ]);
+                    $mockSale->setRelation('webinar', $order->webinar);
+                    $mockSale->setRelation('bundle', $order->bundle);
+                    $mockSale->is_installment = true;
+                    $mockSale->installment_order = $order;
+                    
+                    $consolidatedSales->push($mockSale);
+                }
+
+                $data['sales'] = $consolidatedSales->sortByDesc('created_at');
+                $data['orders'] = $orders; // Keep original orders for installments summary if needed
                 $data['hours'] = $hours;
                   $data['instructors'] = $instructors;
                 $data['reserveMeetings'] = $reserveMeetings1;
@@ -779,9 +816,15 @@ try {
                         ->where('status', 'overdue')->count();
 
                     // Upcoming/overdue schedules (next payments due)
+                    // Upcoming/overdue schedules (grouped by plan to avoid showing same course multiple times)
                     $upeAllPlanIds = \App\Models\PaymentEngine\UpeInstallmentPlan::whereIn('sale_id', $upeSaleIds)->pluck('id');
-                    $upeUpcomingSchedules = \App\Models\PaymentEngine\UpeInstallmentSchedule::whereIn('plan_id', $upeAllPlanIds)
-                        ->whereIn('status', ['due', 'partial', 'overdue', 'upcoming'])
+                    $upeUpcomingSchedules = \App\Models\PaymentEngine\UpeInstallmentSchedule::whereIn('id', function($q) use ($upeAllPlanIds) {
+                            $q->select(DB::raw('MIN(id)'))
+                              ->from('upe_installment_schedules')
+                              ->whereIn('plan_id', $upeAllPlanIds)
+                              ->whereIn('status', ['due', 'partial', 'overdue', 'upcoming'])
+                              ->groupBy('plan_id');
+                        })
                         ->orderBy('due_date')
                         ->with(['plan.sale.product'])
                         ->limit(5)
@@ -906,23 +949,12 @@ try {
     {
         $from = $request->get('from');
         $to = $request->get('to');
-        $role = $request->get('role');
         $student_id = $request->get('student');
         $teacher_id = $request->get('teacher');
         $webinar_id = $request->get('webinar');
-        $department = $request->get('department');
         $status = $request->get('status');
 
         $query = fromAndToDateFilter($from, $to, $query, 'created_at');
-
-        if (!empty($role) and $role == 'student' and (empty($student_id) or $student_id == 'all')) {
-            $studentsIds = Sale::whereIn('webinar_id', $userWebinarsIds)
-                ->whereNull('refund_at')
-                ->pluck('buyer_id')
-                ->toArray();
-
-            $query->whereIn('user_id', $studentsIds);
-        }
 
         if (!empty($student_id) and $student_id != 'all') {
             $query->where('user_id', $student_id);
@@ -944,10 +976,6 @@ try {
 
         if (!empty($status) and $status != 'all') {
             $query->where('status', $status);
-        }
-
-        if (!empty($department) and $department != 'all') {
-            $query->where('department_id', $department);
         }
 
         return $query;

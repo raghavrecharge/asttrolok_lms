@@ -119,10 +119,11 @@
                     </div>
                 </div>
 
-                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px;">
+                {{-- Pending --}}
+                <div class="col-6 col-md-4 col-lg mb-20 mb-lg-0" style="padding: 0 10px;">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-warning">
-                            <i data-feather="clock"></i>
+                            <i data-feather="clock" style="stroke-width: 3px;"></i>
                         </div>
                         <div>
                             <span class="stat-value">{{ $stats['pending'] }}</span>
@@ -131,38 +132,41 @@
                     </div>
                 </div>
 
-                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px;">
-                    <div class="stat-card">
-                        <div class="stat-icon bg-glass-info">
-                            <i data-feather="eye"></i>
-                        </div>
-                        <div>
-                            <span class="stat-value">{{ $stats['in_review'] }}</span>
-                            <span class="stat-label">In Review</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px;">
+                {{-- Approved --}}
+                <div class="col-6 col-md-4 col-lg mb-20 mb-lg-0" style="padding: 0 10px;">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-success">
                             <i data-feather="check-circle" style="stroke-width: 3px;"></i>
                         </div>
                         <div>
                             <span class="stat-value">{{ $stats['approved'] }}</span>
-                            <span class="stat-label">Complete</span>
+                            <span class="stat-label">Approved</span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Completed --}}
+                <div class="col-6 col-md-4 col-lg mb-20 mb-lg-0" style="padding: 0 10px;">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-info">
+                            <i data-feather="check-square" style="stroke-width: 3px;"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $stats['completed'] }}</span>
+                            <span class="stat-label">Completed</span>
                         </div>
                     </div>
                 </div>
                 
-                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px;">
+                {{-- Rejected --}}
+                <div class="col-6 col-md-4 col-lg mb-20 mb-lg-0" style="padding: 0 10px;">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-danger">
                             <i data-feather="x-circle" style="stroke-width: 3px;"></i>
                         </div>
                         <div>
                             <span class="stat-value">{{ $stats['rejected'] }}</span>
-                            <span class="stat-label">Reject</span>
+                            <span class="stat-label">Rejected</span>
                         </div>
                     </div>
                 </div>
@@ -311,7 +315,7 @@
                                         elseif($request->status == 'rejected') $badgeClass = 'bg-glass-danger';
                                     @endphp
                                     <span class="status-badge {{ $badgeClass }}">
-                                        {{ $request->status == 'approved' || $request->status == 'executed' ? 'Complete' : ucfirst(str_replace('_', ' ', $request->status)) }}
+                                        {{ $request->status == 'approved' || $request->status == 'executed' ? 'Approved' : ucfirst(str_replace('_', ' ', $request->status)) }}
                                     </span>
                                 </td>
                                 <td class="d-none d-md-table-cell">

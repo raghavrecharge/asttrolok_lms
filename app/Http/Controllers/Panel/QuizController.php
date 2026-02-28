@@ -513,7 +513,7 @@ class QuizController extends Controller
                             }
 
                             $time = time();
-                            $hasAccess = (strtotime("+{$quiz->expiry_days} days", $purchaseDate) > $time);
+                            $hasAccess = (strtotime("+{$quiz->expiry_days} days", ($purchaseDate instanceof \Illuminate\Support\Carbon) ? $purchaseDate->timestamp : (is_numeric($purchaseDate) ? (int)$purchaseDate : strtotime($purchaseDate))) > $time);
                         }else{
                              $sale1 = $webinar->getSaleItem1($user);
 
@@ -526,7 +526,7 @@ class QuizController extends Controller
                             }
 
                             $time = time();
-                            $hasAccess = (strtotime("+{$quiz->expiry_days} days", $purchaseDate) > $time);
+                            $hasAccess = (strtotime("+{$quiz->expiry_days} days", ($purchaseDate instanceof \Illuminate\Support\Carbon) ? $purchaseDate->timestamp : (is_numeric($purchaseDate) ? (int)$purchaseDate : strtotime($purchaseDate))) > $time);
                               }
                         }
 

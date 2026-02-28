@@ -888,8 +888,8 @@ class NewSupportForAsttrolokController extends Controller
         $stats = [
             'total' => (clone $statsQuery)->count(),
             'pending' => (clone $statsQuery)->where('status', 'pending')->count(),
-            'in_review' => (clone $statsQuery)->whereIn('status', ['in_review', 'verified'])->count(),
-            'approved' => (clone $statsQuery)->whereIn('status', ['approved', 'executed'])->count(),
+            'approved' => (clone $statsQuery)->whereIn('status', ['approved', 'executed', 'verified'])->count(),
+            'completed' => (clone $statsQuery)->where('status', 'completed')->count(),
             'rejected' => (clone $statsQuery)->where('status', 'rejected')->count(),
         ];
         

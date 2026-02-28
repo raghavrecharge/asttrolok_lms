@@ -436,10 +436,28 @@
                                 <div class="meta-item">
                                     <span class="meta-label">Access</span>
                                     <span class="meta-value">
-                                        @if(isset($accessResults[$sale->id]) && $accessResults[$sale->id]->hasAccess)
-                                            <span style="color:#2e7d32;">Active</span>
+                                        @php
+                                            $access = $accessResults[$sale->id];
+                                            $overdueCount = $access->metadata['overdue_count'] ?? 0;
+                                        @endphp
+                                        @if($access->hasAccess)
+                                            <span style="color:#2e7d32;">
+                                                @if($sale->valid_until)
+                                                    {{ dateTimeFormat($sale->valid_until, 'j M Y') }}
+                                                @else
+                                                    Lifetime
+                                                @endif
+                                            </span>
                                         @else
-                                            <span style="color:#c62828;">No</span>
+                                            <span style="color:#c62828;">
+                                                @if($overdueCount > 0)
+                                                    Overdue
+                                                @elseif($sale->valid_until && $sale->valid_until->isPast())
+                                                    Expired
+                                                @else
+                                                    No Access
+                                                @endif
+                                            </span>
                                         @endif
                                     </span>
                                 </div>

@@ -103,6 +103,7 @@ class AssignmentController extends Controller
             'pendingReviewCount' => $pendingReviewCount,
             'passedCount' => $passedCount,
             'failedCount' => $failedCount,
+            'completedCount' => $passedCount + $failedCount,
         ];
 
         return view('web.default.panel.assignments.my-assignments', $data);

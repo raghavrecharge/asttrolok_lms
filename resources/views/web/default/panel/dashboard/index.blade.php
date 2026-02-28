@@ -619,182 +619,124 @@
                     <h3 class="db-card-title">Continue</h3>
                 </div>
 
-                @if((!empty($sales) and !$sales->isEmpty()) || (!empty($orders) and !$orders->isEmpty()))
+                @if(!empty($sales) and !$sales->isEmpty())
                 <div class="owl-carousel owl-theme slider" id="slider1">
                     @php $cardCount = 0; @endphp
 
-                    @if(!empty($sales) and !$sales->isEmpty())
-                        @foreach($sales as $sale)
+                    @foreach($sales as $sale)
+                        @php
+                            $item = !empty($sale->webinar) ? $sale->webinar : $sale->bundle;
+                            if(empty($item) && !empty($sale->subscription)) $item = $sale->subscription;
+                        @endphp
+
+                        @if(!empty($item) && $cardCount < 10)
                             @php
-                                $item = !empty($sale->webinar) ? $sale->webinar : $sale->bundle;
-                                if(empty($item) && !empty($sale->subscription)) $item = $sale->subscription;
+                                $cardCount++;
+                                $hasAccessDays = !empty($sale->webinar) && !empty($sale->webinar->access_days) && $sale->webinar->access_days > 0;
+                                $isSubscription = !empty($sale->subscription_id) && !empty($sale->subscription);
+                                $expiryTimestamp = null;
+                                $isExpired = false;
+                                $extensionExpiry = null;
+                                $hasActiveExtension = false;
+                                $subAccessTill = null;
+                                $subExpired = false;
+
+                                if ($hasAccessDays) {
+                                    $expiryTimestamp = $sale->webinar->getExpiredAccessDays($sale->created_at, $sale->gift_id ?? null);
+                                    $isExpired = $expiryTimestamp < time();
+                                    $wId = $sale->webinar->id;
+                                    if (!empty($extendedAccesses[$wId]) && $extendedAccesses[$wId] > $expiryTimestamp) {
+                                        $extensionExpiry = $extendedAccesses[$wId];
+                                        $hasActiveExtension = $extensionExpiry > time();
+                                        if ($hasActiveExtension) $isExpired = false;
+                                    }
+                                }
+
+                                if ($isSubscription && !empty($subscriptionAccess)) {
+                                    $subAccess = $subscriptionAccess->firstWhere('subscription_id', $sale->subscription_id);
+                                    if (!empty($subAccess) && !empty($subAccess->access_till_date)) {
+                                        $subAccessTill = is_numeric($subAccess->access_till_date) ? (int)$subAccess->access_till_date : strtotime($subAccess->access_till_date);
+                                        $subExpired = $subAccessTill && $subAccessTill < time();
+                                    }
+                                }
+                                
+                                $isInstallment = !empty($sale->is_installment);
+                                $hasOverdue = $isInstallment && !empty($sale->installment_order) && $sale->installment_order->checkOrderHasOverdue();
                             @endphp
-
-                            @if(!empty($item) && $cardCount < 6)
-                                @php
-                                    $cardCount++;
-                                    $hasAccessDays = !empty($sale->webinar) && !empty($sale->webinar->access_days) && $sale->webinar->access_days > 0;
-                                    $isSubscription = !empty($sale->subscription_id) && !empty($sale->subscription);
-                                    $expiryTimestamp = null;
-                                    $isExpired = false;
-                                    $extensionExpiry = null;
-                                    $hasActiveExtension = false;
-                                    $subAccessTill = null;
-                                    $subExpired = false;
-
-                                    if ($hasAccessDays) {
-                                        $expiryTimestamp = $sale->webinar->getExpiredAccessDays($sale->created_at, $sale->gift_id ?? null);
-                                        $isExpired = $expiryTimestamp < time();
-                                        $wId = $sale->webinar->id;
-                                        if (!empty($extendedAccesses[$wId]) && $extendedAccesses[$wId] > $expiryTimestamp) {
-                                            $extensionExpiry = $extendedAccesses[$wId];
-                                            $hasActiveExtension = $extensionExpiry > time();
-                                            if ($hasActiveExtension) $isExpired = false;
+                            <div>
+                                <div class="db-continue-card mx-1">
+                                    @php
+                                        $imgSrc = '';
+                                        try { $imgSrc = $item->getImage(); } catch (\Throwable $e) {}
+                                        $imgFull = '';
+                                        if (!empty($imgSrc)) {
+                                            $imgFull = (str_starts_with($imgSrc, 'http') ? '' : config('app.img_dynamic_url')) . $imgSrc;
                                         }
-                                    }
+                                    @endphp
+                                    @if(!empty($imgFull))
+                                        <img loading="lazy" src="{{ $imgFull }}" class="card-img-top" alt="{{ $item->title }}">
+                                    @else
+                                        <div class="card-img-top" style="height:110px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;">
+                                            <i data-feather="{{ $isSubscription ? 'play-circle' : 'book-open' }}" width="32" height="32" style="color:rgba(255,255,255,0.7);"></i>
+                                        </div>
+                                    @endif
+                                    <div class="card-body">
+                                        <a href="{{ $item->getUrl() }}" class="text-decoration-none">
+                                            <div class="card-title">{{ $item->title }}</div>
+                                        </a>
+                                        <div class="card-date">{{ dateTimeFormat($sale->created_at, 'j M Y') }}</div>
 
-                                    if ($isSubscription && !empty($subscriptionAccess)) {
-                                        $subAccess = $subscriptionAccess->firstWhere('subscription_id', $sale->subscription_id);
-                                        if (!empty($subAccess) && !empty($subAccess->access_till_date)) {
-                                            $subAccessTill = is_numeric($subAccess->access_till_date) ? (int)$subAccess->access_till_date : strtotime($subAccess->access_till_date);
-                                            $subExpired = $subAccessTill && $subAccessTill < time();
-                                        }
-                                    }
-                                @endphp
-                                <div>
-                                    <div class="db-continue-card mx-1">
-                                        @php
-                                            $imgSrc = '';
-                                            try { $imgSrc = $item->getImage(); } catch (\Throwable $e) {}
-                                            $imgFull = '';
-                                            if (!empty($imgSrc)) {
-                                                $imgFull = (str_starts_with($imgSrc, 'http') ? '' : config('app.img_dynamic_url')) . $imgSrc;
-                                            }
-                                        @endphp
-                                        @if(!empty($imgFull) && !empty($item->thumbnail))
-                                            <img loading="lazy" src="{{ $imgFull }}" class="card-img-top" alt="{{ $item->title }}">
-                                        @else
-                                            <div class="card-img-top" style="height:110px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;">
-                                                <i data-feather="{{ $isSubscription ? 'play-circle' : 'book-open' }}" width="32" height="32" style="color:rgba(255,255,255,0.7);"></i>
+                                        @if($hasOverdue)
+                                            <div class="card-expiry">
+                                                <span class="expiry-expired">⚠️ Overdue Payment</span>
+                                            </div>
+                                        @elseif($isSubscription && $subAccessTill)
+                                            <div class="card-expiry">
+                                                @if($subExpired)
+                                                    <span class="expiry-expired">⛔ Access Expired</span>
+                                                @else
+                                                    <span class="expiry-active">✓ Access till: {{ date('j M Y', (int)$subAccessTill) }}</span>
+                                                @endif
+                                            </div>
+                                        @elseif($hasAccessDays)
+                                            <div class="card-expiry">
+                                                @if($isExpired && !$hasActiveExtension)
+                                                    <span class="expiry-expired">⛔ Access Expired</span>
+                                                @elseif($hasActiveExtension)
+                                                    <span class="expiry-extended">🔄 Extended till {{ date('j M Y', (int)$extensionExpiry) }}</span>
+                                                @else
+                                                    <span class="expiry-active">✓ Expires: {{ date('j M Y', (int)$expiryTimestamp) }}</span>
+                                                @endif
                                             </div>
                                         @endif
-                                        <div class="card-body">
-                                            <a href="{{ $item->getUrl() }}" class="text-decoration-none">
-                                                <div class="card-title">{{ $item->title }}</div>
-                                            </a>
-                                            <div class="card-date">{{ dateTimeFormat($sale->created_at, 'j M Y') }}</div>
 
-                                            @if($isSubscription && $subAccessTill)
-                                                <div class="card-expiry">
-                                                    @if($subExpired)
-                                                        <span class="expiry-expired">⛔ Access Expired</span>
-                                                    @else
-                                                        <span class="expiry-active">✓ Access till: {{ date('j M Y', (int)$subAccessTill) }}</span>
-                                                    @endif
-                                                </div>
-                                            @elseif($hasAccessDays)
-                                                <div class="card-expiry">
-                                                    @if($isExpired && !$hasActiveExtension)
-                                                        <span class="expiry-expired">⛔ Access Expired</span>
-                                                    @elseif($hasActiveExtension)
-                                                        <span class="expiry-extended">🔄 Extended till {{ date('j M Y', (int)$extensionExpiry) }}</span>
-                                                    @else
-                                                        <span class="expiry-active">✓ Expires: {{ date('j M Y', (int)$expiryTimestamp) }}</span>
-                                                    @endif
-                                                </div>
-                                            @endif
-
-                                            @if(!empty($sale->webinar) && method_exists($item, 'checkShowProgress') && $item->checkShowProgress())
-                                                <div class="progress">
-                                                    <div class="progress-bar" style="width: {{ $item->getProgress() }}%"></div>
-                                                </div>
-                                                <div class="progress-text">{{ $item->getProgress() }}% Completed</div>
-                                            @endif
-                                        </div>
-                                        <div class="card-footer-row">
-                                            <span class="footer-stat"><i data-feather="layers" width="12" height="12"></i> {{ $item->files_count ?? 0 }} lessons</span>
-                                            @if(($isExpired && !$hasActiveExtension) || ($isSubscription && $subExpired))
-                                                <span style="font-size:11px;color:#dc2626;font-weight:600;">Expired</span>
-                                            @elseif(!empty($sale->webinar))
-                                                <a href="{{ $item->getLearningPageUrl() }}" target="_blank" class="btn-continue">Continue <i data-feather="arrow-right" width="13" height="13"></i></a>
-                                            @elseif(!empty($sale->bundle))
-                                                <a href="/panel/bundle/{{ $sale->bundle->id }}" target="_blank" class="btn-continue">View List <i data-feather="arrow-right" width="13" height="13"></i></a>
-                                            @elseif($isSubscription)
-                                                <a href="{{ $item->getLearningPageUrl() }}" target="_blank" class="btn-continue">Continue <i data-feather="arrow-right" width="13" height="13"></i></a>
-                                            @else
-                                                <a href="{{ $item->getUrl() }}" class="btn-continue">Continue <i data-feather="arrow-right" width="13" height="13"></i></a>
-                                            @endif
-                                        </div>
+                                        @if(!empty($sale->webinar) && method_exists($item, 'checkShowProgress') && $item->checkShowProgress())
+                                            <div class="progress">
+                                                <div class="progress-bar" style="width: {{ $item->getProgress() }}%"></div>
+                                            </div>
+                                            <div class="progress-text">{{ $item->getProgress() }}% Completed</div>
+                                        @endif
+                                    </div>
+                                    <div class="card-footer-row">
+                                        <span class="footer-stat"><i data-feather="layers" width="12" height="12"></i> {{ $item->files_count ?? 0 }} lessons</span>
+                                        @if($hasOverdue)
+                                            <a href="/panel/installments/{{ $sale->installment_order->id }}/details" class="btn-continue" style="color:#dc2626;">Pay Now <i data-feather="arrow-right" width="13" height="13"></i></a>
+                                        @elseif(($isExpired && !$hasActiveExtension) || ($isSubscription && $subExpired))
+                                            <span style="font-size:11px;color:#dc2626;font-weight:600;">Expired</span>
+                                        @elseif(!empty($sale->webinar))
+                                            <a href="{{ $item->getLearningPageUrl() }}" target="_blank" class="btn-continue">Continue <i data-feather="arrow-right" width="13" height="13"></i></a>
+                                        @elseif(!empty($sale->bundle))
+                                            <a href="/panel/bundle/{{ $sale->bundle->id }}" target="_blank" class="btn-continue">View List <i data-feather="arrow-right" width="13" height="13"></i></a>
+                                        @elseif($isSubscription)
+                                            <a href="{{ $item->getLearningPageUrl() }}" target="_blank" class="btn-continue">Continue <i data-feather="arrow-right" width="13" height="13"></i></a>
+                                        @else
+                                            <a href="{{ $item->getUrl() }}" class="btn-continue">Continue <i data-feather="arrow-right" width="13" height="13"></i></a>
+                                        @endif
                                     </div>
                                 </div>
-                            @endif
-                        @endforeach
-                    @endif
-
-                    @if(!empty($orders) and !$orders->isEmpty())
-                        @foreach($orders as $sale)
-                            @php $item = !empty($sale->webinar) ? $sale->webinar : $sale->bundle; @endphp
-                            @if(!empty($item) && $cardCount < 8)
-                                @php
-                                    $cardCount++;
-                                    $hasAccessDays = !empty($sale->webinar) && !empty($sale->webinar->access_days) && $sale->webinar->access_days > 0;
-                                    $expiryTimestamp = null;
-                                    $isExpired = false;
-                                    $extensionExpiry = null;
-                                    $hasActiveExtension = false;
-
-                                    if ($hasAccessDays) {
-                                        $expiryTimestamp = $sale->webinar->getExpiredAccessDays($sale->created_at, null);
-                                        $isExpired = $expiryTimestamp < time();
-                                        $wId = $sale->webinar->id;
-                                        if (!empty($extendedAccesses[$wId]) && $extendedAccesses[$wId] > $expiryTimestamp) {
-                                            $extensionExpiry = $extendedAccesses[$wId];
-                                            $hasActiveExtension = $extensionExpiry > time();
-                                            if ($hasActiveExtension) $isExpired = false;
-                                        }
-                                    }
-                                @endphp
-                                <div>
-                                    <div class="db-continue-card mx-1">
-                                        <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $item->getImage() }}" class="card-img-top" alt="{{ $item->title }}">
-                                        <div class="card-body">
-                                            <a href="{{ $item->getUrl() }}" class="text-decoration-none">
-                                                <div class="card-title">{{ $item->title }}</div>
-                                            </a>
-                                            <div class="card-date">{{ dateTimeFormat($sale->created_at, 'j M Y') }}</div>
-
-                                            @if($hasAccessDays)
-                                                <div class="card-expiry">
-                                                    @if($isExpired && !$hasActiveExtension)
-                                                        <span class="expiry-expired">⛔ Access Expired</span>
-                                                    @elseif($hasActiveExtension)
-                                                        <span class="expiry-extended">🔄 Extended till {{ date('j M Y', (int)$extensionExpiry) }}</span>
-                                                    @else
-                                                        <span class="expiry-active">✓ Expires: {{ date('j M Y', (int)$expiryTimestamp) }}</span>
-                                                    @endif
-                                                </div>
-                                            @endif
-
-                                            @if(!empty($sale->webinar) && $item->checkShowProgress())
-                                                <div class="progress">
-                                                    <div class="progress-bar" style="width: {{ $item->getProgress() }}%"></div>
-                                                </div>
-                                                <div class="progress-text">{{ $item->getProgress() }}% Completed</div>
-                                            @endif
-                                        </div>
-                                        <div class="card-footer-row">
-                                            <span class="footer-stat"><i data-feather="layers" width="12" height="12"></i> {{ $item->files_count ?? 0 }} lessons</span>
-                                            @if($isExpired && !$hasActiveExtension)
-                                                <span style="font-size:11px;color:#dc2626;font-weight:600;">Expired</span>
-                                            @else
-                                                <a href="{{ $item->getLearningPageUrl() }}" target="_blank" class="btn-continue">Continue <i data-feather="arrow-right" width="13" height="13"></i></a>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-                        @endforeach
-                    @endif
+                            </div>
+                        @endif
+                    @endforeach
                 </div>
                 @else
                     @include(getTemplate() . '.includes.no-result',[
@@ -844,16 +786,53 @@
                                         <a href="{{ $item->getUrl() }}" class="course-name">{{ $item->title }}</a>
                                         <span class="course-teacher">By {{ $item->teacher->full_name ?? '' }}</span>
                                     </div>
-                                    <div class="course-progress-col">
-                                        @if(!empty($sale->webinar) && $item->checkShowProgress())
-                                            @php $prog = $item->getProgress(); @endphp
-                                            <div class="progress-pct" style="margin-bottom:2px;">{{ $prog }}% <span style="color:#c4c4c4;">Progress</span></div>
-                                            <div class="progress">
-                                                <div class="progress-bar" style="width: {{ $prog }}%"></div>
+                                    <div class="course-progress-col" style="min-width: 120px;">
+                                        @php
+                                            $hasOverdue = false;
+                                            if (!empty($sale->is_installment) and !empty($sale->installment_order)) {
+                                                $hasOverdue = $sale->installment_order->checkOrderHasOverdue();
+                                            } elseif (!empty($sale->installmentPlan)) {
+                                                $hasOverdue = $sale->installmentPlan->schedules->where('status', 'overdue')->count() > 0;
+                                            }
+                                            
+                                            $isExpired = false;
+                                            if (!empty($item->access_days)) {
+                                                $isExpired = !$item->checkHasExpiredAccessDays($sale->created_at, $sale->gift_id);
+                                            }
+                                            
+                                            $statusLabel = 'Active';
+                                            $statusColor = '#2ecc71';
+                                            if ($hasOverdue) {
+                                                $statusLabel = 'Overdue';
+                                                $statusColor = '#e74c3c';
+                                            } elseif ($isExpired) {
+                                                $statusLabel = 'Expired';
+                                                $statusColor = '#94a3b8';
+                                            } else {
+                                                if (!empty($item->access_days)) {
+                                                    $expiryDate = $item->getExpiredAccessDays($sale->created_at, $sale->gift_id);
+                                                    $statusLabel = dateTimeFormat($expiryDate, 'j M Y');
+                                                } else {
+                                                    $statusLabel = 'Lifetime';
+                                                }
+                                            }
+                                        @endphp
+
+                                        <div class="d-flex flex-column align-items-end">
+                                            @if(!empty($sale->webinar) && $item->checkShowProgress())
+                                                @php $prog = $item->getProgress(); @endphp
+                                                <div class="progress-pct" style="margin-bottom:2px;">{{ $prog }}% <span style="color:#c4c4c4;">Progress</span></div>
+                                                <div class="progress" style="width: 80px;">
+                                                    <div class="progress-bar" style="width: {{ $prog }}%"></div>
+                                                </div>
+                                            @else
+                                                <span class="progress-pct">0% Progress</span>
+                                            @endif
+                                            
+                                            <div class="mt-5" style="font-size: 10px; font-weight: 700; color: #fff; background: {{ $statusColor }}; padding: 1px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                {{ $statusLabel }}
                                             </div>
-                                        @else
-                                            <span class="progress-pct">0% Progress</span>
-                                        @endif
+                                        </div>
                                     </div>
                                     <!-- <div class="course-rating">
                                         <i data-feather="star" width="11" height="11" style="color: #f59e0b; fill: #f59e0b;"></i>
@@ -989,16 +968,20 @@
                 @if(!empty($supports) and !$supports->isEmpty())
                     <div class="db-scroll-sm">
                         @foreach($supports->take(4) as $support)
-                            <a href="/panel/supports/{{ $support->id }}" class="db-support-item text-decoration-none">
-                                <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ (!empty($support->webinar) && $support->webinar->teacher_id != $authUser->id) ? $support->webinar->teacher->getAvatar() : $support->user->getAvatar() }}" class="support-avatar" alt="">
+                            @php
+                                $isInstructorSide = (!empty($support->webinar) && $support->webinar->teacher_id == $authUser->id);
+                                $displayUser = $isInstructorSide ? $support->user : ($support->webinar ? $support->webinar->teacher : $support->user);
+                            @endphp
+                            <a href="{{ route('newsuportforasttrolok.show', $support->ticket_number) }}" class="db-support-item text-decoration-none">
+                                <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $displayUser ? $displayUser->getAvatar() : '/assets/default/img/instructor.png' }}" class="support-avatar" alt="">
                                 <div class="support-info">
                                     <div class="support-title-row">
                                         <span class="support-name">{{ $support->title }}</span>
                                     </div>
                                     <div class="support-sender">
-                                        {{ (!empty($support->webinar) && $support->webinar->teacher_id != $authUser->id) ? $support->webinar->teacher->full_name : $support->user->full_name }}
+                                        {{ $displayUser ? $displayUser->full_name : $support->getRequesterName() }}
                                         &middot;
-                                        {{ (!empty($support->conversations) && count($support->conversations)) ? dateTimeFormat($support->conversations->first()->created_at, 'j M Y H:i') : dateTimeFormat($support->created_at, 'j M Y H:i') }}
+                                        {{ dateTimeFormat($support->created_at, 'j M Y H:i') }}
                                     </div>
                                     @if(!empty($support->webinar))
                                         <span class="support-course-tag">{{ truncate($support->webinar->title, 30) }}</span>
@@ -1132,20 +1115,41 @@
                 </div>
 
                 <div class="db-scroll-sm">
-                    @foreach($upeUpcomingSchedules->take(4) as $schedule)
+                    @foreach($upeInstallmentPlans->take(5) as $plan)
+                        @php
+                            $product = $plan->sale->product ?? null;
+                            $entity = null;
+                            if ($product) {
+                                if (in_array($product->product_type, ['webinar', 'course_video'])) {
+                                    $entity = \App\Models\Webinar::find($product->external_id);
+                                } elseif ($product->product_type == 'bundle') {
+                                    $entity = \App\Models\Bundle::find($product->external_id);
+                                }
+                            }
+                            $nextSchedule = $plan->nextDueSchedule();
+                        @endphp
                         <div class="db-course-item">
-                            <div style="width:40px;height:40px;border-radius:10px;background:{{ $schedule->status === 'overdue' ? '#fee2e2' : '#e0f2fe' }};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                                <i data-feather="{{ $schedule->status === 'overdue' ? 'alert-circle' : 'calendar' }}" width="18" height="18" style="color:{{ $schedule->status === 'overdue' ? '#dc2626' : 'var(--primary)' }};"></i>
-                            </div>
+                            @if(!empty($entity))
+                                <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $entity->getImage() }}" class="course-thumb" alt="">
+                            @else
+                                <div style="width:40px;height:40px;border-radius:50%;background:#e0f2fe;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                    <i data-feather="calendar" width="18" height="18" style="color:var(--primary);"></i>
+                                </div>
+                            @endif
+
                             <div class="course-info">
-                                <span class="course-name" style="cursor:default;">
-                                    {{ !empty($schedule->plan) && !empty($schedule->plan->sale) && !empty($schedule->plan->sale->product) ? $schedule->plan->sale->product->name : 'Installment #'.$schedule->plan_id }}
-                                </span>
+                                <a href="/panel/upe/installments/{{ $plan->id }}/details" class="course-name">
+                                    {{ $product ? $product->name : 'Plan #'.$plan->id }}
+                                </a>
                                 <span class="course-teacher">
-                                    @if($schedule->status === 'overdue')
-                                        <span class="text-danger font-weight-600">Overdue — {{ handlePrice($schedule->amount_due - $schedule->amount_paid, false) }}</span>
+                                    @if($nextSchedule)
+                                        @if($nextSchedule->status === 'overdue' || $nextSchedule->isOverdue())
+                                            <span class="text-danger font-weight-600">Overdue — {{ handlePrice($nextSchedule->amount_due - $nextSchedule->amount_paid, false) }}</span>
+                                        @else
+                                            Next: {{ $nextSchedule->due_date->format('j M Y') }} — {{ handlePrice($nextSchedule->amount_due - $nextSchedule->amount_paid, false) }}
+                                        @endif
                                     @else
-                                        Due {{ $schedule->due_date->format('j M Y') }} — {{ handlePrice($schedule->amount_due - $schedule->amount_paid, false) }}
+                                        <span class="text-primary">Plan Completed</span>
                                     @endif
                                 </span>
                             </div>

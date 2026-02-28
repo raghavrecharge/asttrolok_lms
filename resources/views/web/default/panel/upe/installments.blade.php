@@ -372,7 +372,11 @@
                                         <span class="upe-type-badge" style="background:rgba(255,193,7,0.8);color:#000;">EMI</span>
                                     </div>
                                     <div class="upe-status-pos">
-                                        <span class="upe-status-pill {{ $status }}">{{ ucfirst($status) }}</span>
+                                        @if($overdueCount > 0)
+                                            <span class="upe-status-pill overdue">Overdue</span>
+                                        @else
+                                            <span class="upe-status-pill {{ $status }}">{{ ucfirst($status) }}</span>
+                                        @endif
                                     </div>
                                 </div>
 

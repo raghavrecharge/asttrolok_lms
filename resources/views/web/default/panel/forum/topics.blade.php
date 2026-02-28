@@ -180,7 +180,7 @@
                 </div>
 
                 {{-- Submit --}}
-                <div class="col-12 col-lg-2">
+                <div class="col-12 col-lg-2 d-flex align-items-end">
                     <button type="submit" class="w-100" style="height:40px;background:linear-gradient(135deg,#43d477 0%,#2ecc71 100%);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 14px rgba(67,212,119,0.25);white-space:nowrap;padding:0 20px;transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(67,212,119,0.35)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(67,212,119,0.25)'">
                         <i data-feather="search" width="13" height="13"></i>
                         {{ trans('public.show_results') }}

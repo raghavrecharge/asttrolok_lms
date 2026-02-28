@@ -354,6 +354,44 @@
                                                 <span class="info-label">Duration</span>
                                             </div>
                                         </div>
+                                        
+                                        <div class="info-item">
+                                            @php
+                                                $hasOverdue = false;
+                                                if (!empty($sale->installmentOrder)) {
+                                                    $hasOverdue = $sale->installmentOrder->checkOrderHasOverdue();
+                                                } elseif (!empty($sale->installmentPlan)) {
+                                                    $hasOverdue = $sale->installmentPlan->schedules->where('status', 'overdue')->count() > 0;
+                                                }
+                                                
+                                                $isExpired = false;
+                                                if (!empty($item->access_days)) {
+                                                    $isExpired = !$item->checkHasExpiredAccessDays($sale->created_at, $sale->gift_id);
+                                                }
+                                                
+                                                $statusLabel = 'Active';
+                                                $statusColor = '#27ae60';
+                                                if ($hasOverdue) {
+                                                    $statusLabel = 'Overdue';
+                                                    $statusColor = '#e74c3c';
+                                                } elseif ($isExpired) {
+                                                    $statusLabel = 'Expired';
+                                                    $statusColor = '#7f8c8d';
+                                                } else {
+                                                    if (!empty($item->access_days)) {
+                                                        $expiryDate = $item->getExpiredAccessDays($sale->created_at, $sale->gift_id);
+                                                        $statusLabel = dateTimeFormat($expiryDate, 'j M Y');
+                                                    } else {
+                                                        $statusLabel = 'Lifetime';
+                                                    }
+                                                }
+                                            @endphp
+                                            <div class="info-icon"><i data-feather="shield" width="16" height="16"></i></div>
+                                            <div class="info-text">
+                                                <span class="info-value" style="color: {{ $statusColor }}">{{ $statusLabel }}</span>
+                                                <span class="info-label">Access Status</span>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div class="footer-section">

@@ -6,9 +6,109 @@
 <style>
     .answer-item{
         position: relative;
-    width: 100%;
-    height: auto !important;
-    padding: 10px !important;
+        width: 100%;
+        height: auto !important;
+        padding: 10px !important;
+    }
+    
+    .quiz-info-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 20px;
+    }
+    
+    @media (min-width: 768px) {
+        .quiz-info-container {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+    }
+    
+    .quiz-info-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px;
+        text-align: center;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 120px;
+    }
+    
+    .quiz-info-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-color: #cbd5e1;
+    }
+    
+    .card-icon-box {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+    
+    .card-icon-box img {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+    }
+    
+    .card-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1.1;
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .card-label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748b;
+        margin-top: 6px;
+    }
+    
+    .quiz-timer-box {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .quiz-timer-box .timer {
+        font-size: 20px !important;
+        font-weight: 700 !important;
+        color: #1e293b !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
+    }
+    
+    .quiz-timer-box .timer > span {
+        margin: 0 1px !important;
+    }
+
+    .activities-container {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 20px;
+        margin-top: 25px;
     }
 </style>
 @section('content')
@@ -23,46 +123,43 @@
                 </span>
             </p>
 
-            <div class="activities-container shadow-sm rounded-lg mt-25 p-20 p-lg-35">
-                <div class="row">
-                    <div class="col-6 col-md-3 d-flex align-items-center justify-content-center">
-                        <div class="d-flex flex-column align-items-center text-center">
-                            <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/58.svg" width="64" height="64" alt="">
-                            <strong class="font-30 font-weight-bold text-secondary mt-5">{{  $quiz->pass_mark }}/{{  $quizQuestions->sum('grade') }}</strong>
-                            <span class="font-16 text-gray">{{ trans('public.min') }} {{ trans('quiz.grade') }}</span>
-                        </div>
+            <div class="quiz-info-container">
+                <div class="quiz-info-card">
+                    <div class="card-icon-box" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);">
+                        <img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/activity/58.svg" alt="">
                     </div>
+                    <div class="card-value">{{ $quiz->pass_mark }}/{{ $quizQuestions->sum('grade') }}</div>
+                    <div class="card-label">{{ trans('public.min') }} {{ trans('quiz.grade') }}</div>
+                </div>
 
-                    <div class="col-6 col-md-3 d-flex align-items-center justify-content-center">
-                        <div class="d-flex flex-column align-items-center text-center">
-                            <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/88.svg" width="64" height="64" alt="">
-                            <strong class="font-30 font-weight-bold text-secondary mt-5">{{ $attempt_count }}/{{ $quiz->attempt }}</strong>
-                            <span class="font-16 text-gray">{{ trans('quiz.attempts') }}</span>
-                        </div>
+                <div class="quiz-info-card">
+                    <div class="card-icon-box" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);">
+                        <img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/activity/88.svg" alt="">
                     </div>
+                    <div class="card-value">{{ $attempt_count }}/{{ $quiz->attempt }}</div>
+                    <div class="card-label">{{ trans('quiz.attempts') }}</div>
+                </div>
 
-                    <div class="col-6 col-md-3 mt-30 mt-md-0 d-flex align-items-center justify-content-center mt-5 mt-md-0">
-                        <div class="d-flex flex-column align-items-center text-center">
-                            <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/47.svg" width="64" height="64" alt="">
-                            <strong class="font-30 font-weight-bold text-secondary mt-5">{{ $totalQuestionsCount }}</strong>
-                            <span class="font-16 text-gray">{{ trans('public.questions') }}</span>
-                        </div>
+                <div class="quiz-info-card">
+                    <div class="card-icon-box" style="background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);">
+                        <img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/activity/47.svg" alt="">
                     </div>
+                    <div class="card-value">{{ $totalQuestionsCount }}</div>
+                    <div class="card-label">{{ trans('public.questions') }}</div>
+                </div>
 
-                    <div class="col-6 col-md-3 mt-30 mt-md-0 d-flex align-items-center justify-content-center mt-5 mt-md-0">
-                        <div class="d-flex flex-column align-items-center text-center">
-                            <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/clock.svg" width="64" height="64" alt="">
-                            @if(!empty($quiz->time))
-                                <strong class="font-30 font-weight-bold text-secondary mt-5">
-                                    <div class="d-flex align-items-center timer ltr" data-minutes-left="{{ $quiz->time }}"></div>
-                                </strong>
-                            @else
-                                <strong class="font-30 font-weight-bold text-secondary mt-5">{{ trans('quiz.unlimited') }}</strong>
-                            @endif
-                            <span class="font-16 text-gray">{{ trans('quiz.remaining_time') }}</span>
-                        </div>
+                <div class="quiz-info-card">
+                    <div class="card-icon-box" style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);">
+                        <img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/activity/clock.svg" alt="">
                     </div>
-
+                    <div class="card-value quiz-timer-box">
+                        @if(!empty($quiz->time))
+                            <div class="timer ltr" data-minutes-left="{{ $quiz->time }}"></div>
+                        @else
+                            {{ trans('quiz.unlimited') }}
+                        @endif
+                    </div>
+                    <div class="card-label">{{ trans('quiz.remaining_time') }}</div>
                 </div>
             </div>
         </section>
