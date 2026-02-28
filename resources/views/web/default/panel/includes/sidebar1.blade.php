@@ -501,9 +501,9 @@
                      <li class="mt-5 {{ (request()->is('panel/support/newsuportforasttrolok')) ? 'active' : '' }}">
                         <a href="/panel/support/newsuportforasttrolok">Support List</a>
                     </li>
-                     <li class="mt-5 {{ (request()->is('panel/upe/requests*')) ? 'active' : '' }}">
+                     <!-- <li class="mt-5 {{ (request()->is('panel/upe/requests*')) ? 'active' : '' }}">
                         <a href="/panel/upe/requests">My Requests</a>
-                    </li>
+                    </li> -->
                 </ul>
             </div>
         </li>

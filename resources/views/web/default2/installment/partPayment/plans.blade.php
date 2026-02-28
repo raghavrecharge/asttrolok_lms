@@ -63,7 +63,7 @@
         </div>
 
         {{-- Wallet Payment Widget --}}
-        @include('web.default.includes.wallet_payment_widget', ['totalAmount' => $itemPrice ?? 0])
+        @include('web.default.includes.wallet_payment_widget', ['totalAmount' => $upePayable['nextPayableAmount'] ?? $amount ?? $itemPrice ?? 0])
 
         @foreach($installments as $installmentRow)
             @include('web.default2.installment.partPayment.card',['installment' => $installmentRow, 'itemPrice' => $itemPrice, 'itemId' => $itemId, 'itemType' => $itemType])

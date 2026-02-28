@@ -360,7 +360,7 @@
 
     </section>
 
-    {{-- Restructure Request --}}
+    <!-- {{-- Restructure Request --}}
     @if($plan->status === 'active')
         @php
             $overdueCount = $plan->schedules->where('status', 'overdue')->count();
@@ -473,7 +473,7 @@
                 </div>
             </section>
         @endif
-    @endif
+    @endif -->
 
     <div class="mt-20 d-flex">
         <a href="/panel/upe/installments" class="btn btn-sm btn-secondary" style="border-radius: 10px;"><i data-feather="arrow-left" width="14" height="14" class="mr-5"></i> Back to EMI Plans</a>

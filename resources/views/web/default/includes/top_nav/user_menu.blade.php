@@ -45,7 +45,7 @@
 
 
                     <li class="navbar-auth-user-dropdown-item">
-                        <a href="{{ ($authUser->isUser()) ? '/panel/webinars/purchases' : '/panel/webinars' }}" class="d-flex align-items-center w-100 px-15 py-10 text-gray font-14 bg-transparent">
+                        <a href="/panel/upe/purchases" class="d-flex align-items-center w-100 px-15 py-10 text-gray font-14 bg-transparent">
                             <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/icons/user_menu/my_courses.svg" class="icons">
                             <span class="ml-5">{{ trans('update.my_courses') }}</span>
                         </a>
@@ -61,7 +61,7 @@
                     @endif
 
                     <li class="navbar-auth-user-dropdown-item">
-                        <a href="/panel/support" class="d-flex align-items-center w-100 px-15 py-10 text-gray font-14 bg-transparent">
+                        <a href="/panel/support/newsuportforasttrolok" class="d-flex align-items-center w-100 px-15 py-10 text-gray font-14 bg-transparent">
                             <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/icons/user_menu/support.svg" class="icons">
                             <span class="ml-5">{{ trans('panel.support') }}</span>
                         </a>

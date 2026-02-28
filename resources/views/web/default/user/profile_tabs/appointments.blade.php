@@ -254,7 +254,7 @@
 
                 <div class="  form-group mt-15">
                     <label class="input-label">Name*</label>
-                    <input name="full_name" type="text"  class="form-control" id="full_name" value="{{ old('full_name') }}"  >
+                    <input name="full_name" type="text"  class="form-control" id="full_name" value="{{ old('full_name', (auth()->check()) ? auth()->user()->full_name : '') }}"  >
                      @if ($errors->has('full_name'))
                             <span class="text-danger">{{ $errors->first('full_name') }}</span>
                         @endif
@@ -263,7 +263,7 @@
 
                 <div class="  form-group mt-15">
                     <label class="input-label">Email*</label>
-                    <input name="email" type="email" maxlength="60" class="form-control @error('email') is-invalid @enderror" id="email" required>
+                    <input name="email" type="email" maxlength="60" class="form-control @error('email') is-invalid @enderror" id="email" value="{{ old('email', (auth()->check()) ? auth()->user()->email : '') }}" required>
                      @if($errors->has('email'))
                                     <div class="invalid-feedback">
                                         {{ $errors->first('email') }}
@@ -308,7 +308,7 @@
 
                 <div class="  form-group mt-15">
                     <label class="input-label">Contact*</label>
-                    <input name="mobile" type="number" class="form-control @error('mobile') is-invalid @enderror"  maxlength="10" id="mobile">
+                    <input name="mobile" type="number" class="form-control @error('mobile') is-invalid @enderror"  maxlength="10" id="mobile" value="{{ old('mobile', (auth()->check()) ? auth()->user()->mobile : '') }}">
                      @if($errors->has('mobile'))
                                     <div class="invalid-feedback">
                                         {{ $errors->first('mobile') }}

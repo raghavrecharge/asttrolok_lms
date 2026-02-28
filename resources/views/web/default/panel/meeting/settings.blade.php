@@ -435,26 +435,14 @@
                 <div class="row align-items-center">
                     <div class="col-12 col-md-4">
                         <label class="input-label-premium">{{ trans('panel.amount') }}</label>
-                        <div class="input-group input-group-premium">
-                            <div class="input-group-prepend input-group-prepend-premium">
-                                <span class="input-group-text">
-                                    {{ $currency }}
-                                </span>
-                            </div>
-                            <input type="number" name="amount" value="{{ !empty($meeting) ? convertPriceToUserCurrency($meeting->amount) : old('amount') }}" class="form-control form-control-premium" placeholder="{{ trans('panel.number_only') }}"/>
-                            <div class="invalid-feedback"></div>
-                        </div>
+                        <input type="number" name="amount" value="{{ !empty($meeting) ? convertPriceToUserCurrency($meeting->amount) : old('amount') }}" class="form-control form-control-premium" placeholder="{{ trans('panel.number_only') }}"/>
+                        <div class="invalid-feedback"></div>
                     </div>
                     
                     <div class="col-12 col-md-4 mt-20 mt-md-0">
                         <label class="input-label-premium">{{ trans('panel.discount') }} (%)</label>
-                        <div class="input-group input-group-premium">
-                            <div class="input-group-prepend input-group-prepend-premium">
-                                <span class="input-group-text">%</span>
-                            </div>
-                            <input type="number" name="discount" value="{{ !empty($meeting) ? $meeting->discount : old('discount') }}" class="form-control form-control-premium" placeholder="{{ trans('panel.number_only') }}"/>
-                            <div class="invalid-feedback"></div>
-                        </div>
+                        <input type="number" name="discount" value="{{ !empty($meeting) ? $meeting->discount : old('discount') }}" class="form-control form-control-premium" placeholder="{{ trans('panel.number_only') }}"/>
+                        <div class="invalid-feedback"></div>
                     </div>
                 </div>
             </div>
@@ -477,15 +465,8 @@
 
                     <div class="col-12 col-md-4 mt-20 mt-md-0 {{ ((!empty($meeting) and $meeting->in_person) or old('in_person') == 'on') ? '' :  'd-none' }}" id="inPersonMeetingAmount">
                         <label class="input-label-premium">{{ trans('update.hourly_amount') }}</label>
-                        <div class="input-group input-group-premium">
-                            <div class="input-group-prepend input-group-prepend-premium">
-                                <span class="input-group-text">
-                                    {{ $currency }}
-                                </span>
-                            </div>
-                            <input type="number" name="in_person_amount" value="{{ !empty($meeting) ? convertPriceToUserCurrency($meeting->in_person_amount) : old('in_person_amount') }}" class="form-control form-control-premium" placeholder="{{ trans('panel.number_only') }}"/>
-                            <div class="invalid-feedback"></div>
-                        </div>
+                        <input type="number" name="in_person_amount" value="{{ !empty($meeting) ? convertPriceToUserCurrency($meeting->in_person_amount) : old('in_person_amount') }}" class="form-control form-control-premium" placeholder="{{ trans('panel.number_only') }}"/>
+                        <div class="invalid-feedback"></div>
                     </div>
                 </div>
             </div>
@@ -528,13 +509,8 @@
 
                                 <div class="col-12 col-md-4 mt-15 mt-md-0">
                                     <label class="input-label-premium">{{ trans('update.hourly_amount') }}</label>
-                                    <div class="input-group input-group-premium">
-                                        <div class="input-group-prepend input-group-prepend-premium">
-                                            <span class="input-group-text">{{ $currency }}</span>
-                                        </div>
-                                        <input type="text" name="online_group_amount" value="{{ !empty($meeting) ? convertPriceToUserCurrency($meeting->online_group_amount) : old('online_group_amount') }}" class="form-control form-control-premium" placeholder="{{ trans('panel.number_only') }}"/>
-                                        <div class="invalid-feedback"></div>
-                                    </div>
+                                    <input type="text" name="online_group_amount" value="{{ !empty($meeting) ? convertPriceToUserCurrency($meeting->online_group_amount) : old('online_group_amount') }}" class="form-control form-control-premium" placeholder="{{ trans('panel.number_only') }}"/>
+                                    <div class="invalid-feedback"></div>
                                 </div>
                             </div>
                         </div>
@@ -562,13 +538,8 @@
 
                                 <div class="col-12 col-md-4 mt-15 mt-md-0">
                                     <label class="input-label-premium">{{ trans('update.hourly_amount') }}</label>
-                                    <div class="input-group input-group-premium">
-                                        <div class="input-group-prepend input-group-prepend-premium">
-                                            <span class="input-group-text">{{ $currency }}</span>
-                                        </div>
-                                        <input type="text" name="in_person_group_amount" value="{{ !empty($meeting) ? convertPriceToUserCurrency($meeting->in_person_group_amount) : old('in_person_group_amount') }}" class="form-control form-control-premium" placeholder="{{ trans('panel.number_only') }}"/>
-                                        <div class="invalid-feedback"></div>
-                                    </div>
+                                    <input type="text" name="in_person_group_amount" value="{{ !empty($meeting) ? convertPriceToUserCurrency($meeting->in_person_group_amount) : old('in_person_group_amount') }}" class="form-control form-control-premium" placeholder="{{ trans('panel.number_only') }}"/>
+                                    <div class="invalid-feedback"></div>
                                 </div>
                             </div>
                         </div>

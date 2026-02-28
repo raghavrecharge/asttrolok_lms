@@ -184,12 +184,12 @@
 
                         <div class="  form-group mt-30">
                             <label class="input-label">Name*</label>
-                            <input name="full_name" id="full_name" type="text" maxlength="40" class="form-control"  placeholder="Name*" >
+                            <input name="full_name" id="full_name" type="text" maxlength="40" class="form-control"  placeholder="Name*" value="{{ old('full_name', (auth()->check()) ? auth()->user()->full_name : '') }}">
                         </div>
 
                         <div class="  form-group mt-30">
                             <label class="input-label">Email*</label>
-                            <input name="email" id="email" type="email" maxlength="60" class="form-control"  placeholder="Email*">
+                            <input name="email" id="email" type="email" maxlength="60" class="form-control"  placeholder="Email*" value="{{ old('email', (auth()->check()) ? auth()->user()->email : '') }}">
                         </div>
 <div class="form-group mt-30">
     <label class="input-label">Create Password*</label>
@@ -221,7 +221,7 @@
 
                         <div class="  form-group mt-30">
                             <label class="input-label">Contact*</label>
-                            <input name="mobile" id="mobile" type="number" class="form-control"  placeholder="Contact*" maxlength="10">
+                            <input name="mobile" id="mobile" type="number" class="form-control"  placeholder="Contact*" maxlength="10" value="{{ old('mobile', (auth()->check()) ? auth()->user()->mobile : '') }}">
                         </div>
 
                         <div class="row">

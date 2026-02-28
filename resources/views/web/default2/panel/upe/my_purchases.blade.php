@@ -1,25 +1,7 @@
 @extends(getTemplate() .'.panel.layouts.panel_layout')
 
 @section('content')
-    <section>
-        <h2 class="section-title">My Purchases</h2>
 
-        <div class="panel-section-card py-20 px-25 mt-20">
-            <div class="row">
-                <div class="col-12 col-lg-4">
-                    <form method="get" class="d-flex">
-                        <select name="status" class="form-control mr-10">
-                            <option value="">All Statuses</option>
-                            @foreach(['active','pending_payment','completed','refunded','partially_refunded','expired'] as $s)
-                                <option value="{{ $s }}" {{ request('status') == $s ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ',$s)) }}</option>
-                            @endforeach
-                        </select>
-                        <button type="submit" class="btn btn-sm btn-primary">Filter</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <section class="mt-25">
         <div class="row">

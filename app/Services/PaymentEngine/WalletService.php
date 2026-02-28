@@ -296,7 +296,8 @@ class WalletService
         }
 
         return WalletTransaction::where('wallet_id', $wallet->id)
-            ->orderByDesc('created_at')
+            ->orderBy('created_at', 'asc')
+            ->orderBy('id', 'asc')
             ->paginate($perPage);
     }
 }

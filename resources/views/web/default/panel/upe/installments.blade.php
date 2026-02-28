@@ -308,35 +308,6 @@
         </div>
     </section>
 
-    <section class="mt-25 panel-filter-section">
-        <div class="mt-20" style="background: linear-gradient(135deg, #f8faff 0%, #fff 100%); border-radius: 20px; border: 1px solid #e8edf5; padding: 22px 28px; box-shadow: 0 4px 24px rgba(31,59,100,0.06);">
-            <form action="" method="get">
-                <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;">
-                    <div style="flex:0 0 auto;">
-                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
-                            <i data-feather="sliders" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.status') }}
-                        </label>
-                        <div style="position:relative;width:160px;">
-                            <select name="status" class="form-control" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;cursor:pointer;">
-                                <option value="">{{ trans('public.all') }}</option>
-                                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
-                                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-                            </select>
-                            <div style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:#8c98a4;">
-                                <i data-feather="chevron-down" width="13" height="13"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="flex:0 0 auto;">
-                        <button type="submit" style="height:40px;background:linear-gradient(135deg,#43d477 0%,#2ecc71 100%);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(67,212,119,0.25);white-space:nowrap;padding:0 20px;transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(67,212,119,0.35)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(67,212,119,0.25)'">
-                            <i data-feather="search" width="13" height="13"></i>
-                            {{ trans('public.show_results') }}
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </section>
 
         @if(!empty($sales) and !$sales->isEmpty())
             <div class="row mt-20">
@@ -454,7 +425,7 @@
                 "title" => "No EMI plans found",
                 "hint" => "You haven't purchased anything on installments yet.",
                 "btn" => [
-                    "url" => "/courses",
+                    "url" => "/classes",
                     "text" => "Browse Courses"
                 ]
             ])
