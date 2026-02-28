@@ -68,17 +68,17 @@
 
         @endphp
 
-        <span class="payment-hint font-20 text-white d-block"> {{ handlePrice($total) }} item 1</span>
+        <span class="payment-hint font-20 text-white d-block" id="checkoutBannerAmount"> {{ handlePrice($total) }} item 1</span>
         @else
         @php
         $total=$webinar->price;
         @endphp
-        <span class="payment-hint font-20 text-white d-block"> {{ handlePrice($total) }}  item 1</span>
+        <span class="payment-hint font-20 text-white d-block" id="checkoutBannerAmount"> {{ handlePrice($total) }}  item 1</span>
         @endif
    </section>
 
     <section class="container mt-45">
-<div class="price-box shadow-xs mb-20"> <span class="font-30 font-weight-bold">Total Amount </span> <span class="f-right font-30 text-primary" style="    float: right;">{{handlePrice($total)}}/-</span> </div>
+<div class="price-box shadow-xs mb-20"> <span class="font-30 font-weight-bold">Total Amount </span> <span class="f-right font-30 text-primary" id="totalAmountDisplay" style="    float: right;">{{handlePrice($total)}}/-</span> </div>
         @if(!empty($totalCashbackAmount))
             <div class="d-flex align-items-center mb-25 p-15 success-transparent-alert">
                 <div class="success-transparent-alert__icon d-flex align-items-center justify-content-center">
@@ -116,30 +116,8 @@
                     </div></div>
                 </form>
 
-        {{-- Wallet Section --}}
-        @if(auth()->check())
-            @php
-                $walletBalance = app(\App\Services\PaymentEngine\WalletService::class)->balance(auth()->id());
-            @endphp
-            @if($walletBalance > 0)
-                <div class="mt-20 p-15 rounded-lg" style="background: #f0f7ff; border: 1px solid #d0e3ff;">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="font-14 font-weight-bold text-dark-blue">
-                                <i data-feather="credit-card" width="16" height="16" class="mr-5"></i>
-                                Use Wallet Balance
-                            </div>
-                            <div class="font-12 text-gray mt-5">Available: <strong>{{ handlePrice($walletBalance) }}</strong></div>
-                        </div>
-                        <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="useWalletToggle">
-                            <label class="custom-control-label" for="useWalletToggle"></label>
-                        </div>
-                    </div>
-                    <div id="walletDeductionInfo" class="mt-10 font-12 text-success" style="display:none;"></div>
-                </div>
-            @endif
-        @endif
+        {{-- Wallet Payment Widget --}}
+        @include('web.default.includes.wallet_payment_widget', ['totalAmount' => $total ?? 0])
 
         <h2 class="section-title">Fill all the Details here:</h2>
         {{session()->forget('discountCoupon')}}
@@ -292,14 +270,13 @@
 document.getElementById('paymentSubmit').addEventListener('click', function(e) {
     e.preventDefault();
 
-    var wToggle = document.getElementById('useWalletToggle');
     const userDetails = {
         name: document.getElementById('customer_name').value,
         email: document.getElementById('customer_email').value,
         number: document.getElementById('customer_number').value,
         password: document.getElementById('customer_password').value,
-        discount_id: @json(session('discountCouponId')),
-        use_wallet: wToggle ? wToggle.checked : false
+        discount_id: {{ !empty($discount) ? $discount->id : 0 }},
+        wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
     };
 
     showPaymentLoader();
@@ -379,42 +356,19 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
         return;
     }
 
-    var walletToggle2 = document.getElementById('useWalletToggle');
     const userDetails = {
         name: name,
         email: email,
         number: number,
         password: password,
         password_confirmation: confirmPassword,
-        discount_id: @json(session('discountCouponId')),
-        use_wallet: walletToggle2 ? walletToggle2.checked : false
+        discount_id: {{ !empty($discount) ? $discount->id : 0 }},
+        wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
     };
 
     showPaymentLoader();
 
     initiatePayment('webinar', {{ $webinar->id }}, userDetails);
 });
-
-// Wallet toggle info
-var walletToggleEl = document.getElementById('useWalletToggle');
-var walletInfoEl = document.getElementById('walletDeductionInfo');
-if (walletToggleEl) {
-    walletToggleEl.addEventListener('change', function() {
-        if (this.checked && walletInfoEl) {
-            var total = {{ $total ?? 0 }};
-            var walletBal = {{ $walletBalance ?? 0 }};
-            var deduction = Math.min(walletBal, total);
-            var remaining = Math.max(total - deduction, 0);
-            walletInfoEl.style.display = 'block';
-            if (remaining > 0) {
-                walletInfoEl.innerHTML = '₹' + deduction.toLocaleString('en-IN') + ' will be deducted from wallet. Remaining ₹' + remaining.toLocaleString('en-IN') + ' via Razorpay.';
-            } else {
-                walletInfoEl.innerHTML = '₹' + deduction.toLocaleString('en-IN') + ' will be deducted from wallet. No Razorpay payment needed!';
-            }
-        } else if (walletInfoEl) {
-            walletInfoEl.style.display = 'none';
-        }
-    });
-}
 </script>
 @endpush

@@ -79,11 +79,15 @@
           <form action="/payments/payment-request" method="post" id="razor-pay-request" class=" mt-25 " >
             {{ csrf_field() }}
             <input type="hidden" name="order_id" value="{{ $order->id ?? 0 }}">
-            <input type="hidden" name="installment_id" value="{{ $installment->id ?? null }}">
+            <input type="hidden" name="installment_id" value="{{ $installment->id ?? null }}" id="installment_id">
              <input type="hidden" name="discountId" value="{{!empty($discountId) ? $discountId : 0}}"  class="form-control mt-25 mb-25 " required>
              <input type="hidden" name="price" value="<?php echo (number_format(((($installments->first()->upfront)*$itemPrice) /100), 2, '.', '')); ?>">
              <input type="hidden" name="item" value="{{!empty($item) ? $item->id : null}}"  placeholder="Contact Number" class="form-control mt-25 mb-25 " >
             <input type="hidden" name="item_type" value="{{!empty($itemType) ? $itemType : null}}"  placeholder="Contact Number" class="form-control mt-25 mb-25 ">
+
+            {{-- Wallet Payment Widget --}}
+            @include('web.default.includes.wallet_payment_widget', ['totalAmount' => number_format(((($installments->first()->upfront ?? 0)*($itemPrice ?? 0)) /100), 2, '.', '')])
+
             <div class="form-group">
 
                             <input name="name" type="text" value="{{ auth()->check() ? auth()->user()->full_name :'' }}" id='customer_name'  placeholder="Name" class="form-control @error('name') is-invalid @enderror">
@@ -237,7 +241,8 @@ document.getElementById('razor-pay-now').addEventListener('click', function(e) {
         email: document.getElementById('customer_email').value,
         number: document.getElementById('customer_number').value,
         installment_id: document.getElementById('installment_id').value,
-        discount_id: @json(session('discountCouponId'))
+        discount_id: @json(session('discountCouponId')),
+        wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
     };
 
     showPaymentLoader();

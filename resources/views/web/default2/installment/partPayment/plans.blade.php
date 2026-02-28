@@ -62,6 +62,9 @@
 
         </div>
 
+        {{-- Wallet Payment Widget --}}
+        @include('web.default.includes.wallet_payment_widget', ['totalAmount' => $itemPrice ?? 0])
+
         @foreach($installments as $installmentRow)
             @include('web.default2.installment.partPayment.card',['installment' => $installmentRow, 'itemPrice' => $itemPrice, 'itemId' => $itemId, 'itemType' => $itemType])
         @endforeach
@@ -137,7 +140,8 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
         number: document.getElementById('customer_number').value,
         amount: document.getElementById('amount').value,
         installment_id: {{ $installment->id ?? null }},
-        discount_id: @json(session('discountCouponId'))
+        discount_id: @json(session('discountCouponId')),
+        wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
     };
     showPaymentLoader();
 

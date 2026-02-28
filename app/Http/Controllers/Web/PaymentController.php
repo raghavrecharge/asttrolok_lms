@@ -35,6 +35,7 @@ use App\Models\InstallmentOrderPayment;
 use App\Mixins\Installment\InstallmentPlans;
 use App\PaymentChannels\ChannelManager;
 use App\Models\Cart;
+use App\Models\DiscountCourse;
 use App\Models\Api\User;
 use App\Models\Affiliate;
 use Illuminate\Support\Facades\Hash;
@@ -73,6 +74,7 @@ class PaymentController extends Controller
             'selectedTime' => 'nullable|integer',
             'amount' => 'nullable',
             'use_wallet' => 'nullable|boolean',
+            'wallet_amount' => 'nullable|numeric|min:0',
         ]);
         session()->forget('meeting_discount_id');
         session()->forget('discountCouponId');
@@ -83,24 +85,23 @@ class PaymentController extends Controller
 
             $paymentData = $this->getPaymentData($validated);
 
-            // ── Wallet deduction calculation ──
+            // ── Wallet-mediated payment: auto-apply wallet balance ──
             $walletDeduction = 0;
-            $walletService = null;
-            $originalAmount = (float) $paymentData['amount'];
-            $useWallet = !empty($validated['use_wallet']);
+            $walletService = app(WalletService::class);
+            $originalAmount = (int) round((float) $paymentData['amount']);
 
-            if ($useWallet && auth()->check() && $originalAmount > 0) {
-                $walletService = app(WalletService::class);
+            // Auto-apply wallet for logged-in users with balance
+            if (auth()->check() && $originalAmount > 0) {
                 $userId = auth()->id();
                 $walletBalance = $walletService->balance($userId);
 
                 if ($walletBalance > 0) {
-                    $walletDeduction = min($walletBalance, $originalAmount);
+                    $walletDeduction = (int) min(floor($walletBalance), $originalAmount);
 
-                    Log::info('Wallet deduction calculated', [
+                    Log::info('Wallet auto-applied', [
                         'user_id' => $userId,
                         'wallet_balance' => $walletBalance,
-                        'deduction' => $walletDeduction,
+                        'wallet_deduction' => $walletDeduction,
                         'original_amount' => $originalAmount,
                     ]);
                 }
@@ -124,15 +125,15 @@ class PaymentController extends Controller
                     ]);
                 }
 
-            // Store wallet deduction on the order (DB-persisted, not session — survives webhooks)
-            if ($walletDeduction > 0) {
-                $order->update([
-                    'payment_data' => json_encode([
-                        'wallet_deduction' => $walletDeduction,
-                        'original_amount' => $originalAmount,
-                    ]),
-                ]);
-            }
+            // Always store wallet info on the order (DB-persisted — survives webhooks)
+            // Even when walletDeduction=0, original_amount is needed so
+            // processWalletMediatedPayment can credit gateway→wallet→purchase
+            $order->update([
+                'payment_data' => json_encode([
+                    'wallet_deduction' => $walletDeduction,
+                    'original_amount' => $originalAmount,
+                ]),
+            ]);
 
             // ── Full wallet payment (wallet covers entire amount) ──
             if ($walletDeduction > 0 && $walletDeduction >= $originalAmount) {
@@ -144,16 +145,12 @@ class PaymentController extends Controller
                     $userId = $user->id;
                 }
 
-                // Debit wallet
-                $walletService->debit(
+                // Debit full purchase amount from wallet
+                $walletService->purchaseFromWallet(
                     $userId,
-                    $walletDeduction,
-                    \App\Models\PaymentEngine\WalletTransaction::TXN_WALLET_PAYMENT,
-                    'Full payment from wallet for order #' . $order->id,
-                    'order',
+                    $originalAmount,
                     (int) $order->id,
-                    null,
-                    ['payment_type' => $paymentData['type'], 'item_id' => $validated['item_id'], 'order_id' => $order->id]
+                    'Full wallet purchase for order #' . $order->id
                 );
 
                 // Create a synthetic TransactionsHistoryRazorpay record so getTransactionAmount() works
@@ -209,8 +206,8 @@ class PaymentController extends Controller
 
             // ── Partial wallet + Razorpay (or no wallet) ──
             if ($walletDeduction > 0) {
-                // Reduce the Razorpay amount by wallet deduction
-                $paymentData['amount'] = round($originalAmount - $walletDeduction, 2);
+                // Reduce the Razorpay amount by wallet deduction (integer math, no float issues)
+                $paymentData['amount'] = $originalAmount - $walletDeduction;
                 $order->update(['total_amount' => $paymentData['amount']]);
             }
 
@@ -259,22 +256,42 @@ class PaymentController extends Controller
                 $webinar = Webinar::findOrFail($itemId);
 
                 $itemPrice = $webinar->getPrice();
-                $price = $webinar->price;
-                if($discountId > 0){
-                $discountCoupon = Discount::where('id', $discountId)->first();
-                 $percent = $discountCoupon->percent ?? 0;
-                $totalDiscount = ($price > 0) ? $price * $percent / 100 : 0;
-                $itemPrice1=$itemPrice-$totalDiscount;
-                }else{
-                    $totalDiscount = 0;
-                    $itemPrice1=$itemPrice-$totalDiscount;
+                $totalDiscount = 0;
+                $Discount = null;
+
+                // First check if a discount_id was explicitly provided
+                if ($discountId > 0) {
+                    $Discount = Discount::where('id', $discountId)->where('status', 'active')->first();
                 }
+
+                // Fallback: check for linked DiscountCourse discount
+                if (!$Discount && $discountId == 0) {
+                    $discountCourse = DiscountCourse::where('course_id', $webinar->id)->first();
+                    if ($discountCourse) {
+                        $Discount = Discount::where('id', $discountCourse->discount_id)->where('status', 'active')->first();
+                    }
+                }
+
+                if ($Discount) {
+                    if ($Discount->discount_type == 'fixed_amount') {
+                        $totalDiscount = min($Discount->amount, $itemPrice);
+                    } else {
+                        $percent = $Discount->percent ?? 0;
+                        $totalDiscount = ($itemPrice > 0) ? round($itemPrice * $percent / 100, 2) : 0;
+                        if (!empty($Discount->max_amount) && $totalDiscount > $Discount->max_amount) {
+                            $totalDiscount = $Discount->max_amount;
+                        }
+                    }
+                }
+
+                $itemPrice1 = max($itemPrice - $totalDiscount, 0);
+
                 return [
                     'type' => 'webinar',
                     'item' => $webinar,
                     'webinar_id' => $webinar->id,
                     'discount' => $totalDiscount,
-                    'amount' => $itemPrice1 ?? $webinar->price,
+                    'amount' => $itemPrice1,
                     'description' => "Course: {$webinar->title}",
                     'user_data' => $validated,
                 ];
@@ -283,16 +300,30 @@ class PaymentController extends Controller
                 $webinar = Webinar::findOrFail($itemId);
 
                 $itemPrice = $webinar->getPrice();
-                $price = $webinar->price;
-                if($discountId > 0){
-                $discountCoupon = Discount::where('id', $discountId)->first();
-                 $percent = $discountCoupon->percent ?? 0;
-                $totalDiscount = ($price > 0) ? $price * $percent / 100 : 0;
-                $itemPrice1=$itemPrice-$totalDiscount;
-                }else{
-                    $totalDiscount = 0;
-                    $itemPrice1=$itemPrice-$totalDiscount;
+                $totalDiscount = 0;
+                $Discount = null;
+
+                if ($discountId > 0) {
+                    $Discount = Discount::where('id', $discountId)->where('status', 'active')->first();
                 }
+                if (!$Discount && $discountId == 0) {
+                    $discountCourse = DiscountCourse::where('course_id', $webinar->id)->first();
+                    if ($discountCourse) {
+                        $Discount = Discount::where('id', $discountCourse->discount_id)->where('status', 'active')->first();
+                    }
+                }
+                if ($Discount) {
+                    if ($Discount->discount_type == 'fixed_amount') {
+                        $totalDiscount = min($Discount->amount, $itemPrice);
+                    } else {
+                        $percent = $Discount->percent ?? 0;
+                        $totalDiscount = ($itemPrice > 0) ? round($itemPrice * $percent / 100, 2) : 0;
+                        if (!empty($Discount->max_amount) && $totalDiscount > $Discount->max_amount) {
+                            $totalDiscount = $Discount->max_amount;
+                        }
+                    }
+                }
+                $itemPrice1 = max($itemPrice - $totalDiscount, 0);
 
                 // UPE: Determine next payable amount from UPE schedules (sole source of truth).
                 $installmentIdForPart = $validated['installment_id'] ?? null;
@@ -504,16 +535,30 @@ class PaymentController extends Controller
                 $user = auth()->user();
 
                 $itemPrice = $item->getPrice();
-                $price = $item->price;
-                if($discountId > 0){
-                $discountCoupon = Discount::where('id', $discountId)->first();
-                 $percent = $discountCoupon->percent ?? 0;
-                $totalDiscount = ($price > 0) ? $price * $percent / 100 : 0;
-                $itemPrice1=$itemPrice-$totalDiscount;
-                }else{
-                    $totalDiscount = 0;
-                    $itemPrice1=$itemPrice-$totalDiscount;
+                $totalDiscount = 0;
+                $Discount = null;
+
+                if ($discountId > 0) {
+                    $Discount = Discount::where('id', $discountId)->where('status', 'active')->first();
                 }
+                if (!$Discount && $discountId == 0) {
+                    $discountCourse = DiscountCourse::where('course_id', $item->id)->first();
+                    if ($discountCourse) {
+                        $Discount = Discount::where('id', $discountCourse->discount_id)->where('status', 'active')->first();
+                    }
+                }
+                if ($Discount) {
+                    if ($Discount->discount_type == 'fixed_amount') {
+                        $totalDiscount = min($Discount->amount, $itemPrice);
+                    } else {
+                        $percent = $Discount->percent ?? 0;
+                        $totalDiscount = ($itemPrice > 0) ? round($itemPrice * $percent / 100, 2) : 0;
+                        if (!empty($Discount->max_amount) && $totalDiscount > $Discount->max_amount) {
+                            $totalDiscount = $Discount->max_amount;
+                        }
+                    }
+                }
+                $itemPrice1 = max($itemPrice - $totalDiscount, 0);
 
                 if(empty($user)){
                     $input=$validated;
@@ -760,8 +805,8 @@ class PaymentController extends Controller
 
             $this->storeTransaction($payment, 'callback');
 
-            // Debit wallet for partial wallet + Razorpay payments (DB-based, not session)
-            $this->debitWalletForOrder($orderId, $razorpayPaymentId);
+            // Wallet-mediated: credit gateway to wallet, then debit full purchase from wallet
+            $this->processWalletMediatedPayment($orderId, $razorpayPaymentId);
 
             $this->dispatchPaymentJob($payment, $orderId);
 
@@ -1559,12 +1604,14 @@ class PaymentController extends Controller
         $order = Order::find($orderId);
 
         if ($order) {
+            // Preserve existing wallet payment_data, merge with gateway info
+            $existingData = $order->payment_data ? json_decode($order->payment_data, true) : [];
+            $existingData['gateway'] = 'Razorpay';
+            $existingData['paid_at'] = time();
+
             $order->update([
                 'status' => 'paid',
-                'payment_data' => json_encode([
-                    'gateway' => 'Razorpay',
-                    'paid_at' => time(),
-                ]),
+                'payment_data' => json_encode($existingData),
             ]);
         }
     }
@@ -1604,6 +1651,16 @@ class PaymentController extends Controller
             $originalAmount = (float) ($orderPaymentData['original_amount'] ?? 0);
             if ($walletDeduction <= 0) return;
 
+            // Wallet-mediated flow: processWalletMediatedPayment already updated
+            // TransactionsHistoryRazorpay to originalAmount, so CheckoutService
+            // records the full amount. Adding a wallet entry here would double-count.
+            if (!empty($orderPaymentData['wallet_mediated_processed'])) {
+                Log::info('Wallet-mediated: skipping recordWalletInUpeLedger (full amount already in ledger)', [
+                    'order_id' => $orderId, 'wallet_deduction' => $walletDeduction, 'original_amount' => $originalAmount,
+                ]);
+                return;
+            }
+
             $isFullWallet = ($walletDeduction >= $originalAmount);
             $paymentType = $data['payment_type'] ?? $data['type'] ?? 'webinar';
 
@@ -1618,21 +1675,11 @@ class PaymentController extends Controller
             $ledger = app(PaymentLedgerService::class);
 
             if ($isFullWallet) {
-                // Full wallet: update the existing ledger entry's payment_method to 'wallet'
-                $existingEntry = \App\Models\PaymentEngine\UpeLedgerEntry::where('sale_id', $recentSale->id)
-                    ->where('entry_type', \App\Models\PaymentEngine\UpeLedgerEntry::TYPE_PAYMENT)
-                    ->orderByDesc('id')
-                    ->first();
-
-                if ($existingEntry && $existingEntry->payment_method !== 'wallet') {
-                    // Ledger entries are immutable, so add a supplementary wallet_payment entry
-                    // and the existing payment entry stays as-is (amount already correct)
-                    Log::info('Full wallet payment recorded in UPE ledger', [
-                        'sale_id' => $recentSale->id, 'amount' => $walletDeduction,
-                    ]);
-                }
+                Log::info('Full wallet payment recorded in UPE ledger', [
+                    'sale_id' => $recentSale->id, 'amount' => $walletDeduction,
+                ]);
             } else {
-                // Partial wallet: add a wallet_payment entry for the wallet portion
+                // Legacy partial wallet (non-mediated): add a wallet_payment entry
                 $idempotencyKey = "wallet_partial_{$orderId}_{$userId}";
                 $existing = \App\Models\PaymentEngine\UpeLedgerEntry::where('idempotency_key', $idempotencyKey)->first();
                 if (!$existing) {
@@ -1656,12 +1703,14 @@ class PaymentController extends Controller
     }
 
     /**
-     * Debit wallet for partial wallet + Razorpay payments.
-     * Reads wallet_deduction from the order's payment_data (DB-persisted).
+     * Wallet-mediated payment processing.
+     * After successful Razorpay payment:
+     *   1. Credit gateway amount to wallet (TXN_GATEWAY_TOPUP)
+     *   2. Debit full purchase amount from wallet (TXN_WALLET_PURCHASE)
      * Safe to call from both callback and webhook paths.
-     * Idempotent: checks for existing wallet transaction before debiting.
+     * Idempotent: checks for existing wallet transaction before processing.
      */
-    protected function debitWalletForOrder($orderId, $razorpayPaymentId = null)
+    protected function processWalletMediatedPayment($orderId, $razorpayPaymentId = null)
     {
         if (empty($orderId)) return;
 
@@ -1670,44 +1719,70 @@ class PaymentController extends Controller
             if (!$order || !$order->payment_data) return;
 
             $paymentData = json_decode($order->payment_data, true);
-            if (!empty($paymentData['wallet_deduction_processed'])) return;
+            if (!empty($paymentData['wallet_mediated_processed'])) return;
+
             $walletDeduction = (float) ($paymentData['wallet_deduction'] ?? 0);
-            if ($walletDeduction <= 0) return;
+            $originalAmount = (float) ($paymentData['original_amount'] ?? 0);
+            if ($originalAmount <= 0) return;
 
             $userId = $order->user_id ?? (auth()->check() ? auth()->id() : null);
             if (!$userId) return;
 
-            // Idempotency: check if wallet was already debited for this order
+            // Idempotency: check if wallet purchase was already debited for this order
             $existing = \App\Models\PaymentEngine\WalletTransaction::where('reference_type', 'order')
                 ->where('reference_id', $orderId)
-                ->where('type', \App\Models\PaymentEngine\WalletTransaction::TYPE_DEBIT)
+                ->where('transaction_type', \App\Models\PaymentEngine\WalletTransaction::TXN_WALLET_PURCHASE)
                 ->first();
             if ($existing) {
-                Log::info('Wallet already debited for order', ['order_id' => $orderId]);
+                Log::info('Wallet-mediated already processed for order', ['order_id' => $orderId]);
                 return;
             }
 
             $walletSvc = app(WalletService::class);
-            $walletSvc->debit(
+            $gatewayAmount = $originalAmount - $walletDeduction;
+
+            // Step 1: Credit gateway amount to wallet
+            if ($gatewayAmount > 0) {
+                $walletSvc->creditFromGateway(
+                    $userId,
+                    $gatewayAmount,
+                    (int) $orderId,
+                    $razorpayPaymentId
+                );
+
+                Log::info('Wallet-mediated: gateway credited to wallet', [
+                    'user_id' => $userId, 'gateway_amount' => $gatewayAmount, 'order_id' => $orderId,
+                ]);
+            }
+
+            // Step 2: Debit full purchase amount from wallet
+            $walletSvc->purchaseFromWallet(
                 $userId,
-                $walletDeduction,
-                \App\Models\PaymentEngine\WalletTransaction::TXN_WALLET_PAYMENT,
-                'Partial wallet payment for order #' . $orderId,
-                'order',
+                $originalAmount,
                 (int) $orderId,
-                $razorpayPaymentId,
-                ['order_id' => $orderId, 'razorpay_payment_id' => $razorpayPaymentId]
+                'Purchase for order #' . $orderId
             );
 
-            // Clear wallet_deduction from order to prevent re-processing
-            $paymentData['wallet_deduction_processed'] = true;
+            // Update TransactionsHistoryRazorpay amount to full purchase amount
+            // so getTransactionAmount() returns the correct total for process methods
+            $txnHistory = TransactionsHistoryRazorpay::where('razorpay_payment_id', $razorpayPaymentId)->first();
+            if ($txnHistory) {
+                $txnHistory->update(['amount' => $originalAmount]);
+            }
+
+            // Mark as processed to prevent re-processing
+            $paymentData['wallet_mediated_processed'] = true;
             $order->update(['payment_data' => json_encode($paymentData)]);
 
-            Log::info('Wallet partial debit for order', [
-                'user_id' => $userId, 'amount' => $walletDeduction, 'order_id' => $orderId,
+            Log::info('Wallet-mediated payment completed', [
+                'user_id' => $userId,
+                'gateway_amount' => $gatewayAmount,
+                'wallet_used' => $walletDeduction,
+                'total_purchase' => $originalAmount,
+                'order_id' => $orderId,
             ]);
         } catch (\Exception $e) {
-            Log::error('Wallet debit for order failed (non-fatal): ' . $e->getMessage(), [
+            Log::error('Wallet-mediated payment failed (non-fatal): ' . $e->getMessage(), [
                 'order_id' => $orderId,
             ]);
         }

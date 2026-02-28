@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Models\Order;
 use App\Models\TransactionsHistoryRazorpay;
+use App\Models\PaymentEngine\WalletTransaction;
+use App\Services\PaymentEngine\WalletService;
 use App\Jobs\BuyNowProcessJob;
 
 class RazorpayWebhookController extends Controller
@@ -118,8 +121,72 @@ class RazorpayWebhookController extends Controller
             'reserve_meeting_id' => $notes['reserve_meeting_id'] ?? null
         ];
 
+        // Wallet-mediated: credit gateway to wallet, then debit full purchase from wallet
+        $this->processWalletMediatedPayment($notes['order_id'] ?? null, $razorpayPaymentId);
+
         BuyNowProcessJob::dispatch($jobData)->delay(now()->addSeconds(5));
         Log::info('Webhook dispatched BuyNowProcessJob for: ' . $razorpayPaymentId);
+    }
+
+    /**
+     * Wallet-mediated payment processing for webhook path.
+     * Same logic as PaymentController::processWalletMediatedPayment().
+     */
+    protected function processWalletMediatedPayment($orderId, $razorpayPaymentId = null)
+    {
+        if (empty($orderId)) return;
+
+        try {
+            $order = Order::find($orderId);
+            if (!$order || !$order->payment_data) return;
+
+            $paymentData = json_decode($order->payment_data, true);
+            if (!empty($paymentData['wallet_mediated_processed'])) return;
+
+            $walletDeduction = (float) ($paymentData['wallet_deduction'] ?? 0);
+            $originalAmount = (float) ($paymentData['original_amount'] ?? 0);
+            if ($originalAmount <= 0) return;
+
+            $userId = $order->user_id;
+            if (!$userId) return;
+
+            // Idempotency check
+            $existing = WalletTransaction::where('reference_type', 'order')
+                ->where('reference_id', $orderId)
+                ->where('transaction_type', WalletTransaction::TXN_WALLET_PURCHASE)
+                ->first();
+            if ($existing) {
+                Log::info('Webhook: Wallet-mediated already processed', ['order_id' => $orderId]);
+                return;
+            }
+
+            $walletSvc = app(WalletService::class);
+            $gatewayAmount = $originalAmount - $walletDeduction;
+
+            // Step 1: Credit gateway amount to wallet
+            if ($gatewayAmount > 0) {
+                $walletSvc->creditFromGateway($userId, $gatewayAmount, (int) $orderId, $razorpayPaymentId);
+            }
+
+            // Step 2: Debit full purchase amount from wallet
+            $walletSvc->purchaseFromWallet($userId, $originalAmount, (int) $orderId, 'Purchase for order #' . $orderId);
+
+            // Update transaction amount to full purchase amount
+            $txn = TransactionsHistoryRazorpay::where('razorpay_payment_id', $razorpayPaymentId)->first();
+            if ($txn) {
+                $txn->update(['amount' => $originalAmount]);
+            }
+
+            $paymentData['wallet_mediated_processed'] = true;
+            $order->update(['payment_data' => json_encode($paymentData)]);
+
+            Log::info('Webhook: Wallet-mediated payment completed', [
+                'user_id' => $userId, 'gateway' => $gatewayAmount,
+                'wallet_used' => $walletDeduction, 'total' => $originalAmount, 'order_id' => $orderId,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Webhook: Wallet-mediated failed (non-fatal): ' . $e->getMessage(), ['order_id' => $orderId]);
+        }
     }
 
     protected function handlePaymentFailed($payload)

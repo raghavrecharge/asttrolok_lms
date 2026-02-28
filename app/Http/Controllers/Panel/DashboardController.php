@@ -720,17 +720,56 @@ try {
                 $data['openInstallmentsCount'] = $openInstallmentsCount;
                 $data['closeSupportsCount1'] = $closeSupportsCount1;
                 
-                // LMS FIX: Calculate webinarsCount more holistically
-                // Include: 1. Unique Purchased Webinar IDs (Total count, matches UPE logic)
-                //          2. Open Installment Orders (for courses not yet in sales)
-                //          3. Active Subscriptions
-                $subscriptionsCount = count($subscriptionAccess);
-                $purchasedCoursesCount = count($user->getPurchasedCoursesIds());
-                $data['webinarsCount'] = $purchasedCoursesCount + $openInstallmentsCount + $subscriptionsCount;
+                // LMS-045 Sync: Calculate webinarsCount matching the Purchases page (unique products, not expanded)
+                // We deduplicate by external IDs to avoid double counting between UPE and traditional sales
+                $purchasedUpeProductIds = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
+                    ->whereIn('status', ['active', 'partially_refunded', 'pending_payment'])
+                    ->groupBy('product_id')
+                    ->pluck('product_id')
+                    ->toArray();
                 
+                $upeProducts = \App\Models\PaymentEngine\UpeProduct::whereIn('id', $purchasedUpeProductIds)
+                    ->get(['external_id', 'product_type']);
+                
+                $uniqueTracker = [];
+                foreach ($upeProducts as $p) {
+                    $type = $p->product_type;
+                    if (in_array($type, ['course_video', 'webinar', 'course_live'])) $type = 'webinar';
+                    $uniqueTracker[] = $type . '_' . $p->external_id;
+                }
+
+                $traditionalSales = Sale::where('buyer_id', $user->id)
+                    ->whereNull('refund_at')
+                    ->where(function($q) {
+                        $q->whereNotNull('webinar_id')->orWhereNotNull('bundle_id')->orWhereNotNull('subscription_id');
+                    })
+                    ->get(['webinar_id', 'bundle_id', 'subscription_id']);
+
+                foreach ($traditionalSales as $sale) {
+                    $key = null;
+                    if ($sale->webinar_id) $key = 'webinar_' . $sale->webinar_id;
+                    elseif ($sale->bundle_id) $key = 'bundle_' . $sale->bundle_id;
+                    elseif ($sale->subscription_id) $key = 'subscription_' . $sale->subscription_id;
+
+                    if ($key && !in_array($key, $uniqueTracker)) {
+                        $uniqueTracker[] = $key;
+                    }
+                }
+
+                $data['webinarsCount'] = count($uniqueTracker);
+
+                $reserveMeetingsQuery = \App\Models\ReserveMeeting::where('user_id', $user->id)
+                    ->whereNotNull('reserved_at')
+                    ->whereHas('sale', function ($query) {
+                        $query->whereNull('refund_at');
+                    });
+
+                $data['openReserveCount'] = (clone $reserveMeetingsQuery)->where('status', \App\Models\ReserveMeeting::$open)->count();
+                $data['totalReserveCount'] = (clone $reserveMeetingsQuery)->count();
+
                 $data['supportsCount'] = count($supports);
                 $data['commentsCount'] = count($comments);
-                $data['reserveMeetingsCount'] = count($reserveMeetings);
+                $data['reserveMeetingsCount'] = $data['totalReserveCount'];
                 $data['monthlyChart'] = $this->getMonthlySalesOrPurchase($user);
                 $consolidatedSales = collect();
                 $seenCourseIds = [];

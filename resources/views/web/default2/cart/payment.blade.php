@@ -81,30 +81,8 @@
                     </div></div>
                 </form>
 
-        {{-- Wallet Section --}}
-        @if(auth()->check())
-            @php
-                $walletBalance = app(\App\Services\PaymentEngine\WalletService::class)->balance(auth()->id());
-            @endphp
-            @if($walletBalance > 0)
-                <div class="mt-20 p-15 rounded-lg" style="background: #f0f7ff; border: 1px solid #d0e3ff;">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="font-14 font-weight-bold text-dark-blue">
-                                <i data-feather="credit-card" width="16" height="16" class="mr-5"></i>
-                                Use Wallet Balance
-                            </div>
-                            <div class="font-12 text-gray mt-5">Available: <strong>{{ handlePrice($walletBalance) }}</strong></div>
-                        </div>
-                        <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="useWalletToggle">
-                            <label class="custom-control-label" for="useWalletToggle"></label>
-                        </div>
-                    </div>
-                    <div id="walletDeductionInfo" class="mt-10 font-12 text-success" style="display:none;"></div>
-                </div>
-            @endif
-        @endif
+        {{-- Wallet Payment Widget --}}
+        @include('web.default.includes.wallet_payment_widget', ['totalAmount' => $total ?? 0])
 
         <h2 class="section-title">Please Fill The Form</h2>
 {{session()->forget('discountCoupon')}}
@@ -416,59 +394,8 @@ $('#customer_number').on('keypress', function(e) {
   });
 });
 
-// Wallet toggle functionality
-const walletToggle = document.getElementById('useWalletToggle');
-const walletInfo = document.getElementById('walletDeductionInfo');
-
-if (walletToggle) {
-    walletToggle.addEventListener('change', function() {
-        if (this.checked && walletInfo) {
-            const total = {{ $total }};
-            const walletBal = {{ $walletBalance ?? 0 }};
-            const deduction = Math.min(walletBal, total);
-            const remaining = Math.max(total - deduction, 0);
-            
-            walletInfo.setAttribute('style', 'display: block !important;');
-            
-            const message = remaining > 0 
-                ? '₹' + deduction.toLocaleString('en-IN') + ' will be deducted from wallet. Remaining ₹' + remaining.toLocaleString('en-IN') + ' via Razorpay.'
-                : '₹' + deduction.toLocaleString('en-IN') + ' will be deducted from wallet. No Razorpay payment needed!';
-                
-            walletInfo.innerHTML = message;
-            
-            // Update the displayed amounts
-            const cartTotalEl = document.getElementById('cartTotalDisplay');
-            const totalAmountEl = document.getElementById('totalAmountDisplay');
-            
-            if (cartTotalEl) {
-                const itemCount = {{ $count }};
-                const itemText = itemCount > 1 ? 'for ' + itemCount + ' items' : 'for ' + itemCount + ' item';
-                cartTotalEl.innerHTML = '₹' + remaining.toLocaleString('en-IN') + ' ' + itemText;
-            }
-            
-            if (totalAmountEl) {
-                totalAmountEl.innerHTML = '₹' + remaining.toLocaleString('en-IN');
-            }
-            
-        } else if (walletInfo) {
-            walletInfo.setAttribute('style', 'display: none !important;');
-            
-            // Restore original amounts
-            const cartTotalEl = document.getElementById('cartTotalDisplay');
-            const totalAmountEl = document.getElementById('totalAmountDisplay');
-            
-            if (cartTotalEl) {
-                const itemCount = {{ $count }};
-                const itemText = itemCount > 1 ? 'for ' + itemCount + ' items' : 'for ' + itemCount + ' item';
-                cartTotalEl.innerHTML = '₹' + {{ $total }}.toLocaleString('en-IN') + ' ' + itemText;
-            }
-            
-            if (totalAmountEl) {
-                totalAmountEl.innerHTML = '₹' + {{ $total }}.toLocaleString('en-IN');
-            }
-        }
-    });
-}
+// Wallet amount is now handled by wallet_payment_widget.blade.php
+// getWalletPaymentAmount() is exposed globally by the widget
 </script>
 
 @endpush

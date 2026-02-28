@@ -435,7 +435,27 @@
                                         @foreach($webinars as $w) <option value="{{ $w->id }}">{{ $w->title }}</option> @endforeach
                                     </select>
                                 </div>
-                            @elseif($scen == 'installment_restructure' || $scen == 'refund_payment' || $scen == 'post_purchase_coupon')
+                            @elseif($scen == 'installment_restructure')
+                                <div class="form-group">
+                                    <label class="input-label">Select Installment Course <span class="text-danger">*</span></label>
+                                    <select name="webinar_id" class="form-control select2" disabled>
+                                        <option value="">{{ trans('panel.select_course') }}</option>
+                                        @foreach($installmentList as $p) 
+                                            @if(!empty($p))
+                                                <option value="{{ $p->id }}">{{ $p->title }}</option> 
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @elseif($scen == 'refund_payment')
+                                <div class="form-group">
+                                    <label class="input-label">Select Paid Course for Refund <span class="text-danger">*</span></label>
+                                    <select name="webinar_id" class="form-control select2" disabled>
+                                        <option value="">{{ trans('panel.select_course') }}</option>
+                                        @foreach($refundableCourses as $p) <option value="{{ $p->id }}">{{ $p->title }}</option> @endforeach
+                                    </select>
+                                </div>
+                            @elseif($scen == 'post_purchase_coupon')
                                 <div class="form-group">
                                     <label class="input-label">Select Purchased Course <span class="text-danger">*</span></label>
                                     <select name="webinar_id" class="form-control select2" disabled>

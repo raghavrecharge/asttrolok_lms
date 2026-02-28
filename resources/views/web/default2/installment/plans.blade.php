@@ -155,6 +155,9 @@
              <input type="hidden" name="discountId" value="{{!empty($discountId) ? $discountId : 0}}"  class="form-control mt-25 mb-25 " required>
              <input type="hidden" name="price" value="<?php echo (number_format(((($installments->first()->upfront)*$itemPrice) /100), 2, '.', '')); ?>">
              <input type="hidden" name="item" value="{{!empty($item) ? $item->id : null}}"  placeholder="Contact Number" class="form-control mt-25 mb-25 " >
+
+            {{-- Wallet Payment Widget --}}
+            @include('web.default.includes.wallet_payment_widget', ['totalAmount' => number_format(((($installments->first()->upfront ?? 0)*($itemPrice ?? 0)) /100), 2, '.', '')])
             <input type="hidden" name="item_type" value="{{!empty($itemType) ? $itemType : null}}"  placeholder="Contact Number" class="form-control mt-25 mb-25 ">
             <div class="form-group">
 
@@ -344,7 +347,8 @@ document.getElementById('razor-pay-now1').addEventListener('click', function(e) 
         number: document.getElementById('customer_number').value,
         password: document.getElementById('customer_password').value,
         installment_id: document.getElementById('installment_id').value,
-        discount_id: @json(session('discountCouponId'))
+        discount_id: @json(session('discountCouponId')),
+        wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
     };
 
     showPaymentLoader();
@@ -454,7 +458,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 password: password,
                 password_confirmation: confirmPassword,
                 installment_id: installment_id,
-                discount_id: @json(session('discountCouponId'))
+                discount_id: @json(session('discountCouponId')),
+                wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
             };
 
             showPaymentLoader();

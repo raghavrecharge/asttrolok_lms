@@ -189,6 +189,9 @@
 
                 <div class="payment-summary" id="paymentSummary"><div id="summaryText"></div></div>
 
+                {{-- Wallet Payment Widget --}}
+                @include('web.default.includes.wallet_payment_widget', ['totalAmount' => $remaining ?? 0])
+
                 <div id="Payment-Option" class="bg-gray200 mt-15 rounded-lg border p-10">
                     <div class="form-group">
                         <input name="name" type="text" id="customer_name" placeholder="Name" value="{{ auth()->check() ? auth()->user()->full_name : '' }}" class="form-control">
@@ -245,7 +248,8 @@
                 email: document.getElementById('customer_email').value,
                 number: document.getElementById('customer_number').value,
                 amount: document.getElementById('amount').value,
-                installment_id: installmentConfigId
+                installment_id: installmentConfigId,
+                wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
             };
 
             showPaymentLoader();

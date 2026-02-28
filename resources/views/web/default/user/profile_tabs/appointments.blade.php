@@ -303,6 +303,9 @@
 </div>
 
 
+                {{-- Wallet Payment Widget --}}
+                @include('web.default.includes.wallet_payment_widget', ['totalAmount' => $meeting->amount ?? 0])
+
                 <div class="  form-group mt-15">
                     <label class="input-label">Contact*</label>
                     <input name="mobile" type="number" class="form-control @error('mobile') is-invalid @enderror"  maxlength="10" id="mobile">
@@ -479,7 +482,8 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
         selectedDay: document.getElementById('selectedDay').value,
         password: document.getElementById('password').value,
         // selectedTime: selectedTime,
-        discount_id: @json(session('meeting_discount_id'))
+        discount_id: @json(session('meeting_discount_id')),
+        wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
     };
     showPaymentLoader();
 

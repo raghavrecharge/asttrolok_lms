@@ -198,6 +198,50 @@ class WalletService
     }
 
     /**
+     * Credit gateway payment amount into wallet (wallet-mediated flow).
+     * Called after successful Razorpay payment, before debiting for purchase.
+     */
+    public function creditFromGateway(
+        int $userId,
+        float $amount,
+        ?int $orderId = null,
+        ?string $razorpayPaymentId = null
+    ): WalletTransaction {
+        return $this->credit(
+            $userId,
+            $amount,
+            WalletTransaction::TXN_GATEWAY_TOPUP,
+            "Gateway payment credited to wallet for order #{$orderId}",
+            'order',
+            $orderId,
+            $razorpayPaymentId,
+            ['source' => 'razorpay', 'order_id' => $orderId, 'razorpay_payment_id' => $razorpayPaymentId]
+        );
+    }
+
+    /**
+     * Debit full purchase amount from wallet (wallet-mediated flow).
+     * Called after gateway amount is credited, debits the total purchase price.
+     */
+    public function purchaseFromWallet(
+        int $userId,
+        float $amount,
+        ?int $orderId = null,
+        ?string $description = null
+    ): WalletTransaction {
+        return $this->debit(
+            $userId,
+            $amount,
+            WalletTransaction::TXN_WALLET_PURCHASE,
+            $description ?? "Purchase payment from wallet for order #{$orderId}",
+            'order',
+            $orderId,
+            null,
+            ['source' => 'wallet_purchase', 'order_id' => $orderId]
+        );
+    }
+
+    /**
      * Get paginated transaction history for a user.
      */
     public function getTransactions(int $userId, int $perPage = 20)

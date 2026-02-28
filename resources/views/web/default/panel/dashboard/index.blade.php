@@ -424,7 +424,7 @@
 /* --- Meetings (image: stat count top, avatar list with badges) --- */
 .db-meeting-count-box {
     display: flex; align-items: center; gap: 12px;
-    margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f3f4f6;
+    margin-bottom: 16px; padding-bottom: 12px;
 }
 .db-meeting-count-icon {
     width: 44px; height: 44px; border-radius: 12px;
@@ -909,7 +909,7 @@
             </div>
 
             {{-- Wallet (image: simple link row) --}}
-            <a href="/panel/financial/account" class="db-wallet-link">
+            <a href="/panel/wallet" class="db-wallet-link">
                 <div>
                     <div class="wallet-title">Wallet</div>
                     <div class="wallet-sub">Manage your wallet</div>
@@ -948,19 +948,19 @@
                     <a href="/panel/support/newsuportforasttrolok" class="db-card-link"><i data-feather="send" width="14" height="14"></i></a>
                 </div>
 
-                <div class="db-support-stats">
-                    <div class="db-support-stat-item">
-                        <span class="stat-num">{{ $openSupportsCount ?? 0 }}</span>
-                        <span style="font-size:16px;">🔓</span>
-                        <div>
-                            <div class="stat-label">Open Tickets</div>
+                <div style="display:flex;gap:12px;margin-bottom:14px;">
+                    <div class="db-meeting-count-box" style="flex:1;margin-bottom:0;border-color:#fececa;display:flex;align-items:center;">
+                        <div class="db-meeting-count-icon" style="background:#ffe4e6;"><i data-feather="mail" width="18" height="18" style="color:#e11d48;"></i></div>
+                        <div style="display:flex;flex-direction:column;justify-content:center;">
+                            <div class="stat-num" style="font-size: 22px; font-weight: 700; color: #1a1a2e; line-height: 1;">{{ $openSupportsCount ?? 0 }}</div>
+                            <div class="db-meeting-count-label">Open Tickets</div>
                         </div>
                     </div>
-                    <div class="db-support-stat-item">
-                        <span class="stat-num">{{ $supportsCount ?? 0 }}</span>
-                        <span style="font-size:16px;">📨</span>
-                        <div>
-                            <div class="stat-label">Total Tickets</div>
+                    <div class="db-meeting-count-box" style="flex:1;margin-bottom:0;border-color:#bae6fd;display:flex;align-items:center;">
+                        <div class="db-meeting-count-icon" style="background:#e0f2fe;"><i data-feather="message-circle" width="18" height="18" style="color:#0284c7;"></i></div>
+                        <div style="display:flex;flex-direction:column;justify-content:center;">
+                            <div class="stat-num" style="font-size: 22px; font-weight: 700; color: #1a1a2e; line-height: 1;">{{ $supportsCount ?? 0 }}</div>
+                            <div class="db-meeting-count-label">Total Tickets</div>
                         </div>
                     </div>
                 </div>
@@ -998,25 +998,26 @@
                 @endif
             </div>
 
-            {{-- Meetings --}}
+            {{-- Meetings (Reverted from Assignments) --}}
             <div class="db-card">
                 <div class="db-card-header">
                     <h3 class="db-card-title">Meetings</h3>
+                    <a href="/panel/meetings/reservation" class="db-card-link">Details</a>
                 </div>
 
                 @php $finishedMeetingsCount = ($totalReserveCount ?? 0) - ($openReserveCount ?? 0); @endphp
                 <div style="display:flex;gap:12px;margin-bottom:14px;">
-                    <div class="db-meeting-count-box" style="flex:1;margin-bottom:0;">
+                    <div class="db-meeting-count-box" style="flex:1;margin-bottom:0;display:flex;align-items:center;">
                         <div class="db-meeting-count-icon"><i data-feather="video" width="18" height="18"></i></div>
-                        <div>
-                            <div class="db-meeting-count-num">{{ $openReserveCount ?? 0 }}</div>
+                        <div style="display:flex;flex-direction:column;justify-content:center;">
+                            <div class="stat-num" style="font-size: 22px; font-weight: 700; color: #1a1a2e; line-height: 1;">{{ $openReserveCount ?? 0 }}</div>
                             <div class="db-meeting-count-label">Open</div>
                         </div>
                     </div>
-                    <div class="db-meeting-count-box" style="flex:1;margin-bottom:0;background:#f0fdf4;border-color:#bbf7d0;">
+                    <div class="db-meeting-count-box" style="flex:1;margin-bottom:0;border-color:#bbf7d0;display:flex;align-items:center;">
                         <div class="db-meeting-count-icon" style="background:#dcfce7;"><i data-feather="check-circle" width="18" height="18" style="color:#22c55e;"></i></div>
-                        <div>
-                            <div class="db-meeting-count-num">{{ $finishedMeetingsCount >= 0 ? $finishedMeetingsCount : 0 }}</div>
+                        <div style="display:flex;flex-direction:column;justify-content:center;">
+                            <div class="stat-num" style="font-size: 22px; font-weight: 700; color: #1a1a2e; line-height: 1;">{{ $finishedMeetingsCount >= 0 ? $finishedMeetingsCount : 0 }}</div>
                             <div class="db-meeting-count-label">Finished</div>
                         </div>
                     </div>

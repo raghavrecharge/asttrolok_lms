@@ -153,6 +153,9 @@
             //print_r($cart->id);die;
             $invalidChannels = [];
         @endphp
+        {{-- Wallet Payment Widget --}}
+        @include('web.default.includes.wallet_payment_widget', ['totalAmount' => $total ?? $subTotal ?? 0])
+
         <div class=" bg-gray200 mt-30 rounded-lg border p-15">
          <h2 class="section-title">Fill all the Details here:</h2>
           <form action="/payments/payment-request" method="post" class=" mt-25" >
@@ -648,7 +651,8 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
         pin_code: pin_code || null,
         address: address || null,
         message: message || null,
-        discount_id: @json(session('discount_id'))
+        discount_id: @json(session('discount_id')),
+        wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
     };
     showPaymentLoader();
 
@@ -817,7 +821,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 pin_code: pin_code || null,
                 address: address || null,
                 message: message || null,
-                discount_id: @json(session('discount_id'))
+                discount_id: @json(session('discount_id')),
+                wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
             };
 
             showPaymentLoader();

@@ -151,14 +151,45 @@ class NewSupportForAsttrolokController extends Controller
 
             if (!empty(count($getOverdueInstallmentsIDs))) {
                 
-                $overdueCourses = Webinar::select('id', 'creator_id','access_days')
-                        ->whereIn('id', $getOverdueInstallmentsIDs)
+                $overdueCourses = Webinar::whereIn('id', $getOverdueInstallmentsIDs)
                         ->where('status', 'active')
                         ->with(['creator' => function ($query) {
                             $query->select('id', 'full_name');
                         }])
                         ->get();
             }
+
+            // Identify refundable courses: Paid (amount > 0) or Offline purchases
+            $refundableWebinarIds = Sale::where('buyer_id', $user->id)
+                ->whereNull('refund_at')
+                ->where(function ($q) {
+                    $q->where('total_amount', '>', 0)
+                        ->orWhere('payment_method', 'offline')
+                        ->orWhere('payment_method', 'cash');
+                })
+                ->pluck('webinar_id')
+                ->toArray();
+            
+            // Also check UPE sales for refundable ones
+            try {
+                $paidUpeWebinarIds = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
+                    ->whereIn('status', ['active', 'partially_refunded'])
+                    ->where('base_fee_snapshot', '>', 0)
+                    ->with('product')
+                    ->get()
+                    ->filter(function($s) {
+                        return $s->product && in_array($s->product->product_type, ['course_video', 'webinar']);
+                    })
+                    ->pluck('product.external_id')
+                    ->toArray();
+                
+                $refundableWebinarIds = array_unique(array_filter(array_merge($refundableWebinarIds, $paidUpeWebinarIds)));
+            } catch (\Exception $e) {
+                // fallback
+            }
+
+            $refundableCourses = Webinar::whereIn('id', $refundableWebinarIds)
+                ->get();
 
         
                 $mentors = \App\User::where('role_name', 'teacher')
@@ -243,6 +274,7 @@ class NewSupportForAsttrolokController extends Controller
                     'overdueCourses' => $overdueCourses,
                     'userPurchasedCourses' => $userPurchases,
                     'userPurchases' => $userPurchases,
+                    'refundableCourses' => $refundableCourses,
                     'installmentList' => $installmentList,
                     'extensionCounts' => $extensionCounts,
                 ];

@@ -62,6 +62,9 @@
             <p class="mt-10 font-16 text-gray">{{ trans('update.please_select_an_installment_plan_in_order_to_finalize_your_purchase') }}</p>
         </div>
 
+        {{-- Wallet Payment Widget --}}
+        @include('web.default.includes.wallet_payment_widget', ['totalAmount' => $itemPrice ?? 0])
+
         @foreach($installments as $installmentRow)
             @include('web.default.installment.partPayment.card2',['installment' => $installmentRow, 'itemPrice' => $itemPrice, 'itemId' => $itemId, 'itemType' => $itemType])
         @endforeach
@@ -130,7 +133,8 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
         // password: document.getElementById('customer_password').value,
         amount: document.getElementById('amount').value,
         installment_id: {{ $installment->id ?? null }},
-        discount_id: @json(session('discountCouponId'))
+        discount_id: @json(session('discountCouponId')),
+        wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
     };
     showPaymentLoader();
 

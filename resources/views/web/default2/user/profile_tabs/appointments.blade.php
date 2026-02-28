@@ -216,6 +216,9 @@
         required
     >
 </div>
+                        {{-- Wallet Payment Widget --}}
+                        @include('web.default.includes.wallet_payment_widget', ['totalAmount' => $meeting->amount ?? 0])
+
                         <div class="  form-group mt-30">
                             <label class="input-label">Contact*</label>
                             <input name="mobile" id="mobile" type="number" class="form-control"  placeholder="Contact*" maxlength="10">
@@ -529,7 +532,8 @@ const userDetails = {
     birthtime: document.getElementById('birthtime').value,
     birthplace: document.getElementById('birthplace').value,
     selectedDay: document.getElementById('selectedDay').value,
-    discount_id: $('#coupon_hidden').val() || null
+    discount_id: $('#coupon_hidden').val() || null,
+    wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
 };
 
 

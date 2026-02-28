@@ -247,6 +247,9 @@
                             <div id="summaryText"></div>
                         </div>
 
+                        {{-- Wallet Payment Widget --}}
+                        @include('web.default.includes.wallet_payment_widget', ['totalAmount' => $remaining ?? 0])
+
                         {{-- User Info + Pay --}}
                         <div id="Payment-Option" class="bg-gray200 mt-20 rounded-lg border p-15">
                             <div class="form-group">
@@ -321,7 +324,8 @@
                 email: document.getElementById('customer_email').value,
                 number: document.getElementById('customer_number').value,
                 amount: document.getElementById('amount').value,
-                installment_id: installmentConfigId
+                installment_id: installmentConfigId,
+                wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
             };
 
             showPaymentLoader();

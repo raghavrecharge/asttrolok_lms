@@ -10,6 +10,8 @@ use App\Models\EventRegistration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Razorpay\Api\Api;
+use App\Services\PaymentEngine\WalletService;
+use App\Models\PaymentEngine\WalletTransaction;
 
 class EventPaymentController extends Controller
 {
@@ -92,10 +94,64 @@ class EventPaymentController extends Controller
 
             $api = new Api($razorpayKey, $razorpaySecret);
 
-            // Create Razorpay Order
+            // ── Wallet-mediated: auto-apply wallet balance ──
+            $walletDeduction = 0;
+            $originalAmount = (int) round((float) $event->price);
+
+            if (auth()->check() && $originalAmount > 0) {
+                $walletService = app(WalletService::class);
+                $userId = auth()->id();
+                $walletBalance = $walletService->balance($userId);
+
+                if ($walletBalance > 0) {
+                    $walletDeduction = (int) min(floor($walletBalance), $originalAmount);
+                }
+            }
+
+            $gatewayAmount = max($originalAmount - $walletDeduction, 0);
+
+            // ── Full wallet payment ──
+            if ($walletDeduction > 0 && $walletDeduction >= $originalAmount) {
+                $userId = auth()->id();
+                $walletService->purchaseFromWallet(
+                    $userId,
+                    $originalAmount,
+                    null,
+                    'Full wallet purchase for event: ' . $event->title
+                );
+
+                $payment = EventPayment::create([
+                    'event_id' => $event->id,
+                    'razorpay_order_id' => 'wallet_evt_' . $event->id . '_' . time(),
+                    'amount' => $originalAmount,
+                    'status' => 'completed',
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                ]);
+
+                EventRegistration::create([
+                    'event_id' => $event->id,
+                    'payment_id' => $payment->id,
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'payment_status' => 'completed',
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'wallet_paid' => true,
+                    'wallet_deduction' => $walletDeduction,
+                    'message' => 'Registration completed using wallet balance!',
+                    'redirect_url' => '/events/pay/' . $eventId . '/' . $token . '/success',
+                ]);
+            }
+
+            // Create Razorpay Order for shortfall only
             $razorpayOrder = $api->order->create([
                 'receipt' => 'evt_' . $event->id . '_' . time(),
-                'amount' => (int) round((float) $event->price, 0, PHP_ROUND_HALF_UP) * 100, // Convert to paise
+                'amount' => (int) $gatewayAmount * 100,
                 'currency' => 'INR',
                 'notes' => [
                     'event_id' => $event->id,
@@ -103,18 +159,24 @@ class EventPaymentController extends Controller
                     'customer_name' => $request->name,
                     'customer_email' => $request->email,
                     'customer_phone' => $request->phone,
+                    'wallet_deduction' => $walletDeduction,
+                    'original_amount' => $originalAmount,
                 ]
             ]);
 
-            // Create payment record
+            // Create payment record (store wallet info for verifyPayment)
             $payment = EventPayment::create([
                 'event_id' => $event->id,
                 'razorpay_order_id' => $razorpayOrder['id'],
-                'amount' => $event->price,
+                'amount' => $originalAmount,
                 'status' => 'pending',
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
+                'payment_response' => json_encode([
+                    'wallet_deduction' => $walletDeduction,
+                    'original_amount' => $originalAmount,
+                ]),
             ]);
 
             // Create registration record
@@ -127,16 +189,19 @@ class EventPaymentController extends Controller
                 'payment_status' => 'pending',
             ]);
 
+            // Wallet NOT debited here — deferred to verifyPayment (wallet-mediated)
+
             return response()->json([
                 'success' => true,
                 'order_id' => $razorpayOrder['id'],
                 'razorpay_key' => $razorpayKey,
-                'amount' => (int) round((float) $event->price, 0, PHP_ROUND_HALF_UP) * 100,
+                'amount' => (int) $gatewayAmount * 100,
                 'currency' => 'INR',
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
                 'description' => 'Registration for ' . $event->title,
+                'wallet_deduction' => $walletDeduction,
             ]);
 
         } catch (\Exception $e) {
@@ -192,13 +257,39 @@ class EventPaymentController extends Controller
                 ]);
             }
 
+            // Wallet-mediated: credit gateway to wallet, debit full amount from wallet
+            $walletData = is_string($payment->payment_response)
+                ? json_decode($payment->payment_response, true)
+                : ($payment->payment_response ?? []);
+            $walletDeduction = (float) ($walletData['wallet_deduction'] ?? 0);
+            $eventOriginalAmount = (float) ($walletData['original_amount'] ?? $payment->amount ?? 0);
+
+            if ($walletDeduction > 0 && $eventOriginalAmount > 0 && auth()->check()) {
+                $walletSvc = app(WalletService::class);
+                $userId = auth()->id();
+                $gatewayPaid = $eventOriginalAmount - $walletDeduction;
+
+                // Step 1: Credit gateway amount to wallet
+                if ($gatewayPaid > 0) {
+                    $walletSvc->creditFromGateway($userId, $gatewayPaid, null, $request->razorpay_payment_id);
+                }
+
+                // Step 2: Debit full purchase amount from wallet
+                $walletSvc->purchaseFromWallet($userId, $eventOriginalAmount, null, 'Event purchase: ' . ($event->title ?? 'Event #' . $eventId));
+
+                Log::info('Event wallet-mediated payment completed', [
+                    'user_id' => $userId, 'gateway' => $gatewayPaid,
+                    'wallet_used' => $walletDeduction, 'total' => $eventOriginalAmount,
+                ]);
+            }
+
             // Update payment record
             $payment->update([
                 'razorpay_payment_id' => $request->razorpay_payment_id,
                 'razorpay_signature' => $request->razorpay_signature,
                 'status' => 'paid',
                 'payment_method' => 'razorpay',
-                'payment_response' => $request->all(),
+                'payment_response' => json_encode(array_merge($walletData, $request->all())),
             ]);
 
             // Update registration

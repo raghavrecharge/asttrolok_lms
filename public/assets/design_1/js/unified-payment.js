@@ -35,7 +35,8 @@ class UnifiedPaymentHandler {
                     message: userDetails.message || null,
                     amount: userDetails.amount || null,
                     selectedDay: userDetails.selectedDay || null,
-                    use_wallet: userDetails.use_wallet || false
+                    use_wallet: userDetails.use_wallet || false,
+                    wallet_amount: userDetails.wallet_amount || null
                 })
             });
 

@@ -104,6 +104,9 @@
                                 </div>
                             </div>
 
+                            {{-- Wallet Payment Widget --}}
+                            @include('web.default.includes.wallet_payment_widget', ['totalAmount' => $event->price])
+
                             <!-- Payment Button -->
                             <div class="text-center">
                                 <button type="submit" class="btn btn-primary btn-lg px-5" id="payButton">
@@ -164,13 +167,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({
                     name: formData.get('name'),
                     email: formData.get('email'),
-                    phone: formData.get('phone')
+                    phone: formData.get('phone'),
+                    wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
                 })
             });
 
             const data = await response.json();
 
             if (data.success) {
+                // If wallet covered full amount, redirect directly
+                if (data.wallet_paid) {
+                    alert(data.message || 'Registration completed using wallet!');
+                    window.location.href = data.redirect_url || '/';
+                    return;
+                }
+
                 // Initialize Razorpay
                 const options = {
                     key: data.razorpay_key,
