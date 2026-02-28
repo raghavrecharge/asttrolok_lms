@@ -113,11 +113,22 @@
                                 </div>
                             </div>
 
+                            {{-- Wallet Balance --}}
+                            <div class="p-3 border rounded text-center mb-3">
+                                <div class="text-muted small">User Wallet Balance</div>
+                                <div class="h4 mb-0 {{ $walletBalance > 0 ? 'text-success' : 'text-secondary' }}">
+                                    <i class="fas fa-wallet"></i> ₹{{ number_format($walletBalance, 2) }}
+                                </div>
+                            </div>
+
                             {{-- Quick Action Buttons --}}
                             @if(in_array($sale->status, ['active', 'partially_refunded']))
                                 <div class="mb-3">
                                     <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#refundModal">
-                                        <i class="fas fa-undo"></i> Process Refund
+                                        <i class="fas fa-undo"></i> Refund to Wallet
+                                    </button>
+                                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#courseSwitchModal">
+                                        <i class="fas fa-exchange-alt"></i> Course Switch
                                     </button>
                                 </div>
                             @endif
@@ -125,7 +136,7 @@
                             @if($sale->status === 'pending_payment')
                                 <div class="mb-3">
                                     <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#offlinePaymentModal">
-                                        <i class="fas fa-money-bill"></i> Record Offline Payment
+                                        <i class="fas fa-money-bill"></i> Offline Payment via Wallet
                                     </button>
                                 </div>
                             @endif
@@ -240,23 +251,30 @@
                 <input type="hidden" name="sale_id" value="{{ $sale->id }}">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Process Refund — Sale #{{ $sale->id }}</h5>
+                        <h5 class="modal-title"><i class="fas fa-undo text-danger"></i> Refund to Wallet — Sale #{{ $sale->id }}</h5>
                         <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                     </div>
                     <div class="modal-body">
-                        <p>Current balance: <strong>₹{{ number_format($ledgerSummary['net_balance'], 2) }}</strong></p>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            The actual amount paid by the user (<strong>₹{{ number_format($ledgerSummary['net_balance'], 2) }}</strong>) will be credited to their wallet.
+                            Current wallet balance: <strong>₹{{ number_format($walletBalance, 2) }}</strong>
+                        </div>
                         <div class="form-group">
-                            <label>Refund Amount (₹)</label>
+                            <label>Refund Amount (₹) <small class="text-muted">— actual amount paid, not course price</small></label>
                             <input type="number" name="amount" class="form-control" step="0.01" min="1" max="{{ $ledgerSummary['net_balance'] }}" value="{{ $ledgerSummary['net_balance'] }}" required>
                         </div>
                         <div class="form-group">
                             <label>Reason</label>
                             <textarea name="reason" class="form-control" rows="3" required placeholder="Reason for refund..."></textarea>
                         </div>
+                        <div class="text-muted small">
+                            <i class="fas fa-wallet"></i> After refund, wallet balance will be: <strong>₹{{ number_format($walletBalance + $ledgerSummary['net_balance'], 2) }}</strong>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-danger">Process Refund</button>
+                        <button type="submit" class="btn btn-danger"><i class="fas fa-undo"></i> Refund to Wallet</button>
                     </div>
                 </div>
             </form>
@@ -271,14 +289,24 @@
                 <input type="hidden" name="sale_id" value="{{ $sale->id }}">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Record Offline Payment — Sale #{{ $sale->id }}</h5>
+                        <h5 class="modal-title"><i class="fas fa-money-bill text-success"></i> Offline Payment via Wallet — Sale #{{ $sale->id }}</h5>
                         <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                     </div>
                     <div class="modal-body">
-                        <p>Base fee: <strong>₹{{ number_format($sale->base_fee_snapshot, 2) }}</strong></p>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Course price: <strong>₹{{ number_format($sale->base_fee_snapshot, 2) }}</strong><br>
+                            Cash received will be credited to wallet first, then course price debited from wallet.<br>
+                            <strong>If user paid more</strong> than course price, the extra amount stays in their wallet.
+                        </div>
                         <div class="form-group">
-                            <label>Amount Received (₹)</label>
-                            <input type="number" name="amount" class="form-control" step="0.01" min="1" value="{{ $sale->base_fee_snapshot }}" required>
+                            <label>Amount Received (₹) <small class="text-muted">— actual cash/transfer received from user</small></label>
+                            <input type="number" name="amount" id="offlineAmount" class="form-control" step="0.01" min="1" value="{{ $sale->base_fee_snapshot }}" required onchange="updateOfflinePreview()" onkeyup="updateOfflinePreview()">
+                        </div>
+                        <div id="offlinePreview" class="mb-3 p-2 bg-light rounded small">
+                            <div><i class="fas fa-arrow-down text-success"></i> Credit to wallet: <strong id="offCreditAmt">₹{{ number_format($sale->base_fee_snapshot, 2) }}</strong></div>
+                            <div><i class="fas fa-arrow-up text-danger"></i> Debit for purchase: <strong>₹{{ number_format($sale->base_fee_snapshot, 2) }}</strong></div>
+                            <div><i class="fas fa-wallet text-primary"></i> Remaining in wallet: <strong id="offRemainAmt">₹0.00</strong></div>
                         </div>
                         <div class="form-group">
                             <label>Payment Method</label>
@@ -295,10 +323,111 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-success">Record Payment</button>
+                        <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Record Payment via Wallet</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
+
+    {{-- Course Switch Modal --}}
+    @if(in_array($sale->status, ['active', 'partially_refunded']))
+    <div class="modal fade" id="courseSwitchModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <form method="POST" action="{{ getAdminPanelUrl() }}/upe/course-switch">
+                @csrf
+                <input type="hidden" name="old_sale_id" value="{{ $sale->id }}">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-exchange-alt text-warning"></i> Course Switch — Sale #{{ $sale->id }}</h5>
+                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Current course:</strong> {{ $sale->product->name ?? 'Product #' . $sale->product_id }}
+                            (₹{{ number_format($sale->base_fee_snapshot, 2) }})<br>
+                            <strong>Amount actually paid:</strong> ₹{{ number_format($ledgerSummary['net_balance'], 2) }}<br>
+                            <strong>Flow:</strong> ₹{{ number_format($ledgerSummary['net_balance'], 2) }} refunded to wallet → new course price debited from wallet.<br>
+                            If the new course costs less, the difference remains in wallet.
+                        </div>
+                        <div class="form-group">
+                            <label>Switch to Product</label>
+                            <select name="new_product_id" id="switchProduct" class="form-control" required onchange="updateSwitchPreview()">
+                                <option value="">-- Select new course --</option>
+                                @foreach($allProducts as $product)
+                                    <option value="{{ $product->id }}" data-price="{{ $product->base_fee }}">
+                                        {{ $product->name }} ({{ $product->product_type }}) — ₹{{ number_format($product->base_fee, 2) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div id="switchPreview" class="mb-3 p-3 bg-light rounded" style="display:none;">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="text-muted small">Refund to Wallet</div>
+                                    <div class="h5 text-success"><i class="fas fa-arrow-down"></i> ₹{{ number_format($ledgerSummary['net_balance'], 2) }}</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-muted small">New Course Price</div>
+                                    <div class="h5 text-danger"><i class="fas fa-arrow-up"></i> ₹<span id="switchNewPrice">0</span></div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="text-muted small">Wallet balance after switch</div>
+                            <div class="h5" id="switchWalletAfter">₹0.00</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Reason (optional)</label>
+                            <textarea name="reason" class="form-control" rows="2" placeholder="Reason for course switch..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning" id="switchSubmitBtn" disabled><i class="fas fa-exchange-alt"></i> Switch Course</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
+    <script>
+        function updateOfflinePreview() {
+            var amt = parseFloat(document.getElementById('offlineAmount').value) || 0;
+            var coursePrice = {{ $sale->base_fee_snapshot }};
+            var remain = Math.max(amt - coursePrice, 0);
+            document.getElementById('offCreditAmt').textContent = '₹' + amt.toFixed(2);
+            document.getElementById('offRemainAmt').textContent = '₹' + remain.toFixed(2);
+        }
+
+        function updateSwitchPreview() {
+            var sel = document.getElementById('switchProduct');
+            var opt = sel.options[sel.selectedIndex];
+            var preview = document.getElementById('switchPreview');
+            var btn = document.getElementById('switchSubmitBtn');
+            if (!opt || !opt.value) {
+                preview.style.display = 'none';
+                btn.disabled = true;
+                return;
+            }
+            var newPrice = parseFloat(opt.getAttribute('data-price')) || 0;
+            var refundAmt = {{ $ledgerSummary['net_balance'] }};
+            var currentWallet = {{ $walletBalance }};
+            var walletAfter = currentWallet + refundAmt - newPrice;
+
+            document.getElementById('switchNewPrice').textContent = newPrice.toFixed(2);
+            var walletEl = document.getElementById('switchWalletAfter');
+            walletEl.textContent = '₹' + walletAfter.toFixed(2);
+            walletEl.className = walletAfter >= 0 ? 'h5 text-success' : 'h5 text-danger';
+
+            if (walletAfter < 0) {
+                walletEl.textContent += ' (Insufficient! User needs ₹' + Math.abs(walletAfter).toFixed(2) + ' more)';
+                btn.disabled = true;
+            } else {
+                btn.disabled = false;
+            }
+            preview.style.display = 'block';
+        }
+    </script>
 @endsection

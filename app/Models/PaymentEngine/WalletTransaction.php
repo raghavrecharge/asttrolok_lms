@@ -67,6 +67,7 @@ class WalletTransaction extends Model
     const TXN_WALLET_PAYMENT = 'wallet_payment';
     const TXN_GATEWAY_TOPUP = 'gateway_topup';
     const TXN_WALLET_PURCHASE = 'wallet_purchase';
+    const TXN_OFFLINE_PAYMENT = 'offline_payment';
     const TXN_OVERPAYMENT_REFUND = 'overpayment_refund';
     const TXN_COURSE_CHANGE_REFUND = 'course_change_refund';
 

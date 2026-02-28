@@ -916,7 +916,7 @@ try {
                 $data['walletBalance'] = 0;
             }
 
-                if($user->role_name=='user'){
+                if($user->role_name == 'user' || ($user->role_name == 'teacher' && !empty($user->consultant) && $user->consultant == 1)){
 
                      return view(getTemplate() . '.panel.dashboard.index', $data);
                 }else{

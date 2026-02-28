@@ -21,9 +21,9 @@
 
 /* Fix for dropdown menus being too low or behind other elements */
 .theme-header-1__top-navbar .dropdown-menu,
-.theme-header-1__main .dropdown-menu {
+.theme-header-1__main .dropdown-menu,
+.theme-header-1__top-navbar .custom-dropdown-body {
     z-index: 1055 !important;
-    margin-top: -15px !important;
 }
 
 /* Ensure the pointer alignment isn't broken */

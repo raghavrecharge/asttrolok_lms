@@ -36,15 +36,96 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .input-group .input-group-prepend .input-group-text {
-            background-color: #1f3b64;
-            border-color: #1f3b64;
-            color: #fff;
-            border-radius: 10px 0 0 10px;
+
+        /* Stats Cards */
+        .stat-card-premium {
+            background: #fff;
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid #e8edf5;
+            box-shadow: 0 4px 24px rgba(31, 59, 100, 0.04);
+            transition: all 0.3s ease;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
         }
-        .datepicker, .datefilter {
-            cursor: pointer !important;
-            border-radius: 0 10px 10px 0 !important;
+        .stat-card-premium:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(31, 59, 100, 0.1);
+            border-color: #d1d9e6;
+        }
+        .stat-icon-wrapper {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        .stat-info .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f3b64;
+            display: block;
+            line-height: 1.2;
+        }
+        .stat-info .stat-label {
+            font-size: 13px;
+            color: #6a737d;
+            font-weight: 500;
+            margin-top: 4px;
+            display: block;
+        }
+
+        /* Filter refinements */
+        .filter-container-premium {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid #e8edf5;
+            padding: 30px;
+            box-shadow: 0 4px 24px rgba(31, 59, 100, 0.04);
+        }
+        .filter-label-premium {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1f3b64;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .filter-input-premium {
+            height: 44px;
+            border-radius: 12px;
+            border: 1.5px solid #e8edf5;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1f3b64;
+            padding: 0 15px;
+            transition: all 0.2s;
+        }
+        .filter-input-premium:focus {
+            border-color: #43d477;
+            box-shadow: 0 0 0 3px rgba(67, 212, 119, 0.1);
+        }
+        .btn-filter-premium {
+            height: 44px;
+            background: linear-gradient(135deg, #43d477 0%, #2ecc71 100%);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 4px 14px rgba(67, 212, 119, 0.3);
+            transition: all 0.3s;
+        }
+        .btn-filter-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(67, 212, 119, 0.4);
         }
     </style>
 @endpush
@@ -53,40 +134,53 @@
     <section>
         <h2 class="section-title">{{ trans('panel.meeting_statistics') }}</h2>
 
-        <div class="activities-container mt-25 p-20 p-lg-35">
-            <div class="row">
-                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/49.svg" width="64" height="64" alt="">
-                        <strong class="font-30 font-weight-bold text-dark-blue mt-5">{{ $pendingReserveCount }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('panel.pending_appointments') }}</span>
+        <div class="row mt-25">
+            <div class="col-12 col-sm-6 col-md-3 mb-20 mb-md-0">
+                <div class="stat-card-premium">
+                    <div class="stat-icon-wrapper" style="background: rgba(255, 159, 67, 0.1);">
+                        <img src="{{ config('app.js_css_url') }}/assets/default/img/activity/49.svg" width="35" height="35" alt="">
+                    </div>
+                    <div class="stat-info">
+                        <strong class="stat-value">{{ $pendingReserveCount }}</strong>
+                        <span class="stat-label">{{ trans('panel.pending_appointments') }}</span>
                     </div>
                 </div>
+            </div>
 
-                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/50.svg" width="64" height="64" alt="">
-                        <strong class="font-30 font-weight-bold text-dark-blue mt-5">{{ $totalReserveCount }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('panel.total_meetings') }}</span>
+            <div class="col-12 col-sm-6 col-md-3 mb-20 mb-md-0">
+                <div class="stat-card-premium">
+                    <div class="stat-icon-wrapper" style="background: rgba(31, 59, 100, 0.08);">
+                        <img src="{{ config('app.js_css_url') }}/assets/default/img/activity/50.svg" width="35" height="35" alt="">
+                    </div>
+                    <div class="stat-info">
+                        <strong class="stat-value">{{ $totalReserveCount }}</strong>
+                        <span class="stat-label">{{ trans('panel.total_meetings') }}</span>
                     </div>
                 </div>
+            </div>
 
-                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center mt-5 mt-md-0">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/38.svg" width="64" height="64" alt="">
-                        <strong class="font-30 font-weight-bold text-dark-blue mt-5">{{ handlePrice($sumReservePaid) }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('panel.sales_amount') }}</span>
+            <div class="col-12 col-sm-6 col-md-3 mb-20 mb-sm-0">
+                <div class="stat-card-premium">
+                    <div class="stat-icon-wrapper" style="background: rgba(46, 204, 113, 0.1);">
+                        <img src="{{ config('app.js_css_url') }}/assets/default/img/activity/38.svg" width="35" height="35" alt="">
+                    </div>
+                    <div class="stat-info">
+                        <strong class="stat-value">{{ handlePrice($sumReservePaid) }}</strong>
+                        <span class="stat-label">{{ trans('panel.sales_amount') }}</span>
                     </div>
                 </div>
+            </div>
 
-                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center mt-5 mt-md-0">
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/hours.svg" width="64" height="64" alt="">
-                        <strong class="font-30 font-weight-bold text-dark-blue mt-5">{{ convertMinutesToHourAndMinute($activeHoursCount / 60) }}</strong>
-                        <span class="font-16 text-gray font-weight-500">{{ trans('panel.active_hours') }}</span>
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="stat-card-premium">
+                    <div class="stat-icon-wrapper" style="background: rgba(52, 152, 219, 0.1);">
+                        <img src="{{ config('app.js_css_url') }}/assets/default/img/activity/hours.svg" width="35" height="35" alt="">
+                    </div>
+                    <div class="stat-info">
+                        <strong class="stat-value">{{ convertMinutesToHourAndMinute($activeHoursCount / 60) }}</strong>
+                        <span class="stat-label">{{ trans('panel.active_hours') }}</span>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
@@ -94,48 +188,40 @@
     <section class="mt-25 panel-filter-section">
         <h2 class="section-title">{{ trans('panel.filter_meetings') }}</h2>
 
-        <div class="mt-20" style="background: linear-gradient(135deg, #f8faff 0%, #fff 100%); border-radius: 20px; border: 1px solid #e8edf5; padding: 22px 28px; box-shadow: 0 4px 24px rgba(31,59,100,0.06);">
+        <div class="mt-20 filter-container-premium">
             <form action="/panel/meetings/requests" method="get">
                 <div class="row align-items-end">
 
                     {{-- From --}}
-                    <div class="col-12 col-sm-4 col-md-2">
-                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
-                            <i data-feather="calendar" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.from') }}
-                        </label>
-                        <div style="position:relative;width:100%;">
-                            <div style="position:absolute;left:0;top:0;bottom:0;width:38px;background:#1f3b64;display:flex;align-items:center;justify-content:center;border-radius:9px 0 0 9px;z-index:1;">
-                                <i data-feather="calendar" width="14" height="14" style="color:#fff;"></i>
+                    <div class="col-12 col-sm-6 col-md-2">
+                        <label class="filter-label-premium">{{ trans('public.from') }}</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">
+                                    <i data-feather="calendar" width="14" height="14"></i>
+                                </span>
                             </div>
-                            <input type="text" name="from" autocomplete="off"
-                                   class="form-control @if(!empty(request()->get('from'))) datepicker @else datefilter @endif"
-                                   style="height:40px;padding-left:48px;font-size:12px;font-weight:600;color:#1f3b64;border:1.5px solid #e8edf5;border-radius:9px;box-shadow:0 2px 6px rgba(31,59,100,0.06);background:#fff;"
-                                   value="{{ request()->get('from','') }}"/>
+                            <input type="text" name="from" autocomplete="off" class="form-control daterangepicker filter-input-premium" value="{{ request()->get('from','') }}"/>
                         </div>
                     </div>
 
                     {{-- To --}}
-                    <div class="col-12 col-sm-4 col-md-2 mt-15 mt-sm-0">
-                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
-                            <i data-feather="calendar" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.to') }}
-                        </label>
-                        <div style="position:relative;width:100%;">
-                            <div style="position:absolute;left:0;top:0;bottom:0;width:38px;background:#1f3b64;display:flex;align-items:center;justify-content:center;border-radius:9px 0 0 9px;z-index:1;">
-                                <i data-feather="calendar" width="14" height="14" style="color:#fff;"></i>
+                    <div class="col-12 col-sm-6 col-md-2 mt-15 mt-sm-0">
+                        <label class="filter-label-premium">{{ trans('public.to') }}</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">
+                                    <i data-feather="calendar" width="14" height="14"></i>
+                                </span>
                             </div>
-                            <input type="text" name="to" autocomplete="off"
-                                   class="form-control @if(!empty(request()->get('to'))) datepicker @else datefilter @endif"
-                                   style="height:40px;padding-left:48px;font-size:12px;font-weight:600;color:#1f3b64;border:1.5px solid #e8edf5;border-radius:9px;box-shadow:0 2px 6px rgba(31,59,100,0.06);background:#fff;"
-                                   value="{{ request()->get('to','') }}"/>
+                            <input type="text" name="to" autocomplete="off" class="form-control daterangepicker filter-input-premium" value="{{ request()->get('to','') }}"/>
                         </div>
                     </div>
 
                     {{-- Day --}}
-                    <div class="col-12 col-sm-4 col-md-2 mt-15 mt-sm-0">
-                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
-                            <i data-feather="sun" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.day') }}
-                        </label>
-                        <select name="day" class="form-control" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;cursor:pointer;">
+                    <div class="col-12 col-sm-4 col-md-2 mt-15 mt-md-0">
+                        <label class="filter-label-premium">{{ trans('public.day') }}</label>
+                        <select name="day" class="form-control filter-input-premium">
                             <option value="all">{{ trans('public.all_days') }}</option>
                             <option value="saturday" {{ request()->get('day') === 'saturday' ? 'selected' : '' }}>{{ trans('public.saturday') }}</option>
                             <option value="sunday" {{ request()->get('day') === 'sunday' ? 'selected' : '' }}>{{ trans('public.sunday') }}</option>
@@ -148,11 +234,9 @@
                     </div>
 
                     {{-- Student --}}
-                    <div class="col-12 col-sm-6 col-md-2 mt-15 mt-md-0">
-                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
-                            <i data-feather="users" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('quiz.student') }}
-                        </label>
-                        <select name="student_id" class="form-control select2" style="width:100%;">
+                    <div class="col-12 col-sm-4 col-md-2 mt-15 mt-md-0">
+                        <label class="filter-label-premium">{{ trans('quiz.student') }}</label>
+                        <select name="student_id" class="form-control select2 filter-input-premium">
                             <option value="all">{{ trans('webinars.all_students') }}</option>
                             @foreach($usersReservedTimes as $student)
                                 <option value="{{ $student->id }}" @if(request()->get('student_id') == $student->id) selected @endif>{{ $student->full_name }}</option>
@@ -161,12 +245,10 @@
                     </div>
 
                     {{-- Status --}}
-                    <div class="col-12 col-sm-6 col-md-2 mt-15 mt-md-0">
-                        <label style="font-size:10px;font-weight:700;color:#8c98a4;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block;">
-                            <i data-feather="sliders" width="11" height="11" style="vertical-align:middle;margin-right:3px;"></i> {{ trans('public.status') }}
-                        </label>
-                        <select name="status" class="form-control" style="width:100%;height:40px;border:1.5px solid #e8edf5;border-radius:9px;padding:0 30px 0 12px;font-size:12px;font-weight:600;color:#1f3b64;background:#fff;box-shadow:0 2px 6px rgba(31,59,100,0.06);appearance:none;-webkit-appearance:none;cursor:pointer;">
-                            <option>{{ trans('public.all') }}</option>
+                    <div class="col-12 col-sm-4 col-md-2 mt-15 mt-md-0">
+                        <label class="filter-label-premium">{{ trans('public.status') }}</label>
+                        <select name="status" class="form-control filter-input-premium">
+                            <option value="">{{ trans('public.all') }}</option>
                             <option value="open" {{ request()->get('status') === 'open' ? 'selected' : '' }}>{{ trans('public.open') }}</option>
                             <option value="finished" {{ request()->get('status') === 'finished' ? 'selected' : '' }}>{{ trans('public.finished') }}</option>
                         </select>
@@ -174,8 +256,8 @@
 
                     {{-- Submit --}}
                     <div class="col-12 col-md-2 mt-20 mt-md-0">
-                        <button type="submit" style="height:40px;width:100%;background:linear-gradient(135deg,#43d477 0%,#2ecc71 100%);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 14px rgba(67,212,119,0.25);white-space:nowrap;padding:0 20px;transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 18px rgba(67,212,119,0.35)'" onmouseout="this.style.boxShadow='0 4px 14px rgba(67,212,119,0.25)'">
-                            <i data-feather="search" width="13" height="13"></i>
+                        <button type="submit" class="btn btn-block btn-filter-premium">
+                            <i data-feather="search" width="14" height="14" class="mr-5"></i>
                             {{ trans('public.show_results') }}
                         </button>
                     </div>
@@ -200,22 +282,22 @@
 
         @if($reserveMeetings->count() > 0)
 
-            <div class="panel-section-card py-20 px-25 mt-20">
+            <div class="panel-section-card py-20 px-25 mt-20" style="background: #fff; border-radius: 20px; border: 1px solid #e8edf5; box-shadow: 0 4px 24px rgba(31, 59, 100, 0.04); overflow: hidden;">
                 <div class="row">
                     <div class="col-12 ">
                         <div class="table-responsive">
                             <table class="table text-center custom-table">
                                 <thead>
                                 <tr>
-                                    <th>{{ trans('quiz.student') }}</th>
-                                    <th class="text-center d-none d-md-table-cell">{{ trans('update.meeting_type') }}</th>
-                                    <th class="text-center d-none d-lg-table-cell">{{ trans('public.day') }}</th>
-                                    <th class="text-center">{{ trans('public.date') }}</th>
-                                    <th class="text-center">{{ trans('public.time') }}</th>
-                                    <th class="text-center d-none d-md-table-cell">{{ trans('public.paid_amount') }}</th>
-                                    <th class="text-center d-none d-lg-table-cell">{{ trans('update.students_count') }}</th>
-                                    <th class="text-center">{{ trans('public.status') }}</th>
-                                    <th></th>
+                                    <th class="text-left" style="background: #f8faff; border-radius: 12px 0 0 0;">{{ trans('quiz.student') }}</th>
+                                    <th class="text-center d-none d-md-table-cell" style="background: #f8faff;">{{ trans('update.meeting_type') }}</th>
+                                    <th class="text-center d-none d-lg-table-cell" style="background: #f8faff;">{{ trans('public.day') }}</th>
+                                    <th class="text-center" style="background: #f8faff;">{{ trans('public.date') }}</th>
+                                    <th class="text-center" style="background: #f8faff;">{{ trans('public.time') }}</th>
+                                    <th class="text-center d-none d-md-table-cell" style="background: #f8faff;">{{ trans('public.paid_amount') }}</th>
+                                    <th class="text-center d-none d-lg-table-cell" style="background: #f8faff;">{{ trans('update.students_count') }}</th>
+                                    <th class="text-center" style="background: #f8faff;">{{ trans('public.status') }}</th>
+                                    <th style="background: #f8faff; border-radius: 0 12px 0 0;"></th>
                                 </tr>
                                 </thead>
                                 <tbody>

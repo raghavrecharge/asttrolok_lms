@@ -271,7 +271,7 @@
         }
     });
     </script>
-       @if($authUser->isUser())
+       @if($authUser->isUser() || $authUser->isTeacher())
 <div class="container mt-30">
     
     <div class="d-flex justify-content-end">

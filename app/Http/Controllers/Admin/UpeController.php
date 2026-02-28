@@ -19,9 +19,12 @@ use App\Services\PaymentEngine\Policies\StandardAdjustmentPolicy;
 use App\Services\PaymentEngine\Policies\StandardRefundPolicy;
 use App\Services\PaymentEngine\PurchaseEngine;
 use App\Services\PaymentEngine\RefundEngine;
+use App\Services\PaymentEngine\WalletService;
+use App\Models\PaymentEngine\WalletTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class UpeController extends Controller
 {
@@ -68,14 +71,16 @@ class UpeController extends Controller
         return view('admin.upe.sales', compact('sales', 'stats', 'pageTitle'));
     }
 
-    public function saleDetail(int $id, PaymentLedgerService $ledger, AccessEngine $access)
+    public function saleDetail(int $id, PaymentLedgerService $ledger, AccessEngine $access, WalletService $walletService)
     {
         $sale = UpeSale::with(['product', 'user', 'ledgerEntries', 'installmentPlan.schedules', 'subscription'])->findOrFail($id);
         $ledgerSummary = $ledger->summary($sale->id);
         $accessResult = $access->computeAccess($sale->user_id, $sale->product_id);
+        $walletBalance = $walletService->balance($sale->user_id);
+        $allProducts = UpeProduct::where('status', 'active')->where('id', '!=', $sale->product_id)->orderBy('product_type')->get();
         $pageTitle = "Sale #{$sale->id}";
 
-        return view('admin.upe.sale_detail', compact('sale', 'ledgerSummary', 'accessResult', 'pageTitle'));
+        return view('admin.upe.sale_detail', compact('sale', 'ledgerSummary', 'accessResult', 'walletBalance', 'allProducts', 'pageTitle'));
     }
 
     // ──────────────────────────────────────────────
@@ -153,12 +158,20 @@ class UpeController extends Controller
 
                 case 'offline_payment':
                     $sale = UpeSale::findOrFail($request->sale_id);
-                    $amount = $payload['amount'] ?? 0;
-                    $entry = $ledger->recordPayment($sale->id, $amount, $payload['payment_method'] ?? 'cash', null, null, $adminId, $payload['description'] ?? 'Offline payment');
+                    $cashAmount = (float) ($payload['amount'] ?? 0);
+                    $coursePrice = (float) ($sale->base_fee_snapshot ?? 0);
+                    $purchaseAmount = min($cashAmount, $coursePrice);
+                    $walletSvc = app(WalletService::class);
+                    // Step 1: Credit cash to wallet
+                    $walletSvc->creditOfflinePayment($sale->user_id, $cashAmount, $sale->id, "Offline payment for Sale #{$sale->id}");
+                    // Step 2: Debit course price from wallet
+                    $walletSvc->purchaseFromWallet($sale->user_id, $purchaseAmount, null, "Purchase for Sale #{$sale->id} (offline)");
+                    // Step 3: Record in UPE ledger
+                    $entry = $ledger->recordPayment($sale->id, $purchaseAmount, $payload['payment_method'] ?? 'cash', null, null, $adminId, $payload['description'] ?? 'Offline payment via wallet');
                     if ($sale->isPendingPayment()) {
                         $sale->update(['status' => 'active', 'valid_from' => now(), 'valid_until' => $sale->product && $sale->product->validity_days ? now()->addDays($sale->product->validity_days) : null, 'executed_at' => now()]);
                     }
-                    return ['payment_entry_id' => $entry->id, 'amount' => $amount];
+                    return ['payment_entry_id' => $entry->id, 'amount' => $cashAmount, 'purchase_amount' => $purchaseAmount, 'overpayment' => max($cashAmount - $coursePrice, 0)];
 
                 case 'upgrade':
                 case 'adjustment':
@@ -198,7 +211,7 @@ class UpeController extends Controller
         return back()->with(['toast' => ['title' => 'Success', 'msg' => "Free access granted. Sale #{$sale->id} created.", 'status' => 'success']]);
     }
 
-    public function recordOfflinePayment(Request $request, PaymentLedgerService $ledger)
+    public function recordOfflinePayment(Request $request, PaymentLedgerService $ledger, WalletService $walletService)
     {
         $request->validate([
             'sale_id' => 'required|integer|exists:upe_sales,id',
@@ -208,26 +221,67 @@ class UpeController extends Controller
         ]);
 
         $sale = UpeSale::findOrFail($request->sale_id);
+        $cashAmount = (float) $request->amount;
+        $coursePrice = (float) ($sale->base_fee_snapshot ?? 0);
+        $purchaseAmount = min($cashAmount, $coursePrice);
+        $overpayment = max($cashAmount - $coursePrice, 0);
 
-        $entry = $ledger->recordPayment(
-            $sale->id,
-            $request->amount,
-            $request->payment_method,
-            null, null,
-            auth()->id(),
-            $request->description ?? 'Offline payment recorded by admin'
-        );
+        DB::beginTransaction();
+        try {
+            // Step 1: Credit full cash amount to wallet
+            $walletService->creditOfflinePayment(
+                $sale->user_id,
+                $cashAmount,
+                $sale->id,
+                "Offline {$request->payment_method} payment of ₹{$cashAmount} for Sale #{$sale->id}"
+            );
 
-        if ($sale->isPendingPayment()) {
-            $sale->update([
-                'status' => 'active',
-                'valid_from' => now(),
-                'valid_until' => $sale->product && $sale->product->validity_days ? now()->addDays($sale->product->validity_days) : null,
-                'executed_at' => now(),
+            // Step 2: Debit course price from wallet
+            $walletService->purchaseFromWallet(
+                $sale->user_id,
+                $purchaseAmount,
+                null,
+                "Purchase for Sale #{$sale->id} (offline payment)"
+            );
+
+            // Step 3: Record in UPE ledger
+            $entry = $ledger->recordPayment(
+                $sale->id,
+                $purchaseAmount,
+                $request->payment_method,
+                null, null,
+                auth()->id(),
+                $request->description ?? 'Offline payment via wallet'
+            );
+
+            // Step 4: Activate sale if pending
+            if ($sale->isPendingPayment()) {
+                $sale->update([
+                    'status' => 'active',
+                    'valid_from' => now(),
+                    'valid_until' => $sale->product && $sale->product->validity_days ? now()->addDays($sale->product->validity_days) : null,
+                    'executed_at' => now(),
+                ]);
+            }
+
+            DB::commit();
+
+            $msg = "₹{$cashAmount} credited to wallet → ₹{$purchaseAmount} debited for purchase.";
+            if ($overpayment > 0) {
+                $msg .= " ₹{$overpayment} remains in wallet.";
+            }
+
+            Log::info('UpeController: offline payment via wallet', [
+                'sale_id' => $sale->id, 'user_id' => $sale->user_id,
+                'cash_amount' => $cashAmount, 'purchase_amount' => $purchaseAmount, 'overpayment' => $overpayment,
             ]);
-        }
 
-        return back()->with(['toast' => ['title' => 'Success', 'msg' => "Payment of ₹{$request->amount} recorded.", 'status' => 'success']]);
+            return back()->with(['toast' => ['title' => 'Success', 'msg' => $msg, 'status' => 'success']]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('UpeController: offline payment failed', ['error' => $e->getMessage(), 'sale_id' => $sale->id]);
+            return back()->with(['toast' => ['title' => 'Error', 'msg' => 'Payment failed: ' . $e->getMessage(), 'status' => 'error']]);
+        }
     }
 
     public function processRefund(Request $request, RefundEngine $engine)
@@ -244,7 +298,128 @@ class UpeController extends Controller
 
         $entry = $engine->processRefund($sale, $request->amount, $policy, $request->reason, auth()->id());
 
-        return back()->with(['toast' => ['title' => 'Refund Processed', 'msg' => "₹{$request->amount} refunded for Sale #{$sale->id}.", 'status' => 'success']]);
+        return back()->with(['toast' => ['title' => 'Refund Processed', 'msg' => "₹{$request->amount} refunded and credited to user's wallet for Sale #{$sale->id}.", 'status' => 'success']]);
+    }
+
+    // ──────────────────────────────────────────────
+    //  COURSE SWITCH (Scenario 3)
+    // ──────────────────────────────────────────────
+
+    public function courseSwitch(Request $request, WalletService $walletService, PurchaseEngine $purchaseEngine, PaymentLedgerService $ledger)
+    {
+        $request->validate([
+            'old_sale_id' => 'required|integer|exists:upe_sales,id',
+            'new_product_id' => 'required|integer|exists:upe_products,id',
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        $oldSale = UpeSale::with('product')->findOrFail($request->old_sale_id);
+        $newProduct = UpeProduct::findOrFail($request->new_product_id);
+        $adminId = auth()->id();
+        $userId = $oldSale->user_id;
+
+        // Calculate amounts
+        $amountPaidForOld = $this->getActualAmountPaid($oldSale, $ledger);
+        $newCoursePrice = (float) $newProduct->base_fee;
+
+        if ($amountPaidForOld <= 0) {
+            return back()->with(['toast' => ['title' => 'Error', 'msg' => 'No payment found for the old sale.', 'status' => 'error']]);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Step 1: Refund old course amount to wallet
+            $walletService->creditCourseSwitch(
+                $userId,
+                $amountPaidForOld,
+                $oldSale->id,
+                "Course switch refund: ₹{$amountPaidForOld} from Sale #{$oldSale->id}"
+            );
+
+            // Step 2: Record refund in UPE ledger for old sale
+            $ledger->recordRefund(
+                saleId: $oldSale->id,
+                amount: $amountPaidForOld,
+                paymentMethod: 'wallet',
+                processedBy: $adminId,
+                description: 'Course switch refund — switching to product #' . $newProduct->id,
+                idempotencyKey: "course_switch_{$oldSale->id}_{$newProduct->id}_" . time()
+            );
+
+            // Step 3: Mark old sale as refunded
+            $oldSale->update(['status' => 'refunded']);
+
+            // Step 4: Create new sale
+            $validFrom = now();
+            $validUntil = $newProduct->validity_days ? $validFrom->copy()->addDays($newProduct->validity_days) : null;
+
+            $newSale = UpeSale::create([
+                'uuid' => (string) Str::uuid(),
+                'user_id' => $userId,
+                'product_id' => $newProduct->id,
+                'sale_type' => 'standard',
+                'pricing_mode' => 'one_time',
+                'base_fee_snapshot' => $newCoursePrice,
+                'currency' => 'INR',
+                'status' => 'active',
+                'valid_from' => $validFrom,
+                'valid_until' => $validUntil,
+                'approved_by' => $adminId,
+                'executed_at' => now(),
+                'metadata' => [
+                    'source' => 'admin_course_switch',
+                    'old_sale_id' => $oldSale->id,
+                    'reason' => $request->reason,
+                ],
+            ]);
+
+            // Step 5: Debit new course price from wallet
+            $walletService->purchaseFromWallet(
+                $userId,
+                $newCoursePrice,
+                null,
+                "Purchase for Sale #{$newSale->id} (course switch)"
+            );
+
+            // Step 6: Record payment in UPE ledger for new sale
+            $ledger->recordPayment(
+                $newSale->id,
+                $newCoursePrice,
+                'wallet',
+                null, null,
+                $adminId,
+                'Course switch payment from wallet'
+            );
+
+            DB::commit();
+
+            $walletBalance = $walletService->balance($userId);
+            $difference = $amountPaidForOld - $newCoursePrice;
+            $msg = "Course switched. ₹{$amountPaidForOld} refunded to wallet → ₹{$newCoursePrice} debited for new course.";
+            if ($difference > 0) {
+                $msg .= " ₹{$difference} remains in wallet (balance: ₹{$walletBalance}).";
+            }
+
+            Log::info('UpeController: course switch via wallet', [
+                'user_id' => $userId, 'old_sale_id' => $oldSale->id, 'new_sale_id' => $newSale->id,
+                'refunded' => $amountPaidForOld, 'new_price' => $newCoursePrice, 'wallet_balance' => $walletBalance,
+            ]);
+
+            return back()->with(['toast' => ['title' => 'Course Switched', 'msg' => $msg, 'status' => 'success']]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('UpeController: course switch failed', ['error' => $e->getMessage(), 'old_sale_id' => $oldSale->id]);
+            return back()->with(['toast' => ['title' => 'Error', 'msg' => 'Course switch failed: ' . $e->getMessage(), 'status' => 'error']]);
+        }
+    }
+
+    /**
+     * Get the actual amount paid by the user for a sale (from UPE ledger).
+     * This returns the real payment amount, not the course price or discounted price.
+     */
+    private function getActualAmountPaid(UpeSale $sale, PaymentLedgerService $ledger): float
+    {
+        return $ledger->balance($sale->id);
     }
 
     // ──────────────────────────────────────────────

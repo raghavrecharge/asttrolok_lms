@@ -30,10 +30,14 @@ class ReserveMeetingController extends Controller
                     $query->whereNull('refund_at');
                 });
 
-            $openReserveCount = deepClone($reserveMeetingsQuery)->where('status', \App\models\ReserveMeeting::$open)->count();
-            $totalReserveCount = deepClone($reserveMeetingsQuery)->count();
+            $totalReserveCount = (clone $reserveMeetingsQuery)->count();
+            $finishedReserveCount = (clone $reserveMeetingsQuery)->where('status', \App\Models\ReserveMeeting::$finished)->count();
+            $upcomingReserveCount = (clone $reserveMeetingsQuery)->whereIn('status', [
+                \App\Models\ReserveMeeting::$open,
+                \App\Models\ReserveMeeting::$pending
+            ])->count();
 
-            $meetingIds = deepClone($reserveMeetingsQuery)->pluck('meeting_id')->toArray();
+            $meetingIds = (clone $reserveMeetingsQuery)->pluck('meeting_id')->toArray();
             $teacherIds = Meeting::whereIn('id', array_unique($meetingIds))
                 ->pluck('creator_id')
                 ->toArray();
@@ -61,28 +65,13 @@ class ReserveMeetingController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->paginate(10);
 
-            $activeMeetingTimeIds = ReserveMeeting::where('user_id', $user->id)
-                ->where('status', ReserveMeeting::$open)
-                ->whereHas('sale', function ($query) {
-                    $query->whereNull('refund_at');
-                })
-                ->pluck('meeting_time_id');
-
-            $activeMeetingTimes = MeetingTime::whereIn('id', $activeMeetingTimeIds)->get();
-
-            $activeHoursCount = 0;
-            foreach ($activeMeetingTimes as $time) {
-                $explodetime = explode('-', $time->time);
-                $activeHoursCount += strtotime($explodetime[1]) - strtotime($explodetime[0]);
-            }
-
             $data = [
                 'pageTitle' => trans('meeting.meeting_list_page_title'),
                 'instructors' => $instructors,
                 'reserveMeetings' => $reserveMeetings,
-                'openReserveCount' => $openReserveCount,
                 'totalReserveCount' => $totalReserveCount,
-                'activeHoursCount' => round($activeHoursCount / 3600, 2),
+                'finishedReserveCount' => $finishedReserveCount,
+                'upcomingReserveCount' => $upcomingReserveCount,
             ];
 
             return view(getTemplate() . '.panel.meeting.reservation', $data);

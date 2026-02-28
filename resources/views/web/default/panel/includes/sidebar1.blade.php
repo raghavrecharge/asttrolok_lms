@@ -1,5 +1,6 @@
 @php
     $getPanelSidebarSettings = getPanelSidebarSettings();
+    $isConsultant = ($authUser->isTeacher() && !empty($authUser->consultant) && $authUser->consultant == 1);
 @endphp
 {{-- xs-panel-nav removed: main site header shown on all screens via panel_layout.blade.php --}}
 
@@ -93,7 +94,7 @@
     </button>
 
     <div class="d-flex sidebar-user-stats" style="min-width: 215px;">
-        @if($authUser->isUser())
+        @if($authUser->isUser() || $isConsultant)
 
          <div class="sidebar-user-stat-item d-flex flex-column">
 
@@ -108,9 +109,11 @@
 
           @endif
 
-        <div class="border-left mx-30"></div>
+        @if(!$authUser->isUser() && !$isConsultant)
+            <div class="border-left mx-30"></div>
+        @endif
 
-        @if($authUser->isUser())
+        @if($authUser->isUser() || $isConsultant)
             <div class="sidebar-user-stat-item d-flex flex-column">
 
             </div>
@@ -133,7 +136,7 @@
             </a>
         </li>
 
-        @if($authUser->isOrganization())
+        @if($authUser->isOrganization() && !$isConsultant)
             <li class="sidenav-item {{ (request()->is('panel/instructors') or request()->is('panel/manage/instructors*')) ? 'sidenav-item-active' : '' }}">
                 <a class="d-flex align-items-center" data-toggle="collapse" href="#instructorsCollapse" role="button" aria-expanded="false" aria-controls="instructorsCollapse">
                 <span class="sidenav-item-icon mr-10">
@@ -185,7 +188,7 @@
 
             <div class="collapse {{ (request()->is('panel/webinars') or request()->is('panel/webinars/*') or request()->is('panel/upe/purchases*') or request()->is('panel/upe/installments*')) ? 'show' : '' }}" id="webinarCollapse">
                 <ul class="sidenav-item-collapse">
-                    @if($authUser->isOrganization() || $authUser->isTeacher())
+                    @if(($authUser->isOrganization() || $authUser->isTeacher()) && !$isConsultant)
                         <li class="mt-5 {{ (request()->is('panel/webinars/new')) ? 'active' : '' }}">
                             <a href="/panel/webinars/new">{{ trans('public.new') }}</a>
                         </li>
@@ -205,7 +208,7 @@
                         </li>
                     @endif
 
-                    @if($authUser->isOrganization() || $authUser->isTeacher())
+                    @if(($authUser->isOrganization() || $authUser->isTeacher()) && !$isConsultant)
                         <li class="mt-5 {{ (request()->is('panel/webinars/comments')) ? 'active' : '' }}">
                             <a href="/panel/webinars/comments">{{ trans('panel.my_class_comments') }}</a>
                         </li>
@@ -232,7 +235,7 @@
 
                 <div class="collapse {{ (request()->is('panel/upcoming_courses') or request()->is('panel/upcoming_courses/*')) ? 'show' : '' }}" id="upcomingCoursesCollapse">
                     <ul class="sidenav-item-collapse">
-                        @if($authUser->isOrganization() || $authUser->isTeacher())
+                        @if(($authUser->isOrganization() || $authUser->isTeacher()) && !$isConsultant)
                             <li class="mt-5 {{ (request()->is('panel/upcoming_courses/new')) ? 'active' : '' }}">
                                 <a href="/panel/upcoming_courses/new">{{ trans('public.new') }}</a>
                             </li>
@@ -250,7 +253,7 @@
             </li>
         @endif
 
-        @if($authUser->isOrganization() or $authUser->isTeacher())
+        @if(($authUser->isOrganization() or $authUser->isTeacher()) && !$isConsultant)
             <li class="sidenav-item {{ (request()->is('panel/bundles') or request()->is('panel/bundles/*')) ? 'sidenav-item-active' : '' }}">
                 <a class="d-flex align-items-center" data-toggle="collapse" href="#bundlesCollapse" role="button" aria-expanded="false" aria-controls="bundlesCollapse">
                 <span class="sidenav-item-icon assign-fill mr-10">
@@ -289,7 +292,7 @@
                             <a href="/panel/assignments/my-assignments">{{ trans('update.my_assignments') }}</a>
                         </li>
 
-                        @if($authUser->isOrganization() || $authUser->isTeacher())
+                        @if(($authUser->isOrganization() || $authUser->isTeacher()) && !$isConsultant)
                             <li class="mt-5 {{ (request()->is('panel/assignments/my-courses-assignments')) ? 'active' : '' }}">
                                 <a href="/panel/assignments/my-courses-assignments">{{ trans('update.students_assignments') }}</a>
                             </li>
@@ -314,7 +317,7 @@
                         <a href="/panel/meetings/reservation">{{ trans('public.my_reservation') }}</a>
                     </li>
 
-                    @if($authUser->isOrganization() || $authUser->isTeacher())
+                    @if(($authUser->isOrganization() || $isConsultant))
                         <li class="mt-5 {{ (request()->is('panel/meetings/requests')) ? 'active' : '' }}">
                             <a href="/panel/meetings/requests">{{ trans('panel.requests') }}</a>
                         </li>
@@ -337,7 +340,7 @@
 
             <div class="collapse {{ (request()->is('panel/quizzes') or request()->is('panel/quizzes/*')) ? 'show' : '' }}" id="quizzesCollapse">
                 <ul class="sidenav-item-collapse">
-                    @if($authUser->isOrganization() || $authUser->isTeacher())
+                    @if(($authUser->isOrganization() || $authUser->isTeacher()) && !$isConsultant)
                         <li class="mt-5 {{ (request()->is('panel/quizzes/new')) ? 'active' : '' }}">
                             <a href="/panel/quizzes/new">{{ trans('quiz.new_quiz') }}</a>
                         </li>
@@ -370,7 +373,7 @@
 
             <div class="collapse {{ (request()->is('panel/certificates') or request()->is('panel/certificates/*')) ? 'show' : '' }}" id="certificatesCollapse">
                 <ul class="sidenav-item-collapse">
-                    @if($authUser->isOrganization() || $authUser->isTeacher())
+                    @if(($authUser->isOrganization() || $authUser->isTeacher()) && !$isConsultant)
                         <li class="mt-5 {{ (request()->is('panel/certificates')) ? 'active' : '' }}">
                             <a href="/panel/certificates">{{ trans('public.list') }}</a>
                         </li>
@@ -403,7 +406,7 @@
 
                 <div class="collapse {{ (request()->is('panel/store') or request()->is('panel/store/*')) ? 'show' : '' }}" id="storeCollapse">
                     <ul class="sidenav-item-collapse">
-                        @if($authUser->isOrganization() || $authUser->isTeacher())
+                        @if(($authUser->isOrganization() || $authUser->isTeacher()) && !$isConsultant)
                             <li class="mt-5 {{ (request()->is('panel/store/products/new')) ? 'active' : '' }}">
                                 <a href="/panel/store/products/new">{{ trans('update.new_product') }}</a>
                             </li>
@@ -430,7 +433,7 @@
                             <a href="/panel/store/purchases">My Products</a>
                         </li>
 
-                        @if($authUser->isOrganization() || $authUser->isTeacher())
+                        @if(($authUser->isOrganization() || $authUser->isTeacher()) && !$isConsultant)
                             <li class="mt-5 {{ (request()->is('panel/store/products/comments')) ? 'active' : '' }}">
                                 <a href="/panel/store/products/comments">{{ trans('update.product_comments') }}</a>
                             </li>
@@ -451,7 +454,7 @@
             <div class="collapse {{ (request()->is('panel/financial') or request()->is('panel/financial/*')) ? 'show' : '' }}" id="financialCollapse">
                 <ul class="sidenav-item-collapse">
 
-                    @if($authUser->isOrganization() || $authUser->isTeacher())
+                    @if(($authUser->isOrganization() || $authUser->isTeacher()) && !$isConsultant)
                         <li class="mt-5 {{ (request()->is('panel/financial/sales')) ? 'active' : '' }}">
                             <a href="/panel/financial/sales">{{ trans('financial.sales_report') }}</a>
                         </li>
@@ -461,7 +464,7 @@
                         <a href="/panel/financial/summary">{{ trans('financial.financial_summary') }}</a>
                     </li>
 
-                    @if(($authUser->isOrganization() || $authUser->isTeacher()) and getRegistrationPackagesGeneralSettings('status'))
+                    @if((($authUser->isOrganization() || $authUser->isTeacher()) && !$isConsultant) and getRegistrationPackagesGeneralSettings('status'))
                         <li class="mt-5 {{ (request()->is('panel/financial/registration-packages')) ? 'active' : '' }}">
                             <a href="{{ route('panelRegistrationPackagesLists') }}">{{ trans('update.registration_packages') }}</a>
                         </li>
@@ -505,7 +508,7 @@
             </div>
         </li>
 
-        @if(!$authUser->isUser() or (!empty($referralSettings) and $referralSettings['status'] and $authUser->affiliate) or (!empty(getRegistrationBonusSettings('status')) and $authUser->enable_registration_bonus))
+        @if((!$authUser->isUser() && !$isConsultant) or (!empty($referralSettings) and $referralSettings['status'] and $authUser->affiliate) or (!empty(getRegistrationBonusSettings('status')) and $authUser->enable_registration_bonus))
             <li class="sidenav-item {{ (request()->is('panel/marketing') or request()->is('panel/marketing/*')) ? 'sidenav-item-active' : '' }}">
                 <a class="d-flex align-items-center" data-toggle="collapse" href="#marketingCollapse" role="button" aria-expanded="false" aria-controls="marketingCollapse">
                 <span class="sidenav-item-icon mr-10">
@@ -516,7 +519,7 @@
 
                 <div class="collapse {{ (request()->is('panel/marketing') or request()->is('panel/marketing/*')) ? 'show' : '' }}" id="marketingCollapse">
                     <ul class="sidenav-item-collapse">
-                        @if(!$authUser->isUser())
+                        @if(!$authUser->isUser() && !$isConsultant)
                             <li class="mt-5 {{ (request()->is('panel/marketing/special_offers')) ? 'active' : '' }}">
                                 <a href="/panel/marketing/special_offers">{{ trans('panel.discounts') }}</a>
                             </li>
@@ -571,7 +574,7 @@
             </li>
         @endif
 
-        @if($authUser->isTeacher())
+        @if($authUser->isTeacher() && !$isConsultant)
             <li class="sidenav-item {{ (request()->is('panel/blog') or request()->is('panel/blog/*')) ? 'sidenav-item-active' : '' }}">
                 <a class="d-flex align-items-center" data-toggle="collapse" href="#blogCollapse" role="button" aria-expanded="false" aria-controls="blogCollapse">
                 <span class="sidenav-item-icon assign-fill mr-10">
@@ -598,7 +601,7 @@
             </li>
         @endif
 
-        @if($authUser->isOrganization() || $authUser->isTeacher())
+        @if(($authUser->isOrganization() || $authUser->isTeacher()) && !$isConsultant)
             <li class="sidenav-item {{ (request()->is('panel/noticeboard*') or request()->is('panel/course-noticeboard*')) ? 'sidenav-item-active' : '' }}">
                 <a class="d-flex align-items-center" data-toggle="collapse" href="#noticeboardCollapse" role="button" aria-expanded="false" aria-controls="noticeboardCollapse">
                 <span class="sidenav-item-icon mr-10">

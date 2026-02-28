@@ -291,7 +291,7 @@
                         <a href="/panel/meetings/reservation">{{ trans('public.my_reservation') }}</a>
                     </li>
 
-                    @if($authUser->isOrganization() || $authUser->isTeacher())
+                    @if(($authUser->isOrganization() || ($authUser->isTeacher() && !empty($authUser->consultant) && $authUser->consultant == 1)))
                         <li class="mt-5 {{ (request()->is('panel/meetings/requests')) ? 'active' : '' }}">
                             <a href="/panel/meetings/requests">{{ trans('panel.requests') }}</a>
                         </li>

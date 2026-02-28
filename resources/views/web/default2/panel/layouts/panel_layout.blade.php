@@ -50,15 +50,15 @@
 
      @include('web.default2.includes.top_nav2')
     @include('web.default2'.'.includes.navbar')
-       @if($authUser->isUser())
+       @if($authUser->isUser() || $authUser->isTeacher())
 <div class="container">
     <div class="d-flex justify-content-end">
 
-         @include(getTemplate(). '.panel.includes.sidebar1')
+         @include('web.default.panel.includes.sidebar1')
         @else
         <div class="container-fluid">
     <div class="d-flex justify-content-end">
-         @include(getTemplate(). '.panel.includes.sidebar')
+         @include('web.default.panel.includes.sidebar')
 
             @endif
 

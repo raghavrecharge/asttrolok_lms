@@ -482,14 +482,34 @@ class SupportUpeBridge
                 ],
             ]);
 
-            // Record payment in ledger
+            // Wallet-mediated flow: credit full cash → debit course price
+            $walletService = app(\App\Services\PaymentEngine\WalletService::class);
+            $excessAmount = $cashAmount - $finalPayable;
+
+            // Step 1: Credit full cash amount to wallet
+            $walletService->creditOfflinePayment(
+                $userId,
+                $cashAmount,
+                $sale->id,
+                "Offline cash payment of ₹{$cashAmount} for {$webinar->title} (support #{$supportRequestId})"
+            );
+
+            // Step 2: Debit course price from wallet
+            $walletService->purchaseFromWallet(
+                $userId,
+                $finalPayable,
+                null,
+                "Purchase for Sale #{$sale->id} — {$webinar->title} (offline)"
+            );
+
+            // Record payment in UPE ledger
             $idempotencyKey = "admin_offline_{$supportRequestId}";
             $this->ledger->recordPayment(
                 saleId: $sale->id,
-                amount: $cashAmount,
+                amount: $finalPayable,
                 paymentMethod: 'cash',
                 processedBy: $adminId,
-                description: "Offline/cash full payment via support #{$supportRequestId}",
+                description: "Offline/cash full payment via wallet — support #{$supportRequestId}",
                 idempotencyKey: $idempotencyKey
             );
 
@@ -523,62 +543,29 @@ class SupportUpeBridge
             \App\Models\Accounting::create([
                 'user_id' => $userId,
                 'webinar_id' => $webinarId,
-                'amount' => $finalPayable, // Only record actual payable amount
+                'amount' => $finalPayable,
                 'type' => \App\Models\Accounting::$addiction,
                 'description' => "Admin Offline Payment: {$webinar->title}",
                 'created_at' => time(),
             ]);
 
-            // Handle overpayment: credit excess cash to wallet
-            $excessAmount = $cashAmount - $finalPayable;
-            if ($excessAmount > 0.01) { // More than 1 paisa excess
-                try {
-                    $walletService = app(\App\Services\PaymentEngine\WalletService::class);
-                    $walletService->credit(
-                        $userId,
-                        $excessAmount,
-                        \App\Models\PaymentEngine\WalletTransaction::TXN_OVERPAYMENT_REFUND,
-                        "Excess cash from offline payment for {$webinar->title}",
-                        'support_request',
-                        $supportRequestId,
-                        null,
-                        [
-                            'sale_id' => $sale->id,
-                            'cash_amount' => $cashAmount,
-                            'final_payable' => $finalPayable,
-                            'excess_amount' => $excessAmount,
-                        ]
-                    );
-                    
-                    Log::info('SupportUpeBridge: Excess cash credited to wallet', [
-                        'user_id' => $userId,
-                        'excess_amount' => $excessAmount,
-                        'sale_id' => $sale->id,
-                        'support_request_id' => $supportRequestId,
-                    ]);
-                } catch (\Exception $walletErr) {
-                    Log::error('SupportUpeBridge: Failed to credit excess cash to wallet', [
-                        'user_id' => $userId,
-                        'excess_amount' => $excessAmount,
-                        'error' => $walletErr->getMessage(),
-                    ]);
-                }
-            }
-
             $this->access->invalidate($userId, $product->id);
 
-            Log::info('SupportUpeBridge: Offline full payment processed', [
+            Log::info('SupportUpeBridge: Offline full payment via wallet', [
                 'sale_id' => $sale->id,
                 'user_id' => $userId,
                 'cash_amount' => $cashAmount,
                 'discount' => $discountAmount,
                 'final_payable' => $finalPayable,
-                'excess_amount' => $excessAmount,
+                'excess_in_wallet' => $excessAmount,
                 'admin_id' => $adminId,
                 'support_request_id' => $supportRequestId,
             ]);
 
-            $message = 'Full payment processed. Access granted.' . ($excessAmount > 0.01 ? " Excess ₹" . number_format($excessAmount, 2) . " credited to wallet." : '');
+            $message = "₹{$cashAmount} credited to wallet → ₹{$finalPayable} debited for purchase.";
+            if ($excessAmount > 0.01) {
+                $message .= " ₹" . number_format($excessAmount, 2) . " remains in wallet.";
+            }
             return $this->offlineResult(true, $message, $priceBreakdown, $sale, null, [], true);
         });
     }
@@ -1002,72 +989,58 @@ class SupportUpeBridge
             ->whereIn('status', ['active', 'partially_refunded'])
             ->first();
 
-        $priceDifference = 0;
+        $amountPaid = 0;
         if ($wrongSale) {
             // Get the actual amount paid for wrong course
-            $wrongCoursePrice = $this->ledger->balance($wrongSale->id);
-            
-            // Get correct course price
-            $correctCoursePrice = $correctProduct->base_fee;
-            $priceDifference = $wrongCoursePrice - $correctCoursePrice;
-            
+            $amountPaid = $this->ledger->balance($wrongSale->id);
+            $correctCoursePrice = (float) $correctProduct->base_fee;
+
             $wrongSale->update(['status' => 'refunded']);
             $this->access->invalidate($userId, $wrongProduct->id);
-            
-            // Credit price difference to wallet if correct course is cheaper
-            if ($priceDifference > 0.01) { // More than 1 paisa difference
+
+            // Wallet-mediated course switch: credit full old amount → debit new course price
+            if ($amountPaid > 0) {
                 try {
                     $walletService = app(\App\Services\PaymentEngine\WalletService::class);
-                    $walletService->credit(
+
+                    // Step 1: Credit full old course amount to wallet
+                    $walletService->creditCourseSwitch(
                         $userId,
-                        $priceDifference,
-                        \App\Models\PaymentEngine\WalletTransaction::TXN_COURSE_CHANGE_REFUND,
-                        "Price difference refunded for wrong course correction: {$wrongWebinarId} → {$correctWebinarId}",
-                        'support_request',
-                        $supportRequestId,
-                        null,
-                        [
-                            'wrong_course_id' => $wrongWebinarId,
-                            'correct_course_id' => $correctWebinarId,
-                            'wrong_sale_id' => $wrongSale->id,
-                            'wrong_price' => $wrongCoursePrice,
-                            'new_price' => $correctCoursePrice,
-                            'price_difference' => $priceDifference,
-                        ]
+                        $amountPaid,
+                        $wrongSale->id,
+                        "Course correction refund: ₹{$amountPaid} from wrong course #{$wrongWebinarId}"
                     );
-                    
-                    Log::info('SupportUpeBridge: Price difference credited to wallet for wrong course correction', [
+
+                    // Step 2: Debit correct course price from wallet
+                    $walletService->purchaseFromWallet(
+                        $userId,
+                        $correctCoursePrice,
+                        null,
+                        "Purchase for correct course #{$correctWebinarId} (wrong course correction)"
+                    );
+
+                    Log::info('SupportUpeBridge: Wrong course correction via wallet', [
                         'user_id' => $userId,
-                        'price_difference' => $priceDifference,
+                        'refunded' => $amountPaid,
+                        'new_price' => $correctCoursePrice,
+                        'wallet_remainder' => $amountPaid - $correctCoursePrice,
                         'wrong_course_id' => $wrongWebinarId,
                         'correct_course_id' => $correctWebinarId,
                         'support_request_id' => $supportRequestId,
                     ]);
                 } catch (\Exception $walletErr) {
-                    Log::error('SupportUpeBridge: Failed to credit price difference to wallet', [
+                    Log::error('SupportUpeBridge: Failed to process wallet for wrong course correction', [
                         'user_id' => $userId,
-                        'price_difference' => $priceDifference,
+                        'amount_paid' => $amountPaid,
                         'error' => $walletErr->getMessage(),
                     ]);
-                    // Don't throw - continue with course correction
                 }
             }
         }
 
         // Create UPE sale for correct course
         $correctSale = $this->grantRelativeAccess($userId, $correctWebinarId, $supportRequestId, $adminId);
-        
-        // Log the price difference handling
-        if ($priceDifference != 0) {
-            Log::info('SupportUpeBridge: Wrong course correction with price difference', [
-                'user_id' => $userId,
-                'wrong_course_id' => $wrongWebinarId,
-                'correct_course_id' => $correctWebinarId,
-                'price_difference' => $priceDifference,
-                'support_request_id' => $supportRequestId,
-            ]);
-        }
-        
+
         return $correctSale;
     }
 

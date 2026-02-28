@@ -1253,6 +1253,7 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
             Route::post('/grant-free', 'UpeController@grantFreeAccess');
             Route::post('/offline-payment', 'UpeController@recordOfflinePayment');
             Route::post('/refund', 'UpeController@processRefund');
+            Route::post('/course-switch', 'UpeController@courseSwitch');
 
             Route::get('/audit', 'UpeController@auditLog');
             Route::get('/user-access', 'UpeController@userAccess');

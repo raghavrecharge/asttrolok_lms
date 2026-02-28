@@ -242,6 +242,50 @@ class WalletService
     }
 
     /**
+     * Credit offline/cash payment to wallet.
+     * Used when admin records a cash payment via support system.
+     */
+    public function creditOfflinePayment(
+        int $userId,
+        float $amount,
+        ?int $saleId = null,
+        ?string $description = null
+    ): WalletTransaction {
+        return $this->credit(
+            $userId,
+            $amount,
+            WalletTransaction::TXN_OFFLINE_PAYMENT,
+            $description ?? "Offline/cash payment credited to wallet",
+            'upe_sale',
+            $saleId,
+            null,
+            ['source' => 'offline_payment', 'sale_id' => $saleId]
+        );
+    }
+
+    /**
+     * Credit course switch refund to wallet.
+     * Used when user switches from a higher-priced course to a lower-priced one.
+     */
+    public function creditCourseSwitch(
+        int $userId,
+        float $amount,
+        ?int $oldSaleId = null,
+        ?string $description = null
+    ): WalletTransaction {
+        return $this->credit(
+            $userId,
+            $amount,
+            WalletTransaction::TXN_COURSE_CHANGE_REFUND,
+            $description ?? "Course switch refund credited to wallet",
+            'upe_sale',
+            $oldSaleId,
+            null,
+            ['source' => 'course_switch', 'old_sale_id' => $oldSaleId]
+        );
+    }
+
+    /**
      * Get paginated transaction history for a user.
      */
     public function getTransactions(int $userId, int $perPage = 20)

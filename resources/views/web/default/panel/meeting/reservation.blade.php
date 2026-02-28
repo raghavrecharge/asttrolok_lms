@@ -115,18 +115,6 @@
             <div class="row stat-card-row">
                 <div class="col-12 col-sm-4">
                     <div class="stat-card">
-                        <div class="stat-icon bg-glass-warning">
-                            <i data-feather="calendar" width="24" height="24"></i>
-                        </div>
-                        <div>
-                            <span class="stat-value">{{ $openReserveCount }}</span>
-                            <span class="stat-label">{{ trans('panel.open_meetings') }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-12 col-sm-4 mt-15 mt-sm-0">
-                    <div class="stat-card">
                         <div class="stat-icon bg-glass-primary">
                             <i data-feather="users" width="24" height="24"></i>
                         </div>
@@ -140,11 +128,23 @@
                 <div class="col-12 col-sm-4 mt-15 mt-sm-0">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-success">
-                            <i data-feather="clock" width="24" height="24"></i>
+                            <i data-feather="check-circle" width="24" height="24"></i>
                         </div>
                         <div>
-                            <span class="stat-value">{{ $activeHoursCount }}</span>
-                            <span class="stat-label">{{ trans('panel.active_hours') }}</span>
+                            <span class="stat-value">{{ $finishedReserveCount }}</span>
+                            <span class="stat-label">Finish Meetings</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-4 mt-15 mt-sm-0">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-glass-warning">
+                            <i data-feather="calendar" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <span class="stat-value">{{ $upcomingReserveCount }}</span>
+                            <span class="stat-label">Upcoming Meetings</span>
                         </div>
                     </div>
                 </div>

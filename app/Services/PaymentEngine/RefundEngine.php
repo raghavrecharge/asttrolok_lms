@@ -7,16 +7,19 @@ use App\Models\PaymentEngine\UpeLedgerEntry;
 use App\Models\PaymentEngine\UpeSale;
 use App\Services\PaymentEngine\Contracts\RefundPolicy;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RefundEngine
 {
     private PaymentLedgerService $ledger;
     private AuditService $audit;
+    private WalletService $walletService;
 
-    public function __construct(PaymentLedgerService $ledger, AuditService $audit)
+    public function __construct(PaymentLedgerService $ledger, AuditService $audit, WalletService $walletService)
     {
         $this->ledger = $ledger;
         $this->audit = $audit;
+        $this->walletService = $walletService;
     }
 
     /**
@@ -99,6 +102,23 @@ class RefundEngine
                 description: "Refund: {$amount} — {$reason}",
                 idempotencyKey: $idempotencyKey ?? "refund_{$locked->id}_" . time()
             );
+
+            // Credit refund amount to user's wallet
+            try {
+                $this->walletService->refundToWallet(
+                    $locked->user_id,
+                    $amount,
+                    $locked->id,
+                    "Refund of ₹{$amount} for Sale #{$locked->id} — {$reason}"
+                );
+                Log::info('RefundEngine: credited refund to wallet', [
+                    'user_id' => $locked->user_id, 'amount' => $amount, 'sale_id' => $locked->id,
+                ]);
+            } catch (\Exception $e) {
+                Log::error('RefundEngine: failed to credit wallet (refund ledger entry created)', [
+                    'user_id' => $locked->user_id, 'amount' => $amount, 'error' => $e->getMessage(),
+                ]);
+            }
 
             // Update sale status based on new balance
             $newBalance = $this->ledger->balance($locked->id);
