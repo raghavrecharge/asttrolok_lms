@@ -95,7 +95,7 @@
     .xs-categories-toggle {
       position: relative;
     }
-   .col-6.col-lg-5.mt-12.mt-lg-0 {
+   .col-6.col-lg-5 {
     margin-left: 50px !important;
 }
 .nav-item .nav-link,
@@ -139,24 +139,28 @@
     height: 30px;
     width: 157px;
 }
+.list-style-none {
+    list-style: none !important;
+    padding-left: 0 !important;
+}
 
 </style>
 
 <div  class="theme-header-1__main ">
     <div class="container h-100 position-relative">
 
-        <div class="position-relative z-index-2 bg-white rounded-24 w-100 h-100 p-16 item-sticky">
+        <div class="position-relative z-index-2 bg-white rounded-24 w-100 h-100 py-12 px-24 item-sticky">
             <div class="row align-items-center h-100">
 
                 <div class="col-6 col-lg-2">
                     <a href="/" class="theme-header-1__logo text-left d-block">
-                        <img src="/assets/design_1/img/home_mobile_image/public/asttroloklogo-min_converted.png" class="img-fluid light-only" alt="logo">
-                        <img src="/assets/design_1/img/home_mobile_image/public/asttroloklogo-min_converted.png" class="img-fluid dark-only" alt="logo">
+                        <img src="/assets/design_1/img/home_mobile_image/public/asttroloklogo11171-ou4-200h.png" class="img-fluid light-only" alt="logo">
+                        <img src="/assets/design_1/img/home_mobile_image/public/asttroloklogo11171-ou4-200h.png" class="img-fluid dark-only" alt="logo">
                     </a>
                 </div>
 
-                <div class="col-6 col-lg-5 mt-12 mt-lg-0">
-                    <div class="d-flex justify-content-center align-items-center gap-16 gap-lg-32">
+                <div class="col-6 col-lg-5 mt-lg-0">
+                    <ul class="d-flex justify-content-center align-items-center gap-16 gap-lg-32 list-style-none mb-0">
 
                         @if(!empty($dynamicNavLinks) && count($dynamicNavLinks) > 0)
 
@@ -351,10 +355,10 @@
                                 @endif
                             </div>
                         @endif
-                    </div>
+                    </ul>
                 </div>
 
-                <div class="col-6 col-lg-3 mt-12 mt-lg-0 d-flex align-items-center justify-content-end mr-0">
+                <div class="col-6 col-lg-3 mt-lg-0 d-flex align-items-center justify-content-end mr-0">
 
                     <div class="nav-icons-or-start-live navbar-order navbar-order1">
                         @if(!empty($navBtnUrl) and empty($authUser))

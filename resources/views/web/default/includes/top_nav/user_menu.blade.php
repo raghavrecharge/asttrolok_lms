@@ -3,7 +3,7 @@
 
     <div class="custom-dropdown navbar-auth-user-dropdown position-relative ml-50">
         <div class="custom-dropdown-toggle d-flex align-items-center navbar-user cursor-pointer">
-            <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $authUser->getAvatar() }}" class="rounded-circle" alt="{{ $authUser->full_name }}">
+            <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $authUser->getAvatar() }}" class="rounded-circle" alt="{{ $authUser->full_name }}" onerror="this.src='https://storage.googleapis.com/astrolok/assets/default/img/default/avatar-1.png';">
             <span class="font-16 user-name ml-10 text-dark-blue font-14">{{ $authUser->full_name }}</span>
         </div>
 
@@ -11,7 +11,7 @@
 
             <div class="dropdown-user-avatar d-flex align-items-center p-15 m-15 mb-10 rounded-sm border">
                 <div class="size-40 rounded-circle position-relative">
-                    <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $authUser->getAvatar() }}" class="img-cover rounded-circle" alt="{{ $authUser->full_name }}">
+                    <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $authUser->getAvatar() }}" class="img-cover rounded-circle" alt="{{ $authUser->full_name }}" onerror="this.src='https://storage.googleapis.com/astrolok/assets/default/img/default/avatar-1.png';">
                 </div>
 
                 <div class="ml-5">

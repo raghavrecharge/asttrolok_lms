@@ -68,8 +68,8 @@
                                 <tr>
                                     <th class="text-left text-gray">{{ trans('panel.webinar') }}</th>
                                     <th class="text-gray text-center">{{ trans('panel.comment') }}</th>
-                                    <th class="text-gray text-center">{{ trans('public.status') }}</th>
-                                    <th class="text-gray text-center">{{ trans('public.date') }}</th>
+                                    <th class="text-gray text-center d-none d-md-table-cell">{{ trans('public.status') }}</th>
+                                    <th class="text-gray text-center d-none d-lg-table-cell">{{ trans('public.date') }}</th>
                                     <th></th>
                                 </tr>
                                 </thead>
@@ -84,7 +84,7 @@
                                             <button type="button" data-comment-id="{{ $comment->id }}" class="js-view-comment btn btn-sm btn-gray200">{{ trans('public.view') }}</button>
                                         </td>
 
-                                        <td class="align-middle">
+                                        <td class="align-middle d-none d-md-table-cell text-center">
                                             @if($comment->status == 'active')
                                                 <span class="text-primary text-dark-blue font-weight-500">{{ trans('public.published') }}</span>
                                             @else
@@ -92,7 +92,7 @@
                                             @endif
                                         </td>
 
-                                        <td class="text-dark-blue font-weight-500 align-middle">{{ dateTimeFormat($comment->created_at,'j M Y | H:i') }}</td>
+                                        <td class="text-dark-blue font-weight-500 align-middle d-none d-lg-table-cell text-center">{{ dateTimeFormat($comment->created_at,'j M Y | H:i') }}</td>
                                         <td class="align-middle text-right">
                                             <input type="hidden" id="commentDescription{{ $comment->id }}" value="{{ nl2br($comment->comment) }}">
                                             <div class="btn-group dropdown table-actions">

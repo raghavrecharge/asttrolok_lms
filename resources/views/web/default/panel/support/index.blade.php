@@ -106,8 +106,8 @@
 
         {{-- Statistics --}}
         <div class="mt-25">
-            <div class="row" style="margin-left: -10px; margin-right: -10px;">
-                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px; flex: 0 0 20%; max-width: 20%;">
+            <div class="row stat-card-row" style="margin-left: -10px; margin-right: -10px;">
+                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px;">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-primary">
                             <i data-feather="box"></i>
@@ -119,7 +119,7 @@
                     </div>
                 </div>
 
-                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px; flex: 0 0 20%; max-width: 20%;">
+                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px;">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-warning">
                             <i data-feather="clock"></i>
@@ -131,7 +131,7 @@
                     </div>
                 </div>
 
-                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px; flex: 0 0 20%; max-width: 20%;">
+                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px;">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-info">
                             <i data-feather="eye"></i>
@@ -143,7 +143,7 @@
                     </div>
                 </div>
 
-                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px; flex: 0 0 20%; max-width: 20%;">
+                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px;">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-success">
                             <i data-feather="check-circle" style="stroke-width: 3px;"></i>
@@ -155,7 +155,7 @@
                     </div>
                 </div>
                 
-                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px; flex: 0 0 20%; max-width: 20%;">
+                <div class="col-6 col-md-4 col-lg-2 mb-20 mb-lg-0" style="padding: 0 10px;">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-danger">
                             <i data-feather="x-circle" style="stroke-width: 3px;"></i>
@@ -278,18 +278,18 @@
                     <table class="table text-center custom-table">
                         <thead>
                             <tr>
-                                <th>Ticket #</th>
+                                <th class="d-none d-md-table-cell">Ticket #</th>
                                 <th class="text-left col-title">Title/Course</th>
-                                <th class="text-left col-scenario">Scenario</th>
+                                <th class="text-left col-scenario d-none d-lg-table-cell">Scenario</th>
                                 <th class="text-center col-scenario">Status</th>
-                                <th class="text-center col-scenario">Date</th>
+                                <th class="text-center col-scenario d-none d-md-table-cell">Date</th>
                                 <th class="col-action">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($supportRequests as $request)
                             <tr>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     <span class="font-weight-bold">#{{ $request->ticket_number }}</span>
                                 </td>
                                 <td class="text-left col-title">
@@ -300,10 +300,10 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td class="text-left col-scenario">
+                                <td class="text-left col-scenario d-none d-lg-table-cell">
                                     <span class="font-13 text-gray">{{ $request->getScenarioLabel() }}</span>
                                 </td>
-                                <td>
+                                <td class="text-center">
                                     @php
                                         $badgeClass = 'bg-glass-primary';
                                         if($request->status == 'pending') $badgeClass = 'bg-glass-warning';
@@ -314,7 +314,7 @@
                                         {{ $request->status == 'approved' || $request->status == 'executed' ? 'Complete' : ucfirst(str_replace('_', ' ', $request->status)) }}
                                     </span>
                                 </td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     <span class="d-block font-13 font-weight-bold">{{ $request->created_at->format('d M Y') }}</span>
                                     <small class="text-gray">{{ $request->created_at->diffForHumans() }}</small>
                                 </td>

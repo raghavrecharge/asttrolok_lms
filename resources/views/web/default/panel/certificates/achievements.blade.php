@@ -10,7 +10,7 @@
 
         <div class="activities-container mt-25 p-20 p-lg-35">
             <div class="row">
-                <div class="col-4 d-flex align-items-center justify-content-center">
+                <div class="col-12 col-md-4 d-flex align-items-center justify-content-center">
                     <div class="d-flex flex-column align-items-center text-center">
                         <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/56.svg" width="64" height="64" alt="">
                         <strong class="font-30 text-dark-blue font-weight-500 mt-5">{{ $certificatesCount }}</strong>
@@ -18,7 +18,7 @@
                     </div>
                 </div>
 
-                <div class="col-4 d-flex align-items-center justify-content-center">
+                <div class="col-12 col-md-4 d-flex align-items-center justify-content-center mt-20 mt-md-0">
                     <div class="d-flex flex-column align-items-center text-center">
                         <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/hours.svg" width="64" height="64" alt="">
                         <strong class="font-30 text-dark-blue font-weight-500 mt-5">{{ $avgGrades }}</strong>
@@ -26,7 +26,7 @@
                     </div>
                 </div>
 
-                <div class="col-4 d-flex align-items-center justify-content-center">
+                <div class="col-12 col-md-4 d-flex align-items-center justify-content-center mt-20 mt-md-0">
                     <div class="d-flex flex-column align-items-center text-center">
                         <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/60.svg" width="64" height="64" alt="">
                         <strong class="font-30 text-dark-blue font-weight-500 mt-5">{{ $failedQuizzes }}</strong>
@@ -134,10 +134,10 @@
                                 <tr>
                                     <th>{{ trans('public.certificate') }}</th>
                                     <th class="text-center">{{ trans('public.certificate_id') }}</th>
-                                    <th class="text-center">{{ trans('quiz.minimum_grade') }}</th>
-                                    <th class="text-center">{{ trans('quiz.average_grade') }}</th>
+                                    <th class="text-center d-none d-md-table-cell">{{ trans('quiz.minimum_grade') }}</th>
+                                    <th class="text-center d-none d-lg-table-cell">{{ trans('quiz.average_grade') }}</th>
                                     <th class="text-center">{{ trans('quiz.my_grade') }}</th>
-                                    <th class="text-center">{{ trans('public.date') }}</th>
+                                    <th class="text-center d-none d-md-table-cell">{{ trans('public.date') }}</th>
                                     <th></th>
                                 </tr>
                                 </thead>
@@ -162,14 +162,14 @@
                                                 -
                                             @endif
                                         </td>
-                                        <td class="align-middle">
+                                        <td class="align-middle text-center d-none d-md-table-cell">
                                             <span class="text-dark-blue font-weight-500">{{ $quiz->pass_mark }}</span>
                                         </td>
-                                        <td class="align-middle">
+                                        <td class="align-middle text-center d-none d-lg-table-cell">
                                             <span class="text-dark-blue font-weight-500">{{ $quiz->total_mark }}</span>
                                         </td>
-                                        <td class="align-middle">{{ $quiz->result->user_grade }}</td>
-                                        <td class="align-middle">
+                                        <td class="align-middle text-center">{{ $quiz->result->user_grade }}</td>
+                                        <td class="align-middle d-none d-md-table-cell text-center">
                                             <span class="text-dark-blue font-weight-500">{{ dateTimeFormat($quiz->result->created_at, 'j M Y') }}</span>
                                         </td>
                                         <td class="align-middle font-weight-normal">

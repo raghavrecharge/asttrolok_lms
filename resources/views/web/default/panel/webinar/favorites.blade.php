@@ -6,7 +6,7 @@
 
 @section('content')
 
-    <section>
+    <section class="panel-filter-section">
         <div class="d-flex align-items-center justify-content-between">
             <h2 class="section-title">{{ trans('panel.favorite_live_classes') }}</h2>
         </div>

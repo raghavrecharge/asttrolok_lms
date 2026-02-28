@@ -74,7 +74,7 @@
             z-index: 1100; /* Higher than sidebar overlay if needed */
         }
         .panel-mobile-topbar__logo img {
-            height: 35px; /* Slightly larger */
+            height: 28px; /* Reduced for better spacing */
             width: auto;
         }
         .panel-mobile-topbar__hamburger {
@@ -87,6 +87,37 @@
             justify-content: center;
         }
 
+        /* Adjust spacing for icons */
+        .panel-mobile-topbar__right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Overrides for Currency and Cart in Panel (White Header) */
+        .panel-mobile-topbar .js-currency-select .text-white {
+            color: #171347 !important;
+        }
+        .panel-mobile-topbar .js-currency-select .icons {
+            stroke: #171347 !important;
+        }
+        .panel-mobile-topbar #navbarShopingCart svg {
+            stroke: #171347 !important;
+            color: #171347 !important;
+        }
+        .panel-mobile-topbar #navbarShopingCart.dropdown-toggle::after {
+            border-top-color: #171347 !important;
+        }
+        .panel-mobile-topbar .badge-circle-primary {
+            background-color: var(--primary) !important;
+            color: #fff !important;
+        }
+        
+        /* Ensure dropdowns appear below the sticky header */
+        .panel-mobile-topbar .dropdown-menu {
+            margin-top: 10px !important;
+        }
+
         /* Reduce the top gap on mobile */
         .panel-content {
             padding-top: 70px !important; /* Adjust based on sticky header height */
@@ -94,9 +125,97 @@
         #panel_app .container.mt-30 {
             margin-top: 0 !important;
         }
+
+        /* --- Global Mobile UI Enhancements --- */
+        
+        /* Stat Cards: Stack them on very small screens, or use 2 columns */
+        .stat-card {
+            padding: 15px !important;
+            margin-bottom: 10px;
+        }
+        .stat-card .stat-icon {
+            width: 40px !important;
+            height: 40px !important;
+            margin-right: 10px !important;
+        }
+        .stat-card .stat-value {
+            font-size: 18px !important;
+        }
+        .stat-card .stat-label {
+            font-size: 11px !important;
+        }
+
+        /* Tighten side spacing on mobile */
+        .container, .container-fluid {
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+        }
+        .panel-content {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        .content {
+            padding-left: 5px !important;
+            padding-right: 5px !important;
+        }
+        .row {
+            margin-left: -5px !important;
+            margin-right: -5px !important;
+        }
+        .row > [class*="col-"] {
+            padding-left: 5px !important;
+            padding-right: 5px !important;
+        }
+
+        /* Force 2x2 grid for stat cards on mobile */
+        @media (max-width: 575px) {
+            .stat-card-row > div[class*="col-"] {
+                flex: 0 0 50% !important;
+                max-width: 50% !important;
+                margin-bottom: 15px;
+            }
+            /* Adjust padding/margins inside stat-card for 2x2 fit */
+            .stat-card {
+                padding: 10px !important;
+            }
+            .stat-card .stat-icon {
+                width: 32px !important;
+                height: 32px !important;
+                margin-right: 8px !important;
+            }
+            .stat-card .stat-icon i, .stat-card .stat-icon svg {
+                width: 16px !important;
+                height: 16px !important;
+            }
+            .stat-card .stat-value {
+                font-size: 16px !important;
+            }
+            .stat-card .stat-label {
+                font-size: 10px !important;
+            }
+        }
+
+        /* Tables horizontal scroll prevention */
+        .table-responsive {
+            border: 0;
+            margin-bottom: 0;
+        }
+        .custom-table th, .custom-table td {
+            font-size: 12px !important;
+            padding: 10px 8px !important;
+        }
+        
+        /* Section titles */
+        .section-title {
+            font-size: 18px !important;
+        }
+
+        /* Hide Filter sections on mobile */
+        .panel-filter-section {
+            display: none !important;
+        }
     }
 </style>
-    </style>
 
     @if(!empty($generalSettings['preloading']) and $generalSettings['preloading'] == '1')
         @include('admin.includes.preloading')
@@ -116,13 +235,19 @@
         <a href="/" class="panel-mobile-topbar__logo">
             <img src="/assets/design_1/img/home_mobile_image/public/asttroloklogo11171-ou4-200h.png" alt="logo">
         </a>
-        <button class="panel-mobile-topbar__hamburger" id="panelMobileHamburger" aria-label="Open menu">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                <line x1="3" y1="5.5" x2="21" y2="5.5" stroke="#171347" stroke-width="2.2" stroke-linecap="round"/>
-                <line x1="3" y1="12" x2="21" y2="12" stroke="#171347" stroke-width="2.2" stroke-linecap="round"/>
-                <line x1="3" y1="18.5" x2="21" y2="18.5" stroke="#171347" stroke-width="2.2" stroke-linecap="round"/>
-            </svg>
-        </button>
+        
+        <div class="panel-mobile-topbar__right">
+            {{-- Currency Selector --}}
+            @include('web.default2.includes.top_nav.currency')
+
+            <button class="panel-mobile-topbar__hamburger" id="panelMobileHamburger" aria-label="Open menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 7H21" stroke="#171347" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M3 12H21" stroke="#171347" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M3 17H21" stroke="#171347" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
     </div>
 
     {{-- Shared header (visible on desktop, hidden on mobile via CSS above) --}}

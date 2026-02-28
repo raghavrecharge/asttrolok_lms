@@ -538,10 +538,30 @@
     .db-card { padding: 16px; border-radius: 12px; }
     .db-welcome { padding: 16px; border-radius: 14px; }
     .db-welcome h2 { font-size: 18px; }
-    .db-welcome-stats { grid-template-columns: 1fr; }
+    .db-welcome-stats { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .db-welcome-stat { padding: 10px; gap: 8px; border-radius: 12px; }
+    .db-welcome-stat .stat-icon-box { width: 40px; height: 40px; }
+    .db-welcome-stat .stat-num { font-size: 18px; }
+    .db-welcome-stat .stat-label { font-size: 11px; }
+
     .db-balance-card .balance-amount { font-size: 26px; }
-    .db-course-stats { flex-direction: column; gap: 10px; }
+    
+    .db-course-stats { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 12px; 
+        margin-bottom: 20px; 
+    }
+    .db-course-stat-circle { border: 1px solid #f3f4f6; padding: 10px; border-radius: 12px; }
     .db-course-item .course-progress-col { width: 80px; }
+
+    /* Hide specific columns in Financial table on mobile */
+    .db-finance-table th:first-child, 
+    .db-finance-table td:first-child,
+    .db-finance-table th:nth-child(3),
+    .db-finance-table td:nth-child(3) {
+        display: none !important;
+    }
 }
 </style>
 
@@ -1394,6 +1414,25 @@
                     }
                 }
             });
+        });
+
+        // Force Suggested Courses slider to 1 item on mobile and tablet
+        window.addEventListener('load', function() {
+            var $slider2 = $('#slider2');
+            if ($slider2.length && typeof $.fn.owlCarousel !== 'undefined') {
+                $slider2.owlCarousel('destroy'); 
+                $slider2.owlCarousel({
+                    items: 1,
+                    nav: false,
+                    dots: true,
+                    loop: true,
+                    autoplay: true,
+                    responsive: {
+                        0: { items: 1 },
+                        992: { items: 3 }
+                    }
+                });
+            }
         });
     </script>
 @endpush

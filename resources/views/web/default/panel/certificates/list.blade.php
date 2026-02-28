@@ -9,7 +9,7 @@
         <h2 class="section-title">{{ trans('quiz.certificates_statistics') }}</h2>
 
         <div class="activities-container mt-25 p-20 p-lg-35">
-            <div class="row">
+            <div class="row stat-card-row">
                 <div class="col-6 col-lg-3 d-flex align-items-center justify-content-center">
                     <div class="d-flex flex-column align-items-center text-center">
                         <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/56.svg" width="64" height="64" alt="">
@@ -26,7 +26,7 @@
                     </div>
                 </div>
 
-                <div class="col-6 col-lg-3 d-flex align-items-center justify-content-center mt-5 mt-lg-0">
+                <div class="col-6 col-lg-3 d-flex align-items-center justify-content-center mt-20 mt-lg-0">
                     <div class="d-flex flex-column align-items-center text-center">
                         <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/60.svg" width="64" height="64" alt="">
                         <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ $failedResults }}</strong>
@@ -34,7 +34,7 @@
                     </div>
                 </div>
 
-                <div class="col-6 col-lg-3 d-flex align-items-center justify-content-center mt-5 mt-lg-0">
+                <div class="col-6 col-lg-3 d-flex align-items-center justify-content-center mt-20 mt-lg-0">
                     <div class="d-flex flex-column align-items-center text-center">
                         <img loading="lazy"  src="{{ config('app.js_css_url') }}/assets/default/img/activity/hours.svg" width="64" height="64" alt="">
                         <strong class="font-30 text-dark-blue font-weight-bold mt-5">{{ $avgGrade }}</strong>
@@ -46,7 +46,7 @@
         </div>
     </section>
 
-    <section class="mt-25">
+    <section class="mt-25 panel-filter-section">
         <h2 class="section-title">{{ trans('quiz.filter_certificates') }}</h2>
 
         <div class="panel-section-card py-20 px-25 mt-20">
@@ -141,10 +141,10 @@
                                 <thead>
                                 <tr>
                                     <th>{{ trans('quiz.quiz') }}</th>
-                                    <th class="text-center">{{ trans('quiz.grade') }}</th>
-                                    <th class="text-center">{{ trans('quiz.average') }}</th>
+                                    <th class="text-center d-none d-md-table-cell">{{ trans('quiz.grade') }}</th>
+                                    <th class="text-center d-none d-lg-table-cell">{{ trans('quiz.average') }}</th>
                                     <th class="text-center">{{ trans('quiz.generated_certificates') }}</th>
-                                    <th class="text-center">{{ trans('public.date') }}</th>
+                                    <th class="text-center d-none d-md-table-cell">{{ trans('public.date') }}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -155,14 +155,14 @@
                                             <span class="d-block text-dark-blue font-weight-500">{{ $quiz->title }}</span>
                                             <span class="d-block mt-5 font-12 text-gray">{{ !empty($quiz->webinar) ? $quiz->webinar->title : trans('update.delete_item') }}</span>
                                         </td>
-                                        <td class="align-middle">
+                                        <td class="align-middle d-none d-md-table-cell">
                                             <span class="text-dark-blue font-weight-500">{{ $quiz->pass_mark }}</span>
                                         </td>
-                                        <td class="align-middle">
+                                        <td class="align-middle d-none d-lg-table-cell">
                                             <span class="text-dark-blue font-weight-500">{{ round($quiz->avg_grade, 2) }}</span>
                                         </td>
-                                        <td class="text-dark-blue font-weight-500 align-middle">{{ count($quiz->certificates) }}</td>
-                                        <td class="align-middle">
+                                        <td class="text-dark-blue font-weight-500 align-middle text-center">{{ count($quiz->certificates) }}</td>
+                                        <td class="align-middle d-none d-md-table-cell">
                                             <span class="text-dark-blue font-weight-500">{{ dateTimeFormat($quiz->created_at, 'j M Y') }}</span>
                                         </td>
                                     </tr>

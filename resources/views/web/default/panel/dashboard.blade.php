@@ -3,6 +3,45 @@
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/chartjs/chart.min.css"/>
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/apexcharts/apexcharts.css"/>
+    <style>
+        @media (max-width: 991px) {
+            .section-title {
+                font-size: 20px !important;
+            }
+            .dashboard-banner-container h2 {
+                font-size: 24px !important;
+            }
+            .dashboard-banner-container h2 .font-16 {
+                font-size: 14px !important;
+            }
+            .dashboard-banner-container {
+                padding: 15px !important;
+            }
+            .unread-notification-lists {
+                margin-top: 10px !important;
+            }
+            .dashboard-stats {
+                padding: 12px !important;
+            }
+            .dashboard-stats .font-30 {
+                font-size: 22px !important;
+            }
+            .dashboard-stats .font-16 {
+                font-size: 13px !important;
+            }
+            .stat-icon {
+                width: 45px !important;
+                height: 45px !important;
+            }
+            .account-balance h3 {
+                font-size: 14px !important;
+                margin-top: 15px !important;
+            }
+            .account-balance .font-30 {
+                font-size: 24px !important;
+            }
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -56,7 +95,7 @@
 
     <section class="dashboard">
         <div class="row">
-            <div class="col-12 col-lg-3 mt-35">
+            <div class="col-12 col-lg-3 mt-15 mt-md-35">
                 <div class="bg-white account-balance rounded-sm panel-shadow py-15 py-md-30 px-10 px-md-20">
                     <div class="text-center">
                         <img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/activity/36.svg" class="account-balance-icon" alt="">
@@ -82,7 +121,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-lg-3 mt-35">
+            <div class="col-12 col-lg-3 mt-15 mt-md-35">
                 <a href="@if($authUser->isUser()) /panel/webinars/purchases @else /panel/meetings/requests @endif" class="dashboard-stats rounded-sm panel-shadow p-10 p-md-20 d-flex align-items-center">
                     <div class="stat-icon requests">
                         <img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/icons/request.svg" alt="">
@@ -104,7 +143,7 @@
                 </a>
             </div>
 
-            <div class="col-12 col-lg-3 mt-35">
+            <div class="col-12 col-lg-3 mt-15 mt-md-35">
                 <a href="/panel/support" class="dashboard-stats rounded-sm panel-shadow p-10 p-md-20 d-flex align-items-center">
                     <div class="stat-icon support-messages">
                         <img loading="lazy" src="{{ config('app.js_css_url') }}/assets/default/img/icons/support.svg" alt="">
@@ -126,7 +165,7 @@
                 </a>
             </div>
 
-            <div class="col-12 col-lg-3 mt-35">
+            <div class="col-12 col-lg-3 mt-15 mt-md-35">
                 <div class="bg-white account-balance rounded-sm panel-shadow py-15 py-md-15 px-10 px-md-20">
                     <div data-percent="{{ !empty($nextBadge) ? $nextBadge['percent'] : 0 }}" data-label="{{ (!empty($nextBadge) and !empty($nextBadge['earned'])) ? $nextBadge['earned']->title : '' }}" id="nextBadgeChart" class="text-center">
                     </div>
@@ -139,7 +178,7 @@
         </div>
 
         <div class="row">
-            <div class="col-12 col-lg-6 mt-35">
+            <div class="col-12 col-lg-6 mt-15 mt-md-35">
                 <div class="bg-white noticeboard rounded-sm panel-shadow py-10 py-md-20 px-15 px-md-30">
                     <h3 class="font-16 text-dark-blue font-weight-bold">{{ trans('panel.noticeboard') }}</h3>
 
@@ -166,7 +205,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-lg-6 mt-35">
+            <div class="col-12 col-lg-6 mt-15 mt-md-35">
                 <div class="bg-white monthly-sales-card rounded-sm panel-shadow py-10 py-md-20 px-15 px-md-30">
                     <div class="d-flex align-items-center justify-content-between">
                         <h3 class="font-16 text-dark-blue font-weight-bold">{{ ($authUser->isUser()) ? trans('panel.learning_statistics') : trans('panel.monthly_sales') }}</h3>

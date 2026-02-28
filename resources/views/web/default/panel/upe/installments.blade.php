@@ -269,7 +269,7 @@
 
         <div class="mt-25">
             <div class="row">
-                <div class="col-12 col-md-4">
+                <div class="col-6 col-md-4">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-primary">
                             <i data-feather="monitor" width="24" height="24"></i>
@@ -281,7 +281,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4 mt-15 mt-md-0">
+                <div class="col-6 col-md-4">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-success">
                             <i data-feather="play-circle" width="24" height="24"></i>
@@ -293,7 +293,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4 mt-15 mt-md-0">
+                <div class="col-6 col-md-4 mt-15 mt-md-0">
                     <div class="stat-card">
                         <div class="stat-icon bg-glass-warning">
                             <i data-feather="check-circle" width="24" height="24"></i>
@@ -308,7 +308,7 @@
         </div>
     </section>
 
-    <section class="mt-25">
+    <section class="mt-25 panel-filter-section">
         <div class="mt-20" style="background: linear-gradient(135deg, #f8faff 0%, #fff 100%); border-radius: 20px; border: 1px solid #e8edf5; padding: 22px 28px; box-shadow: 0 4px 24px rgba(31,59,100,0.06);">
             <form action="" method="get">
                 <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;">
@@ -355,7 +355,7 @@
                                 ->first();
                             $status = $sale->installmentPlan->status;
                         @endphp
-                        <div class="col-6 col-lg-4 mt-15">
+                        <div class="col-12 col-lg-4 mt-15">
                             <div class="upe-card">
                                 <div class="image-box">
                                     @if($item)
@@ -466,16 +466,12 @@
         <div class="modal fade" id="progressDetailModal" tabindex="-1" role="dialog" aria-labelledby="progressDetailModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 15px 50px rgba(0,0,0,0.15);">
-                    <div class="modal-header border-0 pb-0" style="padding: 25px 25px 10px;">
-                        <div>
-                            <h5 class="modal-title font-18 font-weight-bold text-dark-blue" id="progressDetailModalLabel">Course Progress Breakdown</h5>
+                    <div class="modal-body" style="padding: 30px 25px;">
+                        <div class="mb-20">
+                            <h5 class="font-18 font-weight-bold text-dark-blue mb-5">Course Progress Breakdown</h5>
                             <p class="text-gray font-12 mb-0" id="modalCourseTitle">Loading course details...</p>
                         </div>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body" style="padding: 20px 25px 30px;">
+
                         <div id="progressLoading" class="text-center py-30">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="sr-only">Loading...</span>
@@ -487,6 +483,10 @@
                             <i data-feather="alert-circle" class="text-danger mb-10" width="40" height="40"></i>
                             <p class="text-dark-blue font-14 font-weight-500">Failed to load progress details.</p>
                             <button class="btn btn-sm btn-outline-primary mt-15 px-20" onclick="location.reload()">Retry</button>
+                        </div>
+
+                        <div class="mt-30 text-center">
+                            <button type="button" class="btn btn-sm btn-outline-danger px-25" data-dismiss="modal" style="border-radius: 12px; font-weight: 700;">Close</button>
                         </div>
                     </div>
                 </div>
