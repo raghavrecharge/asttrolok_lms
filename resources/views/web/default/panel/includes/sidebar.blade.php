@@ -58,8 +58,8 @@
     </button>
 
     <div class="user-info d-flex align-items-center flex-row flex-lg-column justify-content-lg-center">
-        <a href="/panel" class="user-avatar bg-gray200">
-            <img loading="lazy"  src="{{ config('app.img_dynamic_url') }}{{ $authUser->getAvatar(100) }}" class="img-cover" alt="{{ $authUser->full_name }}">
+        <a href="/panel" class="user-avatar bg-gray200" >
+            <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $authUser->getAvatar(100) }}" class="img-cover" alt="{{ $authUser->full_name }}" onerror="this.src='https://storage.googleapis.com/astrolok/assets/default/img/default/avatar-1.png';">
         </a>
 
         <div class="d-flex flex-column align-items-center justify-content-center">
