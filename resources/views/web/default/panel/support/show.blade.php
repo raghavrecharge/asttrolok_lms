@@ -135,10 +135,12 @@
                 <div>
                     <h3 class="font-20 font-weight-bold text-dark-blue">{{ $supportRequest->title }}</h3>
                     <div class="mt-5 d-flex align-items-center">
-                        <span class="scenario-badge mr-15">
-                            <i data-feather="tag" width="14" height="14" class="mr-5"></i>
-                            {{ $supportRequest->getScenarioLabel() }}
-                        </span>
+                        @if($supportRequest->support_scenario)
+                            <span class="scenario-badge mr-15">
+                                <i data-feather="tag" width="14" height="14" class="mr-5"></i>
+                                {{ $supportRequest->getScenarioLabel() }}
+                            </span>
+                        @endif
                         <span class="text-gray font-14"><i data-feather="calendar" width="14" height="14" class="mr-5"></i>{{ $supportRequest->created_at->format('d M Y, h:i A') }}</span>
                     </div>
                 </div>
@@ -194,28 +196,32 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4">
-                    <div class="detail-item">
-                        <span class="detail-label">Course / Service</span>
-                        <div class="d-flex align-items-center mt-10">
-                            <i data-feather="book-open" width="20" height="20" class="text-primary mr-10"></i>
-                            <div>
-                                <span class="detail-value d-block">{{ $supportRequest->webinar?->title ?? 'N/A' }}</span>
-                                <small class="text-gray">by {{ $supportRequest->webinar?->creator?->full_name ?? 'Instructor' }}</small>
+                @if($supportRequest->webinar_id)
+                    <div class="col-12 col-md-4">
+                        <div class="detail-item">
+                            <span class="detail-label">Course / Service</span>
+                            <div class="d-flex align-items-center mt-10">
+                                <i data-feather="book-open" width="20" height="20" class="text-primary mr-10"></i>
+                                <div>
+                                    <span class="detail-value d-block">{{ $supportRequest->webinar?->title ?? 'N/A' }}</span>
+                                    <small class="text-gray">by {{ $supportRequest->webinar?->creator?->full_name ?? 'Instructor' }}</small>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endif
 
-                <div class="col-12 col-md-4">
-                    <div class="detail-item">
-                        <span class="detail-label">Payment Mode</span>
-                        <div class="d-flex align-items-center mt-10">
-                            <i data-feather="credit-card" width="20" height="20" class="text-primary mr-10"></i>
-                            <span class="detail-value">{{ ucfirst(str_replace('_', ' ', $supportRequest->purchase_status)) }}</span>
+                @if($supportRequest->purchase_status)
+                    <div class="col-12 col-md-4">
+                        <div class="detail-item">
+                            <span class="detail-label">Payment Mode</span>
+                            <div class="d-flex align-items-center mt-10">
+                                <i data-feather="credit-card" width="20" height="20" class="text-primary mr-10"></i>
+                                <span class="detail-value">{{ ucfirst(str_replace('_', ' ', $supportRequest->purchase_status)) }}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
+                @endif
             </div>
 
             {{-- Message Content --}}

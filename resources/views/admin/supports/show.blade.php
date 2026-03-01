@@ -11,6 +11,17 @@
         </div>
 
         <div class="section-body">
+            @php
+                $isFinalStatus = in_array($supportRequest->status, ['completed', 'executed', 'closed', 'rejected']);
+                $isSupportRole = auth()->user()->role_name === 'Support Role';
+                $isAdmin = auth()->user()->role_name === 'admin';
+                $canProcess = !$isFinalStatus && ($isSupportRole || $isAdmin);
+
+                // Actions panel should be hidden if status is final
+                // For Support Role, we hide it if they've already approved it (sent to admin)
+                $isSupportRoleProcessed = $isSupportRole && in_array($supportRequest->status, ['approved']);
+                $shouldHideActions = $isFinalStatus || $isSupportRoleProcessed;
+            @endphp
             <div class="row">
                 <div class="col-12 col-md-8">
                     {{-- Ticket Details --}}
@@ -561,21 +572,11 @@
                     </div>
                     @endif
                     --}}
-                </div>
-
-                <div class="col-12 col-md-4">
-                    @php
-                        $isFinalStatus = in_array($supportRequest->status, ['completed', 'executed', 'closed', 'rejected']);
-                        $isSupportRoleProcessed = (auth()->user()->role_name === 'Support Role') && in_array($supportRequest->status, ['approved']);
-                        $shouldHideActions = $isFinalStatus || $isSupportRoleProcessed;
-                        $needsProcessing = empty($supportRequest->support_scenario) && !$isFinalStatus;
-                    @endphp
-
                     {{-- ══════════════════════════════════════════════════ --}}
-                    {{-- Process / Take Action Card (Admin only, no scenario yet) --}}
+                    {{-- Process / Take Action Card --}}
                     {{-- ══════════════════════════════════════════════════ --}}
-                    @if($needsProcessing && auth()->user()->role_name === 'admin')
-                    <div class="card border-primary">
+                    @if($canProcess)
+                    <div class="card border-primary mt-4">
                         <div class="card-header bg-primary text-white">
                             <h4 class="text-white"><i class="fas fa-bolt"></i> Process / Take Action</h4>
                         </div>
@@ -588,16 +589,50 @@
                                     <label><strong>Support Scenario</strong> <span class="text-danger">*</span></label>
                                     <select name="support_scenario" id="processScenario" class="form-control" required>
                                         <option value="">-- Select Scenario --</option>
-                                        <option value="course_extension">Course Extension</option>
-                                        <option value="temporary_access">Temporary Access</option>
-                                        <option value="mentor_access">Mentor Access</option>
-                                        <option value="relatives_friends_access">Relatives/Friends Access</option>
-                                        <option value="free_course_grant">Free Course Grant</option>
-                                        <option value="offline_cash_payment">Offline/Cash Payment</option>
-                                        <option value="installment_restructure">Installment Restructure</option>
-                                        <option value="refund_payment">Refund Payment</option>
-                                        <option value="post_purchase_coupon">Post-Purchase Coupon</option>
-                                        <option value="wrong_course_correction">Wrong Course Correction</option>
+                                        @php
+                                            $scenarios = [
+                                                'course_extension' => 'Course Extension',
+                                                'temporary_access' => 'Temporary Access',
+                                                'mentor_access' => 'Mentor Access',
+                                                'relatives_friends_access' => 'Relatives/Friends Access',
+                                                'free_course_grant' => 'Free Course Grant',
+                                                'offline_cash_payment' => 'Offline/Cash Payment',
+                                                'installment_restructure' => 'Installment Restructure',
+                                                'refund_payment' => 'Refund Payment',
+                                                'post_purchase_coupon' => 'Post-Purchase Coupon',
+                                                'wrong_course_correction' => 'Wrong Course Correction',
+                                            ];
+
+                                            $currentValues = [
+                                                'webinar_id' => $supportRequest->webinar_id,
+                                                'support_scenario' => $supportRequest->support_scenario,
+                                                'extension_days' => $supportRequest->extension_days,
+                                                'extension_reason' => $supportRequest->extension_reason,
+                                                'temporary_access_days' => $supportRequest->temporary_access_days,
+                                                'temporary_access_percentage' => $supportRequest->temporary_access_percentage,
+                                                'mentor_change_reason' => $supportRequest->mentor_change_reason,
+                                                'relative_description' => $supportRequest->relative_description,
+                                                'free_course_reason' => $supportRequest->free_course_reason,
+                                                'cash_amount' => $supportRequest->cash_amount,
+                                                'payment_receipt_number' => $supportRequest->payment_receipt_number,
+                                                'payment_date' => $supportRequest->payment_date,
+                                                'payment_location' => $supportRequest->payment_location,
+                                                'restructure_reason' => $supportRequest->restructure_reason,
+                                                'refund_reason' => $supportRequest->refund_reason,
+                                                'bank_account_number' => $supportRequest->bank_account_number,
+                                                'ifsc_code' => $supportRequest->ifsc_code,
+                                                'account_holder_name' => $supportRequest->account_holder_name,
+                                                'coupon_code' => $supportRequest->coupon_code,
+                                                'coupon_apply_reason' => $supportRequest->coupon_apply_reason,
+                                                'wrong_course_id' => $supportRequest->wrong_course_id,
+                                                'correct_course_id' => $supportRequest->correct_course_id,
+                                                'correction_reason' => $supportRequest->correction_reason,
+                                                'admin_remarks' => $supportRequest->approval_remarks,
+                                            ];
+                                        @endphp
+                                        @foreach($scenarios as $val => $label)
+                                            <option value="{{ $val }}" {{ $supportRequest->support_scenario === $val ? 'selected' : '' }}>{{ $label }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
 
@@ -607,11 +642,16 @@
                                 {{-- Admin Remarks --}}
                                 <div class="form-group">
                                     <label>Admin Remarks</label>
-                                    <textarea name="admin_remarks" class="form-control" rows="2" placeholder="Optional remarks..."></textarea>
+                                    <textarea name="admin_remarks" class="form-control" rows="2" placeholder="Optional remarks...">{{ old('admin_remarks', $supportRequest->approval_remarks) }}</textarea>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary btn-block" id="processSubmitBtn" disabled>
-                                    <i class="fas fa-check-circle"></i> Process & Complete
+                                <button type="submit" class="btn btn-primary btn-block" id="processSubmitBtn">
+                                    <i class="fas fa-check-circle"></i> 
+                                    @if(auth()->user()->role_name === 'Support Role')
+                                        Process & Send for Approval
+                                    @else
+                                        Process & Complete
+                                    @endif
                                 </button>
                             </form>
                         </div>
@@ -623,6 +663,9 @@
                         const fieldsContainer = document.getElementById('processScenarioFields');
                         const submitBtn = document.getElementById('processSubmitBtn');
                         const studentUserId = {{ $supportRequest->user_id ?? 'null' }};
+
+                        // Current values for pre-filling
+                        const currentValues = @json($currentValues);
 
                         // All active webinars (passed from controller)
                         const allWebinars = @json($allWebinars ?? []);
@@ -650,107 +693,119 @@
 
                             switch (scenario) {
                                 case 'course_extension':
-                                    html = buildCourseSelect('webinar_id', 'Select Expired Course', expiredCourses, true);
+                                    html = buildCourseSelect('webinar_id', 'Select Expired Course', expiredCourses, true, currentValues.webinar_id);
                                     html += `<div class="form-group"><label>Extension Period <span class="text-danger">*</span></label>
                                         <select name="extension_days" class="form-control" required>
-                                            <option value="7">7 Days</option><option value="15">15 Days</option><option value="30">30 Days</option>
+                                            <option value="7" ${currentValues.extension_days == 7 ? 'selected' : ''}>7 Days</option>
+                                            <option value="15" ${currentValues.extension_days == 15 ? 'selected' : ''}>15 Days</option>
+                                            <option value="30" ${currentValues.extension_days == 30 ? 'selected' : ''}>30 Days</option>
                                         </select></div>`;
-                                    html += buildTextarea('extension_reason', 'Reason');
+                                    html += buildTextarea('extension_reason', 'Reason', currentValues.extension_reason);
                                     break;
 
                                 case 'temporary_access':
-                                    html = buildCourseSelect('webinar_id', 'Select Course', allWebinars, true);
+                                    html = buildCourseSelect('webinar_id', 'Select Course', allWebinars, true, currentValues.webinar_id);
                                     html += `<div class="form-group"><label>Duration <span class="text-danger">*</span></label>
                                         <select name="temporary_access_days" class="form-control" required>
-                                            <option value="7">7 Days</option><option value="15">15 Days</option>
+                                            <option value="7" ${currentValues.temporary_access_days == 7 ? 'selected' : ''}>7 Days</option>
+                                            <option value="15" ${currentValues.temporary_access_days == 15 ? 'selected' : ''}>15 Days</option>
                                         </select></div>`;
                                     html += `<div class="form-group"><label>Access Percentage (%) <span class="text-danger">*</span></label>
-                                        <input type="number" name="temporary_access_percentage" class="form-control" min="1" max="100" value="100" required></div>`;
+                                        <input type="number" name="temporary_access_percentage" class="form-control" min="1" max="100" value="${(currentValues.temporary_access_percentage !== null && currentValues.temporary_access_percentage !== undefined) ? currentValues.temporary_access_percentage : 100}" required></div>`;
                                     break;
 
                                 case 'mentor_access':
-                                    html = buildCourseSelect('webinar_id', 'Select Course', allWebinars, true);
-                                    html += buildTextarea('mentor_change_reason', 'Reason');
+                                    html = buildCourseSelect('webinar_id', 'Select Course', allWebinars, true, currentValues.webinar_id);
+                                    html += buildTextarea('mentor_change_reason', 'Reason', currentValues.mentor_change_reason);
                                     break;
 
                                 case 'relatives_friends_access':
-                                    html = buildCourseSelect('webinar_id', 'Select Course', allWebinars, true);
-                                    html += buildTextarea('relative_description', 'Description');
+                                    html = buildCourseSelect('webinar_id', 'Select Course', allWebinars, true, currentValues.webinar_id);
+                                    html += buildTextarea('relative_description', 'Description', currentValues.relative_description);
                                     break;
 
                                 case 'free_course_grant':
-                                    html = buildCourseSelect('webinar_id', 'Select Course', allWebinars, true);
-                                    html += buildTextarea('free_course_reason', 'Reason');
+                                    html = buildCourseSelect('webinar_id', 'Select Course', allWebinars, true, currentValues.webinar_id);
+                                    html += buildTextarea('free_course_reason', 'Reason', currentValues.free_course_reason);
                                     break;
 
                                 case 'offline_cash_payment':
-                                    html = buildCourseSelect('webinar_id', 'Select Course', allWebinars, true);
+                                    html = buildCourseSelect('webinar_id', 'Select Course', allWebinars, true, currentValues.webinar_id);
                                     html += `<div class="form-group"><label>Amount Paid (₹) <span class="text-danger">*</span></label>
-                                        <input type="number" name="cash_amount" class="form-control" step="1" min="0" required></div>`;
+                                        <input type="number" name="cash_amount" class="form-control" step="1" min="0" value="${(currentValues.cash_amount !== null && currentValues.cash_amount !== undefined) ? currentValues.cash_amount : ''}" required></div>`;
                                     html += `<div class="form-group"><label>Transaction ID / UTR</label>
-                                        <input type="text" name="payment_receipt_number" class="form-control"></div>`;
+                                        <input type="text" name="payment_receipt_number" class="form-control" value="${currentValues.payment_receipt_number || ''}"></div>`;
                                     html += `<div class="form-group"><label>Payment Date</label>
-                                        <input type="date" name="payment_date" class="form-control"></div>`;
+                                        <input type="date" name="payment_date" class="form-control" value="${currentValues.payment_date || ''}"></div>`;
                                     html += `<div class="form-group"><label>Bank/Location</label>
-                                        <input type="text" name="payment_location" class="form-control"></div>`;
+                                        <input type="text" name="payment_location" class="form-control" value="${currentValues.payment_location || ''}"></div>`;
                                     break;
 
                                 case 'installment_restructure':
-                                    html = buildCourseSelect('webinar_id', 'Select Installment Course', installmentCourses.length > 0 ? installmentCourses : studentPurchases, true);
-                                    html += buildTextarea('restructure_reason', 'Reason');
+                                    html = buildCourseSelect('webinar_id', 'Select Installment Course', installmentCourses.length > 0 ? installmentCourses : studentPurchases, true, currentValues.webinar_id);
+                                    html += buildTextarea('restructure_reason', 'Reason', currentValues.restructure_reason);
                                     break;
 
                                 case 'refund_payment':
-                                    html = buildCourseSelect('webinar_id', 'Select Course for Refund', refundableCourses.length > 0 ? refundableCourses : studentPurchases, true);
-                                    html += buildTextarea('refund_reason', 'Refund Reason');
+                                    html = buildCourseSelect('webinar_id', 'Select Course for Refund', refundableCourses.length > 0 ? refundableCourses : studentPurchases, true, currentValues.webinar_id);
+                                    html += buildTextarea('refund_reason', 'Refund Reason', currentValues.refund_reason);
                                     html += `<div class="form-group"><label>Bank Account Number</label>
-                                        <input type="text" name="bank_account_number" class="form-control"></div>`;
+                                        <input type="text" name="bank_account_number" class="form-control" value="${currentValues.bank_account_number || ''}"></div>`;
                                     html += `<div class="form-group"><label>IFSC Code</label>
-                                        <input type="text" name="ifsc_code" class="form-control"></div>`;
+                                        <input type="text" name="ifsc_code" class="form-control" value="${currentValues.ifsc_code || ''}"></div>`;
                                     html += `<div class="form-group"><label>Account Holder Name</label>
-                                        <input type="text" name="account_holder_name" class="form-control"></div>`;
+                                        <input type="text" name="account_holder_name" class="form-control" value="${currentValues.account_holder_name || ''}"></div>`;
                                     break;
 
                                 case 'post_purchase_coupon':
-                                    html = buildCourseSelect('webinar_id', 'Select Purchased Course', studentPurchases, true);
+                                    html = buildCourseSelect('webinar_id', 'Select Purchased Course', studentPurchases, true, currentValues.webinar_id);
                                     html += `<div class="form-group"><label>Coupon Code</label>
-                                        <input type="text" name="coupon_code" class="form-control" placeholder="Enter coupon code"></div>`;
-                                    html += buildTextarea('coupon_apply_reason', 'Reason');
+                                        <input type="text" name="coupon_code" class="form-control" placeholder="Enter coupon code" value="${currentValues.coupon_code || ''}"></div>`;
+                                    html += buildTextarea('coupon_apply_reason', 'Reason', currentValues.coupon_apply_reason);
                                     break;
 
                                 case 'wrong_course_correction':
-                                    html = buildCourseSelect('wrong_course_id', 'Wrong Course', studentPurchases, true);
-                                    html = html.replace('wrong_course_id', 'wrong_course_id');
-                                    html += buildCourseSelect('correct_course_id', 'Correct Course', allWebinars, true);
-                                    html += buildTextarea('correction_reason', 'Reason');
+                                    html = buildCourseSelect('wrong_course_id', 'Wrong Course', studentPurchases, true, currentValues.wrong_course_id);
+                                    html += buildCourseSelect('correct_course_id', 'Correct Course', allWebinars, true, currentValues.correct_course_id);
+                                    html += buildTextarea('correction_reason', 'Reason', currentValues.correction_reason);
                                     break;
                             }
 
                             fieldsContainer.innerHTML = html;
                         });
 
-                        function buildCourseSelect(name, label, courses, required) {
+                        function buildCourseSelect(name, label, courses, required, defaultValue) {
                             let options = '<option value="">-- Select --</option>';
                             (courses || []).forEach(function(c) {
-                                options += '<option value="' + c.id + '">' + escapeHtml(c.title || ('Course #' + c.id)) + '</option>';
+                                const selected = (defaultValue == c.id) ? 'selected' : '';
+                                options += '<option value="' + c.id + '" ' + selected + '>' + escapeHtml(c.title || ('Course #' + c.id)) + '</option>';
                             });
                             return '<div class="form-group"><label>' + label + (required ? ' <span class="text-danger">*</span>' : '') + '</label>' +
                                 '<select name="' + name + '" class="form-control"' + (required ? ' required' : '') + '>' + options + '</select></div>';
                         }
 
-                        function buildTextarea(name, label) {
+                        function buildTextarea(name, label, defaultValue) {
                             return '<div class="form-group"><label>' + label + '</label>' +
-                                '<textarea name="' + name + '" class="form-control" rows="2"></textarea></div>';
+                                '<textarea name="' + name + '" class="form-control" rows="2">' + escapeHtml(defaultValue || '') + '</textarea></div>';
                         }
 
                         function escapeHtml(str) {
+                            if (!str) return '';
                             const div = document.createElement('div');
                             div.textContent = str;
                             return div.innerHTML;
                         }
+
+                        // Trigger change on load if scenario exists
+                        if (scenarioSelect.value) {
+                            scenarioSelect.dispatchEvent(new Event('change'));
+                        }
                     });
                     </script>
                     @endif
+                </div>
+
+                <div class="col-12 col-md-4">
 
                     @if(!$shouldHideActions)
                     {{-- Action Panel --}}
@@ -817,30 +872,30 @@
     <div class="form-group">
         <label>Change Status</label>
         <select name="status" id="statusSelect" class="form-control" required>
-            <option value="pending" {{ $supportRequest->status == 'pending' ? 'selected' : '' }}>Pending</option>
-            <option value="in_review" {{ $supportRequest->status == 'in_review' ? 'selected' : '' }}>In Review</option>
-            
-            {{-- Support Role Options --}}
+            {{-- Status options based on role --}}
             @if(Auth::user()->role_name === 'Support Role')
-                {{-- Support Role can approve regular requests but NOT free_course_grant --}}
-                @if($supportRequest->support_scenario !== 'free_course_grant')
-                    <option value="approved" {{ $supportRequest->status == 'approved' ? 'selected' : '' }}>Approve</option>
-                @endif
-            @endif
-            
-            {{-- Admin Only Options --}}
-            @if(Auth::user()->role_name === 'admin')
-                <option value="approved" {{ $supportRequest->status == 'approved' ? 'selected' : '' }}>Approve</option>
-                <option value="completed" {{ $supportRequest->status == 'completed' ? 'selected' : '' }}>Completed</option>
-            @endif
-            
-            {{-- Rejection options --}}
-            @if(Auth::user()->role_name === 'admin' || ($supportRequest->support_scenario !== 'free_course_grant' && Auth::user()->role_name === 'Support Role'))
+                <option value="pending" {{ $supportRequest->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                <option value="in_review" {{ $supportRequest->status == 'in_review' ? 'selected' : '' }}>In Review</option>
+                {{-- NOTE: 'approved' (Process) is removed from here for Support Role --}}
+                {{-- They must use the "Process / Take Action" card above to approve/process --}}
                 <option value="rejected" {{ $supportRequest->status == 'rejected' ? 'selected' : '' }}>Reject</option>
             @endif
             
-            <option value="executed" {{ $supportRequest->status == 'executed' ? 'selected' : '' }}>Executed</option>
-            <option value="closed" {{ $supportRequest->status == 'closed' ? 'selected' : '' }}>Closed</option>
+            @if(Auth::user()->role_name === 'admin')
+                <option value="approved" {{ $supportRequest->status == 'approved' ? 'selected' : '' }}>Approve</option>
+                <option value="completed" {{ $supportRequest->status == 'completed' ? 'selected' : '' }}>Completed</option>
+                <option value="rejected" {{ $supportRequest->status == 'rejected' ? 'selected' : '' }}>Reject</option>
+            @endif
+            
+            @if(Auth::user()->role_name !== 'Support Role' && Auth::user()->role_name !== 'admin')
+                <option value="pending" {{ $supportRequest->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                <option value="in_review" {{ $supportRequest->status == 'in_review' ? 'selected' : '' }}>In Review</option>
+                <option value="approved" {{ $supportRequest->status == 'approved' ? 'selected' : '' }}>Approve</option>
+                <option value="completed" {{ $supportRequest->status == 'completed' ? 'selected' : '' }}>Completed</option>
+                <option value="rejected" {{ $supportRequest->status == 'rejected' ? 'selected' : '' }}>Reject</option>
+                <option value="executed" {{ $supportRequest->status == 'executed' ? 'selected' : '' }}>Executed</option>
+                <option value="closed" {{ $supportRequest->status == 'closed' ? 'selected' : '' }}>Closed</option>
+            @endif
         </select>
     </div>
 

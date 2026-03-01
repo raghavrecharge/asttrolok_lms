@@ -300,6 +300,8 @@
                                     <div class="d-flex flex-column">
                                         @if($request->webinar)
                                             <span class="font-12 text-gray">{{ $request->webinar->title }}</span>
+                                        @else
+                                            <span class="font-12 text-gray">General Support</span>
                                         @endif
                                     </div>
                                 </td>

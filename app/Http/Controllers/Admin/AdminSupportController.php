@@ -225,8 +225,9 @@ class AdminSupportController extends Controller
             }
         }
 
-        // ── Load data for "Process / Take Action" form (when ticket has no scenario yet) ──
-        if (empty($supportRequest->support_scenario) && !in_array($supportRequest->status, ['completed', 'executed', 'closed', 'rejected'])) {
+        // ── Load data for "Process / Take Action" form ──
+        $isFinalStatus = in_array($supportRequest->status, ['completed', 'executed', 'closed', 'rejected']);
+        if (!$isFinalStatus) {
             // All active webinars
             $data['allWebinars'] = Webinar::where('status', 'active')
                 ->select('id', 'creator_id')
@@ -1630,11 +1631,11 @@ class AdminSupportController extends Controller
         $supportRequest = NewSupportForAsttrolok::findOrFail($id);
         $user = Auth::user();
 
-        // Only admin can process tickets
-        if ($user->role_name !== 'admin') {
+        // Allow both admin and Support Role to process tickets
+        if ($user->role_name !== 'admin' && $user->role_name !== 'Support Role') {
             return back()->with(['toast' => [
                 'title' => 'Not Allowed',
-                'msg' => 'Only Admin can process tickets.',
+                'msg' => 'You do not have permission to process this ticket.',
                 'status' => 'error'
             ]]);
         }
@@ -1769,17 +1770,31 @@ class AdminSupportController extends Controller
 
             $supportRequest->update($updateData);
 
-            // Step 2: Delegate to the existing updateStatus flow as 'completed'
-            // We merge the required fields for updateStatus and call it internally.
+            // Force fresh instance to ensure all relations are reloaded or data is current
+            $supportRequest = $supportRequest->fresh();
+
+            // Step 2: Update status based on role
+            // Support Role: set as approved (needs admin final action)
+            // Admin: set as completed (final execution)
+            if ($user->role_name === 'Support Role') {
+                $status = 'approved';
+                $remarks = $request->admin_remarks ?? 'Processed by Support team';
+            } else {
+                $status = 'completed';
+                $remarks = $request->admin_remarks ?? 'Processed by Admin';
+            }
+
+            // Sync remarks to the request so updateStatus picks them up
             $request->merge([
-                'status' => 'completed',
-                'admin_remarks' => $request->admin_remarks ?? 'Processed via Take Action',
-                'support_remarks' => $request->admin_remarks ?? 'Processed via Take Action',
+                'status' => $status,
+                'admin_remarks' => $remarks,
+                'support_remarks' => $remarks,
             ]);
 
             DB::commit();
 
-            // Now call updateStatus which handles its own transaction
+            // IMPORTANT: Call updateStatus which executes specific scenario business logic
+            // (e.g. creating sales, extending courses etc.)
             return $this->updateStatus($request, $id);
 
         } catch (\Exception $e) {

@@ -169,6 +169,7 @@ class NewSupportForAsttrolokController extends Controller
         $rules = [
             'title' => 'required|string|max:255',
             'description' => 'required|string',
+            'webinar_id' => 'nullable|exists:webinars,id',
             'attachments.*' => 'nullable|file|max:5120',
         ];
 
@@ -190,15 +191,29 @@ class NewSupportForAsttrolokController extends Controller
                 }
             }
 
+            $webinarId = $validated['webinar_id'] ?? null;
+            $flowType = $webinarId ? $this->determineFlowType($webinarId) : null;
+            $purchaseInfo = $webinarId ? $this->getPurchaseInfo($webinarId) : [
+                'status' => null,
+                'purchased_at' => null,
+                'expires_at' => null,
+            ];
+
             $data = [
                 'user_id' => Auth::id(),
                 'guest_name' => $request->guest_name,
                 'guest_email' => $request->guest_email,
                 'guest_phone' => $request->guest_phone,
+                'webinar_id' => $webinarId,
+                'support_scenario' => null,
                 'title' => $validated['title'],
                 'description' => $validated['description'],
                 'attachments' => $attachmentPaths,
                 'status' => 'pending',
+                'flow_type' => $flowType,
+                'purchase_status' => $purchaseInfo['status'],
+                'course_purchased_at' => $purchaseInfo['purchased_at'],
+                'course_expires_at' => $purchaseInfo['expires_at'],
             ];
 
             $supportRequest = NewSupportForAsttrolok::create($data);
@@ -250,12 +265,15 @@ class NewSupportForAsttrolokController extends Controller
 
         if (Auth::check() && $supportRequest->user_id && $supportRequest->user_id !== Auth::id()) {
             $user = Auth::user();
-            $webinarIds = $user->webinars->pluck('id')->toArray();
-            
-            if (!in_array($supportRequest->webinar_id, $webinarIds)) {
-                abort(403, 'Unauthorized access');
-            }
+        $userWebinarsIds = $user->webinars->pluck('id')->toArray();
+        
+        // If ticket has a webinar, check if user is the teacher or buyer
+        if ($supportRequest->webinar_id && !in_array($supportRequest->webinar_id, $userWebinarsIds)) {
+            // Check if user is the buyer (for legacy support logic maybe)
+            // But usually user_id check above handles most cases
+            abort(403, 'Unauthorized access');
         }
+    }
         
         $data = [
             'pageTitle' => trans('panel.support_ticket_details') . ' - ' . $supportRequest->ticket_number,
@@ -436,12 +454,15 @@ class NewSupportForAsttrolokController extends Controller
         }
 
         $access = $webinar->checkUserHasBought();
-        $purchasedAt = $sale->created_at instanceof \Carbon\Carbon
-            ? $sale->created_at->timestamp
-            : (int) $sale->created_at;
-        $expiresAt = $sale->valid_until
-            ? ($sale->valid_until instanceof \Carbon\Carbon ? $sale->valid_until->timestamp : (int) $sale->valid_until)
-            : null;
+        $purchasedAt = $sale->created_at;
+        $expiresAt = $sale->valid_until;
+
+        if (is_numeric($purchasedAt)) {
+            $purchasedAt = \Carbon\Carbon::createFromTimestamp($purchasedAt);
+        }
+        if (is_numeric($expiresAt)) {
+            $expiresAt = \Carbon\Carbon::createFromTimestamp($expiresAt);
+        }
         
         if ($access) {
             return [
