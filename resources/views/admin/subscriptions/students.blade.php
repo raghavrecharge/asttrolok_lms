@@ -253,12 +253,11 @@
             </form>
         </div>
     </section>
-
     <div class="card">
         <div class="card-header">
             @can('admin_users_export_excel')
                 <div class="text-right w-100">
-                    <a href="{{ getAdminPanelUrl() }}/subscriptions/{{ $webinar->id }}/students/excel?{{ http_build_query(request()->all()) }}" class="btn btn-primary">{{ trans('admin/main.export_xls') }}</a>
+                    <button type="button" class="btn btn-primary trigger-export-modal">{{ trans('admin/main.export_xls') }}</button>
                 </div>
             @endcan
         </div>
@@ -479,6 +478,47 @@
         </div>
     </div>
 
+    <!-- Export Progress Modal -->
+    <div class="modal fade" id="exportProgressModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content text-center py-4 px-3" style="border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative;">
+                
+                {{-- Minimize Button --}}
+                <button type="button" class="btn btn-sm btn-light position-absolute minimize-export-modal" style="top: 15px; right: 15px; border-radius: 50%; width: 32px; height: 32px; padding: 0; line-height: 1;">
+                    <i class="fas fa-minus text-secondary"></i>
+                </button>
+
+                <div class="modal-body">
+                    <h5 class="text-dark-blue font-weight-bold mb-3" id="exportModalTitle">Exporting Students List</h5>
+                    <p class="text-gray mb-4 font-14" id="exportProgressText">Please wait while we process the records. Do not close this window.</p>
+                    
+                    <div id="exportProgressLoading" class="mb-4">
+                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                    
+                    <div id="exportProgressBarContainer" class="progress mb-2 d-none" style="height: 12px; border-radius: 10px; background-color: #f0f0f0;">
+                        <div id="exportProgressBar" class="progress-bar bg-primary" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div id="exportProgressPercentage" class="text-primary font-weight-bold font-14 d-none">0%</div>
+
+                    <div id="exportProgressError" class="d-none mt-3 p-3 rounded" style="background-color: #fff3f3; border: 1px solid #ffdcdc;">
+                        <i class="fas fa-exclamation-triangle text-danger font-24 mb-2"></i>
+                        <p class="text-danger font-14 mb-0" id="exportErrorMessage">Failed to export data.</p>
+                        <button type="button" class="btn btn-sm btn-outline-danger mt-3" data-dismiss="modal">Close</button>
+                    </div>
+
+                    <div id="exportProgressSuccess" class="d-none mt-3 p-3 rounded" style="background-color: #f3fff6; border: 1px solid #dcffe4;">
+                        <i class="fas fa-check-circle text-success font-24 mb-2"></i>
+                        <p class="text-success font-14 mb-0">Export completed successfully! Your download will begin shortly.</p>
+                        <button type="button" class="btn btn-sm btn-outline-success mt-3" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('scripts_bottom')
@@ -560,6 +600,246 @@
                     }
                 });
             });
+
+            // --- Multi-Export Tray Logic ---
+            window.activeExports = window.activeExports || {};
+            var currentOpenExportId = null;
+
+            function updateExportTray() {
+                var exportKeys = Object.keys(window.activeExports);
+                var trayWrapper = $('#exportDownloadsTray');
+                var trayList = $('#exportDownloadsList');
+                
+                if (exportKeys.length === 0) {
+                    trayWrapper.hide();
+                    return;
+                }
+                
+                trayWrapper.show();
+                trayList.empty();
+                
+                var hasActive = false;
+                
+                exportKeys.forEach(function(exportId) {
+                    var exp = window.activeExports[exportId];
+                    var statusIcon = '<i class="fas fa-spinner fa-spin text-primary"></i>';
+                    var statusColor = 'bg-primary';
+                    var statusText = exp.percentage + '%';
+                    
+                    if (exp.status === 'completed') {
+                        statusIcon = '<i class="fas fa-check text-success"></i>';
+                        statusColor = 'bg-success';
+                        statusText = 'Done';
+                    } else if (exp.status === 'error') {
+                        statusIcon = '<i class="fas fa-exclamation-triangle text-danger"></i>';
+                        statusColor = 'bg-danger';
+                        statusText = 'Failed';
+                    } else {
+                        hasActive = true; 
+                    }
+
+                    var itemHtml = `
+                        <a href="javascript:void(0)" class="dropdown-item resume-export" data-export-id="${exportId}">
+                            <div class="dropdown-item-icon ${statusColor} text-white d-flex align-items-center justify-content-center">
+                                ${statusIcon}
+                            </div>
+                            <div class="dropdown-item-desc">
+                                ${exp.title}
+                                <div class="time text-dark">${statusText} ${exp.status === 'processing' ? `(${exp.processed}/${exp.total})` : ''}</div>
+                                ${exp.status === 'completed' ? `<div class="time text-success mt-1"><i class="fas fa-download"></i> Click to download</div>` : ''}
+                            </div>
+                        </a>
+                    `;
+                    trayList.prepend(itemHtml);
+                });
+                
+                // Toggle notification beep
+                if (hasActive) {
+                    $('#exportDownloadsTray .nav-link').addClass('beep');
+                } else {
+                    $('#exportDownloadsTray .nav-link').removeClass('beep');
+                }
+            }
+
+            function syncModalWithExportState(exportId) {
+                if (currentOpenExportId !== exportId) return;
+                var exp = window.activeExports[exportId];
+                if (!exp) return;
+
+                $('#exportModalTitle').text(exp.title);
+                
+                if (exp.status === 'initializing') {
+                    $('#exportProgressLoading').removeClass('d-none');
+                    $('#exportProgressBarContainer, #exportProgressPercentage, #exportProgressError, #exportProgressSuccess').addClass('d-none');
+                    $('#exportProgressText').text('Initializing export...');
+                    $('#exportProgressBar').css('width', '0%');
+                    $('#exportProgressPercentage').text('0%');
+                } 
+                else if (exp.status === 'processing') {
+                    $('#exportProgressLoading, #exportProgressError, #exportProgressSuccess').addClass('d-none');
+                    $('#exportProgressBarContainer, #exportProgressPercentage').removeClass('d-none');
+                    
+                    $('#exportProgressText').text('Processing ' + exp.processed + ' of ' + exp.total + ' records...');
+                    $('#exportProgressBar').removeClass('bg-success').addClass('bg-primary').css('width', exp.percentage + '%');
+                    $('#exportProgressPercentage').removeClass('text-success').addClass('text-primary').text(exp.percentage + '%');
+                }
+                else if (exp.status === 'completed') {
+                    $('#exportProgressLoading, #exportProgressBarContainer, #exportProgressPercentage, #exportProgressError').addClass('d-none');
+                    $('#exportProgressSuccess').removeClass('d-none');
+                    $('#exportProgressText').text('Export complete.');
+                }
+                else if (exp.status === 'error') {
+                    $('#exportProgressLoading, #exportProgressBarContainer, #exportProgressPercentage, #exportProgressSuccess').addClass('d-none');
+                    $('#exportProgressError').removeClass('d-none');
+                    $('#exportErrorMessage').text(exp.errorMsg || 'Failed to export data.');
+                    $('#exportProgressText').text('Export failed.');
+                }
+            }
+
+            // Click Minimize Button
+            $('body').on('click', '.minimize-export-modal', function() {
+                $('#exportProgressModal').modal('hide');
+                currentOpenExportId = null; 
+            });
+
+            // Click Resume from Tray
+            $('body').on('click', '.resume-export', function() {
+                var exportId = $(this).data('export-id');
+                var exp = window.activeExports[exportId];
+                
+                if (exp.status === 'completed' && !exp.downloaded) {
+                    exp.downloaded = true;
+                    window.location.href = exp.downloadUrl;
+                }
+                
+                currentOpenExportId = exportId;
+                syncModalWithExportState(exportId);
+                $('#exportProgressModal').modal('show');
+            });
+
+
+            // --- Core Export Logic ---
+            $('body').on('click', '.trigger-export-modal', function(e) {
+                e.preventDefault();
+                var subscriptionId = '{{ $webinar->id }}';
+                var filters = '{{ http_build_query(request()->all()) }}';
+                var exportId = 'export_' + subscriptionId + '_' + Date.now();
+                var title = 'Subscription ' + subscriptionId + ' Students';
+                
+                // Initialize State
+                window.activeExports[exportId] = {
+                    id: exportId,
+                    title: title,
+                    status: 'initializing',
+                    percentage: 0,
+                    processed: 0,
+                    total: 0,
+                    downloaded: false
+                };
+                
+                currentOpenExportId = exportId;
+                syncModalWithExportState(exportId);
+                updateExportTray();
+                $('#exportProgressModal').modal('show');
+
+                // Step 1: Initialize Export
+                $.ajax({
+                    url: '/admin/subscriptions/' + subscriptionId + '/students/export-init?' + filters,
+                    type: 'GET',
+                    success: function(response) {
+                        if (response.success) {
+                            var exp = window.activeExports[exportId];
+                            exp.total = response.total_records;
+                            var chunkSize = response.chunk_size;
+                            
+                            if (exp.total === 0) {
+                                exp.status = 'error';
+                                exp.errorMsg = 'No records found to export.';
+                                syncModalWithExportState(exportId);
+                                updateExportTray();
+                                setTimeout(function() { $('#exportProgressModal').modal('hide'); }, 2000);
+                                return;
+                            }
+
+                            exp.status = 'processing';
+                            syncModalWithExportState(exportId);
+                            updateExportTray();
+                            
+                            processExportChunk(exportId, subscriptionId, filters, 0, chunkSize);
+                        }
+                    },
+                    error: function(xhr) {
+                        handleExportError(exportId, xhr);
+                    }
+                });
+            });
+
+            function processExportChunk(exportId, subscriptionId, filters, offset, limit) {
+                var exp = window.activeExports[exportId];
+                if (!exp) return;
+
+                $.ajax({
+                    url: '/admin/subscriptions/' + subscriptionId + '/students/export-process?' + filters + '&offset=' + offset + '&limit=' + limit,
+                    type: 'GET',
+                    success: function(response) {
+                        if (response.success) {
+                            var newOffset = offset + limit;
+                            exp.processed = Math.min(newOffset, exp.total);
+                            exp.percentage = Math.min(Math.round((exp.processed / exp.total) * 100), 100);
+                            
+                            syncModalWithExportState(exportId);
+                            updateExportTray();
+
+                            if (newOffset < exp.total) {
+                                // Process next chunk
+                                processExportChunk(exportId, subscriptionId, filters, newOffset, limit);
+                            } else {
+                                // All chunks processed, trigger download
+                                finishExport(exportId, subscriptionId);
+                            }
+                        }
+                    },
+                    error: function(xhr) {
+                        handleExportError(exportId, xhr);
+                    }
+                });
+            }
+
+            function finishExport(exportId, subscriptionId) {
+                var exp = window.activeExports[exportId];
+                if (!exp) return;
+
+                exp.status = 'completed';
+                exp.percentage = 100;
+                exp.downloadUrl = '/admin/subscriptions/' + subscriptionId + '/students/export-download';
+                
+                syncModalWithExportState(exportId);
+                updateExportTray();
+
+                // Trigger actual file download automatically once
+                if(currentOpenExportId === exportId) {
+                    exp.downloaded = true;
+                    window.location.href = exp.downloadUrl;
+                    setTimeout(function() {
+                        if(currentOpenExportId === exportId) $('#exportProgressModal').modal('hide');
+                    }, 3000);
+                }
+            }
+
+            function handleExportError(exportId, xhr) {
+                var exp = window.activeExports[exportId];
+                if (!exp) return;
+
+                exp.status = 'error';
+                var msg = 'An error occurred during export.';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    msg = xhr.responseJSON.error;
+                }
+                exp.errorMsg = msg;
+
+                syncModalWithExportState(exportId);
+                updateExportTray();
+            }
         });
     </script>
 @endpush

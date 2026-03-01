@@ -2046,18 +2046,15 @@ private function saveExtraDetails(Request $request, $subscriptionId)
         }
     }
 
-    public function exportStudentsExcel(Request $request, $id)
+    public function exportStudentsExcelInit(Request $request, $id)
     {
-        ini_set('max_execution_time', 1200); // 20 minutes for large exports
-        ini_set('memory_limit', '-1');
-
         try {
             $this->authorize('admin_webinar_students_lists');
 
-            $subscription = Subscription::where('id', $id)->with(['subscriptionWebinars'])->first();
+            $subscription = Subscription::where('id', $id)->first();
 
             if (empty($subscription)) {
-                abort(404);
+                return response()->json(['error' => 'Subscription not found'], 404);
             }
 
             $giftsIds = Gift::query()->where('subscription_id', $subscription->id)
@@ -2078,12 +2075,74 @@ private function saveExtraDetails(Request $request, $subscriptionId)
                 })
                 ->whereNull('sales.refund_at');
 
-            $students = $this->studentsListsFilters($subscription, $query, $request)
-                ->orderBy('sales.created_at', 'desc')
-                ->get();
+            // Apply filters to get the total count accurately
+            $filteredQuery = $this->studentsListsFilters($subscription, $query, $request);
+            $totalCount = $filteredQuery->count();
+
+            // Clear any old cache for this process
+            $cacheKey = 'export_sub_students_' . $subscription->id . '_user_' . auth()->id();
+            \Illuminate\Support\Facades\Cache::forget($cacheKey);
+
+            return response()->json([
+                'success' => true,
+                'total_records' => $totalCount,
+                'chunk_size' => 50,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('exportStudentsExcelInit error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            return response()->json(['error' => 'Init failed: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function exportStudentsExcelProcess(Request $request, $id)
+    {
+        ini_set('max_execution_time', 120); // 2 mins per chunk
+        ini_set('memory_limit', '-1');
+
+        try {
+            $this->authorize('admin_webinar_students_lists');
+
+            $offset = $request->input('offset', 0);
+            $limit = $request->input('limit', 50);
+
+            $subscription = Subscription::where('id', $id)->with(['subscriptionWebinars'])->first();
+
+            if (empty($subscription)) {
+                return response()->json(['error' => 'Subscription not found'], 404);
+            }
+
+            $giftsIds = Gift::query()->where('subscription_id', $subscription->id)
+                ->where('status', 'active')
+                ->where(function ($query) {
+                    $query->whereNull('date');
+                    $query->orWhere('date', '<', time());
+                })
+                ->whereHas('sale')
+                ->pluck('id')
+                ->toArray();
+
+            $query = User::join('sales', 'sales.buyer_id', 'users.id')
+                ->select('users.*', 'sales.created_at as purchase_date')
+                ->where(function ($query) use ($subscription, $giftsIds) {
+                    $query->where('sales.subscription_id', $subscription->id);
+                    $query->orWhereIn('sales.gift_id', $giftsIds);
+                })
+                ->whereNull('sales.refund_at');
+
+            $studentsQuery = $this->studentsListsFilters($subscription, $query, $request)
+                ->orderBy('sales.created_at', 'desc');
+
+            $students = $studentsQuery->offset($offset)->limit($limit)->get();
 
             $subscriptionWebinars = $subscription->subscriptionWebinars;
             $webinarStatisticController = new WebinarStatisticController();
+            
+            $cacheKey = 'export_sub_students_' . $subscription->id . '_user_' . auth()->id();
+            $processedData = \Illuminate\Support\Facades\Cache::get($cacheKey, []);
 
             foreach ($students as $student) {
                 $learnings = 0;
@@ -2097,19 +2156,52 @@ private function saveExtraDetails(Request $request, $subscriptionId)
                 }
 
                 $student->learning = ($learnings > 0 && $webinarCount > 0) ? round($learnings / $webinarCount, 2) : 0;
+                
+                // Store processed student in array
+                $processedData[] = clone $student;
             }
 
+            // Save chunk back to cache (2 hour expiry)
+            \Illuminate\Support\Facades\Cache::put($cacheKey, $processedData, 7200);
+
+            return response()->json([
+                'success' => true,
+                'processed' => count($students),
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('exportStudentsExcelProcess error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            return response()->json(['error' => 'Process failed: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function exportStudentsExcelDownload(Request $request, $id)
+    {
+        try {
+            $this->authorize('admin_webinar_students_lists');
+            
+            $subscription = Subscription::where('id', $id)->first();
+            
+            $cacheKey = 'export_sub_students_' . $subscription->id . '_user_' . auth()->id();
+            $students = \Illuminate\Support\Facades\Cache::get($cacheKey, []);
+
             $export = new SubscriptionStudentsExport($students);
+
+            // Clean up cache after finishing
+            \Illuminate\Support\Facades\Cache::forget($cacheKey);
 
             $subscriptionTitle = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $subscription->title ?? 'subscription');
             return Excel::download($export, 'students_' . $subscriptionTitle . '_' . date('Y-m-d') . '.xlsx');
 
         } catch (\Exception $e) {
-            Log::error('exportStudentsExcel error: ' . $e->getMessage(), [
+            Log::error('exportStudentsExcelDownload error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            abort(500, 'Export failed: ' . $e->getMessage());
+            abort(500, 'Download failed: ' . $e->getMessage());
         }
     }
 }
