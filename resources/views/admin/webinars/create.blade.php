@@ -106,6 +106,7 @@
                                                 @enderror
                                             </div>
 
+                                            @if(false) {{-- Temporarily Hidden: Points --}}
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('update.points') }}</label>
                                                 <input type="number" name="points" value="{{ !empty($webinar) ? $webinar->points : old('points') }}" class="form-control @error('points')  is-invalid @enderror" placeholder="Empty means inactive this mode"/>
@@ -115,6 +116,7 @@
                                                 </div>
                                                 @enderror
                                             </div>
+                                            @endif
 
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('admin/main.class_url') }}</label>
@@ -396,6 +398,7 @@
                                                 </div>
                                             </div>
 
+                                            @if(false) {{-- Temporarily Hidden: Certificate --}}
                                             <div class="form-group mt-30 d-flex align-items-center justify-content-between">
                                                 <label class="" for="includeCertificateSwitch">{{ trans('update.include_certificate') }}</label>
                                                 <div class="custom-control custom-switch">
@@ -403,6 +406,7 @@
                                                     <label class="custom-control-label" for="includeCertificateSwitch"></label>
                                                 </div>
                                             </div>
+                                            @endif
 
                                             <div class="form-group mt-30 d-flex align-items-center justify-content-between">
                                                 <label class="cursor-pointer" for="downloadableSwitch">{{ trans('home.downloadable') }}</label>
@@ -412,6 +416,7 @@
                                                 </div>
                                             </div>
 
+                                            @if(false) {{-- Temporarily Hidden: Partner Instructor --}}
                                             <div class="form-group mt-30 d-flex align-items-center justify-content-between">
                                                 <label class="" for="partnerInstructorSwitch">{{ trans('public.partner_instructor') }}</label>
                                                 <div class="custom-control custom-switch">
@@ -419,6 +424,7 @@
                                                     <label class="custom-control-label" for="partnerInstructorSwitch"></label>
                                                 </div>
                                             </div>
+                                            @endif
 
                                             <div class="form-group mt-30 d-flex align-items-center justify-content-between">
                                                 <label class="" for="forumSwitch">{{ trans('update.course_forum') }}</label>
@@ -428,6 +434,7 @@
                                                 </div>
                                             </div>
 
+                                            @if(false) {{-- Temporarily Hidden: Subscribe --}}
                                             <div class="form-group mt-30 d-flex align-items-center justify-content-between">
                                                 <label class="" for="subscribeSwitch">{{ trans('public.subscribe') }}</label>
                                                 <div class="custom-control custom-switch">
@@ -435,6 +442,7 @@
                                                     <label class="custom-control-label" for="subscribeSwitch"></label>
                                                 </div>
                                             </div>
+                                            @endif
 
                                             <div class="form-group mt-30 d-flex align-items-center justify-content-between">
                                                 <label class="" for="privateSwitch">{{ trans('webinars.private') }}</label>
@@ -444,6 +452,7 @@
                                                 </div>
                                             </div>
 
+                                            @if(false) {{-- Temporarily Hidden: Enable Waitlist --}}
                                             <div class="form-group mt-30 d-flex align-items-center justify-content-between">
                                                 <label class="" for="privateSwitch">{{ trans('update.enable_waitlist') }}</label>
                                                 <div class="custom-control custom-switch">
@@ -451,6 +460,7 @@
                                                     <label class="custom-control-label" for="enable_waitlistSwitch"></label>
                                                 </div>
                                             </div>
+                                            @endif
 
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('update.access_days') }}</label>
@@ -486,6 +496,7 @@
                                                 </div>
                                             @endif
 
+                                            @if(false) {{-- Temporarily Hidden: Partner Instructor Input --}}
                                             <div id="partnerInstructorInput" class="form-group mt-15 {{ (!empty($webinar) && $webinar->partner_instructor) ? '' : 'd-none' }}">
                                                 <label class="input-label d-block">{{ trans('public.select_a_partner_teacher') }}</label>
 
@@ -505,11 +516,14 @@
 
                                                 <div class="text-muted text-small mt-1">{{ trans('admin/main.select_a_partner_hint') }}</div>
                                             </div>
+                                            @endif
 
+                                            @if(false) {{-- Temporarily Hidden: Tags --}}
                                             <div class="form-group mt-15">
                                                 <label class="input-label d-block">{{ trans('public.tags') }}</label>
                                                 <input type="text" name="tags" data-max-tag="5" value="{{ !empty($webinar) ? implode(',',$webinarTags) : '' }}" class="form-control inputtags" placeholder="{{ trans('public.type_tag_name_and_press_enter') }} ({{ trans('admin/main.max') }} : 5)"/>
                                             </div>
+                                            @endif
 
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.category') }}</label>
@@ -536,6 +550,7 @@
                                                 @enderror
                                             </div>
 
+                                            @if(false) {{-- Temporarily Hidden: Order --}}
                                             <div class="form-group mt-15">
                                                 <label class="input-label">{{trans('admin/main.order')}}</label>
                                                 <input type="number" name="order" value="{{ !empty($webinar) ? $webinar->order : old('order') }}" class="form-control @error('order')  is-invalid @enderror"/>
@@ -545,6 +560,7 @@
                                                 </div>
                                                 @enderror
                                             </div>
+                                            @endif
                                          <!-- Extra Details -->
 <!-- Add this section after the "Extra Details" comment in your form -->
 <div class="form-group mt-15">
@@ -570,6 +586,13 @@
                 <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
+            <div class="form-group mt-15">
+                <label class="input-label">Heading Extra</label>
+                <input type="text" name="heading_extra" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->heading_extra : old('heading_extra') }}" class="form-control @error('heading_extra') is-invalid @enderror"/>
+                @error('heading_extra')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
 
             <div class="form-group mt-15">
                 <label class="input-label">Subdescription</label>
@@ -583,6 +606,13 @@
                 <label class="input-label">Additional Description</label>
                 <textarea name="additional_description" rows="4" class="form-control @error('additional_description') is-invalid @enderror">{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->additional_description : old('additional_description') }}</textarea>
                 @error('additional_description')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+            <div class="form-group mt-15">
+                <label class="input-label">Extra Description</label>
+                <textarea name="extra_description" rows="4" class="form-control @error('extra_description') is-invalid @enderror">{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->extra_description : old('extra_description') }}</textarea>
+                @error('extra_description')
                 <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
@@ -808,6 +838,13 @@
         <label class="input-label">Comparison Text</label>
         <textarea name="comparison_text" rows="3" class="form-control @error('comparison_text') is-invalid @enderror">{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->comparison_text : old('comparison_text') }}</textarea>
         @error('comparison_text')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+    <div class="form-group mt-15">
+        <label class="input-label">Price Text</label>
+        <input type="text" name="price_text" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->price_text : old('price_text') }}" class="form-control @error('price_text') is-invalid @enderror"/>
+        @error('price_text')
         <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
@@ -1067,7 +1104,52 @@
                 <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
+            <div class="form-group mt-15">
+                <label class="input-label">Ad Image</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <button type="button" class="input-group-text admin-file-manager" data-input="ad_img" data-preview="holder">
+                            <i class="fa fa-upload"></i>
+                        </button>
+                    </div>
+                    <input type="text" name="ad_img" id="ad_img" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->ad_img : old('ad_img') }}" class="form-control @error('ad_img') is-invalid @enderror"/>
+                    <div class="input-group-append">
+                        <button type="button" class="input-group-text admin-file-view" data-input="ad_img">
+                            <i class="fa fa-eye"></i>
+                        </button>
+                    </div>
+                    @error('ad_img')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
   </div>
+
+<!-- Risk & CTA -->
+<div class="form-group mt-15">
+    <label class="input-label d-block" style="font-weight: 700;font-size:20px">Risk & CTA</label>
+    <div class="form-group mt-15">
+        <label class="input-label">Risk Title</label>
+        <input type="text" name="risk_title" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->risk_title : old('risk_title') }}" class="form-control @error('risk_title') is-invalid @enderror"/>
+        @error('risk_title')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+    <div class="form-group mt-15">
+        <label class="input-label">Risk Description</label>
+        <textarea name="risk_description" rows="3" class="form-control @error('risk_description') is-invalid @enderror">{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->risk_description : old('risk_description') }}</textarea>
+        @error('risk_description')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+    <div class="form-group mt-15">
+        <label class="input-label">CTA Text</label>
+        <input type="text" name="cta_text" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->cta_text : old('cta_text') }}" class="form-control @error('cta_text') is-invalid @enderror"/>
+        @error('cta_text')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+</div>
 </div>
 
 <!-- extra Details -->
@@ -1101,7 +1183,7 @@
                                     </div>
                                 </section>
 
-                                @if(!empty($webinar))
+                                @if(false) {{-- Temporarily Hidden: Pricing Plans (original condition: !empty($webinar)) --}}
                                     <section class="mt-30">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <h2 class="section-title after-line">{{ trans('admin/main.price_plans') }}</h2>
@@ -1151,9 +1233,12 @@
                                             </div>
                                         </div>
                                     </section>
+                                @endif
 
+                                @if(!empty($webinar))
                                     @include('admin.webinars.create_includes.contents')
 
+                                    @if(false) {{-- Temporarily Hidden: Prerequisites --}}
                                     <section class="mt-30">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <h2 class="section-title after-line">{{ trans('public.prerequisites') }}</h2>
@@ -1207,6 +1292,7 @@
                                             </div>
                                         </div>
                                     </section>
+                                    @endif
 <!-- FAQ Section -->
 <section class="mt-30">
     <div class="d-flex justify-content-between align-items-center">
@@ -1273,6 +1359,7 @@
 </section>
 
 <!-- Why Choose Us Section -->
+@if(false) {{-- Temporarily Hidden: Why Choose Us --}}
 <section class="mt-30">
     <div class="d-flex justify-content-between align-items-center">
         <h2 class="section-title after-line">Why Choose Us</h2>
@@ -1336,7 +1423,9 @@
         </div>
     </div>
 </section>
+@endif
                                     @foreach(\App\Models\WebinarExtraDescription::$types as $webinarExtraDescriptionType)
+                                    @if(!in_array($webinarExtraDescriptionType, ['learning_materials', 'company_logos'])) {{-- Temporarily Hidden: Learning Materials & Company Logos --}}
                                         <section class="mt-30">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 @if(trans('update.'.$webinarExtraDescriptionType)=='Requirements')
@@ -1401,6 +1490,7 @@
                                                 </div>
                                             </div>
                                         </section>
+                                    @endif
                                     @endforeach
 
                                     <section class="mt-30">
@@ -1454,6 +1544,7 @@
                                     </section>
                                 @endif
 
+                                @if(false) {{-- Temporarily Hidden: Message to Reviewer --}}
                                 <section class="mt-3">
                                     <h2 class="section-title after-line">{{ trans('public.message_to_reviewer') }}</h2>
                                     <div class="row">
@@ -1464,6 +1555,7 @@
                                         </div>
                                     </div>
                                 </section>
+                                @endif
 
                                 <input type="hidden" name="draft" value="no" id="forDraft"/>
 
@@ -1485,9 +1577,13 @@
                                 </div>
                             </form>
 
+                            @if(false) {{-- Temporarily Hidden: Prerequisites Modal --}}
                             @include('admin.webinars.modals.prerequisites')
+                            @endif
                             @include('admin.webinars.modals.quizzes')
+                            @if(false) {{-- Temporarily Hidden: Pricing Plans Modal --}}
                             @include('admin.webinars.modals.ticket')
+                            @endif
                             @include('admin.webinars.modals.chapter')
                             @include('admin.webinars.modals.session')
                             @include('admin.webinars.modals.file')

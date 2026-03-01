@@ -247,43 +247,20 @@
                             </td>
 
                             <td>
-
-                                 @php
-                                            $Progress = 0;
-                                            $totalVideos =0;
-                                            $webinar_id = request()->route('id');
-                                           $totalChapter = \App\Models\WebinarChapter::where('webinar_chapters.webinar_id', (int) $webinar_id)->where('status', 'active')->get();
-                                           if($totalChapter){
-                                              foreach($totalChapter as $value){
-                                              $totalItem = \App\Models\WebinarChapterItem::where('chapter_id', (int) $value->id)
-                                               ->where('type', 'file')
-                                                ->count();
-                                                $totalVideos +=$totalItem;
-                                              }
-                                          }
-
-                                          $watchedVideos = \App\Models\CourseProgress::where('webinar_id', (int) $webinar_id)
-                                            ->where('user_id',(int) $student->id)
-                                            ->sum('watch_percentage');
-
-                                         $slugs = \App\Models\Webinar::where('id', (int) $webinar_id)->where('status', 'active')->first();
-
-                                        @endphp
-
-                                        @if($totalVideos)
-                                            @php
-                                                $Progress = (int) ($watchedVideos/ $totalVideos);
-
-                                            @endphp
-                                        @endif
-                                         <a href="{{ url("/admin/users/{$student->id}/{$slugs->slug}/courseprogress") }}" target="_blank" class="">
-                                       <div class="mt-20">
-                                        <label for="videoProgress" class="font-16 text-gray">Progress</label>
-                                        <progress id="videoProgress" value="{{ $Progress }}" max="100" class="progress-bar"></progress>
-                                        <span id="progressValue" class="font-15 text-gray">{{ $Progress }}%</span>
+                                @php
+                                    $progressValue = isset($student->learning) ? round($student->learning, 2) : 0;
+                                @endphp
+                                @if(!empty($student->id) && !empty($webinar->slug))
+                                    <a href="{{ url("/admin/users/{$student->id}/{$webinar->slug}/courseprogress") }}" target="_blank">
+                                @endif
+                                    <div class="mt-20">
+                                        <label for="videoProgress_{{ $student->id }}" class="font-16 text-gray">Progress</label>
+                                        <progress id="videoProgress_{{ $student->id }}" value="{{ $progressValue }}" max="100" class="progress-bar"></progress>
+                                        <span class="font-15 text-gray">{{ $progressValue }}%</span>
                                     </div>
+                                @if(!empty($student->id) && !empty($webinar->slug))
                                     </a>
-
+                                @endif
                             </td>
 
                             <td>
@@ -337,6 +314,15 @@
                                                         'tooltip' => trans('update.block_access'),
                                                     ])
                                         @endif
+
+                                        @include('admin.includes.delete_button',[
+                                            'url' => getAdminPanelUrl().'/webinars/'. $webinar->id .'/students/'. $student->sale_id .'/remove',
+                                            'tooltip' => 'Remove student & refund to wallet',
+                                            'btnIcon' => 'fa-user-times',
+                                            'btnClass' => 'btn-transparent text-danger mt-1',
+                                            'hideDefaultClass' => true,
+                                            'deleteConfirmMsg' => 'Are you sure you want to remove this student? The paid amount will be refunded to their wallet.',
+                                        ])
                                     @endcan
                                 @endif
                             </td>
