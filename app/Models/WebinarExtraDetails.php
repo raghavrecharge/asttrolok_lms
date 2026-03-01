@@ -47,6 +47,10 @@ class WebinarExtraDetails extends Model
         'rate_title',
         'rate_options',
         'rate_icon',
+        'price_text',
+        'risk_title',
+        'risk_description',
+        'cta_text',
     ];
 
 protected $casts = [

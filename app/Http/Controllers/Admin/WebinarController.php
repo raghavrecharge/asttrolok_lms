@@ -436,6 +436,15 @@ class WebinarController extends Controller
                 'ad_subtitle' => 'nullable|string|max:255',
                 'ad_title' => 'nullable|string|max:255',
                 'ad_description' => 'nullable|string',
+                'ad_img' => 'nullable|string',
+                
+                // Additional Extra Details
+                'heading_extra' => 'nullable|string|max:255',
+                'extra_description' => 'nullable|string',
+                'price_text' => 'nullable|string|max:255',
+                'risk_title' => 'nullable|string|max:255',
+                'risk_description' => 'nullable|string',
+                'cta_text' => 'nullable|string|max:255',
             ];
 
             // Additional rules based on type
@@ -520,6 +529,7 @@ class WebinarController extends Controller
                 'creator_id' => $data['teacher_id'],
                 'thumbnail' => $data['thumbnail'],
                 'image_cover' => $data['image_cover'],
+                'free_content_thumbnail' => $data['free_content_thumbnail'] ?? null,
                 'video_demo' => $data['video_demo'] ?? null,
                 'video_demo_source' => $data['video_demo'] ? ($data['video_demo_source'] ?? 'upload') : null,
                 'capacity' => $data['capacity'] ?? null,
@@ -568,10 +578,11 @@ class WebinarController extends Controller
                 'subtitle' => $data['subtitle'] ?? null,
                 'heading_main' => $data['heading_main'] ?? null,
                 'heading_sub' => $data['heading_sub'] ?? null,
+                'heading_extra' => $data['heading_extra'] ?? null,
                 'subdescription' => $data['subdescription'] ?? null,
                 'additional_description' => $data['additional_description'] ?? null,
+                'extra_description' => $data['extra_description'] ?? null,
                 'is_featured' => $data['is_featured'] ?? null,
-                'free_content_thumbnail' => $data['free_content_thumbnail'] ?? null,
                 
                 // Material Items
                 'material_text' => $data['material_text'] ?? [],
@@ -599,6 +610,7 @@ class WebinarController extends Controller
                 'plan_icon' => $data['plan_icon'] ?? '/public/public/vector1615-24vi.svg',
                 'plan_movie' => $data['plan_movie'] ?? null,
                 'price_icon' => $data['price_icon'] ?? null,
+                'price_text' => $data['price_text'] ?? null,
                 
                 // Certification
                 'certification_time' => $data['certification_time'] ?? [],
@@ -614,6 +626,12 @@ class WebinarController extends Controller
                 'ad_title' => $data['ad_title'] ?? null,
                 'ad_subtitle' => $data['ad_subtitle'] ?? null,
                 'ad_description' => $data['ad_description'] ?? null,
+                'ad_img' => $data['ad_img'] ?? null,
+                
+                // Risk & CTA
+                'risk_title' => $data['risk_title'] ?? null,
+                'risk_description' => $data['risk_description'] ?? null,
+                'cta_text' => $data['cta_text'] ?? null,
             ]);
 
             // Handle filters
@@ -786,6 +804,15 @@ class WebinarController extends Controller
                 'ad_subtitle' => 'nullable|string|max:255',
                 'ad_title' => 'nullable|string|max:255',
                 'ad_description' => 'nullable|string',
+                'ad_img' => 'nullable|string',
+                
+                // Additional Extra Details
+                'heading_extra' => 'nullable|string|max:255',
+                'extra_description' => 'nullable|string',
+                'price_text' => 'nullable|string|max:255',
+                'risk_title' => 'nullable|string|max:255',
+                'risk_description' => 'nullable|string',
+                'cta_text' => 'nullable|string|max:255',
             ];
 
             if ($webinar->isWebinar()) {
@@ -1002,8 +1029,10 @@ class WebinarController extends Controller
                     'subtitle' => $data['subtitle'] ?? null,
                     'heading_main' => $data['heading_main'] ?? null,
                     'heading_sub' => $data['heading_sub'] ?? null,
+                    'heading_extra' => $data['heading_extra'] ?? null,
                     'subdescription' => $data['subdescription'] ?? null,
                     'additional_description' => $data['additional_description'] ?? null,
+                    'extra_description' => $data['extra_description'] ?? null,
                     'is_featured' => $data['is_featured'] ?? null,
                     
                     // Material Items
@@ -1032,6 +1061,7 @@ class WebinarController extends Controller
                     'plan_icon' => $data['plan_icon'] ?? '/public/public/vector1615-24vi.svg',
                     'plan_movie' => $data['plan_movie'] ?? null,
                     'price_icon' => $data['price_icon'] ?? null,
+                    'price_text' => $data['price_text'] ?? null,
                     
                     // Certification
                     'certification_time' => $data['certification_time'] ?? [],
@@ -1047,6 +1077,12 @@ class WebinarController extends Controller
                     'ad_title' => $data['ad_title'] ?? null,
                     'ad_subtitle' => $data['ad_subtitle'] ?? null,
                     'ad_description' => $data['ad_description'] ?? null,
+                    'ad_img' => $data['ad_img'] ?? null,
+                    
+                    // Risk & CTA
+                    'risk_title' => $data['risk_title'] ?? null,
+                    'risk_description' => $data['risk_description'] ?? null,
+                    'cta_text' => $data['cta_text'] ?? null,
                 ]
             );
 
