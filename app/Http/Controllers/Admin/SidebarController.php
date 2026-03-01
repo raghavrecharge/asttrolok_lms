@@ -91,6 +91,25 @@ class SidebarController extends Controller
         }
     }
 
+    public function getUpcomingCoursesBeep()
+    {
+        try {
+            $waitingUpcomingCount = Webinar::where('type', Webinar::$upcoming)
+                ->where('status', Webinar::$pending)
+                ->count();
+
+            return ($waitingUpcomingCount > 0);
+        } catch (\Exception $e) {
+            \Log::error('getUpcomingCoursesBeep error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
     public function getReviewsBeep()
     {
         try {

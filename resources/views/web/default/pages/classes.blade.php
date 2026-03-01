@@ -292,8 +292,15 @@ section.home-categories-section {
         @include('web.default.pages.includes.top_filters')
          </form>
     </section>
+    @php
+        $hasAnyNonSubFilter = request()->get('categories') || request()->get('hindi') || request()->get('english') || request()->get('recordedclasses') || request()->get('liveClasses') || request()->get('upcomingFilter') || request()->get('free') || request()->get('discount') || request()->get('search');
+        $subscriptionOnly = request()->get('subscription') == 'on';
+        $showSubscriptions = $subscriptionOnly || !$hasAnyNonSubFilter;
+        $showWebinars = !$subscriptionOnly;
+    @endphp
     <section class="home-english-courses-section mt-5">
            
+          @if($showSubscriptions)
           @foreach($subscriptions as $subscription)
             @if(!empty($subscription))
             @if($subscription->private == 0)
@@ -301,10 +308,17 @@ section.home-categories-section {
             @endif
             @endif
           @endforeach
-          @if(!empty($webinars))
+          @endif
+          @if($showWebinars && !empty($webinars))
             @foreach($webinars as $webinar)
               @include(getTemplate().'.includes.webinar.grid-card',['webinar' => $webinar])
             @endforeach
+          @endif
+
+          @if(($showWebinars && $webinars->isEmpty() && !$showSubscriptions) || ($subscriptionOnly && (empty($subscriptions) || $subscriptions->isEmpty())))
+            <div class="col-12 mt-20 mb-20 text-center">
+                <p class="font-14 text-gray">No courses found. Try changing or removing some filters.</p>
+            </div>
           @endif
         
     </section>

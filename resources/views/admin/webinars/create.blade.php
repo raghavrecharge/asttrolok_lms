@@ -75,10 +75,10 @@
                                             <div class="form-group mt-15 ">
                                                 <label class="input-label d-block">{{ trans('panel.course_type') }}</label>
 
-                                                <select name="type" class="custom-select @error('type')  is-invalid @enderror">
-                                                    <option value="webinar" @if((!empty($webinar) and $webinar->isWebinar()) or old('type') == \App\Models\Webinar::$webinar) selected @endif>{{ trans('webinars.webinar') }}</option>
-                                                    <option value="course" @if((!empty($webinar) and $webinar->isCourse()) or old('type') == \App\Models\Webinar::$course) selected @endif>{{ trans('product.video_course') }}</option>
-                                                    <option value="text_lesson" @if((!empty($webinar) and $webinar->isTextCourse()) or old('type') == \App\Models\Webinar::$textLesson) selected @endif>{{ trans('product.text_course') }}</option>
+                                                <select name="type" id="courseTypeSelect" class="custom-select @error('type')  is-invalid @enderror">
+                                                    <option value="webinar" @if((!empty($webinar) and $webinar->isWebinar()) or old('type') == \App\Models\Webinar::$webinar) selected @endif>Live Classes</option>
+                                                    <option value="course" @if((!empty($webinar) and $webinar->isCourse()) or old('type') == \App\Models\Webinar::$course) selected @endif>Video Course</option>
+                                                    <option value="upcoming" @if((!empty($webinar) and $webinar->isUpcoming()) or old('type') == \App\Models\Webinar::$upcoming) selected @endif>Upcoming Course</option>
                                                 </select>
 
                                                 @error('type')
@@ -86,6 +86,34 @@
                                                     {{ $message }}
                                                 </div>
                                                 @enderror
+                                            </div>
+
+                                            {{-- Upcoming Course Extra Fields --}}
+                                            <div id="upcomingFields" class="upcoming-fields-wrapper" style="{{ (old('type') == 'upcoming' || (!empty($webinar) && $webinar->isUpcoming())) ? '' : 'display:none;' }}">
+                                                <div class="form-group mt-15">
+                                                    <label class="input-label">Launch Date</label>
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text"><i class="fa fa-calendar-alt"></i></span>
+                                                        </div>
+                                                        <input type="text" name="launch_date" value="{{ (!empty($webinar) and $webinar->launch_date) ? dateTimeFormat($webinar->launch_date, 'Y-m-d H:i', false, false, $webinar->timezone ?? null) : old('launch_date') }}" class="form-control @error('launch_date') is-invalid @enderror datetimepicker" placeholder="Select launch date"/>
+                                                        @error('launch_date')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group mt-15">
+                                                    <label class="input-label">After Launch Course Type</label>
+                                                    <select name="post_launch_type" class="custom-select @error('post_launch_type') is-invalid @enderror">
+                                                        <option value="">-- Select --</option>
+                                                        <option value="webinar" @if((!empty($webinar) && $webinar->post_launch_type == 'webinar') || old('post_launch_type') == 'webinar') selected @endif>Live Classes</option>
+                                                        <option value="course" @if((!empty($webinar) && $webinar->post_launch_type == 'course') || old('post_launch_type') == 'course') selected @endif>Video Course</option>
+                                                    </select>
+                                                    @error('post_launch_type')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
                                             </div>
                                                <div class="form-group mt-15">
                                                 <label class="input-label">{{ trans('public.h1') }}</label>
@@ -1635,4 +1663,30 @@
 
     <script src="/assets/default/js/admin/quiz.min.js"></script>
     <script src="/assets/admin/js/webinar.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            var $typeSelect = $('#courseTypeSelect');
+            var $upcomingFields = $('#upcomingFields');
+            var $startDateBlocks = $('.js-start_date');
+
+            function toggleUpcomingFields() {
+                var selectedType = $typeSelect.val();
+
+                if (selectedType === 'upcoming') {
+                    $upcomingFields.show();
+                    $startDateBlocks.hide();
+                } else if (selectedType === 'webinar') {
+                    $upcomingFields.hide();
+                    $startDateBlocks.show();
+                } else {
+                    $upcomingFields.hide();
+                    $startDateBlocks.hide();
+                }
+            }
+
+            toggleUpcomingFields();
+            $typeSelect.on('change', toggleUpcomingFields);
+        });
+    </script>
 @endpush

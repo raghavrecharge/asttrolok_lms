@@ -165,19 +165,19 @@
             <div class=" col-md-2 mt-10"> 
                 <span class="header d-block text-white font-weight-bold d-none" style="font-size: 20px !important;">Popular Categories</span>
                 
-                     <a href="/categories/astrology" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-16" data-text="Development">
+                     <a href="/classes?categories[]=618" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-16" data-text="Development">
                                             <span class="btn-flip-effect__text">Astrology</span>
                                         </a>
-                                                                                                                                                <a href="/categories/ayurveda" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Business">
+                                                                                                                                                <a href="/classes?categories[]=626" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Business">
                                             <span class="btn-flip-effect__text">Ayurveda</span>
                                         </a>
-                                                                                                                                                <a href="/categories/numerology" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Marketing">
+                                                                                                                                                <a href="/classes?categories[]=625" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Marketing">
                                             <span class="btn-flip-effect__text">Numerology</span>
                                         </a>
-                                                                                                                                                <a href="/categories/palmistry" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Lifestyle">
+                                                                                                                                                <a href="/classes?categories[]=616" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Lifestyle">
                                             <span class="btn-flip-effect__text">Palmistry</span>
                                         </a>
-                                                                                                                                                <a href="/categories/vastu" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Health">
+                                                                                                                                                <a href="/classes?categories[]=627" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Health">
                                             <span class="btn-flip-effect__text">Vastu</span>
                                         </a>
                                                                                                                                                 <a href="/classes?hindi=on" target="_blank" class="text-decoration-none d-block font-16 text-white opacity-70 mt-12" data-text="Academics">

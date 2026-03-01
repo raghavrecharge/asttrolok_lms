@@ -357,7 +357,7 @@ class WebinarController extends Controller
 
             // Validation rules
             $rules = [
-                'type' => 'required|in:webinar,course,text_lesson',
+                'type' => 'required|in:webinar,course,text_lesson,upcoming',
                 'title' => 'required|max:255',
                 'slug' => 'required|max:255|unique:webinars,slug',
                 'thumbnail' => 'required',
@@ -453,6 +453,11 @@ class WebinarController extends Controller
                 $rules['capacity'] = 'required|integer';
             }
 
+            if ($request->input('type') == 'upcoming') {
+                $rules['launch_date'] = 'required|date';
+                $rules['post_launch_type'] = 'required|in:webinar,course';
+            }
+
             $this->validate($request, $rules);
 
             $data = $request->all();
@@ -469,6 +474,18 @@ class WebinarController extends Controller
 
                 $startDate = convertTimeToUTCzone($data['start_date'], $data['timezone']);
                 $data['start_date'] = $startDate->getTimestamp();
+            }
+
+            // Handle upcoming course launch_date
+            if ($data['type'] == 'upcoming' && !empty($data['launch_date'])) {
+                if (empty($data['timezone']) || !getFeaturesSettings('timezone_in_create_webinar')) {
+                    $data['timezone'] = getTimezone();
+                }
+                $launchDate = convertTimeToUTCzone($data['launch_date'], $data['timezone']);
+                $data['launch_date'] = $launchDate->getTimestamp();
+            } else {
+                $data['launch_date'] = null;
+                $data['post_launch_type'] = null;
             }
 
             // Generate slug if not provided
@@ -534,6 +551,8 @@ class WebinarController extends Controller
                 'video_demo_source' => $data['video_demo'] ? ($data['video_demo_source'] ?? 'upload') : null,
                 'capacity' => $data['capacity'] ?? null,
                 'start_date' => $data['start_date'] ?? null,
+                'launch_date' => $data['launch_date'] ?? null,
+                'post_launch_type' => $data['post_launch_type'] ?? null,
                 'timezone' => $data['timezone'] ?? null,
                 'duration' => $data['duration'] ?? null,
                 'support' => !empty($data['support']),
@@ -722,7 +741,7 @@ class WebinarController extends Controller
 
             // Validation rules
             $rules = [
-                'type' => 'required|in:webinar,course,text_lesson',
+                'type' => 'required|in:webinar,course,text_lesson,upcoming',
                 'title' => 'required|max:255',
                 'slug' => [
                     'nullable',
@@ -815,10 +834,15 @@ class WebinarController extends Controller
                 'cta_text' => 'nullable|string|max:255',
             ];
 
-            if ($webinar->isWebinar()) {
+            if ($webinar->isWebinar() || $request->input('type') == 'webinar') {
                 $rules['start_date'] = 'required|date';
                 $rules['duration'] = 'required|numeric';
                 $rules['capacity'] = 'required|integer';
+            }
+
+            if ($request->input('type') == 'upcoming') {
+                $rules['launch_date'] = 'required|date';
+                $rules['post_launch_type'] = 'required|in:webinar,course';
             }
 
             $this->validate($request, $rules);
@@ -857,6 +881,18 @@ class WebinarController extends Controller
                 $data['start_date'] = $startDate->getTimestamp();
             } else {
                 $data['start_date'] = null;
+            }
+
+            // Handle upcoming course launch_date
+            if ($data['type'] == 'upcoming' && !empty($data['launch_date'])) {
+                if (empty($data['timezone']) || !getFeaturesSettings('timezone_in_create_webinar')) {
+                    $data['timezone'] = getTimezone();
+                }
+                $launchDate = convertTimeToUTCzone($data['launch_date'], $data['timezone']);
+                $data['launch_date'] = $launchDate->getTimestamp();
+            } else {
+                $data['launch_date'] = null;
+                $data['post_launch_type'] = null;
             }
 
             // Handle boolean fields
@@ -999,6 +1035,8 @@ class WebinarController extends Controller
                 'video_demo_source' => $data['video_demo'] ? ($data['video_demo_source'] ?? 'upload') : null,
                 'capacity' => $data['capacity'] ?? null,
                 'start_date' => $data['start_date'],
+                'launch_date' => $data['launch_date'] ?? null,
+                'post_launch_type' => $data['post_launch_type'] ?? null,
                 'timezone' => $data['timezone'] ?? null,
                 'duration' => $data['duration'] ?? null,
                 'support' => $data['support'],

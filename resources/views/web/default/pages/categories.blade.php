@@ -327,7 +327,7 @@ $cover_img['Numerology']="/store/1/Category/Numerology-mobile.jpg";
 
  <form id="filtersForm" class="consult-filter" style="display:block;" action="/{{ $page }}" method="get">
 
-        @include('web.default.pages.includes.top_filters')
+        @include('web.default.pages.includes.top_filters', ['hideCategoryFilter' => true])
          </form>
 
                 <div class="row ">
@@ -345,6 +345,12 @@ $cover_img['Numerology']="/store/1/Category/Numerology-mobile.jpg";
 
                                         @include('web.default.includes.webinar.grid-card',['webinar' => $webinar])
                                 @endforeach
+
+                                @if($webinars->isEmpty() && (empty($subscriptions) || $subscriptions->isEmpty()))
+                                    <div class="col-12 mt-20 mb-20 text-center">
+                                        <p class="font-14 text-gray">No courses found. Try changing or removing some filters.</p>
+                                    </div>
+                                @endif
                             </div>
 
                         @elseif(!empty(request()->get('card')) and request()->get('card') == 'list')
@@ -353,6 +359,11 @@ $cover_img['Numerology']="/store/1/Category/Numerology-mobile.jpg";
 
                                 @include('web.default.includes.webinar.list-card',['webinar' => $webinar])
                             @endforeach
+                            @if($webinars->isEmpty())
+                                <div class="col-12 mt-20 mb-20 text-center">
+                                    <p class="font-14 text-gray">No courses found. Try changing or removing some filters.</p>
+                                </div>
+                            @endif
                         @endif
 
                     </div>

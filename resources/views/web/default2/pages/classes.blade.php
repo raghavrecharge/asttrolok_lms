@@ -24,11 +24,19 @@
 
                 @include('web.default.pages.includes.top_filters') 
 
+                @php
+                    $hasAnyNonSubFilter = request()->get('categories') || request()->get('hindi') || request()->get('english') || request()->get('recordedclasses') || request()->get('liveClasses') || request()->get('upcomingFilter') || request()->get('free') || request()->get('discount') || request()->get('search');
+                    $subscriptionOnly = request()->get('subscription') == 'on';
+                    $showSubscriptions = $subscriptionOnly || !$hasAnyNonSubFilter;
+                    $showWebinars = !$subscriptionOnly;
+                @endphp
+
                 <div class="row ">
                     <div class="col-12 col-lg-12">
 
                         @if(empty(request()->get('card')) or request()->get('card') == 'grid')
                             <div class="row">
+                                @if($showSubscriptions)
                                 @foreach($subscriptions as $subscription)
                                     @if(!empty($subscription))
                                     @if($subscription->private == 0)
@@ -88,7 +96,9 @@
                                                                               </div>
                                                                                 @endif    
                                    @endif
-                                             @endforeach 
+                                             @endforeach
+                                @endif
+                                @if($showWebinars)
                                 @foreach($webinars as $webinar)
                                     <!--<div class="col-12 col-lg-4 mt-20 loadid">-->
                                     <div class="col-12 col-lg-4 mt-20 ">
@@ -96,14 +106,34 @@
                                         @include('web.default2.includes.webinar.grid-card',['webinar' => $webinar])
                                     </div>
                                 @endforeach
+                                @endif
+
+                                @if(($showWebinars && $webinars->isEmpty() && !$showSubscriptions) || ($subscriptionOnly && (empty($subscriptions) || $subscriptions->isEmpty())) || (!$showWebinars && !$showSubscriptions))
+                                    <div class="col-12 mt-30 mb-30 text-center">
+                                        <div class="p-20">
+                                            <i class="fas fa-search fa-3x text-gray mb-15" style="opacity:0.3"></i>
+                                            <h4 class="font-18 text-gray font-weight-500">No courses found</h4>
+                                            <p class="font-14 text-gray mt-5">Try changing or removing some filters</p>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
 
                         @elseif(!empty(request()->get('card')) and request()->get('card') == 'list')
-
+                            @if($showWebinars)
                             @foreach($webinars as $webinar)
-                            
                                 @include('web.default2.includes.webinar.list-card',['webinar' => $webinar])
                             @endforeach
+                            @endif
+                            @if($showWebinars && $webinars->isEmpty())
+                                <div class="col-12 mt-30 mb-30 text-center">
+                                    <div class="p-20">
+                                        <i class="fas fa-search fa-3x text-gray mb-15" style="opacity:0.3"></i>
+                                        <h4 class="font-18 text-gray font-weight-500">No courses found</h4>
+                                        <p class="font-14 text-gray mt-5">Try changing or removing some filters</p>
+                                    </div>
+                                </div>
+                            @endif
                         @endif
 
                     </div>
