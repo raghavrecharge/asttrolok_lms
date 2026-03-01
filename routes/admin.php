@@ -312,6 +312,7 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
             Route::post('/search', 'WebinarController@search');
             Route::get('/excel', 'WebinarController@exportExcel');
             Route::get('/{id}/students', 'WebinarController@studentsLists');
+            Route::get('/{id}/students/{saleId}/remove', 'WebinarController@removeStudent');
             Route::get('/{id}/students1', 'WebinarController@studentsLists1');
             Route::get('/{id}/sendNotification', 'WebinarController@notificationToStudents');
             Route::post('/{id}/sendNotification', 'WebinarController@sendNotificationToStudents');
