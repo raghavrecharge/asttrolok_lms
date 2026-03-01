@@ -225,6 +225,81 @@ class AdminSupportController extends Controller
             }
         }
 
+        // ── Load data for "Process / Take Action" form (when ticket has no scenario yet) ──
+        if (empty($supportRequest->support_scenario) && !in_array($supportRequest->status, ['completed', 'executed', 'closed', 'rejected'])) {
+            // All active webinars
+            $data['allWebinars'] = Webinar::where('status', 'active')
+                ->select('id', 'creator_id')
+                ->get()
+                ->map(fn($w) => ['id' => $w->id, 'title' => $w->title ?? 'Course #' . $w->id]);
+
+            $studentUserId = $supportRequest->user_id;
+            if ($studentUserId) {
+                $studentUser = \App\User::find($studentUserId);
+
+                // Student's purchased courses (from UPE)
+                $purchasedIds = $studentUser ? $studentUser->getPurchasedCoursesIds() : [];
+                $data['studentPurchases'] = !empty($purchasedIds)
+                    ? Webinar::whereIn('id', $purchasedIds)->where('status', 'active')->get()->map(fn($w) => ['id' => $w->id, 'title' => $w->title ?? 'Course #' . $w->id])
+                    : collect();
+
+                // Expired courses (for extension scenario)
+                $expiredList = [];
+                try {
+                    $expiredUpeSales = \App\Models\PaymentEngine\UpeSale::where('user_id', $studentUserId)
+                        ->whereIn('status', ['active', 'partially_refunded', 'pending_payment', 'completed'])
+                        ->whereNotNull('valid_until')
+                        ->where('valid_until', '<', now())
+                        ->with('product')
+                        ->get();
+                    foreach ($expiredUpeSales as $es) {
+                        if (!$es->product || !in_array($es->product->product_type, ['course_video', 'webinar'])) continue;
+                        $wId = $es->product->external_id;
+                        $w = Webinar::find($wId);
+                        if ($w) $expiredList[] = ['id' => $w->id, 'title' => $w->title ?? 'Course #' . $w->id];
+                    }
+                } catch (\Exception $e) {}
+                $data['expiredCourses'] = collect($expiredList)->unique('id')->values();
+
+                // Installment courses
+                $installmentList = [];
+                try {
+                    $upePlans = \App\Models\PaymentEngine\UpeInstallmentPlan::whereHas('sale', fn($q) => $q->where('user_id', $studentUserId))
+                        ->whereIn('status', ['active', 'completed'])
+                        ->with(['sale.product'])
+                        ->get();
+                    foreach ($upePlans as $plan) {
+                        $product = $plan->sale->product ?? null;
+                        if (!$product || !in_array($product->product_type, ['course_video', 'webinar'])) continue;
+                        $w = Webinar::find($product->external_id);
+                        if ($w) $installmentList[] = ['id' => $w->id, 'title' => $w->title ?? 'Course #' . $w->id];
+                    }
+                } catch (\Exception $e) {}
+                $data['installmentCourses'] = collect($installmentList)->unique('id')->values();
+
+                // Refundable courses
+                $refundableList = [];
+                try {
+                    $paidSales = \App\Models\PaymentEngine\UpeSale::where('user_id', $studentUserId)
+                        ->whereIn('status', ['active', 'partially_refunded'])
+                        ->where('base_fee_snapshot', '>', 0)
+                        ->with('product')
+                        ->get();
+                    foreach ($paidSales as $s) {
+                        if (!$s->product || !in_array($s->product->product_type, ['course_video', 'webinar'])) continue;
+                        $w = Webinar::find($s->product->external_id);
+                        if ($w) $refundableList[] = ['id' => $w->id, 'title' => $w->title ?? 'Course #' . $w->id];
+                    }
+                } catch (\Exception $e) {}
+                $data['refundableCourses'] = collect($refundableList)->unique('id')->values();
+            } else {
+                $data['studentPurchases'] = collect();
+                $data['expiredCourses'] = collect();
+                $data['installmentCourses'] = collect();
+                $data['refundableCourses'] = collect();
+            }
+        }
+
         return view('admin.supports.show', $data);
     }
 
@@ -1541,6 +1616,227 @@ class AdminSupportController extends Controller
                 'message' => 'Error approving restructure: ' . $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * Process a ticket: Admin/Support selects scenario + fills scenario fields.
+     * This saves the scenario data to the ticket, then delegates to updateStatus('completed')
+     * to trigger the existing business logic execution.
+     */
+    public function processTicket(Request $request, $id)
+    {
+        $this->authorize('admin_support_manage');
+
+        $supportRequest = NewSupportForAsttrolok::findOrFail($id);
+        $user = Auth::user();
+
+        // Only admin can process tickets
+        if ($user->role_name !== 'admin') {
+            return back()->with(['toast' => [
+                'title' => 'Not Allowed',
+                'msg' => 'Only Admin can process tickets.',
+                'status' => 'error'
+            ]]);
+        }
+
+        // Prevent re-processing
+        if (in_array($supportRequest->status, ['completed', 'executed', 'closed'])) {
+            return back()->with(['toast' => [
+                'title' => 'Already Processed',
+                'msg' => 'This ticket has already been processed.',
+                'status' => 'error'
+            ]]);
+        }
+
+        // Idempotency guard
+        if ($supportRequest->executed_at !== null) {
+            return back()->with(['toast' => [
+                'title' => 'Already Executed',
+                'msg' => 'This ticket has already been executed. Cannot re-process.',
+                'status' => 'error'
+            ]]);
+        }
+
+        // Validate scenario is provided
+        $request->validate([
+            'support_scenario' => 'required|string|in:course_extension,temporary_access,mentor_access,relatives_friends_access,free_course_grant,offline_cash_payment,installment_restructure,refund_payment,post_purchase_coupon,wrong_course_correction',
+        ]);
+
+        $scenario = $request->support_scenario;
+
+        // Scenario-specific validation
+        $scenarioRules = [];
+        switch ($scenario) {
+            case 'course_extension':
+                $scenarioRules['webinar_id'] = 'required|exists:webinars,id';
+                $scenarioRules['extension_days'] = 'required|integer|in:7,15,30';
+                $scenarioRules['extension_reason'] = 'nullable|string';
+                break;
+            case 'temporary_access':
+                $scenarioRules['webinar_id'] = 'required|exists:webinars,id';
+                $scenarioRules['temporary_access_days'] = 'required|integer|in:7,15';
+                $scenarioRules['temporary_access_percentage'] = 'required|integer|min:1|max:100';
+                break;
+            case 'mentor_access':
+                $scenarioRules['webinar_id'] = 'required|exists:webinars,id';
+                $scenarioRules['mentor_change_reason'] = 'nullable|string';
+                break;
+            case 'relatives_friends_access':
+                $scenarioRules['webinar_id'] = 'required|exists:webinars,id';
+                $scenarioRules['relative_description'] = 'nullable|string';
+                break;
+            case 'free_course_grant':
+                $scenarioRules['webinar_id'] = 'required|exists:webinars,id';
+                $scenarioRules['free_course_reason'] = 'nullable|string';
+                break;
+            case 'offline_cash_payment':
+                $scenarioRules['webinar_id'] = 'required|exists:webinars,id';
+                $scenarioRules['cash_amount'] = 'required|numeric|min:0';
+                $scenarioRules['payment_date'] = 'nullable|string';
+                $scenarioRules['payment_location'] = 'nullable|string';
+                $scenarioRules['payment_receipt_number'] = 'nullable|string|max:100';
+                break;
+            case 'installment_restructure':
+                $scenarioRules['webinar_id'] = 'required|exists:webinars,id';
+                $scenarioRules['restructure_reason'] = 'nullable|string';
+                break;
+            case 'refund_payment':
+                $scenarioRules['webinar_id'] = 'required|exists:webinars,id';
+                $scenarioRules['refund_reason'] = 'nullable|string';
+                $scenarioRules['bank_account_number'] = 'nullable|string';
+                $scenarioRules['ifsc_code'] = 'nullable|string';
+                $scenarioRules['account_holder_name'] = 'nullable|string';
+                break;
+            case 'post_purchase_coupon':
+                $scenarioRules['webinar_id'] = 'required|exists:webinars,id';
+                $scenarioRules['coupon_code'] = 'nullable|string';
+                $scenarioRules['coupon_apply_reason'] = 'nullable|string';
+                break;
+            case 'wrong_course_correction':
+                $scenarioRules['wrong_course_id'] = 'required|exists:webinars,id';
+                $scenarioRules['correct_course_id'] = 'required|exists:webinars,id';
+                $scenarioRules['correction_reason'] = 'nullable|string';
+                break;
+        }
+
+        $scenarioRules['admin_remarks'] = 'nullable|string';
+        $validated = $request->validate($scenarioRules);
+
+        DB::beginTransaction();
+
+        try {
+            // Step 1: Save scenario + scenario fields to the ticket
+            $updateData = [
+                'support_scenario' => $scenario,
+                'support_handler_id' => $user->id,
+                'sub_admin_id' => $user->id,
+            ];
+
+            // Determine webinar_id
+            if ($scenario === 'wrong_course_correction') {
+                $updateData['webinar_id'] = $request->wrong_course_id;
+                $updateData['wrong_course_id'] = $request->wrong_course_id;
+                $updateData['correct_course_id'] = $request->correct_course_id;
+                $updateData['correction_reason'] = $request->correction_reason;
+            } else {
+                $updateData['webinar_id'] = $request->webinar_id;
+            }
+
+            // Determine flow type from the selected course + student
+            $webinarId = $updateData['webinar_id'] ?? null;
+            if ($webinarId && $supportRequest->user_id) {
+                $webinar = Webinar::find($webinarId);
+                if ($webinar) {
+                    $updateData['flow_type'] = $this->determineFlowTypeForUser($webinarId, $supportRequest->user_id);
+                }
+            }
+
+            // Save scenario-specific fields
+            $scenarioFields = [
+                'extension_days', 'extension_reason', 'temporary_access_days', 'temporary_access_percentage',
+                'temporary_access_reason', 'mentor_change_reason', 'relative_description',
+                'free_course_reason', 'cash_amount', 'payment_date', 'payment_location',
+                'payment_receipt_number', 'restructure_reason', 'refund_reason',
+                'bank_account_number', 'ifsc_code', 'account_holder_name',
+                'coupon_code', 'coupon_apply_reason',
+            ];
+
+            foreach ($scenarioFields as $field) {
+                if ($request->has($field)) {
+                    $updateData[$field] = $request->$field;
+                }
+            }
+
+            $supportRequest->update($updateData);
+
+            // Step 2: Delegate to the existing updateStatus flow as 'completed'
+            // We merge the required fields for updateStatus and call it internally.
+            $request->merge([
+                'status' => 'completed',
+                'admin_remarks' => $request->admin_remarks ?? 'Processed via Take Action',
+                'support_remarks' => $request->admin_remarks ?? 'Processed via Take Action',
+            ]);
+
+            DB::commit();
+
+            // Now call updateStatus which handles its own transaction
+            return $this->updateStatus($request, $id);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('processTicket failed', [
+                'support_request_id' => $id,
+                'scenario' => $scenario,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->with(['toast' => [
+                'title' => 'Error',
+                'msg' => 'Failed to process ticket: ' . \Str::limit($e->getMessage(), 200),
+                'status' => 'error'
+            ]]);
+        }
+    }
+
+    /**
+     * Determine flow type for a given user + webinar (used by processTicket).
+     */
+    private function determineFlowTypeForUser($webinarId, $userId)
+    {
+        $webinar = Webinar::find($webinarId);
+        if (!$webinar) return 'flow_a';
+
+        // Check UPE access
+        $productTypes = ['course_video', 'webinar'];
+        $upeProduct = \App\Models\PaymentEngine\UpeProduct::whereIn('product_type', $productTypes)
+            ->where('external_id', $webinarId)
+            ->first();
+
+        if ($upeProduct) {
+            $activeSale = \App\Models\PaymentEngine\UpeSale::where('user_id', $userId)
+                ->where('product_id', $upeProduct->id)
+                ->whereNotIn('status', ['cancelled', 'refunded'])
+                ->first();
+
+            if ($activeSale) {
+                if ($activeSale->valid_until && $activeSale->valid_until->isPast()) {
+                    return 'flow_b'; // expired
+                }
+                return 'flow_c'; // active
+            }
+
+            // Any non-cancelled sale means they had it before
+            $anySale = \App\Models\PaymentEngine\UpeSale::where('user_id', $userId)
+                ->where('product_id', $upeProduct->id)
+                ->whereNotIn('status', ['cancelled'])
+                ->exists();
+
+            if ($anySale) return 'flow_b';
+        }
+
+        return 'flow_a'; // never purchased
     }
 
     public function quickSupportForm()

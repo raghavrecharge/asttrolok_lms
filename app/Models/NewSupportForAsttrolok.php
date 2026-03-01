@@ -221,6 +221,10 @@ class NewSupportForAsttrolok extends Model
             'wrong_course_correction' => 'Wrong Course Correction',
         ];
 
+        if (empty($this->support_scenario)) {
+            return 'Awaiting Processing';
+        }
+
         return $labels[$this->support_scenario] ?? 'Other';
     }
 
