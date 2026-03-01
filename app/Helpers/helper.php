@@ -63,6 +63,13 @@ if (!function_exists('fetchNavbarCategories')) {
                     ->where('locale', app()->getLocale())
                     ->first();
                 $cat->title = $translation->title ?? '';
+
+                // If this parent has a child category, use the child's ID for filtering
+                $firstChild = DB::table('categories')
+                    ->where('parent_id', $cat->id)
+                    ->first();
+                $cat->link_id = $firstChild ? $firstChild->id : $cat->id;
+
                 return $cat;
             })
             ->toArray();
