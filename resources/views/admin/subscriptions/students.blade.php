@@ -7,6 +7,93 @@
         .select2-container {
             z-index: 1212 !important;
         }
+
+        /* Progress Modal Custom Styles */
+        #progressDetailModal .modal-content {
+            border-radius: 20px !important;
+            border: none !important;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15) !important;
+        }
+        #progressDetailModal .modal-body {
+            padding: 30px 25px !important;
+        }
+        .text-dark-blue {
+            color: #1f3b64 !important;
+        }
+        .text-gray {
+            color: #8c98a4 !important;
+        }
+        .font-18 { font-size: 18px !important; }
+        .font-16 { font-size: 16px !important; }
+        .font-14 { font-size: 14px !important; }
+        .font-12 { font-size: 12px !important; }
+        .font-11 { font-size: 11px !important; }
+        .font-weight-bold { font-weight: 700 !important; }
+        .progress-item-container {
+            background: #f8f9fb;
+            border-radius: 10px;
+            border: 1px solid #f0f0f0;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+        .custom-modal-progress {
+            height: 3px !important;
+            border-radius: 10px !important;
+            background: rgba(0,0,0,0.05) !important;
+            overflow: hidden;
+        }
+        .custom-modal-progress .progress-bar {
+            height: 100% !important;
+            border-radius: 10px !important;
+        }
+
+        /* Progress Trigger Table Styling */
+        .table-progress-container {
+            cursor: pointer;
+            padding: 8px 10px;
+            background: #f8f9fb;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            border: 1px solid #f0f0f0;
+            display: inline-block;
+            width: 100%;
+            max-width: 150px;
+            text-align: left;
+        }
+        .table-progress-container:hover {
+            background: #f0f3ff;
+            border-color: #d0d7ff;
+        }
+        .table-progress-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        .table-progress-label .text {
+            font-size: 10px;
+            font-weight: 700;
+            color: #1f3b64;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .table-progress-label .percent {
+            font-size: 11px;
+            font-weight: 800;
+            color: #43d477;
+        }
+        .table-progress-bar {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .table-progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #43d477 0%, #28a745 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
     </style>
 @endpush
 
@@ -121,7 +208,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3">
+                    <!-- <div class="col-md-3">
                         <div class="form-group">
                             <label class="input-label">{{ trans('admin/main.users_group') }}</label>
                             <select name="group_id" data-plugin-selectTwo class="form-control populate">
@@ -131,7 +218,7 @@
                                 @endforeach
                             </select>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div class="col-md-3">
                         <div class="form-group">
@@ -169,42 +256,12 @@
 
     <div class="card">
         <div class="card-header">
-            @can('admin_webinar_notification_to_students')
-                <a href="{{ getAdminPanelUrl() }}/webinars/{{ $webinar->id }}/sendNotification" class="btn btn-primary mr-2">{{ trans('notification.send_notification') }}</a>
+            @can('admin_users_export_excel')
+                <div class="text-right w-100">
+                    <a href="{{ getAdminPanelUrl() }}/subscriptions/{{ $webinar->id }}/students/excel?{{ http_build_query(request()->all()) }}" class="btn btn-primary">{{ trans('admin/main.export_xls') }}</a>
+                </div>
             @endcan
-
-            @can('admin_enrollment_add_student_to_items')
-                <button type="button" id="addStudentToCourse" class="btn btn-primary mr-2">{{ trans('update.add_student_to_course') }}</button>
-            @endcan
-
-             @can('admin_users_export_excel')
-              {{--  <a href="{{ getAdminPanelUrl() }}/webinars/{{ $webinar->id }}/excel" class="btn btn-primary">{{ trans('admin/main.export_xls') }}</a> --}}
-            @endcan
-            <div class="h-10"></div>
         </div>
-<style>
-    .progress-bar {
-        width: 100%;
-        height: 8px;
-        background-color: #e0e0e0;
-        border-radius: 4px;
-    }
-
-    progress::-webkit-progress-bar {
-        background-color: #e0e0e0;
-        border-radius: 4px;
-    }
-
-    progress::-webkit-progress-value {
-        background-color: #007bff;
-        border-radius: 4px;
-    }
-
-    progress::-moz-progress-bar {
-        background-color: #007bff;
-        border-radius: 4px;
-    }
-</style>
         <div class="card-body">
             <div class="table-responsive text-center">
                 <table class="table table-striped font-14">
@@ -268,13 +325,27 @@
 
                                             @endphp
                                         @endif
-                                         <a href="{{ url("/admin/users/{$student->id}/{$slugs->slug}/sub-courseprogress") }}" target="_blank" class="">
-                                       <div class="mt-20">
-                                        <label for="videoProgress" class="font-16 text-gray">Progress</label>
-                                        <progress id="videoProgress" value="{{ $Progress }}" max="100" class="progress-bar"></progress>
-                                        <span id="progressValue" class="font-15 text-gray">{{ $Progress }}%</span>
-                                    </div>
-                                    </a>
+                                    @if(!empty($student->id))
+                                        <div class="table-progress-container trigger-progress-modal" data-student-id="{{ $student->id }}">
+                                            <div class="table-progress-label">
+                                                <span class="text">Progress</span>
+                                                <span class="percent">{{ $Progress }}%</span>
+                                            </div>
+                                            <div class="table-progress-bar">
+                                                <div class="table-progress-bar-fill" style="width: {{ $Progress }}%"></div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="table-progress-container">
+                                            <div class="table-progress-label">
+                                                <span class="text">Progress</span>
+                                                <span class="percent">{{ $Progress }}%</span>
+                                            </div>
+                                            <div class="table-progress-bar">
+                                                <div class="table-progress-bar-fill" style="width: {{ $Progress }}%"></div>
+                                            </div>
+                                        </div>
+                                    @endif
 
                             </td>
 
@@ -373,6 +444,41 @@
         </div>
     </div>
 
+    <!-- Progress Detail Modal -->
+    <div class="modal fade" id="progressDetailModal" tabindex="-1" role="dialog" aria-labelledby="progressDetailModalLabel" aria-hidden="true" style="z-index: 1060 !important;">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="mb-20">
+                        <h5 class="font-18 font-weight-bold text-dark-blue mb-1">Subscription Progress Breakdown</h5>
+                        <p class="text-gray font-12 mb-0" id="modalCourseTitle">Loading subscription details...</p>
+                    </div>
+
+                    <div id="progressDetailModalLoading" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-gray font-14">Fetching detailed progress...</p>
+                    </div>
+
+                    <div id="progressDetailModalContent" class="d-none overflow-auto" style="max-height: 450px;">
+                        <div id="chaptersContainer"></div>
+                    </div>
+
+                    <div id="progressDetailModalError" class="d-none text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <p class="text-dark-blue font-14 font-weight-500" id="modalErrorMessage">Failed to load progress details.</p>
+                        <button class="btn btn-sm btn-outline-primary mt-3 px-4" onclick="location.reload()">Retry</button>
+                    </div>
+
+                    <div class="mt-4 text-center">
+                        <button type="button" class="btn btn-sm btn-outline-danger px-4" data-dismiss="modal" style="border-radius: 12px; font-weight: 700;">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('scripts_bottom')
@@ -383,5 +489,77 @@
         var saveSuccessLang = '{{ trans('webinars.success_store') }}';
     </script>
 
-    <script src="/assets/default/js/admin/webinar_students.min.js"></script>
+    {{-- <script src="/assets/default/js/admin/webinar_students.min.js"></script> --}}
+    <script>
+        $(document).ready(function() {
+            $('body').on('click', '.trigger-progress-modal', function(e) {
+                e.preventDefault();
+                var studentId = $(this).data('student-id');
+                var subscriptionId = '{{ $webinar->id }}';
+                
+                $('#progressDetailModal').modal('show');
+                $('#progressDetailModalLoading').removeClass('d-none');
+                $('#progressDetailModalContent').addClass('d-none');
+                $('#progressDetailModalError').addClass('d-none');
+                $('#chaptersContainer').html('');
+
+                $.ajax({
+                    url: '/admin/subscriptions/' + subscriptionId + '/students/' + studentId + '/progress',
+                    type: 'GET',
+                    success: function(response) {
+                        $('#progressDetailModalLoading').addClass('d-none');
+                        $('#progressDetailModalContent').removeClass('d-none');
+                        $('#modalCourseTitle').text(response.title);
+
+                        var html = '';
+                        if (response.webinars && response.webinars.length > 0) {
+                            response.webinars.forEach(function(webinar) {
+                                html += '<div class="mb-4 text-left">';
+                                html += '    <h6 class="font-16 font-weight-bold text-primary mb-3 text-left" style="border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">' + webinar.title + '</h6>';
+                                
+                                if (webinar.chapters && webinar.chapters.length > 0) {
+                                    webinar.chapters.forEach(function(chapter) {
+                                        html += '<div class="mb-3 ml-2">';
+                                        html += '    <h6 class="font-14 font-weight-bold text-dark-blue mb-2 text-left">' + chapter.title + '</h6>';
+                                        
+                                        chapter.items.forEach(function(item) {
+                                            var percentage = parseInt(item.percentage);
+                                            var barClass = percentage >= 100 ? 'bg-primary' : 'bg-gray';
+                                            if (barClass === 'bg-gray') barClass = 'bg-secondary';
+
+                                            html += '<div class="progress-item-container">';
+                                            html += '    <div class="d-flex align-items-center justify-content-between mb-1">';
+                                            html += '        <span class="font-12 text-dark-blue">' + item.title + '</span>';
+                                            html += '        <span class="font-11 font-weight-bold ' + (percentage >= 100 ? 'text-primary' : 'text-gray') + '">' + percentage + '%</span>';
+                                            html += '    </div>';
+                                            html += '    <div class="progress custom-modal-progress">';
+                                            html += '        <div class="progress-bar ' + barClass + '" role="progressbar" style="width: ' + percentage + '%" aria-valuenow="' + percentage + '" aria-valuemin="0" aria-valuemax="100"></div>';
+                                            html += '    </div>';
+                                            html += '</div>';
+                                        });
+                                        html += '</div>';
+                                    });
+                                } else {
+                                    html += '<p class="text-center text-gray py-2">No content found for this webinar.</p>';
+                                }
+                                html += '</div>';
+                            });
+                        } else {
+                            html = '<p class="text-center text-gray py-4">No webinars found for this subscription.</p>';
+                        }
+                        $('#chaptersContainer').html(html);
+                    },
+                    error: function(xhr) {
+                        $('#progressDetailModalLoading').addClass('d-none');
+                        $('#progressDetailModalError').removeClass('d-none');
+                        var msg = 'Failed to load progress details.';
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            msg = xhr.responseJSON.error;
+                        }
+                        $('#modalErrorMessage').text(msg);
+                    }
+                });
+            });
+        });
+    </script>
 @endpush

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\SubscriptionStudentsExport;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
@@ -32,6 +33,7 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SubscriptionController extends Controller
 {
@@ -1868,4 +1870,246 @@ private function saveExtraDetails(Request $request, $subscriptionId)
     }
 }
 
+    public function getStudentProgressJson($id, $studentId)
+    {
+        try {
+            $this->authorize('admin_webinar_students_lists');
+
+            $subscription = Subscription::where('id', $id)->first();
+
+            if (empty($subscription)) {
+                return response()->json(['error' => 'Subscription not found'], 404);
+            }
+
+            // Get all chapter items for this subscription, ordered
+            $chapterItems = \App\Models\SubscriptionWebinarChapterItems::with(['file', 'quiz', 'textLesson'])
+                ->where('subscription_id', $subscription->id)
+                ->where('status', 'active')
+                ->orderBy('order', 'asc')
+                ->get();
+
+            // Get all progress records for this student in this subscription
+            $progressMap = \App\Models\SubscriptionCourseProgress::where('subscription_id', $subscription->id)
+                ->where('user_id', $studentId)
+                ->get()
+                ->keyBy('item_id');
+
+            // Get chapter names grouped by webinar_id → chapter_id
+            $chapterIds = $chapterItems->pluck('chapter_id')->filter()->unique()->values();
+            $chapters = \App\Models\WebinarChapter::whereIn('id', $chapterIds)->get()->keyBy('id');
+
+            // Get webinar names
+            $webinarIds = $chapterItems->pluck('webinar_id')->filter()->unique()->values();
+            $webinars = \App\Models\Webinar::whereIn('id', $webinarIds)->get()->keyBy('id');
+
+            // Group items by webinar → chapter
+            $webinarData = [];
+            foreach ($chapterItems as $item) {
+                $webinarId = $item->webinar_id ?? 0;
+                $chapterId = $item->chapter_id ?? 0;
+
+                $webinarTitle = isset($webinars[$webinarId]) ? $webinars[$webinarId]->title : 'General';
+                $chapterTitle = isset($chapters[$chapterId]) ? $chapters[$chapterId]->title : 'General';
+
+                if (!isset($webinarData[$webinarId])) {
+                    $webinarData[$webinarId] = [
+                        'id' => $webinarId,
+                        'title' => $webinarTitle,
+                        'chapters' => []
+                    ];
+                }
+
+                if (!isset($webinarData[$webinarId]['chapters'][$chapterId])) {
+                    $webinarData[$webinarId]['chapters'][$chapterId] = [
+                        'id' => $chapterId,
+                        'title' => $chapterTitle,
+                        'items' => []
+                    ];
+                }
+
+                // Get title from the related item
+                $itemTitle = '';
+                switch ($item->type) {
+                    case 'file':
+                        $itemTitle = $item->file ? $item->file->title : 'File #' . $item->item_id;
+                        break;
+                    case 'quiz':
+                        $itemTitle = $item->quiz ? $item->quiz->title : 'Quiz #' . $item->item_id;
+                        break;
+                    case 'text_lesson':
+                        $itemTitle = $item->textLesson ? $item->textLesson->title : 'Text Lesson #' . $item->item_id;
+                        break;
+                    case 'session':
+                        $itemTitle = $item->session ? $item->session->title : 'Session #' . $item->item_id;
+                        break;
+                    case 'assignment':
+                        $itemTitle = $item->assignment ? $item->assignment->title : 'Assignment #' . $item->item_id;
+                        break;
+                    default:
+                        $itemTitle = ucfirst($item->type) . ' #' . $item->item_id;
+                }
+
+                // Get progress percentage from subscription_course_progress
+                $progressRecord = $progressMap->get($item->item_id);
+                $percentage = $progressRecord ? (int) $progressRecord->watch_percentage : 0;
+
+                $webinarData[$webinarId]['chapters'][$chapterId]['items'][] = [
+                    'title' => $itemTitle,
+                    'type' => $item->type,
+                    'percentage' => $percentage,
+                ];
+            }
+
+            // Convert to indexed arrays for JSON
+            $webinarList = [];
+            foreach ($webinarData as $w) {
+                $w['chapters'] = array_values($w['chapters']);
+                $webinarList[] = $w;
+            }
+
+            return response()->json([
+                'title' => $subscription->title,
+                'webinars' => $webinarList,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('getStudentProgressJson error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'An error occurred while fetching progress details'
+            ], 500);
+        }
+    }
+
+    public function exportExcel(Request $request)
+    {
+        ini_set('max_execution_time', 1200); // 20 minutes for large exports
+        ini_set('memory_limit', '-1');
+
+        try {
+            $this->authorize('admin_webinars_export_excel');
+
+            $query = Subscription::query();
+
+            $query = $this->handleFilters($query, $request)
+                ->with([
+                    'category',
+                    'teacher' => function ($qu) {
+                        $qu->select('id', 'full_name');
+                    },
+                    'sales' => function ($query) {
+                        $query->whereNull('refund_at');
+                    }
+                ])
+                ->withCount([
+                    'subscriptionWebinars'
+                ]);
+
+            $subscriptions = $query->get();
+
+            foreach ($subscriptions as $subscription) {
+                $giftsIds = Gift::query()->where('subscription_id', $subscription->id)
+                    ->where('status', 'active')
+                    ->where(function ($query) {
+                        $query->whereNull('date');
+                        $query->orWhere('date', '<', time());
+                    })
+                    ->whereHas('sale')
+                    ->pluck('id')
+                    ->toArray();
+
+                $sales = Sale::query()
+                    ->where(function ($query) use ($subscription, $giftsIds) {
+                        $query->where('subscription_id', $subscription->id);
+                        $query->orWhereIn('gift_id', $giftsIds);
+                    })
+                    ->whereNull('refund_at')
+                    ->get();
+
+                $subscription->sales = $sales;
+            }
+
+            $export = new \App\Exports\SubscriptionsExport($subscriptions);
+
+            return Excel::download($export, 'subscriptions_' . date('Y-m-d') . '.xlsx');
+
+        } catch (\Exception $e) {
+            Log::error('exportExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            abort(500, 'Export failed: ' . $e->getMessage());
+        }
+    }
+
+    public function exportStudentsExcel(Request $request, $id)
+    {
+        ini_set('max_execution_time', 1200); // 20 minutes for large exports
+        ini_set('memory_limit', '-1');
+
+        try {
+            $this->authorize('admin_webinar_students_lists');
+
+            $subscription = Subscription::where('id', $id)->with(['subscriptionWebinars'])->first();
+
+            if (empty($subscription)) {
+                abort(404);
+            }
+
+            $giftsIds = Gift::query()->where('subscription_id', $subscription->id)
+                ->where('status', 'active')
+                ->where(function ($query) {
+                    $query->whereNull('date');
+                    $query->orWhere('date', '<', time());
+                })
+                ->whereHas('sale')
+                ->pluck('id')
+                ->toArray();
+
+            $query = User::join('sales', 'sales.buyer_id', 'users.id')
+                ->select('users.*', 'sales.created_at as purchase_date')
+                ->where(function ($query) use ($subscription, $giftsIds) {
+                    $query->where('sales.subscription_id', $subscription->id);
+                    $query->orWhereIn('sales.gift_id', $giftsIds);
+                })
+                ->whereNull('sales.refund_at');
+
+            $students = $this->studentsListsFilters($subscription, $query, $request)
+                ->orderBy('sales.created_at', 'desc')
+                ->get();
+
+            $subscriptionWebinars = $subscription->subscriptionWebinars;
+            $webinarStatisticController = new WebinarStatisticController();
+
+            foreach ($students as $student) {
+                $learnings = 0;
+                $webinarCount = 0;
+
+                foreach ($subscriptionWebinars as $subscriptionWebinar) {
+                    if (!empty($subscriptionWebinar->webinar)) {
+                        $webinarCount += 1;
+                        $learnings += $webinarStatisticController->getCourseProgressForStudent($subscriptionWebinar->webinar, $student->id);
+                    }
+                }
+
+                $student->learning = ($learnings > 0 && $webinarCount > 0) ? round($learnings / $webinarCount, 2) : 0;
+            }
+
+            $export = new SubscriptionStudentsExport($students);
+
+            $subscriptionTitle = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $subscription->title ?? 'subscription');
+            return Excel::download($export, 'students_' . $subscriptionTitle . '_' . date('Y-m-d') . '.xlsx');
+
+        } catch (\Exception $e) {
+            Log::error('exportStudentsExcel error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            abort(500, 'Export failed: ' . $e->getMessage());
+        }
+    }
 }

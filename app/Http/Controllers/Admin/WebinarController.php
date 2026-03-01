@@ -1700,6 +1700,78 @@ class WebinarController extends Controller
         }
     }
 
+    public function getStudentProgressJson($id, $studentId)
+    {
+        try {
+            $this->authorize('admin_webinar_students_lists');
+
+            $webinar = Webinar::where('id', $id)
+                ->with([
+                    'chapters' => function ($query) {
+                        $query->where('status', 'active')->orderBy('order', 'asc');
+                    },
+                    'chapters.chapterItems' => function ($query) {
+                        $query->orderBy('order', 'asc');
+                    }
+                ])
+                ->first();
+
+            if (!$webinar) {
+                return response()->json(['error' => 'Course not found.'], 404);
+            }
+
+            $user = User::findOrFail($studentId);
+
+            $chapters = [];
+            foreach ($webinar->chapters as $chapter) {
+                $items = [];
+                foreach ($chapter->chapterItems as $chapterItem) {
+                    $item = null;
+                    $type = '';
+
+                    if ($chapterItem->type == WebinarChapterItem::$chapterFile and $chapterItem->file and $chapterItem->file->status == 'active') {
+                        $item = $chapterItem->file;
+                        $type = 'file';
+                    } elseif ($chapterItem->type == WebinarChapterItem::$chapterSession and $chapterItem->session and $chapterItem->session->status == 'active') {
+                        $item = $chapterItem->session;
+                        $type = 'session';
+                    } elseif ($chapterItem->type == WebinarChapterItem::$chapterTextLesson and $chapterItem->textLesson and $chapterItem->textLesson->status == 'active') {
+                        $item = $chapterItem->textLesson;
+                        $type = 'text_lesson';
+                    }
+
+                    if ($item) {
+                        $progress = CourseProgress::where('user_id', $user->id)
+                            ->where('item_id', $item->id)
+                            ->first();
+
+                        $items[] = [
+                            'id' => $item->id,
+                            'title' => $item->title,
+                            'type' => $type,
+                            'percentage' => $progress ? $progress->watch_percentage : 0,
+                        ];
+                    }
+                }
+
+                if (count($items) > 0) {
+                    $chapters[] = [
+                        'id' => $chapter->id,
+                        'title' => $chapter->title,
+                        'items' => $items
+                    ];
+                }
+            }
+
+            return response()->json([
+                'course_title' => $webinar->title,
+                'chapters' => $chapters
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function studentsLists1(Request $request, $id)
     {
         try {
