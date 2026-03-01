@@ -144,6 +144,10 @@ class ClassesController extends Controller
             'free' => $request->get('free', ''),
             'hindi' => $request->get('hindi', ''),
             'english' => $request->get('english', ''),
+            'recordedclasses' => $request->get('recordedclasses', ''),
+            'liveClasses' => $request->get('liveClasses', ''),
+            'upcomingFilter' => $request->get('upcomingFilter', ''),
+            'subscription' => $request->get('subscription', ''),
             'discount' => $request->get('discount', ''),
             'downloadable' => $request->get('downloadable', ''),
             'categories' => json_encode($request->get('categories', [])),
@@ -296,6 +300,9 @@ class ClassesController extends Controller
             $isFree = $request->get('free', null);
             $hindi = $request->get('hindi', null);
             $english = $request->get('english', null);
+            $recordedClasses = $request->get('recordedclasses', null);
+            $liveClasses = $request->get('liveClasses', null);
+            $upcomingFilter = $request->get('upcomingFilter', null);
             $withDiscount = $request->get('discount', null);
             $isDownloadable = $request->get('downloadable', null);
             $sort = $request->get('sort', null);
@@ -328,6 +335,21 @@ class ClassesController extends Controller
 
                 if (!empty($typeOptions) and is_array($typeOptions)) {
                     $query->whereIn("{$this->tableName}.type", $typeOptions);
+                }
+
+                // Recorded / Live / Upcoming pill filters (OR logic)
+                $courseTypeFilter = [];
+                if (!empty($recordedClasses) && $recordedClasses == 'on') {
+                    $courseTypeFilter[] = 'course';
+                }
+                if (!empty($liveClasses) && $liveClasses == 'on') {
+                    $courseTypeFilter[] = 'webinar';
+                }
+                if (!empty($upcomingFilter) && $upcomingFilter == 'on') {
+                    $courseTypeFilter[] = 'upcoming';
+                }
+                if (!empty($courseTypeFilter)) {
+                    $query->whereIn("{$this->tableName}.type", $courseTypeFilter);
                 }
 
                 if (!empty($categories) and is_array($categories)) {
@@ -370,11 +392,12 @@ class ClassesController extends Controller
                 });
             }
 
-            if (!empty($hindi)) {
+            // Language filters — use OR logic when both selected
+            if (!empty($hindi) && !empty($english)) {
+                $query->whereIn('lang', ['HI', 'EN']);
+            } elseif (!empty($hindi)) {
                 $query->where('lang', 'HI');
-            }
-
-            if (!empty($english)) {
+            } elseif (!empty($english)) {
                 $query->where('lang', 'EN');
             }
 

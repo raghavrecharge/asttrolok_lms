@@ -70,6 +70,7 @@ class AdminAuthenticate
             $sidebarBeeps['bundles'] = $sidebarController->getBundlesBeep();
             $sidebarBeeps['webinars'] = $sidebarController->getWebinarsBeep();
             $sidebarBeeps['textLessons'] = $sidebarController->getTextLessonsBeep();
+            $sidebarBeeps['upcoming'] = $sidebarController->getUpcomingCoursesBeep();
             $sidebarBeeps['reviews'] = $sidebarController->getReviewsBeep();
             $sidebarBeeps['classesComments'] = $sidebarController->getClassesCommentsBeep();
             $sidebarBeeps['bundleComments'] = $sidebarController->getBundleCommentsBeep();

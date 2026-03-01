@@ -987,6 +987,8 @@ return [
 'type_webinars' => 'Live Class',
 'type_text_lessons' => 'Text Course',
 'type_courses' => 'Courses',
+'type_upcoming' => 'Upcoming Course',
+'type_upcomings' => 'Upcoming Courses',
 'teacher_name' => 'Instructor',
 'category_name' => 'Category',
 'select_category' => 'Select a Category',

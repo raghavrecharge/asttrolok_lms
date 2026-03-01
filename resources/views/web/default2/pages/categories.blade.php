@@ -52,7 +52,7 @@ $cover_img['Numerology']="/store/1/Category/Numerology-min.jpg";
         <section class="mt-lg-50 pt-lg-20 mt-md-40 pt-md-40">
             <form action="{{ $sortFormAction }}" method="get" id="filtersForm">
 
-         
+                @include('web.default.pages.includes.top_filters', ['hideCategoryFilter' => true])
 
                 <div class="row ">
 
@@ -122,6 +122,16 @@ $cover_img['Numerology']="/store/1/Category/Numerology-min.jpg";
                                         @include('web.default2.includes.webinar.grid-card',['webinar' => $webinar])
                                     </div>
                                 @endforeach
+
+                                @if($webinars->isEmpty() && (empty($subscriptions) || $subscriptions->isEmpty() || $category->title != 'Astrology'))
+                                    <div class="col-12 mt-30 mb-30 text-center">
+                                        <div class="p-20">
+                                            <i class="fas fa-search fa-3x text-gray mb-15" style="opacity:0.3"></i>
+                                            <h4 class="font-18 text-gray font-weight-500">No courses found</h4>
+                                            <p class="font-14 text-gray mt-5">Try changing or removing some filters</p>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
 
                         @elseif(!empty(request()->get('card')) and request()->get('card') == 'list')
@@ -129,6 +139,15 @@ $cover_img['Numerology']="/store/1/Category/Numerology-min.jpg";
                             @foreach($webinars as $webinar)
                                 @include('web.default2.includes.webinar.list-card',['webinar' => $webinar])
                             @endforeach
+                            @if($webinars->isEmpty())
+                                <div class="col-12 mt-30 mb-30 text-center">
+                                    <div class="p-20">
+                                        <i class="fas fa-search fa-3x text-gray mb-15" style="opacity:0.3"></i>
+                                        <h4 class="font-18 text-gray font-weight-500">No courses found</h4>
+                                        <p class="font-14 text-gray mt-5">Try changing or removing some filters</p>
+                                    </div>
+                                </div>
+                            @endif
                         @endif
 
                     </div>

@@ -28,6 +28,7 @@ class Webinar extends Model implements TranslatableContract
     static $webinar = 'webinar';
     static $course = 'course';
     static $textLesson = 'text_lesson';
+    static $upcoming = 'upcoming';
 
     static $statuses = [
         'active', 'pending', 'is_draft', 'inactive'
@@ -784,6 +785,11 @@ public function whyChooseUsItems()
     public function isWebinar()
     {
         return ($this->type == 'webinar');
+    }
+
+    public function isUpcoming()
+    {
+        return ($this->type == 'upcoming');
     }
 
     public function canAccess($user = null)

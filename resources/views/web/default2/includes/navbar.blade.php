@@ -186,13 +186,13 @@
                                                 @foreach($dynamicCategories as $category)
                                                     @php
                                                         $catTitle = is_object($category) ? $category->title : ($category['title'] ?? '');
-                                                        $catSlug = is_object($category) ? $category->slug : ($category['slug'] ?? '');
+                                                        $catId = is_object($category) ? $category->id : ($category['id'] ?? '');
                                                         $catIcon = is_object($category) ? $category->icon : ($category['icon'] ?? '');
                                                     @endphp
 
                                                     @if($catTitle != "Uncategories")
                                                         <li>
-                                                            <a href="{{ url('/categories/' . $catSlug) }}">
+                                                            <a href="{{ url('/classes?categories[]=' . $catId) }}">
                                                                 <div class="d-flex align-items-center">
                                                                     <img src="{{ !empty($catIcon) ? config('app.img_dynamic_url') . $catIcon : 'https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%201.webp' }}"
                                                                          class="cat-dropdown-menu-icon"
@@ -206,7 +206,7 @@
                                             @else
 
                                                 <li>
-                                                    <a href="/categories/astrology">
+                                                    <a href="/classes?categories[]=618">
                                                         <div class="d-flex align-items-center">
                                                             <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%201.webp" class="cat-dropdown-menu-icon" alt="">
                                                             Astrology
@@ -214,7 +214,7 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="/categories/ayurveda">
+                                                    <a href="/classes?categories[]=626">
                                                         <div class="d-flex align-items-center">
                                                             <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%204.webp" class="cat-dropdown-menu-icon" alt="">
                                                             Ayurveda
@@ -222,7 +222,7 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="/categories/numerology">
+                                                    <a href="/classes?categories[]=625">
                                                         <div class="d-flex align-items-center">
                                                             <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%204.webp" class="cat-dropdown-menu-icon" alt="">
                                                             Numerology
@@ -230,7 +230,7 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="/categories/palmistry">
+                                                    <a href="/classes?categories[]=616">
                                                         <div class="d-flex align-items-center">
                                                             <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%202.webp" class="cat-dropdown-menu-icon" alt="">
                                                             Palmistry
@@ -238,10 +238,10 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="/categories/veda">
+                                                    <a href="/classes?categories[]=627">
                                                         <div class="d-flex align-items-center">
                                                             <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%205.webp" class="cat-dropdown-menu-icon" alt="">
-                                                            Veda
+                                                            Vastu
                                                         </div>
                                                     </a>
                                                 </li>
@@ -273,7 +273,7 @@
 
                                 <ul class="cat-dropdown-menu">
                                     <li>
-                                        <a href="/categories/astrology">
+                                        <a href="/classes?categories[]=618">
                                             <div class="d-flex align-items-center">
                                                 <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%201.webp" class="cat-dropdown-menu-icon" alt="">
                                                 Astrology
@@ -281,7 +281,7 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="/categories/ayurveda">
+                                        <a href="/classes?categories[]=626">
                                             <div class="d-flex align-items-center">
                                                 <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%204.webp" class="cat-dropdown-menu-icon" alt="">
                                                 Ayurveda
@@ -289,7 +289,7 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="/categories/numerology">
+                                        <a href="/classes?categories[]=625">
                                             <div class="d-flex align-items-center">
                                                 <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%204.webp" class="cat-dropdown-menu-icon" alt="">
                                                 Numerology
@@ -297,7 +297,7 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="/categories/palmistry">
+                                        <a href="/classes?categories[]=616">
                                             <div class="d-flex align-items-center">
                                                 <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%202.webp" class="cat-dropdown-menu-icon" alt="">
                                                 Palmistry
@@ -305,15 +305,15 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="/categories/vastu">
+                                        <a href="/classes?categories[]=627">
                                             <div class="d-flex align-items-center">
                                                 <img src="https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%205.webp" class="cat-dropdown-menu-icon" alt="">
-                                                Veda
+                                                Vastu
                                             </div>
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="/categories">
+                                        <a href="/classes">
                                             <div class="d-flex align-items-center" style="font-size:13px;font-weight:600;">
                                                 View All
                                             </div>

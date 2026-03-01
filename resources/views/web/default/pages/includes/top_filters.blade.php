@@ -138,8 +138,6 @@
 }
 </style>
 
-<form id="filterForm" method="GET" action="{{ request()->url() }}">
-
 <div id="topFilters" class="p-md-20 homehide1">
     
     <!-- Hidden sort select -->
@@ -158,7 +156,8 @@
     <!-- Categories horizontal scroll -->
     <div class="categories">
         
-        {{-- ✅ All Categories --}}
+        {{-- ✅ All Categories (hidden on category pages) --}}
+        @if(empty($hideCategoryFilter))
         @foreach($categories as $category)
             @if(!empty($category->subCategories) && count($category->subCategories))
                 @foreach($category->subCategories as $subCategory)
@@ -180,6 +179,7 @@
                 @endif
             @endif
         @endforeach
+        @endif
 
         {{-- ✅ HINDI FILTER - Only show for webinars/bundles --}}
 @if(!isset($hideLanguageFilter) || !$hideLanguageFilter)
@@ -204,12 +204,25 @@
         <label for="recordedclasses"> Recorded Courses </label>
     </div>
 
-    {{-- ✅ ENGLISH FILTER - Only show for webinars/bundles --}}
+    {{-- ✅ LIVE COURSES FILTER --}}
     <div class="checkbox-button bordered-200 mr-5">
         <input type="checkbox" name="liveClasses" id="liveClasses" value="on"
             @if(request()->get('liveClasses') == 'on') checked @endif>
-            
         <label for="liveClasses"> Live Courses </label>
+    </div>
+
+    {{-- ✅ SUBSCRIPTION FILTER --}}
+    <div class="checkbox-button bordered-200 mr-5">
+        <input type="checkbox" name="subscription" id="subscriptionFilter" value="on"
+            @if(request()->get('subscription') == 'on') checked @endif>
+        <label for="subscriptionFilter"> Subscription </label>
+    </div>
+
+    {{-- ✅ UPCOMING FILTER --}}
+    <div class="checkbox-button bordered-200 mr-5">
+        <input type="checkbox" name="upcomingFilter" id="upcomingFilter" value="on"
+            @if(request()->get('upcomingFilter') == 'on') checked @endif>
+        <label for="upcomingFilter"> Upcoming </label>
     </div>
 @endif
 
@@ -303,8 +316,6 @@
 
 </div> <!-- END topFilters -->
 
-</form>
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     // Dropdown toggle
@@ -313,39 +324,9 @@
     }
 
     $(document).ready(function() {
-        // ✅ Category checkbox change
-        $('input[name="categories[]"]').on('change', function() {
-            $('#filterForm').submit();
-        });
-
-        // ✅ Hindi filter
-        $('#hindiFilter').on('change', function() {
-            $('#filterForm').submit();
-        });
-
-        // ✅ English filter
-        $('#englishFilter').on('change', function() {
-            $('#filterForm').submit();
-        });
-
-        // ✅ Free filter
-        $('#freeFilter').on('change', function() {
-            $('#filterForm').submit();
-        });
-
-        // ✅ Discount filter
-        $('#discountFilter').on('change', function() {
-            $('#filterForm').submit();
-        });
-
-        // ✅ Sort change
-        $('#sort-by').on('change', function() {
-            $('#filterForm').submit();
-        });
-
-        // ✅ Card view change
-        $('input[name="card"]').on('change', function() {
-            $('#filterForm').submit();
+        // ✅ Any filter change -> submit the parent form
+        $('#filtersForm').on('change', 'input[name="categories[]"], #hindiFilter, #englishFilter, #freeFilter, #discountFilter, #recordedclasses, #liveClasses, #subscriptionFilter, #upcomingFilter, #sort-by, input[name="card"]', function() {
+            $('#filtersForm').submit();
         });
 
         // ✅ Close dropdown on outside click
@@ -365,6 +346,6 @@
     $('.select-change').click(function(e) {
         e.preventDefault();
         $('#sort-by').val($(this).data('val'));
-        $('#filterForm').submit();
+        $('#filtersForm').submit();
     });
 </script>
