@@ -77,6 +77,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'admin' => AdminAuthenticate::class,
+        'sub_admin.log' => \App\Http\Middleware\SubAdminActivityLogger::class,
         'panel' => PanelAuthenticate::class,
         'user.not.access' => UserNotAccess::class,
         'web.auth' => WebAuthenticate::class,

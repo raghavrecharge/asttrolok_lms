@@ -160,7 +160,7 @@
                     <div class="detail-item">
                         <span class="detail-label">Status History</span>
                         <div class="mt-10">
-                            @if(in_array($supportRequest->status, ['rejected', 'approved', 'executed', 'closed', 'verified']))
+                            @if(in_array($supportRequest->status, ['rejected', 'approved', 'executed', 'closed', 'verified', 'completed']))
                                 <div class="history-card">
                                     <div class="history-status-indicator">
                                         <div class="history-badge">

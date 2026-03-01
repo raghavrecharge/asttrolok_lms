@@ -283,7 +283,7 @@
                         <thead>
                             <tr>
                                 <th class="d-none d-md-table-cell">Ticket #</th>
-                                <th class="text-left col-title">Title/Course</th>
+                                <th class="text-left col-title">Course</th>
                                 <th class="text-left col-scenario d-none d-lg-table-cell">Scenario</th>
                                 <th class="text-center col-scenario">Status</th>
                                 <th class="text-center col-scenario d-none d-md-table-cell">Date</th>
@@ -298,9 +298,8 @@
                                 </td>
                                 <td class="text-left col-title">
                                     <div class="d-flex flex-column">
-                                        <span class="font-weight-bold text-dark-blue">{{ $request->title }}</span>
                                         @if($request->webinar)
-                                            <span class="font-12 text-gray"><i data-feather="book" width="12" height="12" class="mr-5"></i>{{ $request->webinar->title }}</span>
+                                            <span class="font-12 text-gray">{{ $request->webinar->title }}</span>
                                         @endif
                                     </div>
                                 </td>

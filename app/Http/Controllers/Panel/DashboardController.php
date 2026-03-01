@@ -200,7 +200,10 @@ class DashboardController extends Controller
                         $query->withCount([
                             'sales' => function ($query) {
                                 $query->whereNull('refund_at');
-                            }
+                            },
+                            'chapters',
+                            'files',
+                            'textLessons'
                         ]);
                     },
                     'bundle' => function ($query) {
@@ -544,6 +547,10 @@ try {
             $finishedInstallmentsCount = $this->getFinishedInstallments($user);
 
             $orders = $query->with([
+                'webinar' => function ($query) {
+                    $query->withCount(['chapters', 'files', 'textLessons']);
+                },
+                'bundle',
                 'installment' => function ($query) {
                     $query->with([
                         'steps' => function ($query) {
@@ -743,6 +750,12 @@ try {
                     ->where(function($q) {
                         $q->whereNotNull('webinar_id')->orWhereNotNull('bundle_id')->orWhereNotNull('subscription_id');
                     })
+                    ->with([
+                        'webinar' => function ($query) {
+                            $query->withCount(['chapters', 'files', 'textLessons']);
+                        },
+                        'bundle'
+                    ])
                     ->get(['webinar_id', 'bundle_id', 'subscription_id']);
 
                 foreach ($traditionalSales as $sale) {
@@ -771,6 +784,49 @@ try {
                 $data['commentsCount'] = count($comments);
                 $data['reserveMeetingsCount'] = $data['totalReserveCount'];
                 $data['monthlyChart'] = $this->getMonthlySalesOrPurchase($user);
+
+                // Fetch UPE installment plans for mapping to sales/orders
+                $upePlanMap = []; // product_type_external_id -> plan_id
+                $upeLegacySaleMap = []; // legacy_sale_id -> plan_id
+                $upeLegacyOrderMap = []; // legacy_order_id -> plan_id
+                $upeLegacyInstallmentOrderMap = []; // legacy_installment_order_id -> plan_id
+
+                try {
+                    $upeInstallmentPlansList = \App\Models\PaymentEngine\UpeInstallmentPlan::whereHas('sale', function($q) use ($user) {
+                            $q->where('user_id', $user->id);
+                        })
+                        ->with(['sale.product'])
+                        ->get();
+
+                    foreach ($upeInstallmentPlansList as $upePlan) {
+                        if ($upePlan->sale) {
+                            // Product-based mapping (Broadest fallback)
+                            if ($upePlan->sale->product) {
+                                $key = $upePlan->sale->product->product_type . '_' . $upePlan->sale->product->external_id;
+                                // Normalize course typos
+                                if (in_array($upePlan->sale->product->product_type, ['course_video', 'webinar', 'course_live'])) {
+                                    $key = 'webinar_' . $upePlan->sale->product->external_id;
+                                }
+                                $upePlanMap[$key] = $upePlan->id;
+                            }
+
+                            // Metadata-based legacy mapping (Precise)
+                            $meta = is_array($upePlan->sale->metadata) ? $upePlan->sale->metadata : json_decode($upePlan->sale->metadata, true);
+                            if (!empty($meta['legacy_sale_id'])) {
+                                $upeLegacySaleMap[$meta['legacy_sale_id']] = $upePlan->id;
+                            }
+                            if (!empty($meta['legacy_order_id'])) {
+                                $upeLegacyOrderMap[$meta['legacy_order_id']] = $upePlan->id;
+                            }
+                            if (!empty($meta['legacy_installment_order_id'])) {
+                                $upeLegacyInstallmentOrderMap[$meta['legacy_installment_order_id']] = $upePlan->id;
+                            }
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    \Log::warning('Dashboard UPE plan mapping failed', ['error' => $e->getMessage()]);
+                }
+
                 $consolidatedSales = collect();
                 $seenCourseIds = [];
                 $seenBundleIds = [];
@@ -779,9 +835,11 @@ try {
                     if ($sale->webinar_id) {
                         if (in_array($sale->webinar_id, $seenCourseIds)) continue;
                         $seenCourseIds[] = $sale->webinar_id;
+                        $sale->upe_plan_id = $upeLegacySaleMap[$sale->id] ?? $upeLegacyOrderMap[$sale->order_id] ??  $upePlanMap['webinar_' . $sale->webinar_id] ?? null;
                     } elseif ($sale->bundle_id) {
                         if (in_array($sale->bundle_id, $seenBundleIds)) continue;
                         $seenBundleIds[] = $sale->bundle_id;
+                        $sale->upe_plan_id = $upeLegacySaleMap[$sale->id] ?? $upeLegacyOrderMap[$sale->order_id] ?? $upePlanMap['bundle_' . $sale->bundle_id] ?? null;
                     }
                     $consolidatedSales->push($sale);
                 }
@@ -808,6 +866,19 @@ try {
                     $mockSale->is_installment = true;
                     $mockSale->installment_order = $order;
                     
+                    // Attach UPE plan ID to mock sale for Pay Now link
+                    $mockSale->upe_plan_id = $upeLegacyInstallmentOrderMap[$order->id] ?? null;
+                    if (empty($mockSale->upe_plan_id)) {
+                        if ($order->webinar_id) {
+                            $mockSale->upe_plan_id = $upePlanMap['webinar_' . $order->webinar_id] ?? null;
+                        } elseif ($order->bundle_id) {
+                            $mockSale->upe_plan_id = $upePlanMap['bundle_' . $order->bundle_id] ?? null;
+                        }
+                    }
+                    
+                    // Also attach to the order object itself for other sections
+                    $order->upe_plan_id = $mockSale->upe_plan_id;
+
                     $consolidatedSales->push($mockSale);
                 }
 

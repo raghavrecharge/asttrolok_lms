@@ -223,8 +223,28 @@ class User extends Authenticatable
     {
         if (self::isAdmin()) {
             if (!isset($this->permissions)) {
-                $sections_id = Permission::where('role_id', '=', $this->role_id)->where('allow', true)->pluck('section_id')->toArray();
-                $this->permissions = Section::whereIn('id', $sections_id)->pluck('name')->toArray();
+                // Check for per-user sub-admin permissions first
+                if ($this->role_name === 'sub_admin') {
+                    $hasIndividual = \DB::table('sub_admin_permissions')
+                        ->where('user_id', $this->id)
+                        ->exists();
+
+                    if ($hasIndividual) {
+                        $sections_id = \DB::table('sub_admin_permissions')
+                            ->where('user_id', $this->id)
+                            ->where('allow', true)
+                            ->pluck('section_id')
+                            ->toArray();
+                        $this->permissions = Section::whereIn('id', $sections_id)->pluck('name')->toArray();
+                    } else {
+                        // Fall back to role-based permissions
+                        $sections_id = Permission::where('role_id', '=', $this->role_id)->where('allow', true)->pluck('section_id')->toArray();
+                        $this->permissions = Section::whereIn('id', $sections_id)->pluck('name')->toArray();
+                    }
+                } else {
+                    $sections_id = Permission::where('role_id', '=', $this->role_id)->where('allow', true)->pluck('section_id')->toArray();
+                    $this->permissions = Section::whereIn('id', $sections_id)->pluck('name')->toArray();
+                }
             }
             return in_array($section_name, $this->permissions);
         }
