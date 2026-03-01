@@ -16,6 +16,17 @@ use Illuminate\Validation\Rule;
 
 class RoleController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            // Sub-admins cannot manage roles (privilege escalation prevention)
+            if (auth()->check() && auth()->user()->role_name === 'sub_admin') {
+                abort(403, 'Only the main Admin can manage roles.');
+            }
+            return $next($request);
+        });
+    }
+
     public function index()
     {
         try {

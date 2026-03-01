@@ -22,6 +22,14 @@ class AdminAuthenticate
     {
         if (auth()->check() and auth()->user()->isAdmin()) {
 
+            // Block banned sub-admins immediately (session revocation on deactivation)
+            if (auth()->user()->role_name === 'sub_admin' && auth()->user()->ban) {
+                auth()->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return redirect(getAdminPanelUrl().'/login')->with('error', 'Your account has been deactivated. Please contact the administrator.');
+            }
+
             if (auth()->user()->hasPermission('admin_notifications_list')) {
                 $adminUser = User::find(1);
 

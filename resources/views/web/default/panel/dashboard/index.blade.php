@@ -718,9 +718,12 @@
                                         @endif
                                     </div>
                                     <div class="card-footer-row">
-                                        <span class="footer-stat"><i data-feather="layers" width="12" height="12"></i> {{ $item->files_count ?? 0 }} lessons</span>
+                                        <span class="footer-stat"><i data-feather="layers" width="12" height="12"></i> {{ $item->chapters_count ?? 0 }} Chapters</span>
                                         @if($hasOverdue)
-                                            <a href="/panel/installments/{{ $sale->installment_order->id }}/details" class="btn-continue" style="color:#dc2626;">Pay Now <i data-feather="arrow-right" width="13" height="13"></i></a>
+                                            @php
+                                                $overdueUrl = !empty($sale->upe_plan_id) ? ("/panel/upe/installments/" . $sale->upe_plan_id) : ("/panel/installments/" . (!empty($sale->installment_order) ? $sale->installment_order->id : '') . "/details");
+                                            @endphp
+                                            <a href="{{ $overdueUrl }}" class="btn-continue" style="color:#dc2626;">Pay Now <i data-feather="arrow-right" width="13" height="13"></i></a>
                                         @elseif(($isExpired && !$hasActiveExtension) || ($isSubscription && $subExpired))
                                             <span style="font-size:11px;color:#dc2626;font-weight:600;">Expired</span>
                                         @elseif(!empty($sale->webinar))
@@ -1139,7 +1142,7 @@
                             @endif
 
                             <div class="course-info">
-                                <a href="/panel/upe/installments/{{ $plan->id }}/details" class="course-name">
+                                <a href="/panel/upe/installments/{{ $plan->id }}" class="course-name">
                                     {{ $product ? $product->name : 'Plan #'.$plan->id }}
                                 </a>
                                 <span class="course-teacher">
@@ -1181,7 +1184,10 @@
                             <div class="db-course-item">
                                 <img loading="lazy" src="{{ config('app.img_dynamic_url') }}{{ $orderItem->getImage() }}" class="course-thumb" alt="">
                                 <div class="course-info">
-                                    <a href="/panel/financial/installments/{{ $order->id }}/details" class="course-name">{{ $orderItem->title }}</a>
+                                    @php
+                                        $orderUrl = !empty($order->upe_plan_id) ? ("/panel/upe/installments/" . $order->upe_plan_id) : ("/panel/financial/installments/" . $order->id . "/details");
+                                    @endphp
+                                    <a href="{{ $orderUrl }}" class="course-name">{{ $orderItem->title }}</a>
                                     <span class="course-teacher">
                                         @if($order->has_overdue)
                                             <span class="text-danger font-weight-600">Overdue ({{ $order->overdue_count }})</span>

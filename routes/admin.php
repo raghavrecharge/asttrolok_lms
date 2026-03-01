@@ -30,7 +30,7 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
     });
 
 
-    Route::group(['middleware' => 'admin'], function () {
+    Route::group(['middleware' => ['admin', 'sub_admin.log']], function () {
 
         Route::get('/', 'DashboardController@index');
         Route::get('/clear-cache', 'DashboardController@cacheClear');
@@ -1257,6 +1257,22 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
 
             Route::get('/audit', 'UpeController@auditLog');
             Route::get('/user-access', 'UpeController@userAccess');
+        });
+
+        // Sub-Admin Management Routes
+        Route::group(['prefix' => 'sub-admins'], function () {
+            Route::get('/', 'SubAdminController@index');
+            Route::get('/create', 'SubAdminController@create');
+            Route::post('/store', 'SubAdminController@store');
+            Route::get('/activity-logs', 'SubAdminController@activityLogs');
+            Route::get('/{id}/edit', 'SubAdminController@edit');
+            Route::post('/{id}/update', 'SubAdminController@update');
+            Route::get('/{id}/toggle-status', 'SubAdminController@toggleStatus');
+            Route::get('/{id}/reset-password', 'SubAdminController@showResetPassword');
+            Route::post('/{id}/reset-password', 'SubAdminController@resetPassword');
+            Route::get('/{id}/permissions', 'SubAdminController@permissions');
+            Route::post('/{id}/permissions', 'SubAdminController@updatePermissions');
+            Route::get('/{id}/delete', 'SubAdminController@destroy');
         });
 
         // Event Management Routes
