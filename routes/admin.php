@@ -1066,7 +1066,9 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
 
             Route::get('/{id}/students', 'SubscriptionController@studentsLists');
             Route::get('/{id}/students/{student_id}/progress', 'SubscriptionController@getStudentProgressJson');
-            Route::get('/{id}/students/excel', 'SubscriptionController@exportStudentsExcel');
+            Route::get('/{id}/students/export-init', 'SubscriptionController@exportStudentsExcelInit');
+            Route::get('/{id}/students/export-process', 'SubscriptionController@exportStudentsExcelProcess');
+            Route::get('/{id}/students/export-download', 'SubscriptionController@exportStudentsExcelDownload');
             Route::get('/{id}/sendNotification', 'SubscriptionController@notificationToStudents');
             Route::post('/{id}/sendNotification', 'SubscriptionController@sendNotificationToStudents');
         });

@@ -33,6 +33,20 @@
                 </div>
             </li>
 
+        {{-- Export Downloads Tray --}}
+        <li class="dropdown dropdown-list-toggle" id="exportDownloadsTray" style="display: none;">
+            <a href="#" data-toggle="dropdown" class="nav-link notification-toggle nav-link-lg beep">
+                <i class="fas fa-download"></i>
+            </a>
+
+            <div class="dropdown-menu dropdown-list dropdown-menu-right">
+                <div class="dropdown-header">Active & Recent Exports</div>
+                <div class="dropdown-list-content dropdown-list-icons" id="exportDownloadsList">
+                    <!-- Export items will be injected here via JS -->
+                </div>
+            </div>
+        </li>
+
         @can('admin_notifications_list')
             <li class="dropdown dropdown-list-toggle">
                 <a href="#" data-toggle="dropdown" class="nav-link notification-toggle nav-link-lg @if(!empty($unreadNotifications) and count($unreadNotifications)) beep @else disabled @endif">
@@ -69,7 +83,7 @@
         @endcan
 
         <li class="dropdown"><a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
-                <img alt="image" src="https://storage.googleapis.com/astrolok/webp/store/1/astrologer_mobile/Alok Sir.webp" class="rounded-circle mr-1">
+                <img alt="image" src="https://storage.googleapis.com/astrolok/webp/store/1/astrologer_mobile/Alok Sir.webp" class="rounded-circle mr-1" style="width: 30px; height: 30px; object-fit: cover;">
                 <div class="d-sm-none d-lg-inline-block">{{ $authUser->full_name }}</div>
             </a>
             <div class="dropdown-menu dropdown-menu-right">
