@@ -32,8 +32,8 @@
                                     <strong>Scenario:</strong> {{ $supportRequest->getScenarioLabel() }}
                                 </div>
                                 <div class="col-md-6">
-                                    <strong>Course:</strong> {{ $supportRequest->webinar?->title }}<br>
-                                    <strong>Instructor:</strong> {{ $supportRequest->webinar?->creator->full_name }}<br>
+                                    <strong>Course:</strong> {{ $supportRequest->webinar?->title ?? 'Not assigned yet' }}<br>
+                                    <strong>Instructor:</strong> {{ $supportRequest->webinar?->creator?->full_name ?? '-' }}<br>
                                     <strong>Date:</strong> {{ \Carbon\Carbon::parse($supportRequest->created_at)->format('j M Y H:i') }}
                                 </div>
                             </div>
@@ -568,7 +568,190 @@
                         $isFinalStatus = in_array($supportRequest->status, ['completed', 'executed', 'closed', 'rejected']);
                         $isSupportRoleProcessed = (auth()->user()->role_name === 'Support Role') && in_array($supportRequest->status, ['approved']);
                         $shouldHideActions = $isFinalStatus || $isSupportRoleProcessed;
+                        $needsProcessing = empty($supportRequest->support_scenario) && !$isFinalStatus;
                     @endphp
+
+                    {{-- ══════════════════════════════════════════════════ --}}
+                    {{-- Process / Take Action Card (Admin only, no scenario yet) --}}
+                    {{-- ══════════════════════════════════════════════════ --}}
+                    @if($needsProcessing && auth()->user()->role_name === 'admin')
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="text-white"><i class="fas fa-bolt"></i> Process / Take Action</h4>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" action="{{ route('admin.support.processTicket', $supportRequest->id) }}" id="processTicketForm" enctype="multipart/form-data">
+                                @csrf
+
+                                {{-- Scenario Selection --}}
+                                <div class="form-group">
+                                    <label><strong>Support Scenario</strong> <span class="text-danger">*</span></label>
+                                    <select name="support_scenario" id="processScenario" class="form-control" required>
+                                        <option value="">-- Select Scenario --</option>
+                                        <option value="course_extension">Course Extension</option>
+                                        <option value="temporary_access">Temporary Access</option>
+                                        <option value="mentor_access">Mentor Access</option>
+                                        <option value="relatives_friends_access">Relatives/Friends Access</option>
+                                        <option value="free_course_grant">Free Course Grant</option>
+                                        <option value="offline_cash_payment">Offline/Cash Payment</option>
+                                        <option value="installment_restructure">Installment Restructure</option>
+                                        <option value="refund_payment">Refund Payment</option>
+                                        <option value="post_purchase_coupon">Post-Purchase Coupon</option>
+                                        <option value="wrong_course_correction">Wrong Course Correction</option>
+                                    </select>
+                                </div>
+
+                                {{-- Dynamic Scenario Fields Container --}}
+                                <div id="processScenarioFields"></div>
+
+                                {{-- Admin Remarks --}}
+                                <div class="form-group">
+                                    <label>Admin Remarks</label>
+                                    <textarea name="admin_remarks" class="form-control" rows="2" placeholder="Optional remarks..."></textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-block" id="processSubmitBtn" disabled>
+                                    <i class="fas fa-check-circle"></i> Process & Complete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const scenarioSelect = document.getElementById('processScenario');
+                        const fieldsContainer = document.getElementById('processScenarioFields');
+                        const submitBtn = document.getElementById('processSubmitBtn');
+                        const studentUserId = {{ $supportRequest->user_id ?? 'null' }};
+
+                        // All active webinars (passed from controller)
+                        const allWebinars = @json($allWebinars ?? []);
+
+                        // Student's purchased courses (passed from controller)
+                        const studentPurchases = @json($studentPurchases ?? []);
+
+                        // Student's expired courses (for extension)
+                        const expiredCourses = @json($expiredCourses ?? []);
+
+                        // Student's installment courses
+                        const installmentCourses = @json($installmentCourses ?? []);
+
+                        // Student's refundable courses
+                        const refundableCourses = @json($refundableCourses ?? []);
+
+                        scenarioSelect.addEventListener('change', function() {
+                            const scenario = this.value;
+                            fieldsContainer.innerHTML = '';
+                            submitBtn.disabled = !scenario;
+
+                            if (!scenario) return;
+
+                            let html = '';
+
+                            switch (scenario) {
+                                case 'course_extension':
+                                    html = buildCourseSelect('webinar_id', 'Select Expired Course', expiredCourses, true);
+                                    html += `<div class="form-group"><label>Extension Period <span class="text-danger">*</span></label>
+                                        <select name="extension_days" class="form-control" required>
+                                            <option value="7">7 Days</option><option value="15">15 Days</option><option value="30">30 Days</option>
+                                        </select></div>`;
+                                    html += buildTextarea('extension_reason', 'Reason');
+                                    break;
+
+                                case 'temporary_access':
+                                    html = buildCourseSelect('webinar_id', 'Select Course', allWebinars, true);
+                                    html += `<div class="form-group"><label>Duration <span class="text-danger">*</span></label>
+                                        <select name="temporary_access_days" class="form-control" required>
+                                            <option value="7">7 Days</option><option value="15">15 Days</option>
+                                        </select></div>`;
+                                    html += `<div class="form-group"><label>Access Percentage (%) <span class="text-danger">*</span></label>
+                                        <input type="number" name="temporary_access_percentage" class="form-control" min="1" max="100" value="100" required></div>`;
+                                    break;
+
+                                case 'mentor_access':
+                                    html = buildCourseSelect('webinar_id', 'Select Course', allWebinars, true);
+                                    html += buildTextarea('mentor_change_reason', 'Reason');
+                                    break;
+
+                                case 'relatives_friends_access':
+                                    html = buildCourseSelect('webinar_id', 'Select Course', allWebinars, true);
+                                    html += buildTextarea('relative_description', 'Description');
+                                    break;
+
+                                case 'free_course_grant':
+                                    html = buildCourseSelect('webinar_id', 'Select Course', allWebinars, true);
+                                    html += buildTextarea('free_course_reason', 'Reason');
+                                    break;
+
+                                case 'offline_cash_payment':
+                                    html = buildCourseSelect('webinar_id', 'Select Course', allWebinars, true);
+                                    html += `<div class="form-group"><label>Amount Paid (₹) <span class="text-danger">*</span></label>
+                                        <input type="number" name="cash_amount" class="form-control" step="1" min="0" required></div>`;
+                                    html += `<div class="form-group"><label>Transaction ID / UTR</label>
+                                        <input type="text" name="payment_receipt_number" class="form-control"></div>`;
+                                    html += `<div class="form-group"><label>Payment Date</label>
+                                        <input type="date" name="payment_date" class="form-control"></div>`;
+                                    html += `<div class="form-group"><label>Bank/Location</label>
+                                        <input type="text" name="payment_location" class="form-control"></div>`;
+                                    break;
+
+                                case 'installment_restructure':
+                                    html = buildCourseSelect('webinar_id', 'Select Installment Course', installmentCourses.length > 0 ? installmentCourses : studentPurchases, true);
+                                    html += buildTextarea('restructure_reason', 'Reason');
+                                    break;
+
+                                case 'refund_payment':
+                                    html = buildCourseSelect('webinar_id', 'Select Course for Refund', refundableCourses.length > 0 ? refundableCourses : studentPurchases, true);
+                                    html += buildTextarea('refund_reason', 'Refund Reason');
+                                    html += `<div class="form-group"><label>Bank Account Number</label>
+                                        <input type="text" name="bank_account_number" class="form-control"></div>`;
+                                    html += `<div class="form-group"><label>IFSC Code</label>
+                                        <input type="text" name="ifsc_code" class="form-control"></div>`;
+                                    html += `<div class="form-group"><label>Account Holder Name</label>
+                                        <input type="text" name="account_holder_name" class="form-control"></div>`;
+                                    break;
+
+                                case 'post_purchase_coupon':
+                                    html = buildCourseSelect('webinar_id', 'Select Purchased Course', studentPurchases, true);
+                                    html += `<div class="form-group"><label>Coupon Code</label>
+                                        <input type="text" name="coupon_code" class="form-control" placeholder="Enter coupon code"></div>`;
+                                    html += buildTextarea('coupon_apply_reason', 'Reason');
+                                    break;
+
+                                case 'wrong_course_correction':
+                                    html = buildCourseSelect('wrong_course_id', 'Wrong Course', studentPurchases, true);
+                                    html = html.replace('wrong_course_id', 'wrong_course_id');
+                                    html += buildCourseSelect('correct_course_id', 'Correct Course', allWebinars, true);
+                                    html += buildTextarea('correction_reason', 'Reason');
+                                    break;
+                            }
+
+                            fieldsContainer.innerHTML = html;
+                        });
+
+                        function buildCourseSelect(name, label, courses, required) {
+                            let options = '<option value="">-- Select --</option>';
+                            (courses || []).forEach(function(c) {
+                                options += '<option value="' + c.id + '">' + escapeHtml(c.title || ('Course #' + c.id)) + '</option>';
+                            });
+                            return '<div class="form-group"><label>' + label + (required ? ' <span class="text-danger">*</span>' : '') + '</label>' +
+                                '<select name="' + name + '" class="form-control"' + (required ? ' required' : '') + '>' + options + '</select></div>';
+                        }
+
+                        function buildTextarea(name, label) {
+                            return '<div class="form-group"><label>' + label + '</label>' +
+                                '<textarea name="' + name + '" class="form-control" rows="2"></textarea></div>';
+                        }
+
+                        function escapeHtml(str) {
+                            const div = document.createElement('div');
+                            div.textContent = str;
+                            return div.innerHTML;
+                        }
+                    });
+                    </script>
+                    @endif
+
                     @if(!$shouldHideActions)
                     {{-- Action Panel --}}
                     <div class="card">

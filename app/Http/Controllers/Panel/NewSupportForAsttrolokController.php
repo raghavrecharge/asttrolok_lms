@@ -28,258 +28,11 @@ class NewSupportForAsttrolokController extends Controller
     */
     public function create()
     {
-        $user = auth()->user();
-        // print_r($user);die;
-        
-        // if (!$user) {
-            $webinars = Webinar::select('id', 'creator_id')
-                ->where('status', 'active')
-                ->with(['creator' => function ($query) {
-                    $query->select('id', 'full_name');
-                }])
-                ->get();
+        $data = [
+            'pageTitle' => trans('panel.create_support_message'),
+        ];
 
-            $userPurchases = [];
-    
-            $webinarIds = $user->getPurchasedCoursesIds();
-            
-            $expiredCourses = [];
-
-            if (!empty(count($webinarIds))) {
-                
-                $userPurchases = Webinar::select('id', 'creator_id','access_days')
-                        ->whereIn('id', $webinarIds)
-                        ->where('status', 'active')
-                        ->with(['creator' => function ($query) {
-                            $query->select('id', 'full_name');
-                        }])
-                        ->get();
-            } else {
-                $userPurchases = collect();
-            }
-
-            // LMS-040 FIX: Also find expired UPE sales that getPurchasedCoursesIds() skipped.
-            // getPurchasedCoursesIds() filters out expired sales, but extension dropdown needs them.
-            $expiredWebinarIds = [];
-            try {
-                $expiredUpeSales = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
-                    ->whereIn('status', ['active', 'partially_refunded', 'pending_payment', 'completed'])
-                    ->whereNotNull('valid_until')
-                    ->where('valid_until', '<', now())
-                    ->with('product')
-                    ->get();
-
-                foreach ($expiredUpeSales as $expiredSale) {
-                    if (!$expiredSale->product) continue;
-                    $product = $expiredSale->product;
-                    if (in_array($product->product_type, ['course_video', 'webinar'])) {
-                        $wId = $product->external_id;
-                        if (!in_array($wId, $expiredWebinarIds)) {
-                            $expiredWebinarIds[] = $wId;
-                        }
-                    }
-                }
-            } catch (\Exception $e) {
-                \Log::warning('LMS-040: Could not query expired UPE sales', ['error' => $e->getMessage()]);
-            }
-
-            // Merge expired webinar IDs with active purchases for the full picture
-            $allKnownWebinarIds = array_unique(array_merge($webinarIds, $expiredWebinarIds));
-
-            // Re-fetch if we found additional expired courses
-            if (count($expiredWebinarIds) > 0) {
-                $userPurchases = Webinar::select('id', 'creator_id', 'access_days')
-                    ->whereIn('id', $allKnownWebinarIds)
-                    ->where('status', 'active')
-                    ->with(['creator' => function ($query) {
-                        $query->select('id', 'full_name');
-                    }])
-                    ->get();
-            }
-
-            // Use UPE sales to find expired courses for extension dropdown
-            foreach ($userPurchases as $item) {
-                $productTypes = ['course_video', 'webinar'];
-                $upeProduct = \App\Models\PaymentEngine\UpeProduct::whereIn('product_type', $productTypes)
-                    ->where('external_id', $item->id)
-                    ->first();
-
-                if (!$upeProduct) {
-                    // Fallback: use legacy access_days check
-                    if (!$item->access_days) continue;
-                    $sale = $item->getSaleItem($user);
-                    if (!$sale || !$sale->created_at) continue;
-                    $purchaseTimestamp = $sale->created_at instanceof \Carbon\Carbon
-                        ? $sale->created_at->timestamp
-                        : (int) $sale->created_at;
-                    if (!$item->checkHasExpiredAccessDays($purchaseTimestamp)) {
-                        $item->expired_date = $purchaseTimestamp;
-                        $expiredCourses[] = $item;
-                    }
-                    continue;
-                }
-
-                // Find the latest sale for this user+product (any non-cancelled status)
-                $upeSale = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
-                    ->where('product_id', $upeProduct->id)
-                    ->whereNotIn('status', ['cancelled'])
-                    ->orderByDesc('id')
-                    ->first();
-
-                if (!$upeSale) continue;
-
-                // Course is expired if valid_until is set and in the past
-                if ($upeSale->valid_until !== null && $upeSale->valid_until->isPast()) {
-                    $item->expired_date = $upeSale->valid_until->timestamp;
-                    $expiredCourses[] = $item;
-                } elseif ($item->access_days && $upeSale->valid_until === null) {
-                    // Fallback: calculate from created_at + access_days
-                    $purchaseTimestamp = $upeSale->created_at instanceof \Carbon\Carbon
-                        ? $upeSale->created_at->timestamp
-                        : (int) $upeSale->created_at;
-                    if (!$item->checkHasExpiredAccessDays($purchaseTimestamp)) {
-                        $item->expired_date = $purchaseTimestamp;
-                        $expiredCourses[] = $item;
-                    }
-                }
-            }
-
-
-            $overdueCourses = collect();
-
-            $getOverdueInstallmentsIDs = $this->getOverdueInstallmentsID($user);
-
-            if (!empty(count($getOverdueInstallmentsIDs))) {
-                
-                $overdueCourses = Webinar::whereIn('id', $getOverdueInstallmentsIDs)
-                        ->where('status', 'active')
-                        ->with(['creator' => function ($query) {
-                            $query->select('id', 'full_name');
-                        }])
-                        ->get();
-            }
-
-            // Identify refundable courses: Paid (amount > 0) or Offline purchases
-            $refundableWebinarIds = Sale::where('buyer_id', $user->id)
-                ->whereNull('refund_at')
-                ->where(function ($q) {
-                    $q->where('total_amount', '>', 0)
-                        ->orWhere('payment_method', 'offline')
-                        ->orWhere('payment_method', 'cash');
-                })
-                ->pluck('webinar_id')
-                ->toArray();
-            
-            // Also check UPE sales for refundable ones
-            try {
-                $paidUpeWebinarIds = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
-                    ->whereIn('status', ['active', 'partially_refunded'])
-                    ->where('base_fee_snapshot', '>', 0)
-                    ->with('product')
-                    ->get()
-                    ->filter(function($s) {
-                        return $s->product && in_array($s->product->product_type, ['course_video', 'webinar']);
-                    })
-                    ->pluck('product.external_id')
-                    ->toArray();
-                
-                $refundableWebinarIds = array_unique(array_filter(array_merge($refundableWebinarIds, $paidUpeWebinarIds)));
-            } catch (\Exception $e) {
-                // fallback
-            }
-
-            $refundableCourses = Webinar::whereIn('id', $refundableWebinarIds)
-                ->get();
-
-        
-                $mentors = \App\User::where('role_name', 'teacher')
-                ->where('status', 'active')
-                ->select('id', 'full_name')
-                ->orderBy('full_name')
-                ->get();
-
-
-                $query = InstallmentOrder::query()
-                ->where('user_id', $user->id)
-                ->where('status', '!=', 'paying');
-
-                $installmentorders = $query->with([
-                    'installment' => function ($query) {
-                        $query->with([
-                            'steps' => function ($query) {
-                                $query->orderBy('deadline', 'asc');
-                            }
-                        ]);
-                        $query->withCount([
-                            'steps'
-                        ]);
-                    }
-                ])->orderBy('created_at', 'desc')
-                    ->get();
-
-                    $installmentList =[];
-                    foreach ($installmentorders as  $key => $order) {
-                        $installmentList[$key] = $order->getItem();
-                      
-                    }
-
-                // Also include courses from UPE installment plans (e.g. Quick Pay purchases)
-                $seenWebinarIds = collect($installmentList)->pluck('id')->toArray();
-                try {
-                    $upePlans = \App\Models\PaymentEngine\UpeInstallmentPlan::whereHas('sale', function ($q) use ($user) {
-                            $q->where('user_id', $user->id);
-                        })
-                        ->whereIn('status', ['active', 'completed'])
-                        ->with(['sale.product', 'schedules'])
-                        ->get();
-
-                    foreach ($upePlans as $upePlan) {
-                        $product = $upePlan->sale->product ?? null;
-                        if (!$product || !in_array($product->product_type, ['course_video', 'webinar'])) {
-                            continue;
-                        }
-                        $webinarId = $product->external_id;
-                        if (in_array($webinarId, $seenWebinarIds)) {
-                            continue;
-                        }
-                        $webinar = Webinar::with('creator')->find($webinarId);
-                        if ($webinar) {
-                            $seenWebinarIds[] = $webinarId;
-                            $installmentList[] = $webinar;
-                        }
-                    }
-                } catch (\Exception $e) {
-                    \Log::warning('Failed to load UPE installment plans for support form', ['error' => $e->getMessage()]);
-                }
-                
-                
-                // Build extension counts per course for JS limit check
-                $extensionCounts = [];
-                if (Auth::check()) {
-                    $extensionRows = NewSupportForAsttrolok::where('user_id', $user->id)
-                        ->where('support_scenario', 'course_extension')
-                        ->whereIn('status', ['approved', 'executed'])
-                        ->select('webinar_id', DB::raw('count(*) as cnt'))
-                        ->groupBy('webinar_id')
-                        ->pluck('cnt', 'webinar_id')
-                        ->toArray();
-                    $extensionCounts = $extensionRows;
-                }
-
-                $data = [
-                    'pageTitle' => trans('panel.create_support_message'),
-                    'webinars' => $webinars,
-                    'mentors' => $mentors,
-                    'expiredCourses' => $expiredCourses,
-                    'overdueCourses' => $overdueCourses,
-                    'userPurchasedCourses' => $userPurchases,
-                    'userPurchases' => $userPurchases,
-                    'refundableCourses' => $refundableCourses,
-                    'installmentList' => $installmentList,
-                    'extensionCounts' => $extensionCounts,
-                ];
-                
-                return view(getTemplate() . '.panel.support.new-suport', $data);
+        return view(getTemplate() . '.panel.support.new-suport', $data);
     }
 
         private function getOverdueInstallmentsID($user)
@@ -408,429 +161,79 @@ class NewSupportForAsttrolokController extends Controller
     }
     
     /**
-     * Store support request
+     * Store support request (simplified — student submits title + description + attachments only)
+     * Scenario selection is now handled by admin/support via processTicket()
     */
     public function store(Request $request)
     {
-        // dd($request->all());
-        if ($request->support_scenario === 'wrong_course_correction') {
-            \Log::info('Wrong Course Correction Fields:', [
-                'wrong_course_id' => $request->wrong_course_id,
-                'correct_course_id' => $request->correct_course_id,
-                'correction_reason' => $request->correction_reason,
-                'has_correction_reason' => $request->has('correction_reason')
-            ]);
-        }
-        
-        if ($request->support_scenario === 'offline_cash_payment') {
-            \Log::info('Offline Payment Fields:', [
-                'cash_amount' => $request->cash_amount,
-                'payment_receipt_number' => $request->payment_receipt_number,
-                'payment_date' => $request->payment_date,
-                'payment_location' => $request->payment_location,
-                'payment_screenshot' => $request->file('payment_screenshot') ? 'File uploaded' : 'No file',
-            ]);
-        }
-        
-        if ($request->support_scenario === 'refund_payment') {
-            \Log::info('Refund Payment Fields:', [
-                'purchase_to_refund' => $request->purchase_to_refund,
-                'refund_reason' => $request->refund_reason,
-                'bank_account_number' => $request->bank_account_number,
-                'ifsc_code' => $request->ifsc_code,
-                'account_holder_name' => $request->account_holder_name,
-            ]);
-        }
-        if (isset($request->webinar_id)) {
-            $rules = [
-                'title' => 'required',
-                'support_scenario' => 'required|string',
-                'webinar_id' => 'nullable|exists:webinars,id',
-                'description' => 'nullable|string',
-                'attachments.*' => 'nullable|file|max:5120',
-            ];
-        } else {
-            $rules = [
-                'title' => 'required',
-                'support_scenario' => 'required|string',
-                'description' => 'nullable|string',
-                'attachments.*' => 'nullable|file|max:5120',
-            ];
-        }
+        $rules = [
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'attachments.*' => 'nullable|file|max:5120',
+        ];
 
         if (!Auth::check()) {
             $rules['guest_name'] = 'nullable|string|max:255';
             $rules['guest_email'] = 'nullable|email|max:255';
             $rules['guest_phone'] = 'nullable|string|max:20';
         }
-        
-        $scenario = $request->support_scenario;
-        $attachmentPaths = [];
-        
-        // Ensure webinar_id is required for scenarios that need it
-        $scenariosNeedingWebinar = [
-            'course_extension', 'temporary_access', 'mentor_access', 
-            'relatives_friends_access', 'free_course_grant', 'offline_cash_payment',
-            'installment_restructure', 'new_service_access', 'wrong_course_correction'
-        ];
-        
-        if (in_array($scenario, $scenariosNeedingWebinar)) {
-            if ($scenario === 'wrong_course_correction') {
-                $rules['wrong_course_id'] = 'required|exists:webinars,id';
-                $rules['correct_course_id'] = 'required|exists:webinars,id';
-            } else if ($scenario !== 'new_service_access') {
-                $rules['webinar_id'] = 'required|exists:webinars,id';
-            }
-        }
-        
-        switch ($scenario) {
-               case 'course_extension':
-                    $rules['extension_days'] = 'required|integer|min:1|max:365';
-                    $rules['extension_reason'] = 'required|string';
-                    break;
-                
-          
-                case 'temporary_access':
-                    $rules['webinar_id'] = 'required';
-                    $rules['temporary_access_days'] = 'required';
-                    $rules['temporary_access_reason'] = 'required';
-                    break;
-                    
-                case 'mentor_access':
-                    $rules['mentor_change_reason'] = 'nullable|string';
-                    break;
-                        
-                case 'relatives_friends_access':
-                    $rules['relative_description'] = 'nullable|string';
-                    break;
-                            
-                case 'free_course_grant':
-                    $rules['free_course_reason'] = 'required|string';
-                    break;
-                
-                case 'offline_cash_payment':
-                    $rules['cash_amount'] = 'required|numeric|min:0';
-                    $rules['payment_date'] = 'required|date|before_or_equal:today';
-                    $rules['payment_location'] = 'required|string';
-                    $rules['payment_receipt_number'] = 'required|string|max:100';
-                    $rules['payment_screenshot'] = 'required|file|image|mimes:jpeg,png,jpg|max:5120';
-                    break;
-                    
-                case 'installment_restructure':
-                    // $rules['webinar_id'] = 'required|exists:webinars,id';
-                    // $rules['requested_installments'] = 'required|integer';
-                    // $rules['installment_amount'] = 'nullable';
-                    $rules['restructure_reason'] = 'nullable|string';
-                    break;
-                    
-                case 'new_service_access':
-                    $rules['requested_service'] = 'required|string';
-                    $rules['service_details'] = 'required|string';
-                    break;
-                    
-                case 'refund_payment':
-                    $rules['refund_reason'] = 'nullable|string';
-                    $rules['bank_account_number'] = 'required|string';
-                    $rules['ifsc_code'] = 'required|string';
-                    $rules['account_holder_name'] = 'required|string';
-                    break;
-                    
-                case 'post_purchase_coupon':
-                    // $rules['coupon_code'] = 'required|string';
-                    // $rules['original_amount'] = 'nullable|numeric|min:0';
-                    $rules['coupon_apply_reason'] = 'required|string';
-                    break;
-                    
-                case 'wrong_course_correction':
-                    $rules['wrong_course_id'] = 'required';
-                    $rules['correct_course_id'] = 'required';
-                    $rules['correction_reason'] = 'nullable|string';
-                    break;
-            }
-
-// dd($request->all());
 
         $validated = $request->validate($rules);
 
-        
-        if (empty($request->webinar_id) && $request->selected_webinar_id) {
-            $request->merge(['webinar_id' => $request->selected_webinar_id]);
-        }
+        $attachmentPaths = [];
 
-    if (
-        Auth::check() &&
-        $request->support_scenario === 'course_extension'
-    ) {
-        $approvedCount = NewSupportForAsttrolok::where('user_id', Auth::id())
-            ->where('webinar_id', $request->webinar_id)
-            ->where('support_scenario', 'course_extension')
-            ->whereIn('status', ['approved', 'executed']) 
-            ->count();
-
-        if ($approvedCount >= 3) {
-            return back()->with([
-                'toast' => [
-                    'title'  => 'Limit Reached',
-                    'msg'    => 'You have already used the maximum 3 extensions for this course.',
-                    'status' => 'error'
-                ]
-            ]);
-        }
-    }
-
-            $webinar_id = $request->webinar_id ?? $request->selected_webinar_id ?? $request->wrong_course_id ?? $request->webinar_id_generic ?? null;
-            
-                if(isset($webinar_id)){
-                    $flowType = $this->determineFlowType($webinar_id);
-                    $purchaseInfo = $this->getPurchaseInfo($webinar_id);
-                } else {
-                    $flowType = 'flow_a';
-                    $purchaseInfo = [
-                        'status' => 'never_purchased',
-                        'purchased_at' => null,
-                        'expires_at' => null,
-                    ];
-
+        try {
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $path = $file->store('support-attachments', 'public');
+                    $attachmentPaths[] = $path;
                 }
-            try {
-               
-              
-                if ($request->hasFile('attachments')) {
-                    foreach ($request->file('attachments') as $file) {
-                        $path = $file->store('support-attachments', 'public');
-                        $attachmentPaths[] = $path;
-                    }
-                }
-                
-                $data = [
-                    'user_id' => Auth::id(),
-                    'guest_name' => $request->guest_name,
-                    'guest_email' => $request->guest_email,
-                    'guest_phone' => $request->guest_phone,
-                    'support_scenario' => $request->support_scenario,
-                    'webinar_id' => $request->webinar_id ?? $request->selected_webinar_id ?? $request->wrong_course_id ?? null, 
-                    'title' => $request->title,
-                    'description' => $request->description,
-                    'attachments' => $attachmentPaths,
-                    'flow_type' => $flowType,
-                    'purchase_status' => $purchaseInfo['status'],
-                    'course_purchased_at' => $purchaseInfo['purchased_at'],
-                    'course_expires_at' => $purchaseInfo['expires_at'],
-                    'status' => 'pending',
+            }
+
+            $data = [
+                'user_id' => Auth::id(),
+                'guest_name' => $request->guest_name,
+                'guest_email' => $request->guest_email,
+                'guest_phone' => $request->guest_phone,
+                'title' => $validated['title'],
+                'description' => $validated['description'],
+                'attachments' => $attachmentPaths,
+                'status' => 'pending',
             ];
-            if ($request->support_scenario === 'temporary_access') {
-                $data['temporary_access_days'] = 7;
-                $data['temporary_access_reason'] = $request->temporary_access_reason;
-            }
-            
-            // Add description for mentor and relative scenarios
-            if ($request->support_scenario === 'mentor_access') {
-                $data['description'] = $request->mentor_change_reason;
-                
-                // Mentor access request will be created when admin completes the support request
-                // Not creating entry here - will be handled in admin completion flow
-                
-                \Log::info('Mentor access support request created for user: ' . Auth::id() . ' with webinar_id: ' . ($request->webinar_id ?? $request->selected_webinar_id));
-            }
-            if ($request->support_scenario === 'relatives_friends_access') {
-                // Use separate field for relative description
-                $relativeDesc = $request->relative_description ?? $request->description ?? null;
-                $data['relative_description'] = $relativeDesc;
-                $data['description'] = null; 
-                
-                \Log::info('Relative access request created', [
-                    'user_id' => Auth::id(),
-                    'webinar_id' => $request->webinar_id ?? $request->selected_webinar_id,
-                    'relative_description' =>  $relativeDesc
-                ]);
-            }
-            
-            $scenarioFields = [
-                'extension_days', 'extension_reason', 'pending_amount', 'expected_payment_date',
-                'mentor_change_reason', 'relative_description', 'temporary_access_days',
-                'temporary_access_reason',
-                'free_course_reason', 'is_special_case',
-                'cash_amount', 'payment_date', 'payment_receipt_number', 'payment_location', 'payment_screenshot',
-                'requested_installments', 'installment_amount', 'restructure_reason',
-                'requested_service', 'service_details','refund_reason', 'purchase_to_refund',
-                'bank_account_number', 'ifsc_code', 'account_holder_name', 'coupon_code',
-                'original_amount', 'coupon_apply_reason', 'wrong_course_id', 'correct_course_id',
-                'correction_reason'
-            ];
-            
-            if ($request->support_scenario === 'offline_cash_payment' && $request->hasFile('payment_screenshot')) {
-                $file = $request->file('payment_screenshot');
-                $fileName = time() . '_' . $file->getClientOriginalName();
-                $filePath = $file->storeAs('support-payments/' . Auth::id(), $fileName, 'public');
-                $data['payment_screenshot'] = $filePath;
-            }
-            
-            foreach ($scenarioFields as $field) {
-                if ($request->has($field)) {
-                    // Skip payment_screenshot — already handled via file upload above
-                    if ($field === 'payment_screenshot') {
-                        continue;
-                    }
-                    // Only store temporary_access_days for temporary_access scenario
-                    if ($field === 'temporary_access_days' && $request->support_scenario !== 'temporary_access') {
-                        continue;
-                    }
-                    // Only store temporary_access_reason for temporary_access scenario
-                    if ($field === 'temporary_access_reason' && $request->support_scenario !== 'temporary_access') {
-                        continue;
-                    }
-                    $data[$field] = $request->$field;
-                    if ($field === 'correction_reason') {
-                        \Log::info('Processing correction_reason: ' . $request->$field);
-                    }
-                } else {
-                    if ($field === 'correction_reason') {
-                        \Log::info('correction_reason not found in request');
-                        \Log::info('All request data: ' . json_encode($request->all()));
-                    }
-                }
-            }
-            
-            \Log::info('Final data before saving: ' . json_encode($data));
-
-            // For installment_restructure: look up UPE plan, find target schedule, create UpePaymentRequest
-            if ($request->support_scenario === 'installment_restructure' && !empty($data['webinar_id']) && Auth::check()) {
-                try {
-                    $upeUser = Auth::user();
-                    $webinarIdForPlan = $data['webinar_id'];
-
-                    // Find UPE product for this webinar
-                    $upeProduct = \App\Models\PaymentEngine\UpeProduct::where('external_id', $webinarIdForPlan)
-                        ->whereIn('product_type', ['course_video', 'webinar'])
-                        ->first();
-
-                    if ($upeProduct) {
-                        // Find the user's active UPE installment plan for this product
-                        $upePlan = \App\Models\PaymentEngine\UpeInstallmentPlan::whereHas('sale', function ($q) use ($upeUser, $upeProduct) {
-                                $q->where('user_id', $upeUser->id)->where('product_id', $upeProduct->id);
-                            })
-                            ->where('status', 'active')
-                            ->with(['sale', 'schedules'])
-                            ->first();
-
-                        if ($upePlan) {
-                            $unpaidSchedules = $upePlan->schedules->whereIn('status', ['due', 'upcoming', 'partial', 'overdue']);
-
-                            if ($unpaidSchedules->isNotEmpty()) {
-                                // Target: first unpaid by due date
-                                $targetSchedule = $unpaidSchedules->sortBy('due_date')->first();
-                                $isUpfront = ($targetSchedule->sequence <= 1);
-
-                                // Check for existing pending request
-                                $alreadyRequested = \App\Models\PaymentEngine\UpePaymentRequest::where('user_id', $upeUser->id)
-                                    ->where('sale_id', $upePlan->sale_id)
-                                    ->where('request_type', 'installment_restructure')
-                                    ->whereNotIn('status', ['rejected', 'executed'])
-                                    ->exists();
-
-                                if (!$alreadyRequested) {
-                                    // Create UpePaymentRequest
-                                    $paymentRequestService = app(\App\Services\PaymentEngine\PaymentRequestService::class);
-                                    $paymentRequest = $paymentRequestService->create('installment_restructure', $upeUser->id, $upePlan->sale_id, [
-                                        'plan_id' => $upePlan->id,
-                                        'schedule_id' => $targetSchedule->id,
-                                        'schedule_sequence' => $targetSchedule->sequence,
-                                        'schedule_amount' => $targetSchedule->amount_due,
-                                        'schedule_remaining' => $targetSchedule->remainingAmount(),
-                                        'schedule_due_date' => $targetSchedule->due_date ? $targetSchedule->due_date->format('Y-m-d') : null,
-                                        'is_upfront' => $isUpfront,
-                                        'reason' => $request->restructure_reason ?? $request->description ?? '',
-                                        'overdue_count' => $upePlan->schedules->where('status', 'overdue')->count(),
-                                        'remaining_count' => $unpaidSchedules->count(),
-                                        'remaining_amount' => $unpaidSchedules->sum('amount_due') - $unpaidSchedules->sum('amount_paid'),
-                                        'webinar_id' => $webinarIdForPlan,
-                                    ]);
-
-                                    // Populate execution_result so admin can see EMI details
-                                    $data['execution_result'] = [
-                                        'upe_payment_request_id' => $paymentRequest->id,
-                                        'plan_id' => $upePlan->id,
-                                        'schedule_id' => $targetSchedule->id,
-                                        'schedule_sequence' => $targetSchedule->sequence,
-                                        'schedule_amount' => (float) $targetSchedule->amount_due,
-                                        'schedule_remaining' => $targetSchedule->remainingAmount(),
-                                        'is_upfront' => $isUpfront,
-                                    ];
-                                    $data['installment_amount'] = $targetSchedule->remainingAmount();
-                                }
-                            }
-                        }
-                    }
-                } catch (\Exception $e) {
-                    \Log::warning('Failed to link UPE plan to restructure support ticket', ['error' => $e->getMessage()]);
-                }
-            }
 
             $supportRequest = NewSupportForAsttrolok::create($data);
 
-            // Link support ticket back to UpePaymentRequest if created
-            if (isset($paymentRequest) && $paymentRequest) {
-                try {
-                    $paymentRequest->update([
-                        'payload' => array_merge($paymentRequest->payload ?? [], [
-                            'support_ticket_id' => $supportRequest->id,
-                        ]),
-                    ]);
-                } catch (\Exception $e) {
-                    \Log::warning('Failed to link support ticket to UPE request', ['error' => $e->getMessage()]);
-                }
-            }
-            
-            
             NewSupportForAsttrolokLog::create([
-                    'support_request_id' => $supportRequest->id,
-                    'user_id' => Auth::id(),
-                    'action' => 'created',
-                    'remarks' => 'Support request created by ' . ($supportRequest->isGuest() ? 'guest' : 'user'),
-                    'new_data' => $supportRequest->toArray(),
-                    'ip_address' => $request->ip(),
-                ]);
-                
-            
-            // if (!empty($validated['webinar_id'])) {
-                //     $webinar = Webinar::find($validated['webinar_id']);
-                //     if ($webinar) {
-                    //         $notifyOptions = [
-                        //             '[c.title]' => $webinar->title,
-                        //             '[u.name]' => $supportRequest->getRequesterName()
-                        //         ];
-                        //         sendNotification('support_message', $notifyOptions, $webinar->teacher_id);
-                        //         sendNotification('support_message', $notifyOptions, 1);
-                        //     }
-                        // }
-                        
-                        $toastData = [
-                            'title' => trans('public.success'),
-                            'msg' => trans('panel.support_request_submitted_successfully'),
-                            'status' => 'success'
-                        ];
+                'support_request_id' => $supportRequest->id,
+                'user_id' => Auth::id(),
+                'action' => 'created',
+                'remarks' => 'Support request created by ' . ($supportRequest->isGuest() ? 'guest' : 'user'),
+                'new_data' => $supportRequest->toArray(),
+                'ip_address' => $request->ip(),
+            ]);
+
+            $toastData = [
+                'title' => trans('public.success'),
+                'msg' => trans('panel.support_request_submitted_successfully'),
+                'status' => 'success'
+            ];
 
             return redirect()->route('newsuportforasttrolok.show', $supportRequest->ticket_number)->with(['toast' => $toastData]);
 
         } catch (\Exception $e) {
-            DB::rollBack();
-            
             foreach ($attachmentPaths as $path) {
                 Storage::disk('public')->delete($path);
             }
-            
+
             \Log::error('Support request creation failed: ' . $e->getMessage());
-            
-            $toastData = [
+
+            return back()->withInput()->with(['toast' => [
                 'title' => trans('public.error'),
                 'msg' => $e->getMessage(),
                 'status' => 'error'
-            ];
-            
-            return back()->withInput()->with(['toast' => $toastData]);
+            ]]);
         }
-    
-}
+    }
     
     /**
      * Show support request details
