@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Support\Facades\Log;
+use App\Traits\BackgroundExportTrait;
 use Exception;
 
 use App\Exports\QuizResultsExport;
@@ -26,6 +27,8 @@ use Illuminate\Http\Request;
 
 class QuizController extends Controller
 {
+    use BackgroundExportTrait;
+
     public function index(Request $request)
     {
         try {
@@ -636,7 +639,7 @@ class QuizController extends Controller
 
             $export = new QuizResultsExport($quizzesResults);
 
-            return Excel::download($export, 'quiz_result.xlsx');
+            return $this->dispatchBackgroundExport($export, 'quiz_result_' . date('Y-m-d_H-i-s') . '.xlsx', 'Quiz Results Export');
         } catch (\Exception $e) {
             \Log::error('resultsExportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
@@ -687,7 +690,7 @@ class QuizController extends Controller
                 'quizResults',
             ])->get();
 
-            return Excel::download(new QuizzesAdminExport($quizzes), trans('quiz.quizzes') . '.xlsx');
+            return $this->dispatchBackgroundExport(new QuizzesAdminExport($quizzes), 'quizzes_' . date('Y-m-d_H-i-s') . '.xlsx', 'Quizzes Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

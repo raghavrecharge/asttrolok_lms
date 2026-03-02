@@ -180,7 +180,9 @@
     <div class="card">
         <div class="card-header">
             @can('admin_users_export_excel')
-            {{--    <a href="{{ getAdminPanelUrl() }}/students/excel?{{ http_build_query(request()->all()) }}" class="btn btn-primary">{{ trans('admin/main.export_xls') }}</a> --}}
+                <div class="text-right">
+                    <a href="{{ getAdminPanelUrl() }}/students/excel?{{ http_build_query(request()->all()) }}" class="btn btn-primary js-export-btn">{{ trans('admin/main.export_xls') }}</a>
+                </div>
             @endcan
              <button type="button" data-toggle="modal" data-target="#import" class=" course-content-btns btn btn-sm btn-primary not-login-toast">
                                     Import Excel

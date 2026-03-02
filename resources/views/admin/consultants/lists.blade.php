@@ -170,7 +170,7 @@
             <div class="card">
                 <div class="card-header">
                     @can('admin_consultants_export_excel')
-                        <!--<a href="{{ getAdminPanelUrl() }}/consultants/excel?{{ http_build_query(request()->all()) }}" class="btn btn-primary">{{trans('admin/main.export_xls')}}</a>-->
+                        <a href="{{ getAdminPanelUrl() }}/consultants/excel?{{ http_build_query(request()->all()) }}" class="btn btn-primary">{{trans('admin/main.export_xls')}}</a>
                     @endcan
 
                     <div class="h-10"></div>

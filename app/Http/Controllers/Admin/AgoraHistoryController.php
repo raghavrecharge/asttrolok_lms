@@ -10,9 +10,11 @@ use App\Http\Controllers\Controller;
 use App\Models\AgoraHistory;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\BackgroundExportTrait;
 
 class AgoraHistoryController extends Controller
 {
+    use BackgroundExportTrait;
     public function index()
     {
         try {
@@ -58,7 +60,7 @@ class AgoraHistoryController extends Controller
 
             $export = new AgoraHistoryExport($agoraHistories);
 
-            return Excel::download($export, 'agoraHistory.xlsx');
+            return $this->dispatchBackgroundExport($export, 'agoraHistory_' . date('Y-m-d_H-i-s') . '.xlsx', 'Agora History Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

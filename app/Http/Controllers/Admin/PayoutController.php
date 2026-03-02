@@ -15,9 +15,11 @@ use App\Models\Setting;
 use App\User;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\BackgroundExportTrait;
 
 class PayoutController extends Controller
 {
+    use BackgroundExportTrait;
     public function index(Request $request)
     {
         try {
@@ -206,9 +208,9 @@ class PayoutController extends Controller
 
             $export = new PayoutExport($payouts);
 
-            $filename = ($payoutType == 'requests') ? trans('financial.payouts_requests') : trans('financial.payouts_history');
+            $filename = (($payoutType == 'requests') ? trans('financial.payouts_requests') : trans('financial.payouts_history')) . '_' . date('Y-m-d_H-i-s') . '.xlsx';
 
-            return Excel::download($export, $filename . '.xlsx');
+            return $this->dispatchBackgroundExport($export, $filename, 'Payouts Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

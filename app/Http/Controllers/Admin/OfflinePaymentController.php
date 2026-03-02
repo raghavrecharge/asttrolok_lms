@@ -16,9 +16,11 @@ use App\Models\Role;
 use App\User;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\BackgroundExportTrait;
 
 class OfflinePaymentController extends Controller
 {
+    use BackgroundExportTrait;
     public function index(Request $request)
     {
         try {
@@ -233,7 +235,7 @@ class OfflinePaymentController extends Controller
 
             $export = new OfflinePaymentsExport($offlinePayments);
 
-            return Excel::download($export, 'offline_payment_' . $pageType . '.xlsx');
+            return $this->dispatchBackgroundExport($export, 'offline_payment_' . $pageType . '_' . date('Y-m-d_H-i-s') . '.xlsx', 'Offline Payments Export (' . $pageType . ')');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

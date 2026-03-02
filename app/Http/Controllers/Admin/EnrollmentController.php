@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
+use App\Traits\BackgroundExportTrait;
 use App\Models\Installment;
 use App\Models\InstallmentSpecificationItem;
 use App\Models\InstallmentStep;
@@ -31,6 +32,7 @@ use App\Imports\SaleCourseImport;
 use App\Models\Gift;
 class EnrollmentController extends Controller
 {
+    use BackgroundExportTrait;
     public function history(Request $request)
     {
         try {
@@ -562,7 +564,7 @@ class EnrollmentController extends Controller
 
             $export = new salesExport($sales);
 
-            return Excel::download($export, 'sales.xlsx');
+            return $this->dispatchBackgroundExport($export, 'enrollment_history_' . date('Y-m-d_H-i-s') . '.xlsx', 'Enrollment History Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

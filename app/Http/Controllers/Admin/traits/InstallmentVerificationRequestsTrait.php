@@ -148,7 +148,7 @@ trait InstallmentVerificationRequestsTrait
             $users = $this->handleVerifiedUsers($users);
 
             $export = new InstallmentVerifiedUsersExport($users);
-            return Excel::download($export, 'verifiedUsers.xlsx');
+            return $this->dispatchBackgroundExport($export, 'verified_users_' . date('Y-m-d_H-i-s') . '.xlsx', 'Verified Users Export');
         } catch (\Exception $e) {
             \Log::error('verifiedUsersExportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

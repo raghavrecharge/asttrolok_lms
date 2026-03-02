@@ -13,9 +13,11 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\BackgroundExportTrait;
 
 class CashbackTransactionsController extends Controller
 {
+    use BackgroundExportTrait;
 
     public function index(Request $request)
     {
@@ -120,7 +122,7 @@ class CashbackTransactionsController extends Controller
 
             $export = new CashbackTransactionsExport($transactions);
 
-            return Excel::download($export, 'transactions.xlsx');
+            return $this->dispatchBackgroundExport($export, 'transactions_' . date('Y-m-d_H-i-s') . '.xlsx', 'Cashback Transactions Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
@@ -305,7 +307,7 @@ class CashbackTransactionsController extends Controller
 
             $export = new CashbackHistoryExport($transactions);
 
-            return Excel::download($export, 'history.xlsx');
+            return $this->dispatchBackgroundExport($export, 'history_' . date('Y-m-d_H-i-s') . '.xlsx', 'Cashback History Export');
         } catch (\Exception $e) {
             \Log::error('historyExportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

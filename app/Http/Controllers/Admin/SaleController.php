@@ -16,12 +16,14 @@ use App\Models\Webinar;
 use App\User;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\BackgroundExportTrait;
 use App\Models\WebinarPartPayment;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 class SaleController extends Controller
 {
+    use BackgroundExportTrait;
     public function index(Request $request)
     {
         try {
@@ -456,7 +458,7 @@ class SaleController extends Controller
 
             $export = new salesExport($sortedCollection);
 
-            return Excel::download($export, 'sales.xlsx');
+            return $this->dispatchBackgroundExport($export, 'sales_' . date('Y-m-d_H-i-s') . '.xlsx', 'Sales Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

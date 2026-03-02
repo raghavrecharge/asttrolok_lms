@@ -41,12 +41,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\BackgroundExportTrait;
 
 class RemedyController extends Controller
 
 {
 
     use WebinarChangeCreator;
+    use BackgroundExportTrait;
 
     public function index(Request $request)
     {
@@ -809,7 +811,7 @@ class RemedyController extends Controller
 
             $remedyExport = new RemediesExport($remedies);
 
-            return Excel::download($remedyExport, 'remedies.xlsx');
+            return $this->dispatchBackgroundExport($remedyExport, 'remedies_' . date('Y-m-d_H-i-s') . '.xlsx', 'Remedies Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

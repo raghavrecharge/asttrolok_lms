@@ -13,9 +13,11 @@ use App\Models\Waitlist;
 use App\Models\Webinar;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\BackgroundExportTrait;
 
 class WaitlistController extends Controller
 {
+    use BackgroundExportTrait;
     public function index(Request $request)
     {
         try {
@@ -79,7 +81,7 @@ class WaitlistController extends Controller
 
             $export = new WaitlistsExport($waitlists);
 
-            return Excel::download($export, 'waitlists.xlsx');
+            return $this->dispatchBackgroundExport($export, 'waitlists_' . date('Y-m-d_H-i-s') . '.xlsx', 'Waitlists Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
@@ -217,7 +219,7 @@ class WaitlistController extends Controller
 
             $export = new WaitlistItemsExport($waitlists);
 
-            return Excel::download($export, 'waitlist_items.xlsx');
+            return $this->dispatchBackgroundExport($export, 'waitlist_items_' . date('Y-m-d_H-i-s') . '.xlsx', 'Waitlist Items Export');
         } catch (\Exception $e) {
             \Log::error('exportUsersList error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

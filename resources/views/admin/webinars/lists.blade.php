@@ -226,9 +226,9 @@
                     <div class="card">
                         <div class="card-header">
                             @can('admin_webinars_export_excel')
-                               {{-- <div class="text-right">
-                                    <a href="{{ getAdminPanelUrl() }}/webinars/excel?{{ http_build_query(request()->all()) }}" class="btn btn-primary">{{ trans('admin/main.export_xls') }}</a>
-                                </div>--}}
+                                <div class="text-right">
+                                    <a href="{{ getAdminPanelUrl() }}/webinars/excel?{{ http_build_query(request()->all()) }}" class="btn btn-primary js-export-btn">{{ trans('admin/main.export_xls') }}</a>
+                                </div>
                             @endcan
                         </div>
 

@@ -150,7 +150,7 @@ trait InstallmentPurchasesTrait
             $orders = $this->handlePurchasedOrders($orders);
 
             $export = new InstallmentPurchasesExport($orders);
-            return Excel::download($export, 'InstallmentPurchases.xlsx');
+            return $this->dispatchBackgroundExport($export, 'installment_purchases_' . date('Y-m-d_H-i-s') . '.xlsx', 'Installment Purchases Export');
         } catch (\Exception $e) {
             \Log::error('purchasesExportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

@@ -23,7 +23,7 @@
                         <div class="card-header">
                             @can('admin_quiz_result_export_excel')
                                 <div class="text-right">
-                                    <a href="{{ getAdminPanelUrl() }}/quizzes/{{ $quiz_id}}/results/excel" class="btn btn-primary">{{ trans('admin/main.export_xls') }}</a>
+                                    <a href="{{ getAdminPanelUrl() }}/quizzes/{{ $quiz_id }}/results/excel" class="btn btn-primary js-export-btn">{{ trans('admin/main.export_xls') }}</a>
                                 </div>
                             @endcan
                         </div>

@@ -25,6 +25,7 @@ use App\Models\UserManualPurchase;
 use App\Models\UserMeta;
 use App\Models\UserOccupation;
 use App\Models\UserRegistrationPackage;
+use App\Traits\BackgroundExportTrait;
 use App\Models\UserSelectedBank;
 use App\Models\UserSelectedBankSpecification;
 use App\Models\Webinar;
@@ -50,6 +51,8 @@ use App\Models\SubscriptionAccess;
 use App\Http\Controllers\Web\SubscriptionController;
 class UserController extends Controller
 {
+    use BackgroundExportTrait;
+
     public function staffs(Request $request)
     {
         try {
@@ -1647,7 +1650,7 @@ public function importExcel(Request $request)
 
             $usersExport = new OrganizationsExport($users);
 
-            return Excel::download($usersExport, 'organizations.xlsx');
+            return $this->dispatchBackgroundExport($usersExport, 'organizations_' . date('Y-m-d_H-i-s') . '.xlsx', 'Organizations Export');
         } catch (\Exception $e) {
             \Log::error('exportExcelOrganizations error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
@@ -1668,7 +1671,7 @@ public function importExcel(Request $request)
 
             $usersExport = new OrganizationsExport($users);
 
-            return Excel::download($usersExport, 'instructors.xlsx');
+            return $this->dispatchBackgroundExport($usersExport, 'instructors_' . date('Y-m-d_H-i-s') . '.xlsx', 'Instructors Export');
         } catch (\Exception $e) {
             \Log::error('exportExcelInstructors error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
@@ -1689,7 +1692,7 @@ public function importExcel(Request $request)
 
             $usersExport = new StudentsExport($users);
 
-            return Excel::download($usersExport, 'students.xlsx');
+            return $this->dispatchBackgroundExport($usersExport, 'students_' . date('Y-m-d_H-i-s') . '.xlsx', 'Students Export');
         } catch (\Exception $e) {
             \Log::error('exportExcelStudents error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

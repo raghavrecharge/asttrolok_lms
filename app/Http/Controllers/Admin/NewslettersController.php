@@ -12,9 +12,11 @@ use App\Models\Newsletter;
 use App\Models\NewsletterHistory;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\BackgroundExportTrait;
 
 class NewslettersController extends Controller
 {
+    use BackgroundExportTrait;
     public function index()
     {
         try {
@@ -249,7 +251,7 @@ class NewslettersController extends Controller
 
             $newslettersExport = new NewslettersExport($newsletters);
 
-            return Excel::download($newslettersExport, trans('admin/main.newsletters') . '.xlsx');
+            return $this->dispatchBackgroundExport($newslettersExport, trans('admin/main.newsletters') . '_' . date('Y-m-d_H-i-s') . '.xlsx', 'Newsletters Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

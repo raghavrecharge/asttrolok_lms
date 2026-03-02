@@ -34,6 +34,8 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
 
         Route::get('/', 'DashboardController@index');
     Route::get('/get-export-statuses', 'SubscriptionController@getExportStatuses');
+    Route::get('/delete-export-status/{id}', 'SubscriptionController@deleteExportStatus');
+    Route::get('/delete-all-export-statuses', 'SubscriptionController@deleteAllExportStatuses');
         Route::get('/clear-cache', 'DashboardController@cacheClear');
 
         Route::group(['prefix' => 'dashboard'], function () {

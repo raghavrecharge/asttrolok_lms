@@ -12,9 +12,11 @@ use App\Models\FeatureWebinar;
 use App\Models\Translation\FeatureWebinarTranslation;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\BackgroundExportTrait;
 
 class FeatureWebinarsControllers extends Controller
 {
+    use BackgroundExportTrait;
     public function index(Request $request)
     {
         try {
@@ -267,7 +269,7 @@ class FeatureWebinarsControllers extends Controller
 
             $export = new FeatureWebinarsExport($features);
 
-            return Excel::download($export, 'feature_webinars.xlsx');
+            return $this->dispatchBackgroundExport($export, 'feature_webinars_' . date('Y-m-d_H-i-s') . '.xlsx', 'Feature Webinars Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

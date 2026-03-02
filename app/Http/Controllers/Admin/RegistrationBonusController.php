@@ -17,9 +17,11 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\BackgroundExportTrait;
 
 class RegistrationBonusController extends Controller
 {
+    use BackgroundExportTrait;
     public function index(Request $request, $justReturnData = false)
     {
         try {
@@ -211,7 +213,8 @@ class RegistrationBonusController extends Controller
             $users = $this->index($request, true);
 
             $export = new RegistrationBonusExport($users);
-            return Excel::download($export, 'registration_bonus.xlsx');
+
+            return $this->dispatchBackgroundExport($export, 'registration_bonus_' . date('Y-m-d_H-i-s') . '.xlsx', 'Registration Bonus Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

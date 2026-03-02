@@ -17,9 +17,11 @@ use App\Models\CertificateTemplate;
 use Intervention\Image\Facades\Image;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\BackgroundExportTrait;
 
 class CertificateController extends Controller
 {
+    use BackgroundExportTrait;
     public function index(Request $request)
     {
         try {
@@ -381,7 +383,7 @@ class CertificateController extends Controller
 
             $export = new CertificatesExport($certificates);
 
-            return Excel::download($export, 'certificates.xlsx');
+            return $this->dispatchBackgroundExport($export, 'certificates_' . date('Y-m-d_H-i-s') . '.xlsx', 'Certificates Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

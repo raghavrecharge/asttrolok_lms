@@ -14,10 +14,11 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\BackgroundExportTrait;
 
 class GiftsController extends Controller
 {
-    use GiftsSettingsTrait;
+    use GiftsSettingsTrait, BackgroundExportTrait;
 
     public function index(Request $request)
     {
@@ -104,7 +105,8 @@ class GiftsController extends Controller
             ])->get();
 
             $export = new GiftHistoriesExport($gifts);
-            return Excel::download($export, 'gift_history.xlsx');
+
+            return $this->dispatchBackgroundExport($export, 'gift_history_' . date('Y-m-d_H-i-s') . '.xlsx', 'Gift History Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

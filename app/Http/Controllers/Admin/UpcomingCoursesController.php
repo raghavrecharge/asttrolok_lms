@@ -17,9 +17,11 @@ use App\Models\UpcomingCourseFollower;
 use App\User;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\BackgroundExportTrait;
 
 class UpcomingCoursesController extends Controller
 {
+    use BackgroundExportTrait;
     public function index(Request $request)
     {
         try {
@@ -538,7 +540,7 @@ class UpcomingCoursesController extends Controller
 
             $export = new UpcomingCoursesExport($items);
 
-            return Excel::download($export, 'upcoming_courses.xlsx');
+            return $this->dispatchBackgroundExport($export, 'upcoming_courses_' . date('Y-m-d_H-i-s') . '.xlsx', 'Upcoming Courses Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

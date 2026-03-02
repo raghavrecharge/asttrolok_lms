@@ -16,9 +16,11 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\BackgroundExportTrait;
 
 class OrderController extends Controller
 {
+    use BackgroundExportTrait;
     public function index(Request $request)
     {
         try {
@@ -268,7 +270,7 @@ class OrderController extends Controller
                 ->get();
                $export = new StoreOrdersExport($orders);
 
-            return Excel::download($export, 'storeOrders.xlsx');
+            return $this->dispatchBackgroundExport($export, 'storeOrders_' . date('Y-m-d_H-i-s') . '.xlsx', 'Store Orders Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

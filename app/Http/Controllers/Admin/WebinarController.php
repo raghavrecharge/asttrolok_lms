@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 use App\Exports\WebinarsExport;
 use App\Http\Controllers\Admin\traits\WebinarChangeCreator;
+use App\Traits\BackgroundExportTrait;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Panel\WebinarStatisticController;
 use App\Mail\SendNotifications;
@@ -47,6 +48,7 @@ use Cviebrock\EloquentSluggable\Services\SlugService;
 class WebinarController extends Controller
 {
     use WebinarChangeCreator;
+    use BackgroundExportTrait;
 
     public function index(Request $request)
     {
@@ -1464,7 +1466,7 @@ class WebinarController extends Controller
 
             $webinarExport = new WebinarsExport($webinars);
 
-            return Excel::download($webinarExport, 'webinars.xlsx');
+            return $this->dispatchBackgroundExport($webinarExport, 'webinars_' . date('Y-m-d_H-i-s') . '.xlsx', 'Webinars Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
@@ -2449,10 +2451,10 @@ class WebinarController extends Controller
         try {
             $request->exel ="exel_data";
              $this->authorize('admin_users_export_excel');
-            $student=  $this->exportExcelStudents($request, $id);
+            $student=  $this->studentsListsexel($request, $id);
             $usersExport = new StudentsExport( $student);
 
-            return Excel::download($usersExport, 'students.xlsx');
+            return $this->dispatchBackgroundExport($usersExport, 'students_' . date('Y-m-d_H-i-s') . '.xlsx', 'Students Export');
         } catch (\Exception $e) {
             \Log::error('exportExcelStudents error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

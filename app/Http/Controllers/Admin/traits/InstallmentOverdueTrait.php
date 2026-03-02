@@ -73,7 +73,7 @@ trait InstallmentOverdueTrait
             $orders = $this->getOverdueListsQuery($request)->get();
 
             $export = new InstallmentOverdueExport($orders);
-            return Excel::download($export, 'InstallmentOverdue.xlsx');
+            return $this->dispatchBackgroundExport($export, 'installment_overdue_' . date('Y-m-d_H-i-s') . '.xlsx', 'Installment Overdue Export');
         } catch (\Exception $e) {
             \Log::error('overdueListsExportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
@@ -143,10 +143,10 @@ trait InstallmentOverdueTrait
             $this->authorize('admin_installments_overdue_lists');
 
             $orders = $this->getOverdueHistoriesQuery($request)
-                ->paginate(10);
+                ->get();
 
             $export = new InstallmentOverdueHistoriesExport($orders);
-            return Excel::download($export, 'InstallmentOverdueHistories.xlsx');
+            return $this->dispatchBackgroundExport($export, 'installment_overdue_histories_' . date('Y-m-d_H-i-s') . '.xlsx', 'Installment Overdue Histories Export');
         } catch (\Exception $e) {
             \Log::error('overdueHistoriesExportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

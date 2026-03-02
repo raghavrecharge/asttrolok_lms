@@ -23,9 +23,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\BackgroundExportTrait;
 
 class ProductsController extends Controller
 {
+    use BackgroundExportTrait;
     public function index(Request $request)
     {
         try {
@@ -900,7 +902,7 @@ class ProductsController extends Controller
 
             $export = new StoreProductsExport($products);
 
-            return Excel::download($export, 'storeProducts.xlsx');
+            return $this->dispatchBackgroundExport($export, 'storeProducts_' . date('Y-m-d_H-i-s') . '.xlsx', 'Store Products Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

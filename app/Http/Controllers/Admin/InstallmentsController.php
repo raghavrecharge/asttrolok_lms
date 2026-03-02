@@ -22,9 +22,11 @@ use App\Models\Subscribe;
 use App\Models\Translation\InstallmentStepTranslation;
 use App\Models\Translation\InstallmentTranslation;
 use Illuminate\Http\Request;
+use App\Traits\BackgroundExportTrait;
 
 class InstallmentsController extends Controller
 {
+    use BackgroundExportTrait;
     use InstallmentSettingsTrait;
     use InstallmentPurchasesTrait;
     use InstallmentOverdueTrait;

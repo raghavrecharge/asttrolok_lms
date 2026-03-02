@@ -38,9 +38,11 @@ use App\Jobs\ProcessExcelExportJob;
 use App\Models\ExportTracker;
 
 use App\Traits\StudentFiltersTrait;
+use App\Traits\BackgroundExportTrait;
 
 class SubscriptionController extends Controller
 {
+    use StudentFiltersTrait, BackgroundExportTrait;
     use StudentFiltersTrait;
     
     public function index(Request $request)
@@ -1994,7 +1996,7 @@ private function saveExtraDetails(Request $request, $subscriptionId)
 
             $export = new \App\Exports\SubscriptionsExport($subscriptions);
 
-            return Excel::download($export, 'subscriptions_' . date('Y-m-d') . '.xlsx');
+            return $this->dispatchBackgroundExport($export, 'subscriptions_' . date('Y-m-d_H-i-s') . '.xlsx', 'Subscriptions Export');
 
         } catch (\Exception $e) {
             Log::error('exportExcel error: ' . $e->getMessage(), [
@@ -2050,11 +2052,24 @@ private function saveExtraDetails(Request $request, $subscriptionId)
             'exports' => $trackers
         ]);
     }
+    public function deleteExportStatus($id)
+    {
+        ExportTracker::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->delete();
 
-    // These are no longer needed for the new background process
-    // but kept as stubs if routes still point here during migration
-    public function exportStudentsExcelProcess(Request $request, $id) { return response()->json(['error' => 'Deprecated'], 410); }
-    public function exportStudentsExcelDownload(Request $request, $id) { return response()->json(['error' => 'Deprecated'], 410); }
+        return response()->json([
+            'success' => true
+        ]);
+    }
 
+    public function deleteAllExportStatuses()
+    {
+        ExportTracker::where('user_id', auth()->id())
+            ->delete();
 
+        return response()->json([
+            'success' => true
+        ]);
+    }
 }

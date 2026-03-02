@@ -207,7 +207,7 @@
                 </li>
             @endcan()
 
-            @can('admin_upcoming_courses')
+            <!-- @can('admin_upcoming_courses')
                 <li class="nav-item dropdown {{ (request()->is(getAdminPanelUrl('/upcoming_courses*', false)) and !request()->is(getAdminPanelUrl('/upcoming_courses/comments*', false))) ? 'active' : '' }}">
                     <a href="#" class="nav-link has-dropdown" data-toggle="dropdown">
                         <i class="fas fa-calendar"></i>
@@ -228,7 +228,7 @@
 
                     </ul>
                 </li>
-            @endcan()
+            @endcan() -->
 
             @can('admin_quizzes')
                 <li class="{{ (request()->is(getAdminPanelUrl('/quizzes*', false))) ? 'active' : '' }}">

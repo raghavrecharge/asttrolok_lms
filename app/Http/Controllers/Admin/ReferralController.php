@@ -12,9 +12,11 @@ use App\Models\Accounting;
 use App\Models\Affiliate;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\BackgroundExportTrait;
 
 class ReferralController extends Controller
 {
+    use BackgroundExportTrait;
     public function history($export = false)
     {
         try {
@@ -126,7 +128,9 @@ class ReferralController extends Controller
                 $export = new ReferralHistoryExport($referrals);
             }
 
-            return Excel::download($export, 'referrals_' . $type . '.xlsx');
+            $filename = 'referrals_' . $type . '_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+            return $this->dispatchBackgroundExport($export, $filename, 'Referrals ' . ucfirst($type) . ' Export');
         } catch (\Exception $e) {
             \Log::error('exportExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

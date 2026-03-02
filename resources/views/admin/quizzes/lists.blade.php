@@ -177,7 +177,7 @@
                         <div class="card-header">
                             @can('admin_quizzes_lists_excel')
                                 <div class="text-right">
-                                    <!--<a href="{{ getAdminPanelUrl() }}/quizzes/excel?{{ http_build_query(request()->all()) }}" class="btn btn-primary">{{ trans('admin/main.export_xls') }}</a>-->
+                                    <a href="{{ getAdminPanelUrl() }}/quizzes/excel?{{ http_build_query(request()->all()) }}" class="btn btn-primary js-export-btn">{{ trans('admin/main.export_xls') }}</a>
                                 </div>
                             @endcan
 
