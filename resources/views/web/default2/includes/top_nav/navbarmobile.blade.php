@@ -176,13 +176,24 @@
                                                 @foreach($dynamicCategories as $category)
                                                     @php
                                                         $catTitle = is_object($category) ? $category->title : ($category['title'] ?? '');
-                                                        $catId = is_object($category) ? $category->id : ($category['id'] ?? '');
                                                         $catIcon = is_object($category) ? $category->icon : ($category['icon'] ?? '');
+
+                                                        // Resolve link ID: use child category ID if parent has children
+                                                        if (is_object($category) && !empty($category->link_id)) {
+                                                            $catLinkId = $category->link_id;
+                                                        } elseif (is_object($category) && !empty($category->subCategories) && count($category->subCategories) > 0) {
+                                                            $firstChild = $category->subCategories->first();
+                                                            $catLinkId = $firstChild ? $firstChild->id : $category->id;
+                                                        } elseif (is_object($category)) {
+                                                            $catLinkId = $category->id;
+                                                        } else {
+                                                            $catLinkId = $category['link_id'] ?? $category['id'] ?? '';
+                                                        }
                                                     @endphp
 
                                                     @if($catTitle != "Uncategories")
                                                         <li>
-                                                            <a href="/classes?categories[]={{ $catId }}">
+                                                            <a href="/classes?categories[]={{ $catLinkId }}">
                                                                 <div class="d-flex align-items-center">
                                                                     <img src="{{ !empty($catIcon) ? config('app.img_dynamic_url') . $catIcon : 'https://storage.googleapis.com/astrolok/webp/store/1/Home/ICONS/Ellipse%201.webp' }}"
                                                                          class="cat-dropdown-menu-icon"

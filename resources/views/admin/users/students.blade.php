@@ -241,7 +241,7 @@
                                 </div>
                             </td>
 
-                            <td>{{ handlePrice($user->getAccountingBalance()) }}</td>
+                            <td>{{ handlePrice(app(\App\Services\PaymentEngine\WalletService::class)->balance($user->id)) }}</td>
 
                             <td>{{ handlePrice($user->getIncome()) }}</td>
 
