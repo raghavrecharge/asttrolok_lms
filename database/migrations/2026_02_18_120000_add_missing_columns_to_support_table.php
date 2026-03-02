@@ -9,6 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('new_support_for_asttrolok', function (Blueprint $table) {
+            if (!Schema::hasColumn('new_support_for_asttrolok', 'temporary_access_reason')) {
+                $table->text('temporary_access_reason')->nullable()->after('pending_amount');
+            }
             if (!Schema::hasColumn('new_support_for_asttrolok', 'temporary_access_percentage')) {
                 $table->unsignedTinyInteger('temporary_access_percentage')->nullable()->after('temporary_access_reason');
             }

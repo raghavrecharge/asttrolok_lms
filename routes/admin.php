@@ -33,6 +33,7 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
     Route::group(['middleware' => ['admin', 'sub_admin.log']], function () {
 
         Route::get('/', 'DashboardController@index');
+    Route::get('/get-export-statuses', 'SubscriptionController@getExportStatuses');
         Route::get('/clear-cache', 'DashboardController@cacheClear');
 
         Route::group(['prefix' => 'dashboard'], function () {

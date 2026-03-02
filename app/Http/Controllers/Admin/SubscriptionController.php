@@ -34,9 +34,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Jobs\ProcessExcelExportJob;
+use App\Models\ExportTracker;
+
+use App\Traits\StudentFiltersTrait;
 
 class SubscriptionController extends Controller
 {
+    use StudentFiltersTrait;
+    
     public function index(Request $request)
     {
         try {
@@ -1329,7 +1335,7 @@ class SubscriptionController extends Controller
                 })
                 ->whereNull('sales.refund_at');
 
-            $students = $this->studentsListsFilters($subscription, $query, $request)
+            $students = $this->studentsListsFilters($subscription, $query, $request->all())
                 ->orderBy('sales.created_at', 'desc')
                 ->paginate(10);
 
@@ -1418,53 +1424,6 @@ class SubscriptionController extends Controller
         }
 
         abort(404);
-    }
-
-    private function studentsListsFilters($subscription, $query, $request)
-    {
-        $from = $request->input('from');
-        $to = $request->input('to');
-        $full_name = $request->get('full_name');
-        $sort = $request->get('sort');
-        $group_id = $request->get('group_id');
-        $role_id = $request->get('role_id');
-        $status = $request->get('status');
-
-        $query = fromAndToDateFilter($from, $to, $query, 'sales.created_at');
-
-        if (!empty($full_name)) {
-            $query->where('users.full_name', 'like', "%$full_name%");
-        }
-
-        if (!empty($sort)) {
-            if ($sort == 'rate_asc') {
-                $query->orderBy('webinar_reviews.rates', 'asc');
-            }
-
-            if ($sort == 'rate_desc') {
-                $query->orderBy('webinar_reviews.rates', 'desc');
-            }
-        }
-
-        if (!empty($group_id)) {
-            $userIds = GroupUser::where('group_id', $group_id)->pluck('user_id')->toArray();
-
-            $query->whereIn('users.id', $userIds);
-        }
-
-        if (!empty($role_id)) {
-            $query->where('users.role_id', $role_id);
-        }
-
-        if (!empty($status)) {
-            if ($status == 'expire' and !empty($subscription->access_days)) {
-                $accessTimestamp = $subscription->access_days * 24 * 60 * 60;
-
-                $query->whereRaw('sales.created_at + ? < ?', [$accessTimestamp, time()]);
-            }
-        }
-
-        return $query;
     }
 
     public function notificationToStudents($id)
@@ -2057,151 +2016,45 @@ private function saveExtraDetails(Request $request, $subscriptionId)
                 return response()->json(['error' => 'Subscription not found'], 404);
             }
 
-            $giftsIds = Gift::query()->where('subscription_id', $subscription->id)
-                ->where('status', 'active')
-                ->where(function ($query) {
-                    $query->whereNull('date');
-                    $query->orWhere('date', '<', time());
-                })
-                ->whereHas('sale')
-                ->pluck('id')
-                ->toArray();
+            // Create Tracker
+            $tracker = ExportTracker::create([
+                'title' => 'Export: ' . $subscription->title,
+                'type' => 'subscription_students',
+                'user_id' => auth()->id(),
+                'status' => 'pending',
+            ]);
 
-            $query = User::join('sales', 'sales.buyer_id', 'users.id')
-                ->select('users.*', 'sales.created_at as purchase_date')
-                ->where(function ($query) use ($subscription, $giftsIds) {
-                    $query->where('sales.subscription_id', $subscription->id);
-                    $query->orWhereIn('sales.gift_id', $giftsIds);
-                })
-                ->whereNull('sales.refund_at');
-
-            // Apply filters to get the total count accurately
-            $filteredQuery = $this->studentsListsFilters($subscription, $query, $request);
-            $totalCount = $filteredQuery->count();
-
-            // Clear any old cache for this process
-            $cacheKey = 'export_sub_students_' . $subscription->id . '_user_' . auth()->id();
-            \Illuminate\Support\Facades\Cache::forget($cacheKey);
+            // Dispatch Job
+            ProcessExcelExportJob::dispatch($tracker->id, $subscription->id, $request->all(), auth()->id());
 
             return response()->json([
                 'success' => true,
-                'total_records' => $totalCount,
-                'chunk_size' => 50,
+                'tracker_id' => $tracker->id,
             ]);
 
         } catch (\Exception $e) {
-            Log::error('exportStudentsExcelInit error: ' . $e->getMessage(), [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
-            return response()->json(['error' => 'Init failed: ' . $e->getMessage()], 500);
+            Log::error('exportStudentsExcelInit error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to start export: ' . $e->getMessage()], 500);
         }
     }
 
-    public function exportStudentsExcelProcess(Request $request, $id)
+    public function getExportStatuses()
     {
-        ini_set('max_execution_time', 120); // 2 mins per chunk
-        ini_set('memory_limit', '-1');
+        $trackers = ExportTracker::where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
 
-        try {
-            $this->authorize('admin_webinar_students_lists');
-
-            $offset = $request->input('offset', 0);
-            $limit = $request->input('limit', 50);
-
-            $subscription = Subscription::where('id', $id)->with(['subscriptionWebinars'])->first();
-
-            if (empty($subscription)) {
-                return response()->json(['error' => 'Subscription not found'], 404);
-            }
-
-            $giftsIds = Gift::query()->where('subscription_id', $subscription->id)
-                ->where('status', 'active')
-                ->where(function ($query) {
-                    $query->whereNull('date');
-                    $query->orWhere('date', '<', time());
-                })
-                ->whereHas('sale')
-                ->pluck('id')
-                ->toArray();
-
-            $query = User::join('sales', 'sales.buyer_id', 'users.id')
-                ->select('users.*', 'sales.created_at as purchase_date')
-                ->where(function ($query) use ($subscription, $giftsIds) {
-                    $query->where('sales.subscription_id', $subscription->id);
-                    $query->orWhereIn('sales.gift_id', $giftsIds);
-                })
-                ->whereNull('sales.refund_at');
-
-            $studentsQuery = $this->studentsListsFilters($subscription, $query, $request)
-                ->orderBy('sales.created_at', 'desc');
-
-            $students = $studentsQuery->offset($offset)->limit($limit)->get();
-
-            $subscriptionWebinars = $subscription->subscriptionWebinars;
-            $webinarStatisticController = new WebinarStatisticController();
-            
-            $cacheKey = 'export_sub_students_' . $subscription->id . '_user_' . auth()->id();
-            $processedData = \Illuminate\Support\Facades\Cache::get($cacheKey, []);
-
-            foreach ($students as $student) {
-                $learnings = 0;
-                $webinarCount = 0;
-
-                foreach ($subscriptionWebinars as $subscriptionWebinar) {
-                    if (!empty($subscriptionWebinar->webinar)) {
-                        $webinarCount += 1;
-                        $learnings += $webinarStatisticController->getCourseProgressForStudent($subscriptionWebinar->webinar, $student->id);
-                    }
-                }
-
-                $student->learning = ($learnings > 0 && $webinarCount > 0) ? round($learnings / $webinarCount, 2) : 0;
-                
-                // Store processed student in array
-                $processedData[] = clone $student;
-            }
-
-            // Save chunk back to cache (2 hour expiry)
-            \Illuminate\Support\Facades\Cache::put($cacheKey, $processedData, 7200);
-
-            return response()->json([
-                'success' => true,
-                'processed' => count($students),
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('exportStudentsExcelProcess error: ' . $e->getMessage(), [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
-            return response()->json(['error' => 'Process failed: ' . $e->getMessage()], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'exports' => $trackers
+        ]);
     }
 
-    public function exportStudentsExcelDownload(Request $request, $id)
-    {
-        try {
-            $this->authorize('admin_webinar_students_lists');
-            
-            $subscription = Subscription::where('id', $id)->first();
-            
-            $cacheKey = 'export_sub_students_' . $subscription->id . '_user_' . auth()->id();
-            $students = \Illuminate\Support\Facades\Cache::get($cacheKey, []);
+    // These are no longer needed for the new background process
+    // but kept as stubs if routes still point here during migration
+    public function exportStudentsExcelProcess(Request $request, $id) { return response()->json(['error' => 'Deprecated'], 410); }
+    public function exportStudentsExcelDownload(Request $request, $id) { return response()->json(['error' => 'Deprecated'], 410); }
 
-            $export = new SubscriptionStudentsExport($students);
 
-            // Clean up cache after finishing
-            \Illuminate\Support\Facades\Cache::forget($cacheKey);
-
-            $subscriptionTitle = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $subscription->title ?? 'subscription');
-            return Excel::download($export, 'students_' . $subscriptionTitle . '_' . date('Y-m-d') . '.xlsx');
-
-        } catch (\Exception $e) {
-            Log::error('exportStudentsExcelDownload error: ' . $e->getMessage(), [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
-            abort(500, 'Download failed: ' . $e->getMessage());
-        }
-    }
 }

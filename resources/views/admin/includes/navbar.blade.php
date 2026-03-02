@@ -104,3 +104,97 @@
         </li>
     </ul>
 </nav>
+
+@push('scripts_bottom')
+<script>
+    (function($) {
+        "use strict";
+
+        let exportPollingInterval = null;
+
+        function updateExportTray() {
+            $.get(adminPanelPrefix + '/get-export-statuses', function(response) {
+                if (response.success && response.exports) {
+                    const $tray = $('#exportDownloadsTray');
+                    const $list = $('#exportDownloadsList');
+                    let activeCount = 0;
+                    let html = '';
+
+                    if (response.exports.length > 0) {
+                        $tray.show();
+                        
+                        response.exports.forEach(function(exportItem) {
+                            let statusClass = 'bg-info';
+                            let iconClass = 'fas fa-spinner fa-spin';
+                            let progressHtml = '';
+
+                            if (exportItem.status === 'processing') {
+                                activeCount++;
+                                progressHtml = `
+                                    <div class="progress mt-1" style="height: 5px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: ${exportItem.percentage}%" aria-valuenow="${exportItem.percentage}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                `;
+                            } else if (exportItem.status === 'completed') {
+                                statusClass = 'bg-success';
+                                iconClass = 'fas fa-check';
+                            } else if (exportItem.status === 'failed') {
+                                statusClass = 'bg-danger';
+                                iconClass = 'fas fa-exclamation-triangle';
+                            }
+
+                            const url = exportItem.download_url ? exportItem.download_url : '#';
+                            const target = exportItem.download_url ? '_blank' : '_self';
+
+                            html += `
+                                <a href="${url}" target="${target}" class="dropdown-item">
+                                    <div class="dropdown-item-icon ${statusClass} text-white d-flex align-items-center justify-content-center">
+                                        <i class="${iconClass}"></i>
+                                    </div>
+                                    <div class="dropdown-item-desc">
+                                        <b>${exportItem.title}</b>
+                                        <div class="time text-primary">${exportItem.status.charAt(0).toUpperCase() + exportItem.status.slice(1)} ${exportItem.status === 'processing' ? '(' + exportItem.percentage + '%)' : ''}</div>
+                                        ${progressHtml}
+                                    </div>
+                                </a>
+                            `;
+                        });
+
+                        $list.html(html);
+
+                        if (activeCount > 0) {
+                            $tray.find('.nav-link').addClass('beep');
+                            if (!exportPollingInterval) {
+                                startPolling();
+                            }
+                        } else {
+                            $tray.find('.nav-link').removeClass('beep');
+                            // If no active exports, we can slow down or stop polling, 
+                            // but keep it for a bit to show completion
+                        }
+                    } else {
+                        $tray.hide();
+                    }
+                }
+            });
+        }
+
+        function startPolling() {
+            if (exportPollingInterval) clearInterval(exportPollingInterval);
+            exportPollingInterval = setInterval(updateExportTray, 3000);
+        }
+
+        // Initial check
+        updateExportTray();
+        // Always poll at least every 10 seconds even if none active to catch new ones
+        setInterval(updateExportTray, 10000);
+
+        // Listen for global event to speed up polling when a new export starts
+        $(document).on('exportStarted', function() {
+            updateExportTray();
+            startPolling();
+        });
+
+    })(jQuery);
+</script>
+@endpush

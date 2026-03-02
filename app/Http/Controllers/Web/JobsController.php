@@ -275,7 +275,7 @@ class JobsController extends Controller
                         $template = null;
                         $notifyOptions = [
 
-                            '[u.name]' => $user->full_name,
+                            '[u.name]' => $user->full_name ?? '',
                             '[c.title]' => $webinar->title,
 
                         ];
