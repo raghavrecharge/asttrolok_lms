@@ -33,7 +33,6 @@ class BackfillSupportUpeRecords extends Command
         'offline_cash_payment',
         'free_course_grant',
         'refund_payment',
-        'wrong_course_correction',
     ];
 
     public function handle(SupportUpeBridge $bridge): int
@@ -159,12 +158,6 @@ class BackfillSupportUpeRecords extends Command
                 $bridge->recordRefund($userId, $webinarId, $supportId, $adminId);
                 break;
 
-            case 'wrong_course_correction':
-                $correctCourseId = $ticket->correct_course_id;
-                if ($correctCourseId) {
-                    $bridge->handleWrongCourseCorrection($userId, $webinarId, $correctCourseId, $supportId, $adminId);
-                }
-                break;
         }
     }
 }

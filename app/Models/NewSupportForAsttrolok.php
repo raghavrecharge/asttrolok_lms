@@ -222,7 +222,6 @@ class NewSupportForAsttrolok extends Model
             'new_service_access' => 'New Service Access',
             'refund_payment' => 'Refund Payment',
             'post_purchase_coupon' => 'Post-Purchase Coupon Apply',
-            'wrong_course_correction' => 'Wrong Course Correction',
         ];
 
         if (empty($this->support_scenario)) {

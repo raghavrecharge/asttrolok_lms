@@ -285,17 +285,9 @@ class PaymentController extends Controller
                 $totalDiscount = 0;
                 $Discount = null;
 
-                // First check if a discount_id was explicitly provided
+                // Only apply discount from explicit discount_id (user-entered coupon)
                 if ($discountId > 0) {
                     $Discount = Discount::where('id', $discountId)->where('status', 'active')->first();
-                }
-
-                // Fallback: check for linked DiscountCourse discount
-                if (!$Discount && $discountId == 0) {
-                    $discountCourse = DiscountCourse::where('course_id', $webinar->id)->first();
-                    if ($discountCourse) {
-                        $Discount = Discount::where('id', $discountCourse->discount_id)->where('status', 'active')->first();
-                    }
                 }
 
                 if ($Discount) {
@@ -329,14 +321,9 @@ class PaymentController extends Controller
                 $totalDiscount = 0;
                 $Discount = null;
 
+                // Only apply discount from explicit discount_id (user-entered coupon)
                 if ($discountId > 0) {
                     $Discount = Discount::where('id', $discountId)->where('status', 'active')->first();
-                }
-                if (!$Discount && $discountId == 0) {
-                    $discountCourse = DiscountCourse::where('course_id', $webinar->id)->first();
-                    if ($discountCourse) {
-                        $Discount = Discount::where('id', $discountCourse->discount_id)->where('status', 'active')->first();
-                    }
                 }
                 if ($Discount) {
                     if ($Discount->discount_type == 'fixed_amount') {
@@ -564,14 +551,9 @@ class PaymentController extends Controller
                 $totalDiscount = 0;
                 $Discount = null;
 
+                // Only apply discount from explicit discount_id (user-entered coupon)
                 if ($discountId > 0) {
                     $Discount = Discount::where('id', $discountId)->where('status', 'active')->first();
-                }
-                if (!$Discount && $discountId == 0) {
-                    $discountCourse = DiscountCourse::where('course_id', $item->id)->first();
-                    if ($discountCourse) {
-                        $Discount = Discount::where('id', $discountCourse->discount_id)->where('status', 'active')->first();
-                    }
                 }
                 if ($Discount) {
                     if ($Discount->discount_type == 'fixed_amount') {

@@ -1152,17 +1152,9 @@ class WebinarController extends Controller
 
                 $Discount = null;
 
-                // First check if user applied a coupon via session
+                // Only apply discount if user explicitly entered a coupon code
                 if ($discountCouponId > 0) {
                     $Discount = Discount::where('id', $discountCouponId)->where('status', 'active')->first();
-                }
-
-                // Only apply linked discount if no session coupon was explicitly applied
-                if (!$Discount && $discountCouponId == 0) {
-                    $DiscountCourse = DiscountCourse::where('course_id', $webinarId)->first();
-                    if ($DiscountCourse) {
-                        $Discount = Discount::where('id', $DiscountCourse->discount_id)->where('status', 'active')->first();
-                    }
                 }
 
                 $item = $this->getItem($webinarId, 'course');

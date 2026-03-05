@@ -454,9 +454,6 @@ class AdminSupportController extends Controller
     //                $this->adminApproveRestructure($supportRequest);
     //             }
 
-    //             if ($supportRequest->support_scenario === 'wrong_course_correction' &&  $validated['status'] === 'completed') {
-    //                     $this->handleWrongCourseCorrection($supportRequest);
-    //             }
                 
                 
     //             if(auth()->user()->role == 'admin'){
@@ -898,7 +895,18 @@ class AdminSupportController extends Controller
                         }
 
                         if (!empty($supportRequest->coupon_code)) {
-                            $this->ApplyCouponCode($supportRequest);
+                            try {
+                                $this->ApplyCouponCode($supportRequest);
+                            } catch (\RuntimeException $e) {
+                                DB::rollBack();
+                                return back()->with([
+                                    'toast' => [
+                                        'title' => 'Coupon Error',
+                                        'msg'   => $e->getMessage(),
+                                        'status' => 'error',
+                                    ]
+                                ]);
+                            }
                             $updateData['status'] = 'completed';
                             $updateData['executed_at'] = now();
                             $updateData['sub_admin_id'] = $user->id;
@@ -970,14 +978,6 @@ class AdminSupportController extends Controller
                 /* ---------- INSTALLMENT RESTRUCTURE ---------- */
                 if ($supportRequest->support_scenario === 'installment_restructure') {
                     $this->adminApproveRestructure($supportRequest);
-                }
-
-                /* ---------- WRONG COURSE ---------- */
-                if ($supportRequest->support_scenario === 'wrong_course_correction') {
-                    $wccResult = $this->handleWrongCourseCorrection($supportRequest);
-                    if ($wccResult && !$wccResult['success']) {
-                        throw new \RuntimeException($wccResult['message']);
-                    }
                 }
 
                 /* ---------- RELATIVE / FRIEND ACCESS ---------- */
@@ -1747,7 +1747,7 @@ class AdminSupportController extends Controller
 
         // Validate scenario is provided
         $request->validate([
-            'support_scenario' => 'required|string|in:course_extension,temporary_access,mentor_access,relatives_friends_access,free_course_grant,offline_cash_payment,installment_restructure,refund_payment,post_purchase_coupon,wrong_course_correction',
+            'support_scenario' => 'required|string|in:course_extension,temporary_access,mentor_access,relatives_friends_access,free_course_grant,offline_cash_payment,installment_restructure,refund_payment,post_purchase_coupon',
         ]);
 
         $scenario = $request->support_scenario;
@@ -1798,16 +1798,6 @@ class AdminSupportController extends Controller
                 $scenarioRules['coupon_code'] = 'nullable|string';
                 $scenarioRules['coupon_apply_reason'] = 'nullable|string';
                 break;
-            case 'wrong_course_correction':
-                $scenarioRules['wrong_course_id'] = 'required|exists:webinars,id';
-                $scenarioRules['correct_course_id'] = 'required|exists:webinars,id';
-                $scenarioRules['correction_reason'] = 'nullable|string';
-                $scenarioRules['coupon_code'] = 'nullable|string';
-                $scenarioRules['coupon_apply_reason'] = 'nullable|string';
-                $scenarioRules['correction_purchase_type'] = 'required|string|in:full,installment,quick_pay';
-                $scenarioRules['correction_installment_id'] = 'nullable|integer|exists:installments,id';
-                $scenarioRules['correction_quick_pay_amount'] = 'nullable|numeric|min:1';
-                break;
         }
 
         $scenarioRules['admin_remarks'] = 'nullable|string';
@@ -1824,19 +1814,7 @@ class AdminSupportController extends Controller
             ];
 
             // Determine webinar_id
-            if ($scenario === 'wrong_course_correction') {
-                $updateData['webinar_id'] = $request->wrong_course_id;
-                $updateData['wrong_course_id'] = $request->wrong_course_id;
-                $updateData['correct_course_id'] = $request->correct_course_id;
-                $updateData['correction_reason'] = $request->correction_reason;
-                $updateData['coupon_code'] = $request->coupon_code;
-                $updateData['coupon_apply_reason'] = $request->coupon_apply_reason;
-                $updateData['correction_purchase_type'] = $request->correction_purchase_type ?? 'full';
-                $updateData['correction_installment_id'] = $request->correction_installment_id ?? null;
-                $updateData['correction_quick_pay_amount'] = $request->correction_quick_pay_amount ?? null;
-            } else {
-                $updateData['webinar_id'] = $request->webinar_id;
-            }
+            $updateData['webinar_id'] = $request->webinar_id;
 
             // Determine flow type from the selected course + student
             $webinarId = $updateData['webinar_id'] ?? null;
@@ -2395,173 +2373,6 @@ class AdminSupportController extends Controller
     }
 
     /**
-     * V-13 FIX: Rewritten handleWrongCourseCorrection() — wallet-mediated UPE flow.
-     * All wallet logic handled by SupportUpeBridge. Returns result array.
-     */
-    private function handleWrongCourseCorrection($supportRequest): array
-    {
-        try {
-            $userId = $supportRequest->user_id;
-            $wrongCourseId = $supportRequest->wrong_course_id;
-            $correctCourseId = $supportRequest->correct_course_id;
-
-            \Log::info('Processing wrong course correction (preserve-history)', [
-                'user_id' => $userId,
-                'wrong_course_id' => $wrongCourseId,
-                'correct_course_id' => $correctCourseId,
-                'support_request_id' => $supportRequest->id,
-            ]);
-
-            $correctCourse = Webinar::findOrFail($correctCourseId);
-
-            // 1. Soft-revoke Sale for wrong course (NO webinar_id overwrite)
-            $oldSale = Sale::where('buyer_id', $userId)
-                ->where('webinar_id', $wrongCourseId)
-                ->whereNull('refund_at')
-                ->where('access_to_purchased_item', 1)
-                ->first();
-
-            if ($oldSale) {
-                $oldSale->update([
-                    'refund_at' => time(),
-                    'access_to_purchased_item' => 0,
-                ]);
-            }
-
-            // 2. Create reversal Accounting entry for wrong course (NO DELETE)
-            $originalAmount = $oldSale ? $oldSale->amount : 0;
-            Accounting::create([
-                'user_id' => $userId,
-                'amount' => -1 * abs($originalAmount),
-                'type' => 'deduction',
-                'type_account' => Accounting::$asset,
-                'description' => "Wrong course reversal: Course #{$wrongCourseId} → #{$correctCourseId} - Support #{$supportRequest->ticket_number}",
-                'created_at' => time(),
-            ]);
-
-            // 3. Check user doesn't already have correct course
-            $existingCorrect = Sale::where('buyer_id', $userId)
-                ->where('webinar_id', $correctCourseId)
-                ->whereNull('refund_at')
-                ->where('access_to_purchased_item', 1)
-                ->first();
-
-            if (!$existingCorrect) {
-                // 4. Create NEW Sale for correct course (preserves original)
-                Sale::create([
-                    'buyer_id' => $userId,
-                    'seller_id' => $correctCourse->creator_id,
-                    'webinar_id' => $correctCourseId,
-                    'type' => Sale::$webinar,
-                    'payment_method' => $oldSale ? $oldSale->payment_method : Sale::$credit,
-                    'amount' => $originalAmount,
-                    'total_amount' => $oldSale ? $oldSale->total_amount : 0,
-                    'access_to_purchased_item' => 1,
-                    'manual_added' => true,
-                    'support_request_id' => $supportRequest->id,
-                    'granted_by_admin_id' => Auth::id(),
-                    'created_at' => time(),
-                ]);
-
-                // 5. Create Accounting entry for correct course
-                Accounting::create([
-                    'user_id' => $userId,
-                    'amount' => $originalAmount,
-                    'type' => Accounting::$addiction,
-                    'type_account' => Accounting::$asset,
-                    'description' => "Wrong course correction: Course #{$correctCourseId} - Support #{$supportRequest->ticket_number}",
-                    'created_at' => time(),
-                ]);
-            }
-
-            // 6. Handle InstallmentOrder transfer (NO webinar_id overwrite)
-            $oldInstallment = InstallmentOrder::where('user_id', $userId)
-                ->where('webinar_id', $wrongCourseId)
-                ->whereIn('status', ['open', 'paying'])
-                ->first();
-
-            if ($oldInstallment) {
-                $oldInstallment->update(['status' => 'transferred']);
-
-                $newInstallment = InstallmentOrder::create([
-                    'installment_id' => $oldInstallment->installment_id,
-                    'user_id' => $userId,
-                    'webinar_id' => $correctCourseId,
-                    'item_price' => $correctCourse->price,
-                    'status' => 'open',
-                    'parent_order_id' => $oldInstallment->id,
-                    'created_at' => time(),
-                ]);
-
-                $oldInstallment->update(['transferred_to_order_id' => $newInstallment->id]);
-            }
-
-            // 7. Revoke old WebinarAccessControl (NO webinar_id overwrite)
-            try {
-                WebinarAccessControl::where('user_id', $userId)
-                    ->where('webinar_id', $wrongCourseId)
-                    ->where('status', 'active')
-                    ->update(['status' => 'revoked']);
-            } catch (\Exception $e) {
-                // Legacy table may lack 'status' column — delete the row instead
-                WebinarAccessControl::where('user_id', $userId)
-                    ->where('webinar_id', $wrongCourseId)
-                    ->delete();
-                Log::warning('webinar_access_control missing status column, deleted row instead', [
-                    'user_id' => $userId, 'webinar_id' => $wrongCourseId, 'error' => $e->getMessage()
-                ]);
-            }
-
-            // UPE bridge handles ALL wallet + access logic
-            $bridge = app(SupportUpeBridge::class);
-
-            $couponCode = $supportRequest->coupon_code;
-            $discountId = null;
-            if ($couponCode) {
-                $discount = \App\Models\Discount::where('code', $couponCode)->where('status', 'active')->first();
-                if ($discount) $discountId = $discount->id;
-            }
-
-            $purchaseType   = $supportRequest->correction_purchase_type   ?? 'full';
-            $installmentId  = $supportRequest->correction_installment_id  ? (int) $supportRequest->correction_installment_id : null;
-            $quickPayAmount = $supportRequest->correction_quick_pay_amount ? (float) $supportRequest->correction_quick_pay_amount : 0;
-
-            $wccResult = $bridge->handleWrongCourseCorrection(
-                $userId,
-                $wrongCourseId,
-                $correctCourseId,
-                $supportRequest->id,
-                Auth::id(),
-                $discountId,
-                $couponCode,
-                $purchaseType,
-                $installmentId,
-                $quickPayAmount
-            );
-
-            if (!$wccResult['success']) {
-                return $wccResult;
-            }
-
-            \Log::info('Wrong course correction completed', [
-                'user_id'            => $userId,
-                'wrong_course_id'    => $wrongCourseId,
-                'correct_course_id'  => $correctCourseId,
-                'purchase_type'      => $purchaseType,
-                'amount_refunded'    => $wccResult['amount_refunded'],
-                'amount_charged'     => $wccResult['amount_charged'],
-                'support_request_id' => $supportRequest->id,
-            ]);
-
-            return $wccResult;
-
-        } catch (\Exception $e) {
-            \Log::error('Error in wrong course correction: ' . $e->getMessage());
-            throw $e;
-        }
-    }
-
-    /**
          * Validate coupon code via AJAX
         */
         public function validateCoupon(Request $request)
@@ -2941,14 +2752,7 @@ class AdminSupportController extends Controller
 
             //  Empty coupon
             if (!$couponCode) {
-                return response()->json([
-                    'success' => false,
-                    'toast' => [
-                        'title'  => 'Coupon Required',
-                        'msg'    => 'Please enter a coupon code',
-                        'status' => 'error'
-                    ]
-                ], 422);
+                throw new \RuntimeException('Please enter a coupon code.');
             }
 
             //  Find coupon
@@ -2962,39 +2766,18 @@ class AdminSupportController extends Controller
 
             //  Invalid coupon
             if (!$discount) {
-                return response()->json([
-                    'success' => false,
-                    'toast' => [
-                        'title'  => 'Invalid Coupon',
-                        'msg'    => 'This coupon code is not valid or expired',
-                        'status' => 'error'
-                    ]
-                ], 404);
+                throw new \RuntimeException('This coupon code is not valid or expired.');
             }
 
             //  Coupon usage limit
             if ($discount->discountRemain() <= 0) {
-                return response()->json([
-                    'success' => false,
-                    'toast' => [
-                        'title'  => 'Coupon Used',
-                        'msg'    => 'This coupon has reached its usage limit',
-                        'status' => 'error'
-                    ]
-                ], 409);
+                throw new \RuntimeException('This coupon has reached its usage limit.');
             }
 
             //  Course validation
             $allowedCourses = $discount->discountCourses()->pluck('course_id')->toArray();
             if (!empty($allowedCourses) && !in_array($webinarId, $allowedCourses)) {
-                return response()->json([
-                    'success' => false,
-                    'toast' => [
-                        'title'  => 'Not Applicable',
-                        'msg'    => 'This coupon is not applicable for this course',
-                        'status' => 'error'
-                    ]
-                ], 403);
+                throw new \RuntimeException('This coupon is not applicable for this course.');
             }
             $validCourses = \App\Models\Webinar::where('id', $webinarId)
                         ->with(['translations' => function($query) {
@@ -3070,21 +2853,7 @@ class AdminSupportController extends Controller
                         }
                 }
 
-            //  Success response
-            return response()->json([
-                'success' => true,
-                'toast' => [
-                    'title'  => 'Coupon Applied',
-                    'msg'    => 'Discount applied successfully',
-                    'status' => 'success'
-                ],
-                'data' => [
-                    'original_amount' => $originalAmount,
-                    'discount_amount' => round($discountAmount, 2),
-                    'final_amount'    => round($finalAmount, 2),
-                    'discount_type'   => $discount->percent > 0 ? 'percentage' : 'fixed'
-                ]
-            ]);
+            return true;
         }
 
         public function offlineCashPayment($supportRequest)

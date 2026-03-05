@@ -505,9 +505,20 @@ try {
                     }
                 }
 
+                // Collect webinar_ids already covered by Sale records to avoid duplicate rows
+                $dashSaleWebinarIds = [];
+                foreach ($amount_paid as $ap) {
+                    if ($ap[5] === 'course' && !empty($ap[4])) {
+                        $dashSaleWebinarIds[] = $ap[4];
+                    }
+                }
+
                 $WebinarPartPayment =  WebinarPartPayment :: where('user_id',$userAuth->id)->get();
 
                 foreach ($WebinarPartPayment as $WebinarPartPayment1){
+                    // Skip if this webinar already has a Sale entry (prevents installment duplicates)
+                    if (in_array($WebinarPartPayment1->webinar_id, $dashSaleWebinarIds)) continue;
+
                     $webinars1 = Webinar:: where('id', $WebinarPartPayment1->webinar_id)
                 ->first();
                 $amount_paid[] = [

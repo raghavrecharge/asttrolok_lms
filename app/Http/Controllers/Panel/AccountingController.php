@@ -167,6 +167,14 @@ class AccountingController extends Controller
                 }
             }
 
+            // Collect webinar_ids already covered by Sale records to avoid duplicate rows
+            $saleWebinarIds = [];
+            foreach ($amount_paid as $ap) {
+                if ($ap[5] === 'course' && !empty($ap[4])) {
+                    $saleWebinarIds[] = $ap[4];
+                }
+            }
+
             try {
                 $partPaymentsQuery = WebinarPartPayment::where('user_id', $userAuth->id);
                 if (!empty($from)) {
@@ -180,6 +188,9 @@ class AccountingController extends Controller
                 foreach ($webinarPartPayments as $payment) {
                     try {
                         if (!empty($type) && $type != 'all' && $type != 'course') continue;
+
+                        // Skip if this webinar already has a Sale entry (prevents installment duplicates)
+                        if (in_array($payment->webinar_id, $saleWebinarIds)) continue;
 
                         $webinar = Webinar::find($payment->webinar_id);
                         if ($webinar) {
