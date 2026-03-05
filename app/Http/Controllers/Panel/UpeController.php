@@ -603,7 +603,11 @@ class UpeController extends Controller
         if ($nextUnpaid && $plan->sale && $plan->sale->product) {
             $webinar = \App\Models\Webinar::find($plan->sale->product->external_id);
             if ($webinar) {
-                $payUrl = url('/register-course/' . $webinar->slug . '?amount=' . $nextUnpaid->amount_due);
+                $remaining = max(0, (float)$nextUnpaid->amount_due - (float)($nextUnpaid->amount_paid ?? 0));
+                $payUrl = url('/register-course/' . $webinar->slug
+                    . '?amount=' . $remaining
+                    . '&upe_schedule_id=' . $nextUnpaid->id
+                    . '&upe_plan_id=' . $plan->id);
             }
         }
 

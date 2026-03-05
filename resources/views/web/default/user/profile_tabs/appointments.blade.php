@@ -481,6 +481,7 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
         birthplace: document.getElementById('birthplace').value,
         selectedDay: document.getElementById('selectedDay').value,
         password: document.getElementById('password').value,
+        slotDuration: parseInt(document.querySelector('input[name="time1"]:checked')?.value || '30'),
         // selectedTime: selectedTime,
         discount_id: @json(session('meeting_discount_id')),
         wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
@@ -531,7 +532,8 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
                         selectedDay: userDetails.selectedDay || null,
                         birthdate: userDetails.birthdate || null,
                         birthtime: userDetails.birthtime || null,
-                        birthplace: userDetails.birthplace || null
+                        birthplace: userDetails.birthplace || null,
+                        slot_duration: userDetails.slotDuration || 30
                     })
                 });
 
@@ -543,6 +545,13 @@ document.getElementById('paymentSubmit').addEventListener('click', function(e) {
                 }
 
                 const data = await response.json();
+
+                // Full wallet payment — booking already confirmed, no Razorpay needed
+                if (data.wallet_paid) {
+                    window.location.href = '/payment/success';
+                    return;
+                }
+
                 this.openRazorpayCheckout(data, userDetails);
                 hidePaymentLoader();
 

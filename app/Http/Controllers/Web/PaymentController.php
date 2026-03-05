@@ -75,6 +75,7 @@ class PaymentController extends Controller
             'amount' => 'nullable',
             'use_wallet' => 'nullable|boolean',
             'wallet_amount' => 'nullable|numeric|min:0',
+            'slot_duration' => 'nullable|integer',
         ]);
         session()->forget('meeting_discount_id');
         session()->forget('discountCouponId');
@@ -486,10 +487,24 @@ class PaymentController extends Controller
                 $meeting = Meeting::findOrFail($meetingTime->meeting_id);
 
                 $explodetime = explode('-', $meetingTime->time);
+                $slotDuration = (int) ($validated['slot_duration'] ?? 30);
 
-                $hours = isset($slot_id)?((strtotime($explodetime[1]) - strtotime($explodetime[0])) / 1800)/2:(strtotime($explodetime[1]) - strtotime($explodetime[0])) / 1800;
+                // Compute hours and end time based on selected slot duration
+                $instructorTimezone = $meeting->getTimezone();
+                $startAt = $this->handleUtcDate($day, $explodetime[0], $instructorTimezone);
+
+                if ($slotDuration === 15) {
+                    // 15-min half-slot: end = start + 15 min, price = half hourly rate
+                    $slotEndTime = date('H:i', strtotime('+15 minutes', strtotime($explodetime[0])));
+                    $endAt = $this->handleUtcDate($day, $slotEndTime, $instructorTimezone);
+                    $hours = 0.5;
+                } else {
+                    // Full slot (30 min or whatever the slot defines)
+                    $endAt = $this->handleUtcDate($day, $explodetime[1], $instructorTimezone);
+                    $hours = (strtotime($explodetime[1]) - strtotime($explodetime[0])) / 1800;
+                }
+
                 $hourlyAmount = $meeting->amount;
-
                 $itemPrice = (!empty($hourlyAmount) and $hourlyAmount > 0) ? ($hourlyAmount * $hours) : 0;
 
                 if($discountId > 0){
@@ -501,11 +516,6 @@ class PaymentController extends Controller
                     $totalDiscount = 0;
                     $itemPrice1=$itemPrice-$totalDiscount;
                 }
-
-                $instructorTimezone = $meeting->getTimezone();
-
-                $startAt = $this->handleUtcDate($day, $explodetime[0], $instructorTimezone);
-                $endAt = $this->handleUtcDate($day, $explodetime[1], $instructorTimezone);
 
                 $reserveMeeting = ReserveMeeting::updateOrCreate([
                                 'user_id' => $user->id,

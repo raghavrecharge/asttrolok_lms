@@ -871,9 +871,59 @@
 
                                 case 'post_purchase_coupon':
                                     html = buildCourseSelect('webinar_id', 'Select Purchased Course', studentPurchases, true, currentValues.webinar_id);
-                                    html += `<div class="form-group"><label>Coupon Code</label>
-                                        <input type="text" name="coupon_code" class="form-control" placeholder="Enter coupon code" value="${currentValues.coupon_code || ''}"></div>`;
+                                    html += `<div class="form-group">
+                                        <label>Coupon Code <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="text" name="coupon_code" id="ppcCouponInput" class="form-control" placeholder="Enter coupon code" value="${escapeHtml(currentValues.coupon_code || '')}" style="text-transform:uppercase;">
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-outline-primary" id="ppcValidateCouponBtn">
+                                                    <i class="fas fa-tag"></i> Apply Coupon
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <small class="form-text" id="ppcCouponFeedback"></small>
+                                    </div>`;
                                     html += buildTextarea('coupon_apply_reason', 'Reason', currentValues.coupon_apply_reason);
+
+                                    // Wire validate button after HTML is injected
+                                    setTimeout(function() {
+                                        const btn = document.getElementById('ppcValidateCouponBtn');
+                                        const input = document.getElementById('ppcCouponInput');
+                                        const feedback = document.getElementById('ppcCouponFeedback');
+                                        const courseSelect = fieldsContainer.querySelector('select[name="webinar_id"]');
+                                        if (!btn || !input) return;
+
+                                        btn.addEventListener('click', function() {
+                                            const code = input.value.trim().toUpperCase();
+                                            const webinarId = courseSelect ? courseSelect.value : '';
+                                            if (!code) { feedback.innerHTML = '<span class="text-danger">Please enter a coupon code.</span>'; return; }
+                                            btn.disabled = true;
+                                            btn.textContent = 'Validating...';
+                                            feedback.innerHTML = '';
+
+                                            fetch('{{ route("admin.support.validateCoupon") }}', {
+                                                method: 'POST',
+                                                credentials: 'same-origin',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'Accept': 'application/json',
+                                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                                },
+                                                body: JSON.stringify({ coupon_code: code, webinar_id: webinarId })
+                                            })
+                                            .then(r => r.json())
+                                            .then(data => {
+                                                if (data.success) {
+                                                    input.value = code;
+                                                    feedback.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> ' + (data.message || 'Coupon is valid!') + '</span>';
+                                                } else {
+                                                    feedback.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle"></i> ' + (data.message || 'Invalid coupon.') + '</span>';
+                                                }
+                                            })
+                                            .catch(() => { feedback.innerHTML = '<span class="text-danger">Validation request failed.</span>'; })
+                                            .finally(() => { btn.disabled = false; btn.innerHTML = '<i class="fas fa-tag"></i> Apply Coupon'; });
+                                        });
+                                    }, 50);
                                     break;
 
                             }

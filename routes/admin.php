@@ -180,7 +180,8 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
                 Route::put('/support/{id}/status-secure', 'AdminSupportController@updateStatusSecure')
                     ->name('admin.support.updateStatusSecure');
 
-                Route::post('/validate-coupon', 'AdminSupportController@validateCoupon');
+                Route::post('/validate-coupon', 'AdminSupportController@validateCoupon')
+                    ->name('admin.support.validateCoupon');
                 Route::post('/validate-offline-coupon', 'AdminSupportController@validateOfflineCoupon');
                 Route::post('/wrong-course-info', 'AdminSupportController@getWrongCourseInfo')
                     ->name('admin.support.wrongCourseInfo');

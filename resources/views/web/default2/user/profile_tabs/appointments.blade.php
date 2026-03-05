@@ -533,7 +533,8 @@ const userDetails = {
     birthplace: document.getElementById('birthplace').value,
     selectedDay: document.getElementById('selectedDay').value,
     discount_id: $('#coupon_hidden').val() || null,
-    wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
+    wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0,
+    slotDuration: parseInt(document.querySelector('input[name="time1"]:checked')?.value || '30')
 };
 
 
@@ -582,7 +583,8 @@ const userDetails = {
                         selectedDay: userDetails.selectedDay || null,
                         birthdate: userDetails.birthdate || null,
                         birthtime: userDetails.birthtime || null,
-                        birthplace: userDetails.birthplace || null
+                        birthplace: userDetails.birthplace || null,
+                        slot_duration: userDetails.slotDuration || 30
                     })
                 });
 
@@ -593,6 +595,13 @@ const userDetails = {
                 }
 
                 const data = await response.json();
+
+                // Full wallet payment — booking already confirmed, no Razorpay needed
+                if (data.wallet_paid) {
+                    window.location.href = '/payment/success';
+                    return;
+                }
+
                 this.openRazorpayCheckout(data, userDetails);
 
             } catch (error) {

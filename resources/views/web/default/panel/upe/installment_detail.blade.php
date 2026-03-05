@@ -182,23 +182,44 @@
 
                         <div class="col-12 col-md-6 col-lg-4 mb-20">
                             @php
-                                $ledgerDiscount = $plan->sale->ledgerEntries->where('entry_type', 'discount')->sum('amount');
-                                $totalSavings = $plan->sale->base_fee_snapshot - $plan->total_amount;
+                                $ledgerEntries       = $plan->sale->ledgerEntries ?? collect();
+                                // Initial purchase discount (entry_type = discount)
+                                $ledgerDiscount      = $ledgerEntries->where('entry_type', 'discount')->sum('amount');
+                                // Post-purchase coupon payments (installment_payment + payment_method = coupon)
+                                $couponPaymentEntries = $ledgerEntries
+                                    ->where('entry_type', 'installment_payment')
+                                    ->where('payment_method', 'coupon');
+                                $couponPaymentTotal  = $couponPaymentEntries->sum('amount');
+                                $totalCouponAmount   = $ledgerDiscount + $couponPaymentTotal;
+                                // Extract coupon codes from gateway_response
+                                $couponCodes = $ledgerEntries
+                                    ->where('payment_method', 'coupon')
+                                    ->filter(fn($e) => !empty($e->gateway_response['coupon_code']))
+                                    ->map(fn($e) => strtoupper($e->gateway_response['coupon_code']))
+                                    ->unique()->implode(', ');
+                                $totalSavings = ($plan->sale->base_fee_snapshot ?? 0) - ($plan->total_amount ?? 0);
                             @endphp
-                            @if($totalSavings > 0)
+                            @if($totalCouponAmount > 0)
                                 <div class="summary-item">
                                     <div class="summary-label">
                                         <i data-feather="tag" width="16" height="16" class="mr-10 text-gray"></i>
-                                       Coupon Discount
+                                        Coupon Discount
                                     </div>
                                     <span>
-                                        @if($ledgerDiscount > 0)
-                                            <span class="badge badge-success">Coupon Applied</span>
-                                            <span class="font-weight-600 text-primary ml-5">{{ handlePrice($ledgerDiscount) }} saved</span>
-                                        @else
-                                            <span class="font-weight-600 text-primary ml-5">{{ handlePrice($totalSavings) }} saved</span>
+                                        <span class="badge badge-success">Applied</span>
+                                        <span class="font-weight-600 text-success ml-5">-{{ handlePrice($totalCouponAmount) }}</span>
+                                        @if($couponCodes)
+                                            <span class="font-12 text-gray d-block mt-2">({{ $couponCodes }})</span>
                                         @endif
                                     </span>
+                                </div>
+                            @elseif($totalSavings > 0)
+                                <div class="summary-item">
+                                    <div class="summary-label">
+                                        <i data-feather="tag" width="16" height="16" class="mr-10 text-gray"></i>
+                                        Discount
+                                    </div>
+                                    <span class="font-weight-600 text-primary">{{ handlePrice($totalSavings) }} saved</span>
                                 </div>
                             @endif
                         </div>
@@ -225,11 +246,12 @@
                     </div>
 
                     @php
-                        $activeSchedules = $plan->schedules->whereNotIn('status', ['waived']);
-                        $totalPaid = $activeSchedules->sum('amount_paid');
-                        $totalDue = $activeSchedules->sum('amount_due');
-                        $totalRemaining = max(0, $totalDue - $totalPaid);
-                        $paidPercent = $totalDue > 0 ? round(($totalPaid / $totalDue) * 100) : 0;
+                        $activeSchedules  = $plan->schedules->whereNotIn('status', ['waived']);
+                        $totalPaid        = $activeSchedules->sum('amount_paid');
+                        $totalDue         = $activeSchedules->sum('amount_due');
+                        $cashPaid         = max(0, $totalPaid - ($couponPaymentTotal ?? 0));
+                        $totalRemaining   = max(0, $totalDue - $totalPaid);
+                        $paidPercent      = $totalDue > 0 ? round(($totalPaid / $totalDue) * 100) : 0;
                     @endphp
 
                     <div class="mt-10 p-20 rounded-lg bg-light">
@@ -245,15 +267,21 @@
                             </div>
                             <div class="col-12 col-md-8">
                                 <div class="row">
-                                    <div class="col-6 col-md-4">
+                                    <div class="col-6 col-md-3">
                                         <div class="font-12 text-gray mb-2">Total Due</div>
                                         <div class="text-dark-blue font-16 font-weight-bold">{{ handlePrice($totalDue) }}</div>
                                     </div>
-                                    <div class="col-6 col-md-4">
-                                        <div class="font-12 text-gray mb-2">Total Paid</div>
-                                        <div class="text-primary font-16 font-weight-bold">{{ handlePrice($totalPaid) }}</div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="font-12 text-gray mb-2">Cash Paid</div>
+                                        <div class="text-primary font-16 font-weight-bold">{{ handlePrice($cashPaid) }}</div>
                                     </div>
-                                    <div class="col-12 col-md-4 mt-10 mt-md-0">
+                                    @if(!empty($couponPaymentTotal) && $couponPaymentTotal > 0)
+                                    <div class="col-6 col-md-3 mt-10 mt-md-0">
+                                        <div class="font-12 text-gray mb-2">Coupon Applied</div>
+                                        <div class="text-success font-16 font-weight-bold">-{{ handlePrice($couponPaymentTotal) }}</div>
+                                    </div>
+                                    @endif
+                                    <div class="col-6 col-md-3 mt-10 mt-md-0">
                                         <div class="font-12 text-gray mb-2">Balance Remaining</div>
                                         <div class="text-danger font-16 font-weight-bold">{{ handlePrice(max(0, $totalRemaining)) }}</div>
                                     </div>

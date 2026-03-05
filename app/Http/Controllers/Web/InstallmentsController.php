@@ -176,7 +176,7 @@ class InstallmentsController extends Controller
     {
         try {
             $course = Webinar::where('slug', $slug)
-                    ->where('status', 'active')
+                    ->whereIn('status', ['active', 'upcoming'])
                     ->first();
             
             if (!$course) {
@@ -441,7 +441,7 @@ class InstallmentsController extends Controller
         try {
             if ($itemType == 'course') {
                 $course = Webinar::where('id', $itemId)
-                    ->where('status', 'active')
+                    ->whereIn('status', ['active', 'upcoming'])
                     ->first();
 
                     return $course;
@@ -530,7 +530,7 @@ class InstallmentsController extends Controller
         try {
             // 1. Find UPE product for this webinar
             $upeProduct = UpeProduct::where('external_id', $webinarId)
-                ->whereIn('product_type', ['course_video', 'webinar'])
+                ->whereIn('product_type', ['course_video', 'webinar', 'course_live'])
                 ->first();
 
             if (!$upeProduct) {

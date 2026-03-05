@@ -44,13 +44,35 @@
                             @endif
                         </span>
                     </div>
-                    @if($plan->sale && $plan->sale->base_fee_snapshot > $plan->total_amount)
+                    @php
+                        $d2LedgerEntries      = $plan->sale->ledgerEntries ?? collect();
+                        $d2LedgerDiscount     = $d2LedgerEntries->where('entry_type', 'discount')->sum('amount');
+                        $d2CouponPayTotal     = $d2LedgerEntries
+                            ->where('entry_type', 'installment_payment')
+                            ->where('payment_method', 'coupon')->sum('amount');
+                        $d2TotalCoupon        = $d2LedgerDiscount + $d2CouponPayTotal;
+                        $d2CouponCodes        = $d2LedgerEntries
+                            ->where('payment_method', 'coupon')
+                            ->filter(fn($e) => !empty($e->gateway_response['coupon_code']))
+                            ->map(fn($e) => strtoupper($e->gateway_response['coupon_code']))
+                            ->unique()->implode(', ');
+                        $d2BaseSavings = ($plan->sale->base_fee_snapshot ?? 0) - ($plan->total_amount ?? 0);
+                    @endphp
+                    @if($d2TotalCoupon > 0)
+                        <div class="d-flex justify-content-between py-5 border-bottom">
+                            <span class="text-gray">Coupon Discount</span>
+                            <span>
+                                <span class="badge badge-success">Applied</span>
+                                <span class="font-weight-500 text-success ml-5">-₹{{ number_format($d2TotalCoupon, 2) }}</span>
+                                @if($d2CouponCodes)
+                                    <span class="font-12 text-gray d-block">({{ $d2CouponCodes }})</span>
+                                @endif
+                            </span>
+                        </div>
+                    @elseif($d2BaseSavings > 0)
                         <div class="d-flex justify-content-between py-5 border-bottom">
                             <span class="text-gray">Discount</span>
-                            <span>
-                                <span class="badge badge-warning">Coupon Applied</span>
-                                <span class="font-weight-500 text-primary ml-5">₹{{ number_format($plan->sale->base_fee_snapshot - $plan->total_amount, 2) }} saved</span>
-                            </span>
+                            <span class="font-weight-500 text-primary">₹{{ number_format($d2BaseSavings, 2) }} saved</span>
                         </div>
                     @endif
                     <div class="d-flex justify-content-between py-5 border-bottom">
@@ -64,17 +86,24 @@
 
                     @php
                         $activeSchedules = $plan->schedules->whereNotIn('status', ['waived']);
-                        $totalPaid = $activeSchedules->sum('amount_paid');
-                        $totalDue = $activeSchedules->sum('amount_due');
-                        $totalRemaining = max(0, $totalDue - $totalPaid);
-                        $paidPercent = $totalDue > 0 ? round(($totalPaid / $totalDue) * 100) : 0;
+                        $totalPaid       = $activeSchedules->sum('amount_paid');
+                        $totalDue        = $activeSchedules->sum('amount_due');
+                        $cashPaid        = max(0, $totalPaid - ($d2CouponPayTotal ?? 0));
+                        $totalRemaining  = max(0, $totalDue - $totalPaid);
+                        $paidPercent     = $totalDue > 0 ? round(($totalPaid / $totalDue) * 100) : 0;
                     @endphp
 
                     <div class="mt-15">
                         <div class="d-flex justify-content-between mb-5">
-                            <span class="text-gray">Paid</span>
-                            <span class="text-primary font-weight-bold">₹{{ number_format($totalPaid, 2) }}</span>
+                            <span class="text-gray">Cash Paid</span>
+                            <span class="text-primary font-weight-bold">₹{{ number_format($cashPaid, 2) }}</span>
                         </div>
+                        @if(!empty($d2CouponPayTotal) && $d2CouponPayTotal > 0)
+                        <div class="d-flex justify-content-between mb-5">
+                            <span class="text-gray">Coupon Applied</span>
+                            <span class="text-success font-weight-bold">-₹{{ number_format($d2CouponPayTotal, 2) }}</span>
+                        </div>
+                        @endif
                         <div class="d-flex justify-content-between mb-10">
                             <span class="text-gray">Remaining</span>
                             <span class="text-danger font-weight-bold">₹{{ number_format(max(0, $totalRemaining), 2) }}</span>
