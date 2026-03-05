@@ -479,13 +479,17 @@ class CartController extends Controller
                     ]);
                 }
 
+                session(['discountCouponId' => $discountCoupon->id]);
+                return response()->json([
+                    'status' => 200,
+                    'discount_id' => $discountCoupon->id,
+                ], 200);
             }
-            session(['discountCouponId' => $discountCoupon->id]);
+
             return response()->json([
-                            'status' => 200,
-                            'discount_id' => $discountCoupon->id,
-                        ], 200);
-            return $coupon;
+                'status' => 422,
+                'msg' => trans('cart.coupon_invalid'),
+            ]);
         } catch (\Exception $e) {
             \Log::error('couponValidate1 error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
@@ -1381,6 +1385,9 @@ class CartController extends Controller
 
             if (!empty($cart->webinar_id) or (!empty($cart->bundle_id) and $taxCount == 0)) {
                 $item = !empty($cart->webinar_id) ? $cart->webinar : $cart->bundle;
+                if (empty($item)) {
+                    return ['sub_total' => 0, 'total_discount' => 0, 'tax' => 0, 'tax_price' => 0, 'commission' => 0, 'commission_price' => 0, 'tax_is_different' => $taxIsDifferent];
+                }
                 $price = $item->price;
 
                 $discount = $item->getDiscount($cart->ticket, $user);

@@ -145,6 +145,7 @@ class DashboardController extends Controller
                 ->pluck('product_id');
 
             $deduped = collect();
+            $seenDashExternalIds = [];
             foreach ($bestSaleIds as $productId) {
                 $sale = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
                     ->where('product_id', $productId)
@@ -155,7 +156,11 @@ class DashboardController extends Controller
                     ->orderByRaw("FIELD(status, 'active', 'partially_refunded', 'pending_payment', 'completed') ASC")
                     ->orderByDesc('id')
                     ->first();
-                if ($sale) {
+                if ($sale && $sale->product) {
+                    $isBundle = $sale->product->product_type === 'bundle';
+                    $dashKey = ($isBundle ? 'bundle_' : 'course_') . $sale->product->external_id;
+                    if (in_array($dashKey, $seenDashExternalIds)) continue;
+                    $seenDashExternalIds[] = $dashKey;
                     $deduped->push($sale->id);
                 }
             }

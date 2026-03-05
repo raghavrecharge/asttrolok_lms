@@ -232,12 +232,6 @@ class Discount extends Model
             }
         }
 
-        // Also count usage from direct payment Sales that used this discount
-        $directSaleCount = Sale::where('discount_id', $this->id)
-            ->whereNull('refund_at')
-            ->count();
-        $usedCount = max($usedCount, $directSaleCount);
-
         // Also count UPE ledger-based usage (most accurate)
         $upeLedgerCount = \App\Models\PaymentEngine\UpeLedgerEntry::where('reference_type', 'discount')
             ->where('reference_id', $this->id)

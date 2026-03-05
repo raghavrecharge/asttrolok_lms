@@ -1385,6 +1385,7 @@ class WebinarController extends Controller
 
             // For each product, get the single best sale (EXCLUDE refunded + support-granted free access)
             $deduped = collect();
+            $seenExternalIds = []; // guard against multiple UpeProduct rows for the same webinar
             foreach ($bestSaleIds as $productId) {
                 $sale = UpeSale::where('user_id', $user->id)
                     ->where('product_id', $productId)
@@ -1400,7 +1401,11 @@ class WebinarController extends Controller
                     ->orderByRaw("FIELD(status, 'active', 'partially_refunded', 'pending_payment', 'completed') ASC")
                     ->orderByDesc('id')
                     ->first();
-                if ($sale) {
+                if ($sale && $sale->product) {
+                    $isBundle = $sale->product->product_type === 'bundle';
+                    $dedupeKey = ($isBundle ? 'bundle_' : 'course_') . $sale->product->external_id;
+                    if (in_array($dedupeKey, $seenExternalIds)) continue;
+                    $seenExternalIds[] = $dedupeKey;
                     $deduped->push($sale->id);
                 }
             }
