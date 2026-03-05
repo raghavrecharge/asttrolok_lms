@@ -371,6 +371,7 @@ class CartController extends Controller
             $user_id = $request->get('user_id');
             session(['coupon' => $coupon]);
             $discountCoupon = Discount::where('code', $coupon)
+                ->where('status', 'active')
                 ->first();
 
             if (!empty($discountCoupon)) {
@@ -378,7 +379,7 @@ class CartController extends Controller
                 if(!empty($user)){
 
                     $checkDiscount = $discountCoupon->checkValidDiscount();
-                if ($discountCoupon->source != 'meeting' || $discountCoupon->status != 'active') {
+                if ($discountCoupon->source != 'meeting') {
                     session(['meeting_discount_id' => 0 ]);
                     return response()->json([
                         'status' => 422,
@@ -423,6 +424,7 @@ class CartController extends Controller
              session(['discountCoupon' => '']);
 
             $discountCoupon = Discount::where('code', $coupon)
+                ->where('status', 'active')
                 ->first();
 
             if (!empty($discountCoupon)) {
@@ -465,6 +467,7 @@ class CartController extends Controller
             $web_id1 = $request->get('web_id1');
 
             $discountCoupon = Discount::where('code', $coupon)
+                ->where('status', 'active')
                 ->first();
 
             if (!empty($discountCoupon)) {
@@ -562,6 +565,7 @@ class CartController extends Controller
             $coupon = $request->get('coupon');
             session(['coupon' => $coupon]);
             $discountCoupon = Discount::where('code', $coupon)
+                ->where('status', 'active')
                 ->first();
 
             if (!empty($discountCoupon)) {

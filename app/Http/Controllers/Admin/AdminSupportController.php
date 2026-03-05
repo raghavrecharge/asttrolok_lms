@@ -26,6 +26,10 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Accounting;
 use App\Models\Refund;
+use App\Models\PaymentEngine\UpeProduct;
+use App\Models\PaymentEngine\UpeSale;
+use App\Models\PaymentEngine\UpeInstallmentPlan;
+use App\Services\PaymentEngine\InstallmentEngine;
 use App\Models\Transaction;
 use App\Models\WebinarChapter;
 use App\Models\WebinarChapterItem;
@@ -1234,7 +1238,18 @@ class AdminSupportController extends Controller
                 }
 
                  if ($supportRequest->support_scenario === 'post_purchase_coupon') {
-                     $this->ApplyCouponCode($supportRequest);
+                     try {
+                         $this->ApplyCouponCode($supportRequest);
+                     } catch (\RuntimeException $e) {
+                         DB::rollBack();
+                         return back()->with([
+                             'toast' => [
+                                 'title' => 'Coupon Error',
+                                 'msg'   => $e->getMessage(),
+                                 'status' => 'error',
+                             ]
+                         ]);
+                     }
                  }
                  /* ---------- offline_cash_payment ---------- */
                 if ($supportRequest->support_scenario === 'offline_cash_payment') {
@@ -2785,42 +2800,38 @@ class AdminSupportController extends Controller
                         }])
                         ->first();
 
+            if (!$validCourses) {
+                throw new \RuntimeException('Course not found for this support request.');
+            }
+
                if ($validCourses) {
 
-                    $order = InstallmentOrder::where([
-                        'user_id' => $userId,
-                        'webinar_id' => $webinarId,
-                        'status' => 'open',
-                    ])->first();
+                    // ── 1. Check UPE installment plan (primary path for new purchases) ──
+                    $upeProduct = UpeProduct::where('external_id', $webinarId)
+                        ->whereIn('product_type', ['course_video', 'webinar', 'course_live'])
+                        ->first();
 
-                    if ($order) {
-                        // ── Installment purchase: apply discount as part-payment credit ──
-                        $originalAmount = $order->item_price ?? 0;
+                    $upeInstallmentPlan = null;
+                    $upeSaleForInstallment = null;
 
-                        if ($discount->percent > 0) {
-                            $discountAmount = ($originalAmount * $discount->percent) / 100;
-                        } else {
-                            $discountAmount = $discount->amount;
-                        }
-                        $finalAmount = min($discountAmount, $originalAmount);
-
-                        \App\Models\WebinarPartPayment::create([
-                            'user_id'        => $userId,
-                            'installment_id' => $order->installment_id,
-                            'webinar_id'     => $webinarId,
-                            'amount'         => $finalAmount,
-                            'created_at'     => now(),
-                        ]);
-
-                    } else {
-                        // ── Regular (non-installment) purchase: credit wallet via Accounting ──
-                        $legacySale = \App\Models\Sale::where('buyer_id', $userId)
-                            ->where('webinar_id', $webinarId)
-                            ->whereNull('refund_at')
+                    if ($upeProduct) {
+                        $upeSaleForInstallment = UpeSale::where('user_id', $userId)
+                            ->where('product_id', $upeProduct->id)
+                            ->where('pricing_mode', 'installment')
+                            ->whereNotIn('status', ['cancelled', 'refunded', 'expired'])
                             ->orderByDesc('id')
                             ->first();
 
-                        $originalAmount = $legacySale ? ($legacySale->total_amount ?? 0) : ($supportRequest->amount ?? 0);
+                        if ($upeSaleForInstallment) {
+                            $upeInstallmentPlan = UpeInstallmentPlan::where('sale_id', $upeSaleForInstallment->id)
+                                ->where('status', 'active')
+                                ->first();
+                        }
+                    }
+
+                    if ($upeInstallmentPlan) {
+                        // ── UPE installment: apply discount by crediting against outstanding schedules ──
+                        $originalAmount = $upeInstallmentPlan->total_amount ?? 0;
 
                         if ($discount->percent > 0) {
                             $discountAmount = ($originalAmount * $discount->percent) / 100;
@@ -2830,14 +2841,80 @@ class AdminSupportController extends Controller
                         $finalAmount = min($discountAmount, $originalAmount);
 
                         if ($finalAmount > 0) {
-                            \App\Models\Accounting::create([
-                                'user_id'      => $userId,
-                                'amount'       => $finalAmount,
-                                'type'         => \App\Models\Accounting::$addiction,
-                                'type_account' => \App\Models\Accounting::$asset,
-                                'description'  => "Post-purchase coupon credit: {$couponCode} - Support #{$supportRequest->ticket_number}",
-                                'created_at'   => time(),
+                            $engine = app(InstallmentEngine::class);
+                            $engine->recordPayment(
+                                $upeInstallmentPlan,
+                                $finalAmount,
+                                'coupon',
+                                null,
+                                ['coupon_code' => $couponCode, 'support_id' => $supportRequest->id],
+                                Auth::id()
+                            );
+                        }
+
+                        // Legacy dual-write: WebinarPartPayment for backward compat
+                        \App\Models\WebinarPartPayment::create([
+                            'user_id'        => $userId,
+                            'installment_id' => null,
+                            'webinar_id'     => $webinarId,
+                            'amount'         => $finalAmount,
+                            'created_at'     => now(),
+                        ]);
+
+                    } else {
+                        // ── 2. Check legacy InstallmentOrder ──
+                        $order = InstallmentOrder::where([
+                            'user_id' => $userId,
+                            'webinar_id' => $webinarId,
+                            'status' => 'open',
+                        ])->first();
+
+                        if ($order) {
+                            // ── Legacy installment: apply discount as part-payment credit ──
+                            $originalAmount = $order->item_price ?? 0;
+
+                            if ($discount->percent > 0) {
+                                $discountAmount = ($originalAmount * $discount->percent) / 100;
+                            } else {
+                                $discountAmount = $discount->amount;
+                            }
+                            $finalAmount = min($discountAmount, $originalAmount);
+
+                            \App\Models\WebinarPartPayment::create([
+                                'user_id'        => $userId,
+                                'installment_id' => $order->installment_id,
+                                'webinar_id'     => $webinarId,
+                                'amount'         => $finalAmount,
+                                'created_at'     => now(),
                             ]);
+
+                        } else {
+                            // ── 3. Regular (non-installment) purchase: credit wallet via Accounting ──
+                            $legacySale = \App\Models\Sale::where('buyer_id', $userId)
+                                ->where('webinar_id', $webinarId)
+                                ->whereNull('refund_at')
+                                ->orderByDesc('id')
+                                ->first();
+
+                            $originalAmount = $legacySale ? ($legacySale->total_amount ?? 0) : ($supportRequest->amount ?? 0);
+
+                            if ($discount->percent > 0) {
+                                $discountAmount = ($originalAmount * $discount->percent) / 100;
+                            } else {
+                                $discountAmount = $discount->amount;
+                            }
+                            $finalAmount = min($discountAmount, $originalAmount);
+
+                            if ($finalAmount > 0) {
+                                \App\Models\Accounting::create([
+                                    'user_id'      => $userId,
+                                    'amount'       => $finalAmount,
+                                    'type'         => \App\Models\Accounting::$addiction,
+                                    'type_account' => \App\Models\Accounting::$asset,
+                                    'description'  => "Post-purchase coupon credit: {$couponCode} - Support #{$supportRequest->ticket_number}",
+                                    'created_at'   => time(),
+                                ]);
+                            }
                         }
                     }
 

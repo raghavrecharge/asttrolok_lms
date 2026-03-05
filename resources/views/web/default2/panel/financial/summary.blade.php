@@ -22,6 +22,7 @@
 .type-badge.part     { background:#fff3e0; color:#e65100; }
 .type-badge.subscription { background:#e8f5e9; color:#2e7d32; }
 .type-badge.installment_payment { background:#fff9c4; color:#f57f17; }
+.type-badge.coupon_credit { background:#e8f5e9; color:#1b5e20; }
 .amt-credit { color:#28a745; font-weight:700; }
 .amt-debit  { color:#dc3545; font-weight:700; }
 </style>
@@ -194,7 +195,7 @@
                                 @foreach($amount_paid as $payment)
                                     @php
                                         $ptype = $payment[5] ?? 'course';
-                                        $prow  = in_array($ptype, ['part','installment_payment']) ? 'row-debit' : 'row-credit';
+                                        $prow  = in_array($ptype, ['part','installment_payment']) ? 'row-debit' : ($ptype === 'coupon_credit' ? 'row-refund' : 'row-credit');
                                     @endphp
                                     <tr class="{{ $prow }}">
                                         <td class="text-left">
@@ -203,12 +204,18 @@
                                         <td class="text-center">
                                             @if(in_array($ptype, ['part','installment_payment']))
                                                 <span class="dir-badge debit">▼ Paid</span>
+                                            @elseif($ptype === 'coupon_credit')
+                                                <span class="dir-badge credit" style="background:#c8e6c9;color:#1b5e20;">✦ Coupon</span>
                                             @else
                                                 <span class="dir-badge credit">▲ Credit</span>
                                             @endif
                                         </td>
                                         <td class="text-center">
-                                            <span class="amt-credit font-weight-bold">{{ handlePrice($payment[0] ?? 0) }}</span>
+                                            @if($ptype === 'coupon_credit')
+                                                <span class="amt-credit font-weight-bold">+ {{ handlePrice($payment[0] ?? 0) }}</span>
+                                            @else
+                                                <span class="amt-credit font-weight-bold">{{ handlePrice($payment[0] ?? 0) }}</span>
+                                            @endif
                                         </td>
                                         <td class="text-center">
                                             <span class="type-badge {{ $ptype }}">{{ ucfirst(str_replace('_',' ',$ptype)) }}</span>

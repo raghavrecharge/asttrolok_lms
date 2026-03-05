@@ -68,7 +68,7 @@ class Discount extends Model
 
     public function checkValidDiscount1($id=null)
     {
-        if ($this->expired_at < time()) {
+        if (!empty($this->expired_at) && $this->expired_at < time()) {
             return trans('update.discount_code_has_expired');
         }
 
@@ -90,7 +90,7 @@ class Discount extends Model
     public function checkValidDiscount()
     {
 
-        if ($this->expired_at < time()) {
+        if (!empty($this->expired_at) && $this->expired_at < time()) {
             return trans('update.discount_code_has_expired');
         }
 

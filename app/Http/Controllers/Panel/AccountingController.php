@@ -259,6 +259,37 @@ class AccountingController extends Controller
                 \Log::error('Error fetching UPE sales for financial summary: ' . $e->getMessage());
             }
 
+            // Add post-purchase coupon credits so they appear in Payment History
+            try {
+                $couponCreditsQuery = Accounting::where('user_id', $userAuth->id)
+                    ->where('type', Accounting::$addiction)
+                    ->where('type_account', Accounting::$asset)
+                    ->where('system', false)
+                    ->where('tax', false)
+                    ->where('description', 'like', 'Post-purchase coupon credit:%');
+                if (!empty($fromTimestamp)) {
+                    $couponCreditsQuery->where('created_at', '>=', $fromTimestamp);
+                }
+                if (!empty($toTimestamp)) {
+                    $couponCreditsQuery->where('created_at', '<=', $toTimestamp);
+                }
+                foreach ($couponCreditsQuery->get() as $credit) {
+                    if (!empty($type) && $type != 'all' && $type != 'course') continue;
+                    $webinar = $credit->webinar_id ? Webinar::find($credit->webinar_id) : null;
+                    $amount_paid[] = [
+                        $credit->amount,
+                        $credit->created_at,
+                        $webinar ? $webinar->title . ' — Coupon Credit' : 'Coupon Credit',
+                        $credit->id,
+                        $credit->webinar_id ?? 0,
+                        'coupon_credit',
+                        '',
+                    ];
+                }
+            } catch (\Exception $e) {
+                \Log::error('Error fetching coupon credits for financial summary: ' . $e->getMessage());
+            }
+
             usort($amount_paid, function ($a, $b) {
                 return $b[1] <=> $a[1];
             });
