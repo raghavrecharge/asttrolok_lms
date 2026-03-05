@@ -52,7 +52,6 @@ class UnifiedPaymentHandler {
             // If wallet covered the full amount, no Razorpay needed
             if (data.wallet_paid) {
                 this.hideLoader();
-                alert(data.message || 'Payment completed using wallet balance!');
                 window.location.href = '/payment/success?source=wallet';
                 return;
             }

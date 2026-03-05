@@ -189,11 +189,37 @@ class PaymentController extends Controller
 
                 // Process synchronously (record already marked processed_at, so job idempotency check passes)
                 try {
+                    // Ensure all required fields are present for installment processing
+                    $jobData = array_merge($paymentData, [
+                        'razorpay_payment_id' => $walletPaymentId,
+                        'payment_type' => $paymentData['type'],
+                        'order_id' => $order->id,
+                        'user_id' => $userId,
+                        'name' => $input['name'] ?? null,
+                        'email' => $input['email'] ?? null,
+                        'number' => $input['number'] ?? null,
+                        // Ensure installment-specific fields are present
+                        'webinar_id' => $paymentData['webinar_id'] ?? null,
+                        'installment_id' => $paymentData['installment_id'] ?? null,
+                        'discount_id' => $paymentData['discount'] ?? 0,
+                    ]);
+                    
+                    Log::info('Processing wallet full payment', [
+                        'order_id' => $order->id,
+                        'user_id' => $userId,
+                        'payment_type' => $paymentData['type'],
+                        'webinar_id' => $jobData['webinar_id'],
+                        'installment_id' => $jobData['installment_id'],
+                        'amount' => $originalAmount,
+                    ]);
+                    
                     $this->paymentVerifyBackgroundProccess($jobData);
                 } catch (\Exception $e) {
                     Log::error('Wallet full-payment processing failed (order created, wallet debited): ' . $e->getMessage(), [
                         'order_id' => $order->id, 'user_id' => $userId,
+                        'exception' => $e->getTraceAsString(),
                     ]);
+                    throw $e;
                 }
 
                 return response()->json([
@@ -894,6 +920,11 @@ class PaymentController extends Controller
                 'payment_id' => $paymentId,
                 'payment_type' => $paymentType,
                 'order_id' => $orderId,
+                'user_id' => $userId,
+                'webinar_id' => $data['webinar_id'] ?? null,
+                'installment_id' => $data['installment_id'] ?? null,
+                'amount' => $this->getTransactionAmount($paymentId),
+                'is_wallet_payment' => str_starts_with($paymentId, 'wallet_'),
             ]);
 
             DB::beginTransaction();
@@ -1410,8 +1441,19 @@ class PaymentController extends Controller
         $amount = $this->getTransactionAmount($data['razorpay_payment_id']);
         $discountId = $data['discount_id'] ?? null;
 
+        Log::info('processInstallmentPayment started', [
+            'webinar_id' => $webinarId,
+            'user_id' => $userId,
+            'installment_id' => $installmentId,
+            'amount' => $amount,
+            'discount_id' => $discountId,
+            'razorpay_payment_id' => $data['razorpay_payment_id'],
+            'is_wallet_payment' => str_starts_with($data['razorpay_payment_id'], 'wallet_'),
+        ]);
+
         // Backward compat: old Razorpay notes may still carry installment_payment_id
         if (!$webinarId && !empty($data['installment_payment_id'])) {
+            Log::info('Using backward compat installment_payment_id');
             $legacyPayment = InstallmentOrderPayment::with('installmentOrder')->find($data['installment_payment_id']);
             if ($legacyPayment) {
                 $webinarId = $legacyPayment->installmentOrder->webinar_id ?? null;
@@ -1423,6 +1465,7 @@ class PaymentController extends Controller
         }
 
         if (!$webinarId) {
+            Log::error('processInstallmentPayment: webinar_id missing from payment data', $data);
             throw new \Exception('processInstallmentPayment: webinar_id missing from payment data');
         }
 
