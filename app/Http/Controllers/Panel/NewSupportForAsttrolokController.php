@@ -214,6 +214,7 @@ class NewSupportForAsttrolokController extends Controller
                 'purchase_status' => $purchaseInfo['status'],
                 'course_purchased_at' => $purchaseInfo['purchased_at'],
                 'course_expires_at' => $purchaseInfo['expires_at'],
+                'access_type' => $purchaseInfo['access_type'] ?? null,
             ];
 
             $supportRequest = NewSupportForAsttrolok::create($data);
@@ -372,6 +373,22 @@ class NewSupportForAsttrolokController extends Controller
             return 'flow_a'; 
         }
         
+        // Check access type to determine if refund scenario applies
+        $accessEngine = app(\App\Services\PaymentEngine\AccessEngine::class);
+        $productTypes = ['course_video', 'webinar'];
+        $upeProduct = \App\Models\PaymentEngine\UpeProduct::whereIn('product_type', $productTypes)
+            ->where('external_id', $webinarId)
+            ->first();
+
+        if ($upeProduct) {
+            $accessResult = $accessEngine->computeAccess(Auth::id(), $upeProduct->id);
+            
+            // Exclude free access, mentor access, and temporary access from refund scenarios
+            if ($accessResult->hasAccess && in_array($accessResult->accessType, ['free', 'mentor', 'temporary'])) {
+                return 'flow_no_refund'; // New flow for non-paid access
+            }
+        }
+        
         $access = $webinar->checkUserHasBought();
         
         if ($access) {
@@ -414,6 +431,7 @@ class NewSupportForAsttrolokController extends Controller
                 'status' => 'never_purchased',
                 'purchased_at' => null,
                 'expires_at' => null,
+                'access_type' => null,
             ];
         }
         
@@ -424,7 +442,29 @@ class NewSupportForAsttrolokController extends Controller
                 'status' => 'never_purchased',
                 'purchased_at' => null,
                 'expires_at' => null,
+                'access_type' => null,
             ];
+        }
+
+        // Check access type for non-paid access scenarios
+        $accessEngine = app(\App\Services\PaymentEngine\AccessEngine::class);
+        $productTypes = ['course_video', 'webinar'];
+        $upeProduct = \App\Models\PaymentEngine\UpeProduct::whereIn('product_type', $productTypes)
+            ->where('external_id', $webinarId)
+            ->first();
+
+        if ($upeProduct) {
+            $accessResult = $accessEngine->computeAccess(Auth::id(), $upeProduct->id);
+            
+            // Handle non-paid access types
+            if ($accessResult->hasAccess && in_array($accessResult->accessType, ['free', 'mentor', 'temporary'])) {
+                return [
+                    'status' => 'non_paid_access',
+                    'purchased_at' => null,
+                    'expires_at' => $accessResult->metadata['expires_at'] ?? null,
+                    'access_type' => $accessResult->accessType,
+                ];
+            }
         }
 
         $sale = $webinar->getSaleItem();
@@ -441,6 +481,7 @@ class NewSupportForAsttrolokController extends Controller
                     'status' => 'active',
                     'purchased_at' => $installmentOrder->created_at,
                     'expires_at' => null,
+                    'access_type' => 'installment',
                 ];
             }
         }
@@ -450,6 +491,7 @@ class NewSupportForAsttrolokController extends Controller
                 'status' => 'never_purchased',
                 'purchased_at' => null,
                 'expires_at' => null,
+                'access_type' => null,
             ];
         }
 
@@ -469,6 +511,7 @@ class NewSupportForAsttrolokController extends Controller
                 'status' => 'active',
                 'purchased_at' => $purchasedAt,
                 'expires_at' => $expiresAt,
+                'access_type' => 'paid',
             ];
         }
 
@@ -476,6 +519,7 @@ class NewSupportForAsttrolokController extends Controller
             'status' => 'expired',
             'purchased_at' => $purchasedAt,
             'expires_at' => $expiresAt,
+            'access_type' => 'paid',
         ];
     }
     

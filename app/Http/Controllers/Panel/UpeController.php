@@ -130,7 +130,10 @@ class UpeController extends Controller
     public function purchaseDetail(int $id, PaymentLedgerService $ledger, AccessEngine $access)
     {
         $user = auth()->user();
+        
+        // Check if the sale exists and is not refunded
         $sale = UpeSale::where('user_id', $user->id)
+            ->whereNotIn('status', ['refunded', 'cancelled', 'expired'])
             ->with(['product', 'ledgerEntries', 'installmentPlan.schedules', 'subscription'])
             ->findOrFail($id);
 
@@ -495,6 +498,7 @@ class UpeController extends Controller
             $sale = UpeSale::where('user_id', $user->id)
                 ->where('product_id', $productId)
                 ->where('pricing_mode', 'installment')
+                ->whereNotIn('status', ['refunded', 'cancelled', 'expired']) // Exclude refunded
                 ->whereHas('product', function ($q) use ($request) {
                     $type = $request->get('type', 'all');
                     if ($type === 'course') {
@@ -503,7 +507,7 @@ class UpeController extends Controller
                         $q->where('product_type', 'meeting');
                     }
                 })
-                ->orderByRaw("FIELD(status, 'active', 'partially_refunded', 'pending_payment', 'completed', 'refunded', 'expired', 'cancelled') ASC")
+                ->orderByRaw("FIELD(status, 'active', 'partially_refunded', 'pending_payment', 'completed') ASC")
                 ->orderByDesc('id')
                 ->first();
             if ($sale) {

@@ -74,7 +74,7 @@ class DashboardController extends Controller
                     ->where('status', ReserveMeeting::$pending)
                     ->count();
 
-                $userWebinarsIds = $user->webinars->pluck('id')->toArray();
+                $userWebinarsIds = $user->getPurchasedCoursesIds();
                 $supports = \App\Models\NewSupportForAsttrolok::whereIn('webinar_id', $userWebinarsIds)
                     ->whereIn('status', ['pending', 'approved', 'verified', 'executed'])
                     ->get();
@@ -133,98 +133,80 @@ class DashboardController extends Controller
                 ->pluck('id')
                 ->toArray();
 
-            $query = Sale::query()
-                ->where(function ($query) use ($user, $giftsIds) {
-                    $query->where('sales.buyer_id', $user->id);
-                    $query->orWhereIn('sales.gift_id', $giftsIds);
-                })
-                ->whereNull('sales.refund_at')
-                ->where('access_to_purchased_item', true)
-                ->where(function ($query) {
-                    $query->where(function ($query) {
-                        $query->whereNotNull('sales.webinar_id')
-                            ->where('sales.type', 'webinar')
-                            ->whereHas('webinar', function ($query) {
-                                $query->where('status', 'active');
-                            });
-                    });
-                    $query->orWhere(function ($query) {
-                        $query->whereNotNull('sales.bundle_id')
-                            ->where('sales.type', 'bundle')
-                            ->whereHas('bundle', function ($query) {
-                                $query->where('status', 'active');
-                            });
-                    });
-                    $query->orWhere(function ($query) {
-                        $query->whereNotNull('sales.subscription_id')
-                            ->where('sales.type', 'subscription')
-                            ->whereHas('subscription', function ($query) {
-                                $query->where('status', 'active');
-                            });
-                    });
-                    $query->orWhere(function ($query) {
-                        $query->whereNotNull('gift_id');
-                        $query->whereHas('gift');
-                    });
-                });
+            $bestSaleIds = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
+                ->selectRaw('MAX(CASE 
+                    WHEN status = "active" THEN 4
+                    WHEN status = "partially_refunded" THEN 3
+                    WHEN status = "pending_payment" THEN 2
+                    ELSE 1
+                END) as priority')
+                ->selectRaw('product_id')
+                ->groupBy('product_id')
+                ->pluck('product_id');
 
-            // Deduplicate: for subscriptions, only keep the latest sale per subscription_id
-            // to avoid showing 3 entries (free + autopay + one-time) for the same subscription
-            $allMatchingIds = deepClone($query)->pluck('id', 'id');
-            $subscriptionSales = Sale::whereIn('id', $allMatchingIds)
-                ->whereNotNull('subscription_id')
-                ->where('type', 'subscription')
-                ->orderByDesc('id')
-                ->get()
-                ->groupBy('subscription_id');
-            $duplicateIds = collect();
-            foreach ($subscriptionSales as $subId => $group) {
-                // Keep only the latest sale (first after orderByDesc), exclude the rest
-                $duplicateIds = $duplicateIds->merge($group->slice(1)->pluck('id'));
+            $deduped = collect();
+            foreach ($bestSaleIds as $productId) {
+                $sale = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
+                    ->where('product_id', $productId)
+                    ->whereNotIn('status', ['refunded', 'cancelled', 'expired']) // EXCLUDE refunded
+                    ->whereHas('product', function ($q) {
+                        $q->whereIn('product_type', ['webinar', 'course_video', 'course_live', 'bundle']);
+                    })
+                    ->orderByRaw("FIELD(status, 'active', 'partially_refunded', 'pending_payment', 'completed') ASC")
+                    ->orderByDesc('id')
+                    ->first();
+                if ($sale) {
+                    $deduped->push($sale->id);
+                }
             }
 
-            $sales = deepClone($query)
-                ->when($duplicateIds->isNotEmpty(), fn($q) => $q->whereNotIn('id', $duplicateIds))
-                ->with([
-                    'webinar' => function ($query) {
-                        $query->with([
-                            'files',
-                            'reviews' => function ($query) {
-                                $query->where('status', 'active');
-                            },
-                            'category',
-                            'teacher' => function ($query) {
-                                $query->select('id', 'full_name');
-                            },
-                        ]);
-                        $query->withCount([
-                            'sales' => function ($query) {
-                                $query->whereNull('refund_at');
-                            },
-                            'chapters',
-                            'files',
-                            'textLessons'
-                        ]);
-                    },
-                    'bundle' => function ($query) {
-                        $query->with([
-                            'reviews' => function ($query) {
-                                $query->where('status', 'active');
-                            },
-                            'category',
-                            'teacher' => function ($query) {
-                                $query->select('id', 'full_name');
-                            },
-                        ]);
-                    },
-                    'subscription',
-                ])
-                ->orderBy('created_at', 'desc')
-                ->get(); // Changed to get() to allow merging; pagination not used on dashboard index
+            $upeSales = \App\Models\PaymentEngine\UpeSale::whereIn('id', $deduped)->with(['product'])->get();
+            
+            // Transform UPE sales to legacy Sale format for the view
+            $consolidatedSales = collect();
+            $seenCourseIds = [];
+            $seenBundleIds = [];
 
-$extendedAccesses = [];
+            foreach ($upeSales as $upeSale) {
+                if (!$upeSale->product) continue;
+                
+                $externalId = $upeSale->product->external_id;
+                $productType = $upeSale->product->product_type;
+                
+                // Check if we've already seen this course/bundle
+                if (in_array($productType, ['webinar', 'course_video', 'course_live'])) {
+                    if (in_array($externalId, $seenCourseIds)) continue;
+                    $seenCourseIds[] = $externalId;
+                } elseif ($productType === 'bundle') {
+                    if (in_array($externalId, $seenBundleIds)) continue;
+                    $seenBundleIds[] = $externalId;
+                }
+                
+                // Create mock Sale object for view compatibility
+                $mockSale = new \App\Models\Sale([
+                    'id' => $upeSale->id,
+                    'buyer_id' => $upeSale->user_id,
+                    'webinar_id' => in_array($productType, ['webinar', 'course_video', 'course_live']) ? $externalId : null,
+                    'bundle_id' => $productType === 'bundle' ? $externalId : null,
+                    'total_amount' => $upeSale->total_amount,
+                    'created_at' => $upeSale->created_at->timestamp,
+                    'payment_method' => 'upe',
+                    'type' => $productType === 'bundle' ? 'bundle' : 'webinar',
+                    'status' => null,
+                    'refund_at' => null,
+                ]);
+                
+                // Load the actual webinar/bundle relationship
+                if ($mockSale->webinar_id) {
+                    $mockSale->setRelation('webinar', \App\Models\Webinar::find($mockSale->webinar_id));
+                } elseif ($mockSale->bundle_id) {
+                    $mockSale->setRelation('bundle', \App\Models\Bundle::find($mockSale->bundle_id));
+                }
+                
+                $consolidatedSales->push($mockSale);
+            }
 
-try {
+            try {
 
     if (!empty($user) && !empty($user->id)) {
 
@@ -316,13 +298,13 @@ try {
     \Log::warning('Dashboard UPE extension sales fetch failed', ['error' => $e->getMessage()]);
 }
 
-            $time = time();
+    $time = time();
 
-            $giftDurations = 0;
-            $giftUpcoming = 0;
-            $giftPurchasedCount = 0;
+    $giftDurations = 0;
+    $giftUpcoming = 0;
+    $giftPurchasedCount = 0;
 
-            foreach ($sales as $sale) {
+    foreach ($consolidatedSales as $sale) {
                 if (!empty($sale->gift_id)) {
                     $gift = $sale->gift;
 
@@ -341,7 +323,9 @@ try {
                     if (!empty($sale->webinar)) {
                         $giftDurations += $sale->webinar->duration;
 
-                        if ($sale->webinar->start_date > $time) {
+                        $startDate = $sale->webinar->start_date;
+                        $startTime = is_object($startDate) ? $startDate->timestamp : $startDate;
+                        if ($startTime && $startTime > $time) {
                             $giftUpcoming += 1;
                         }
                     }
@@ -356,26 +340,37 @@ try {
                 }
             }
 
-            $purchasedCount = deepClone($query)
-                ->where(function ($query) {
-                    $query->whereHas('webinar');
-                    $query->orWhereHas('bundle');
-                })
-                ->count();
-
-            $webinarsHours = deepClone($query)->join('webinars', 'webinars.id', 'sales.webinar_id')
-                ->select(DB::raw('sum(webinars.duration) as duration'))
-                ->sum('duration');
-            $bundlesHours = deepClone($query)->join('bundle_webinars', 'bundle_webinars.bundle_id', 'sales.bundle_id')
-                ->join('webinars', 'webinars.id', 'bundle_webinars.webinar_id')
-                ->select(DB::raw('sum(webinars.duration) as duration'))
-                ->sum('duration');
+            // Calculate stats based on consolidatedSales (UPE-based)
+            $purchasedCount = $consolidatedSales->count();
+            
+            $webinarsHours = 0;
+            $bundlesHours = 0;
+            
+            foreach ($consolidatedSales as $sale) {
+                if ($sale->webinar_id && $sale->webinar) {
+                    $webinarsHours += $sale->webinar->duration;
+                } elseif ($sale->bundle_id && $sale->bundle) {
+                    $bundleWebinars = $sale->bundle->bundleWebinars;
+                    foreach ($bundleWebinars as $bundleWebinar) {
+                        if ($bundleWebinar->webinar) {
+                            $bundlesHours += $bundleWebinar->webinar->duration;
+                        }
+                    }
+                }
+            }
 
             $hours = $webinarsHours + $bundlesHours + $giftDurations;
 
-            $upComing = deepClone($query)->join('webinars', 'webinars.id', 'sales.webinar_id')
-                ->where('webinars.start_date', '>', $time)
-                ->count();
+            $upComing = 0;
+            foreach ($consolidatedSales as $sale) {
+                if ($sale->webinar_id && $sale->webinar) {
+                    $startDate = $sale->webinar->start_date;
+                    $startTime = is_object($startDate) ? $startDate->timestamp : $startDate;
+                    if ($startTime && $startTime > $time) {
+                        $upComing++;
+                    }
+                }
+            }
 
             $user = auth()->user();
             $reserveMeetingsQuery1 = ReserveMeeting::where('user_id', $user->id)
@@ -454,25 +449,25 @@ try {
 
                 $data['commission'] = getFinancialSettings('commission') ?? 0;
 
-                $sales1 = Sale::where(['buyer_id'=> $userAuth->id, 'status'=> null])->get();
+                $consolidatedSales1 = Sale::where(['buyer_id'=> $userAuth->id, 'status'=> null])->get();
 
                 $amount_paid=[];
-                foreach($sales1 as $sales2){
-                    if($sales2->webinar_id){
-                        $webinars1 = Webinar:: where('id', $sales2->webinar_id)
+                foreach($consolidatedSales1 as $consolidatedSales2){
+                    if($consolidatedSales2->webinar_id){
+                        $webinars1 = Webinar:: where('id', $consolidatedSales2->webinar_id)
                 ->first();
                 $amount_paid[] = [
-                    $sales2->total_amount,
-                    $sales2->created_at,
+                    $consolidatedSales2->total_amount,
+                    $consolidatedSales2->created_at,
                     $webinars1->title ?? 'No Title',
-                    $sales2->id,
-                    $sales2->webinar_id,
+                    $consolidatedSales2->id,
+                    $consolidatedSales2->webinar_id,
                     'course',
-                    $sales2->type
+                    $consolidatedSales2->type
                 ];
 
-                    }elseif($sales2->installment_payment_id){
-                        $InstallmentOrderPayment = InstallmentOrderPayment::where('id', $sales2->installment_payment_id)
+                    }elseif($consolidatedSales2->installment_payment_id){
+                        $InstallmentOrderPayment = InstallmentOrderPayment::where('id', $consolidatedSales2->installment_payment_id)
                     ->first();
                     if($InstallmentOrderPayment){
 
@@ -483,30 +478,30 @@ try {
                 ->first();
 
                 $amount_paid[] = [
-            $sales2->total_amount,
-            $sales2->created_at,
+            $consolidatedSales2->total_amount,
+            $consolidatedSales2->created_at,
             $webinars1->title ?? null,
-            $sales2->id,
+            $consolidatedSales2->id,
             $InstallmentOrder->webinar_id,
             'course',
-            $sales2->type
+            $consolidatedSales2->type
             ];
 
                 }
                     }
-                    }elseif($sales2->bundle){
+                    }elseif($consolidatedSales2->bundle){
 
-                        $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Bundle Course', $sales2->id, $sales2->bundle_id, 'bundle', $sales2->type ];
-                    }elseif($sales2->subscription_id){
-                        $Subscription = Subscription::where('id', $sales2->subscription_id)->first();
+                        $amount_paid[]=[ $consolidatedSales2->total_amount , $consolidatedSales2->created_at , 'Bundle Course', $consolidatedSales2->id, $consolidatedSales2->bundle_id, 'bundle', $consolidatedSales2->type ];
+                    }elseif($consolidatedSales2->subscription_id){
+                        $Subscription = Subscription::where('id', $consolidatedSales2->subscription_id)->first();
 
-                        $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , $Subscription?->title, $sales2->id, $sales2->subscription_id, 'subscription', $sales2->type ];
-                    }elseif($sales2->product_order_id){
+                        $amount_paid[]=[ $consolidatedSales2->total_amount , $consolidatedSales2->created_at , $Subscription?->title, $consolidatedSales2->id, $consolidatedSales2->subscription_id, 'subscription', $consolidatedSales2->type ];
+                    }elseif($consolidatedSales2->product_order_id){
 
-                        $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Product', $sales2->id, $sales2->product_order_id, 'product', $sales2->type ];
-                    }elseif($sales2->meeting_id){
+                        $amount_paid[]=[ $consolidatedSales2->total_amount , $consolidatedSales2->created_at , 'Product', $consolidatedSales2->id, $consolidatedSales2->product_order_id, 'product', $consolidatedSales2->type ];
+                    }elseif($consolidatedSales2->meeting_id){
 
-                        $amount_paid[]=[ $sales2->total_amount , $sales2->created_at , 'Meeting', $sales2->id, $sales2->meeting_id, 'meeting', $sales2->type ];
+                        $amount_paid[]=[ $consolidatedSales2->total_amount , $consolidatedSales2->created_at , 'Meeting', $consolidatedSales2->id, $consolidatedSales2->meeting_id, 'meeting', $consolidatedSales2->type ];
                     }
                 }
 
@@ -533,13 +528,31 @@ try {
 
             $user = auth()->user();
 
-            // Collect webinar_ids already shown via $sales to avoid duplicates
+            // Collect webinar_ids and bundle_ids already shown via $consolidatedSales to avoid duplicates
             // LMS FIX: Use the complete purchased list (including UPE) for filtering to avoid double counting installments
             $purchasedWebinarsIdsForFiltering = $user->getPurchasedCoursesIds();
+            
+            // Get purchased bundle IDs from UPE
+            $purchasedBundleIds = \App\Models\PaymentEngine\UpeSale::where('user_id', $user->id)
+                ->whereNotIn('status', ['refunded', 'cancelled', 'expired'])
+                ->whereHas('product', function($q) {
+                    $q->where('product_type', 'bundle');
+                })
+                ->with('product')
+                ->get()
+                ->pluck('product.external_id')
+                ->filter()
+                ->toArray();
 
             $query = InstallmentOrder::query()
                 ->where('user_id', $user->id)
-                ->where('status', '!=', 'paying');
+                ->where('status', '!=', 'paying')
+                ->whereNotIn('status', ['refunded', 'cancelled', 'expired'])
+                ->where(function($query) use ($purchasedWebinarsIdsForFiltering, $purchasedBundleIds) {
+                    // Only include orders for active (non-refunded) courses and bundles
+                    $query->whereIn('webinar_id', $purchasedWebinarsIdsForFiltering)
+                          ->orWhereIn('bundle_id', $purchasedBundleIds);
+                });
                 // Removed whereNotIn to allow merging all accessible courses
 
             $openInstallmentsCount = (clone $query)->where('status', 'open')->count();
@@ -607,10 +620,8 @@ try {
 
             $user = auth()->user();
 
-            $userWebinarsIds = $user->webinars->pluck('id')->toArray();
-
-            $purchasedWebinarsIds = $user->getPurchasedCoursesIds();
-            $webinarIds = array_merge($purchasedWebinarsIds, $userWebinarsIds);
+            // Use UPE-based logic for webinars (exclude refunded)
+            $userWebinarsIds = $user->getPurchasedCoursesIds();
 
             $query = \App\Models\NewSupportForAsttrolok::query()
                 ->where(function ($query) use ($user, $userWebinarsIds) {
@@ -636,8 +647,9 @@ try {
                     }
                 ])->get();
 
-            $webinars = Webinar::select('id')
-                ->whereIn('id', array_unique($webinarIds))
+            // Get webinars using UPE data (excludes refunded)
+            $webinars = Webinar::select('id', 'creator_id', 'teacher_id', 'status')
+                ->whereIn('id', array_unique($userWebinarsIds))
                 ->where('status', 'active')
                 ->get();
 
@@ -666,7 +678,6 @@ try {
 
                 $data['openSupportsCount'] = $openSupportsCount;
                 $data['closeSupportsCount'] = $closeSupportsCount;
-                $data['purchasedWebinarsIds'] = $purchasedWebinarsIds;
                 $data['students'] = $students;
                 $data['teachers'] = $teachers;
                 $data['webinars'] = $webinars;
@@ -827,23 +838,9 @@ try {
                     \Log::warning('Dashboard UPE plan mapping failed', ['error' => $e->getMessage()]);
                 }
 
-                $consolidatedSales = collect();
                 $seenCourseIds = [];
                 $seenBundleIds = [];
-
-                foreach ($sales as $sale) {
-                    if ($sale->webinar_id) {
-                        if (in_array($sale->webinar_id, $seenCourseIds)) continue;
-                        $seenCourseIds[] = $sale->webinar_id;
-                        $sale->upe_plan_id = $upeLegacySaleMap[$sale->id] ?? $upeLegacyOrderMap[$sale->order_id] ??  $upePlanMap['webinar_' . $sale->webinar_id] ?? null;
-                    } elseif ($sale->bundle_id) {
-                        if (in_array($sale->bundle_id, $seenBundleIds)) continue;
-                        $seenBundleIds[] = $sale->bundle_id;
-                        $sale->upe_plan_id = $upeLegacySaleMap[$sale->id] ?? $upeLegacyOrderMap[$sale->order_id] ?? $upePlanMap['bundle_' . $sale->bundle_id] ?? null;
-                    }
-                    $consolidatedSales->push($sale);
-                }
-
+                
                 foreach ($orders as $order) {
                     if ($order->webinar_id) {
                         if (in_array($order->webinar_id, $seenCourseIds)) continue;
@@ -883,7 +880,6 @@ try {
                 }
 
                 $data['sales'] = $consolidatedSales->sortByDesc('created_at');
-                $data['orders'] = $orders; // Keep original orders for installments summary if needed
                 $data['hours'] = $hours;
                   $data['instructors'] = $instructors;
                 $data['reserveMeetings'] = $reserveMeetings1;
@@ -1437,7 +1433,7 @@ try {
             $data = $request->all();
             $user = auth()->user();
 
-            $userWebinarsIds = $user->webinars->pluck('id')->toArray();
+            $userWebinarsIds = $user->getPurchasedCoursesIds();
 
             $support = Support::where('id', $id)
                 ->where(function ($query) use ($user, $userWebinarsIds) {
@@ -1494,7 +1490,7 @@ try {
     {
         try {
             $user = auth()->user();
-            $userWebinarsIds = $user->webinars->pluck('id')->toArray();
+            $userWebinarsIds = $user->getPurchasedCoursesIds();
 
             $support = Support::where('id', $id)
                 ->where(function ($query) use ($user, $userWebinarsIds) {

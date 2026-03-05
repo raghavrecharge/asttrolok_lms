@@ -60,8 +60,8 @@
                             @if($supportRequest->support_scenario === 'refund_payment')
                                 <div class="alert alert-warning">
                                     <strong>Reason:</strong> {{ $supportRequest->refund_reason }}<br>
-                                    <strong>Bank:</strong> {{ $supportRequest->bank_account_number }} ({{ $supportRequest->ifsc_code }})<br>
-                                    <strong>Holder:</strong> {{ $supportRequest->account_holder_name }}
+                                    <strong>Refund Method:</strong> Wallet Credit<br>
+                                    <strong>Status:</strong> {{ ucfirst($supportRequest->status) }}
                                 </div>
                             @endif
 
@@ -285,18 +285,83 @@
                                     </div>
                                 </div>
 
-                                {{-- Admin Split Form (only show when not yet completed) --}}
-                                @if(!in_array($supportRequest->status, ['completed', 'executed', 'closed']) && $restructureData['target_schedule'] && Auth::user()->role_name === 'admin')
-                                    <div class="card border-warning mt-3">
-                                        <div class="card-header bg-warning text-dark">
-                                            <h6 class="mb-0"><i class="fas fa-cut"></i> Define Restructure Split</h6>
+                                {{-- Admin Split Form (show when not completed and has restructure data) --}}
+                                @if(!in_array($supportRequest->status, ['completed', 'executed', 'closed']) && in_array(Auth::user()->role_name, ['admin', 'Support Role', 'support']))
+                                    @if($supportRequest->support_scenario === 'installment_restructure' && (!isset($restructureData['target_schedule']) || !$restructureData['target_schedule']))
+                                        {{-- Preview interface - show available installment courses for selection --}}
+                                        <div class="card border-info mt-3">
+                                            <div class="card-header bg-info text-white">
+                                                <h6 class="mb-0"><i class="fas fa-layer-group"></i> Installment Restructure - Select Course</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="text-muted mb-3">
+                                                    First, select the installment course you want to restructure. Then click "Process & Complete" to load the EMI schedule and define the restructure split.
+                                                </p>
+                                                
+                                                <div class="form-group">
+                                                    <label><strong>Select Installment Course</strong></label>
+                                                    <select name="webinar_id" class="form-control" required>
+                                                        <option value="">-- Select Installment Course --</option>
+                                                        @if(isset($installmentCourses) && $installmentCourses->isNotEmpty())
+                                                            @foreach($installmentCourses as $course)
+                                                                <option value="{{ $course['id'] }}" {{ ($supportRequest->webinar_id == $course['id']) ? 'selected' : '' }}>
+                                                                    {{ $course['title'] }}
+                                                                </option>
+                                                            @endforeach
+                                                        @elseif(isset($studentPurchases) && $studentPurchases->isNotEmpty())
+                                                            @foreach($studentPurchases as $course)
+                                                                <option value="{{ $course['id'] }}" {{ ($supportRequest->webinar_id == $course['id']) ? 'selected' : '' }}>
+                                                                    {{ $course['title'] }}
+                                                                </option>
+                                                            @endforeach
+                                                        @else
+                                                            <option value="" disabled>No installment courses found</option>
+                                                        @endif
+                                                    </select>
+                                                </div>
+                                                
+                                                <div class="form-group">
+                                                    <label><strong>Reason for Restructure</strong></label>
+                                                    <textarea name="restructure_reason" class="form-control" rows="2" placeholder="Enter reason for installment restructure...">{{ $supportRequest->restructure_reason ?? '' }}</textarea>
+                                                </div>
+                                                
+                                                @if(Auth::user()->role_name === 'Support Role')
+                                                    <div class="alert alert-info">
+                                                        <i class="fas fa-info-circle"></i> 
+                                                        <strong>Support Role:</strong> After processing, an admin will need to complete the restructure execution.
+                                                    </div>
+                                                @else
+                                                    <div class="alert alert-warning">
+                                                        <i class="fas fa-info-circle"></i> 
+                                                        <strong>Note:</strong> After selecting the course and reason, click "Process & Complete" to load the EMI schedule and define the restructure split.
+                                                    </div>
+                                                @endif
+                                            </div>
                                         </div>
-                                        <div class="card-body">
-                                            <p class="text-muted mb-2">
-                                                Split EMI #{{ $restructureData['target_schedule']->sequence }}
-                                                (₹{{ number_format($restructureData['schedule_remaining'], 0) }})
-                                                into sub-installments. Set the number of parts, then define each amount and due date.
-                                            </p>
+                                    @elseif($restructureData['target_schedule'])
+                                        <div class="card border-warning mt-3">
+                                            <div class="card-header bg-warning text-dark">
+                                                <h6 class="mb-0"><i class="fas fa-cut"></i> Define Restructure Split</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="text-muted mb-2">
+                                                    Split EMI #{{ $restructureData['target_schedule']->sequence }}
+                                                    (₹{{ number_format($restructureData['schedule_remaining'], 0) }})
+                                                    into sub-installments. Set the number of parts, then define each amount and due date.
+                                                </p>
+                                                @if($supportRequest->status === 'approved')
+                                                    @if(Auth::user()->role_name === 'Support Role')
+                                                        <div class="alert alert-info">
+                                                            <i class="fas fa-info-circle"></i>
+                                                            <strong>Support Role:</strong> The restructure has been prepared. An admin will need to complete the execution.
+                                                        </div>
+                                                    @else
+                                                        <div class="alert alert-info">
+                                                            <i class="fas fa-info-circle"></i>
+                                                            <strong>Ready for restructure:</strong> Define the split below and then click "Update Status" → "Completed" to execute the restructure.
+                                                        </div>
+                                                    @endif
+                                                @endif
 
                                             <div class="form-group">
                                                 <label><strong>Number of Sub-Installments</strong></label>
@@ -439,24 +504,44 @@
         const statusForm = document.querySelector('form[action$="/status"]') || document.querySelector('form[action*="updateStatus"]');
         if (statusForm) {
             statusForm.addEventListener('submit', function(e) {
-                // Ensure hidden fields are inside the form
-                const existingHidden1 = statusForm.querySelector('input[name="restructure_sub_schedules"]');
-                const existingHidden2 = statusForm.querySelector('input[name="restructure_schedule_id"]');
-                const existingHidden3 = statusForm.querySelector('input[name="restructure_plan_id"]');
+                // Remove any previously injected hidden fields to avoid duplicates
+                statusForm.querySelectorAll('.restructure-hidden-field, .offline-hidden-field').forEach(el => el.remove());
+                
+                // Inject restructure data if available
+                if (typeof hiddenInput !== 'undefined') {
+                    const existingHidden1 = statusForm.querySelector('input[name="restructure_sub_schedules"]');
+                    if (!existingHidden1) {
+                        const h1 = document.createElement('input'); h1.type='hidden'; h1.name='restructure_sub_schedules'; h1.value=hiddenInput.value;
+                        h1.className = 'restructure-hidden-field';
+                        statusForm.appendChild(h1);
+                    } else {
+                        existingHidden1.value = hiddenInput.value;
+                    }
+                    if (typeof scheduleId !== 'undefined') {
+                        const h2 = document.createElement('input'); h2.type='hidden'; h2.name='restructure_schedule_id'; h2.value=scheduleId;
+                        h2.className = 'restructure-hidden-field';
+                        statusForm.appendChild(h2);
+                    }
+                    if (typeof planId !== 'undefined') {
+                        const h3 = document.createElement('input'); h3.type='hidden'; h3.name='restructure_plan_id'; h3.value=planId;
+                        h3.className = 'restructure-hidden-field';
+                        statusForm.appendChild(h3);
+                    }
+                }
+                
+                // Inject offline payment data if available (from other script)
+                if (typeof currentCouponCode !== 'undefined' && currentCouponCode) {
+                    const h = document.createElement('input');
+                    h.type = 'hidden'; h.name = 'offline_coupon_code'; h.value = currentCouponCode;
+                    h.className = 'offline-hidden-field';
+                    statusForm.appendChild(h);
+                }
 
-                if (!existingHidden1) {
-                    const h1 = document.createElement('input'); h1.type='hidden'; h1.name='restructure_sub_schedules'; h1.value=hiddenInput.value;
-                    statusForm.appendChild(h1);
-                } else {
-                    existingHidden1.value = hiddenInput.value;
-                }
-                if (!existingHidden2) {
-                    const h2 = document.createElement('input'); h2.type='hidden'; h2.name='restructure_schedule_id'; h2.value=scheduleId;
-                    statusForm.appendChild(h2);
-                }
-                if (!existingHidden3) {
-                    const h3 = document.createElement('input'); h3.type='hidden'; h3.name='restructure_plan_id'; h3.value=planId;
-                    statusForm.appendChild(h3);
+                if (typeof currentInstallmentId !== 'undefined' && currentInstallmentId) {
+                    const h = document.createElement('input');
+                    h.type = 'hidden'; h.name = 'offline_installment_id'; h.value = currentInstallmentId;
+                    h.className = 'offline-hidden-field';
+                    statusForm.appendChild(h);
                 }
             });
         } else {
@@ -467,6 +552,7 @@
     render();
 })();
 </script>
+                                    @endif
                                 @endif
                             @elseif($supportRequest->support_scenario === 'installment_restructure')
                                 <div class="alert alert-info">
@@ -603,6 +689,11 @@
                                                 'wrong_course_correction' => 'Wrong Course Correction',
                                             ];
 
+                                            // Exclude refund scenarios for non-paid access
+                                            if ($supportRequest->flow_type === 'flow_no_refund') {
+                                                unset($scenarios['refund_payment']);
+                                            }
+
                                             $currentValues = [
                                                 'webinar_id' => $supportRequest->webinar_id,
                                                 'support_scenario' => $supportRequest->support_scenario,
@@ -619,9 +710,6 @@
                                                 'payment_location' => $supportRequest->payment_location,
                                                 'restructure_reason' => $supportRequest->restructure_reason,
                                                 'refund_reason' => $supportRequest->refund_reason,
-                                                'bank_account_number' => $supportRequest->bank_account_number,
-                                                'ifsc_code' => $supportRequest->ifsc_code,
-                                                'account_holder_name' => $supportRequest->account_holder_name,
                                                 'coupon_code' => $supportRequest->coupon_code,
                                                 'coupon_apply_reason' => $supportRequest->coupon_apply_reason,
                                                 'wrong_course_id' => $supportRequest->wrong_course_id,
@@ -667,6 +755,9 @@
                         // Current values for pre-filling
                         const currentValues = @json($currentValues);
 
+                        // Check if this is non-paid access (no refund scenarios allowed)
+                        const isNonPaidAccess = '{{ $supportRequest->flow_type }}' === 'flow_no_refund';
+
                         // All active webinars (passed from controller)
                         const allWebinars = @json($allWebinars ?? []);
 
@@ -692,6 +783,28 @@
                             let html = '';
 
                             switch (scenario) {
+                                case 'refund_payment':
+                                    // Check if this is non-paid access - if so, show error message
+                                    if (isNonPaidAccess) {
+                                        html = `<div class="alert alert-danger">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <strong>Refund Not Available:</strong> This course was accessed through non-paid access (free, mentor, or temporary access). Refund scenarios are not applicable for non-paid access courses.
+                                        </div>`;
+                                        submitBtn.disabled = true;
+                                    } else {
+                                        html = buildCourseSelect('webinar_id', 'Select Course for Refund', refundableCourses.length > 0 ? refundableCourses : studentPurchases, true, currentValues.webinar_id);
+                                        html += buildTextarea('refund_reason', 'Refund Reason', currentValues.refund_reason);
+                                        html += `<div class="form-group">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" name="credit_to_wallet" class="custom-control-input" id="creditToWallet" value="1">
+                                                <label class="custom-control-label" for="creditToWallet">
+                                                    <strong>Credit to Wallet Now</strong><br>
+                                                    <small class="text-muted">Check this box to credit the refund to user's wallet immediately. Uncheck to create pending refund for manual processing later.</small>
+                                                </label>
+                                            </div>
+                                        </div>`;
+                                    }
+                                    break;
                                 case 'course_extension':
                                     html = buildCourseSelect('webinar_id', 'Select Expired Course', expiredCourses, true, currentValues.webinar_id);
                                     html += `<div class="form-group"><label>Extension Period <span class="text-danger">*</span></label>
@@ -749,12 +862,15 @@
                                 case 'refund_payment':
                                     html = buildCourseSelect('webinar_id', 'Select Course for Refund', refundableCourses.length > 0 ? refundableCourses : studentPurchases, true, currentValues.webinar_id);
                                     html += buildTextarea('refund_reason', 'Refund Reason', currentValues.refund_reason);
-                                    html += `<div class="form-group"><label>Bank Account Number</label>
-                                        <input type="text" name="bank_account_number" class="form-control" value="${currentValues.bank_account_number || ''}"></div>`;
-                                    html += `<div class="form-group"><label>IFSC Code</label>
-                                        <input type="text" name="ifsc_code" class="form-control" value="${currentValues.ifsc_code || ''}"></div>`;
-                                    html += `<div class="form-group"><label>Account Holder Name</label>
-                                        <input type="text" name="account_holder_name" class="form-control" value="${currentValues.account_holder_name || ''}"></div>`;
+                                    html += `<div class="form-group">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" name="credit_to_wallet" class="custom-control-input" id="creditToWallet" value="1">
+                                            <label class="custom-control-label" for="creditToWallet">
+                                                <strong>Credit to Wallet Now</strong><br>
+                                                <small class="text-muted">Check this box to credit the refund to user's wallet immediately. Uncheck to create pending refund for manual processing later.</small>
+                                            </label>
+                                        </div>
+                                    </div>`;
                                     break;
 
                                 case 'post_purchase_coupon':
@@ -798,7 +914,17 @@
 
                         // Trigger change on load if scenario exists
                         if (scenarioSelect.value) {
-                            scenarioSelect.dispatchEvent(new Event('change'));
+                            // If current scenario is refund_payment but flow is no_refund, clear it
+                            if (isNonPaidAccess && scenarioSelect.value === 'refund_payment') {
+                                scenarioSelect.value = '';
+                                fieldsContainer.innerHTML = `<div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Scenario Cleared:</strong> The previously selected "Refund Payment" scenario is not applicable for non-paid access courses. Please select a different scenario.
+                                </div>`;
+                                submitBtn.disabled = true;
+                            } else {
+                                scenarioSelect.dispatchEvent(new Event('change'));
+                            }
                         }
                     });
                     </script>
@@ -964,6 +1090,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="card-body">
                             <ul class="list-unstyled">
                                 <li><strong>Flow Type:</strong> {{ $supportRequest->getFlowTypeLabel() }}</li>
+                                @if($supportRequest->flow_type === 'flow_no_refund')
+                                    <li class="text-warning">
+                                        <i class="fas fa-exclamation-triangle"></i> 
+                                        <strong>Non-Paid Access:</strong> This course was accessed for free, through mentor, or temporary access. Refund scenarios are not applicable.
+                                        @if($supportRequest->access_type)
+                                            <br><small>Access Type: {{ ucfirst($supportRequest->access_type) }}</small>
+                                        @endif
+                                    </li>
+                                @endif
                                 <li><strong>Purchase Status:</strong> {{ ucfirst($supportRequest->purchase_status) }}</li>
                                 @if($supportRequest->course_purchased_at)
                                     <li><strong>Purchased:</strong> {{ \Carbon\Carbon::parse($supportRequest->course_purchased_at)->format('j M Y') }}</li>
@@ -1333,29 +1468,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 statusDiv.innerHTML = '<div class="alert alert-danger py-2"><i class="fas fa-times-circle"></i> <strong>Cannot process:</strong> For full payment, cash must cover the entire course price. Select an installment plan or apply a coupon.</div>';
             }
         }
-    }
-
-    // ── Inject hidden fields into status form on submit ──
-    const statusForm = document.querySelector('form[action*="status"]');
-    if (statusForm) {
-        statusForm.addEventListener('submit', function(e) {
-            // Remove any previously injected hidden fields
-            statusForm.querySelectorAll('.offline-hidden-field').forEach(el => el.remove());
-
-            if (currentCouponCode) {
-                const h = document.createElement('input');
-                h.type = 'hidden'; h.name = 'offline_coupon_code'; h.value = currentCouponCode;
-                h.className = 'offline-hidden-field';
-                statusForm.appendChild(h);
-            }
-
-            if (currentInstallmentId) {
-                const h = document.createElement('input');
-                h.type = 'hidden'; h.name = 'offline_installment_id'; h.value = currentInstallmentId;
-                h.className = 'offline-hidden-field';
-                statusForm.appendChild(h);
-            }
-        });
     }
 
     function formatNum(n) { return Math.round(n).toLocaleString('en-IN'); }

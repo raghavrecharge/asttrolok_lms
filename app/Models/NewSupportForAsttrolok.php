@@ -201,6 +201,7 @@ class NewSupportForAsttrolok extends Model
             'flow_a' => 'Never Purchased',
             'flow_b' => 'Expired Course',
             'flow_c' => 'Active Course',
+            'flow_no_refund' => 'Non-Paid Access (No Refund)',
         ];
 
         return $labels[$this->flow_type] ?? 'Unknown';

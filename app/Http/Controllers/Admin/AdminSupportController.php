@@ -25,6 +25,7 @@ use App\Models\SupportCategory;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Accounting;
+use App\Models\Refund;
 use App\Models\Transaction;
 use App\Models\WebinarChapter;
 use App\Models\WebinarChapterItem;
@@ -238,11 +239,36 @@ class AdminSupportController extends Controller
             if ($studentUserId) {
                 $studentUser = \App\User::find($studentUserId);
 
-                // Student's purchased courses (from UPE)
+                // Student's purchased courses (from UPE) - EXCLUDE NON-PAID ACCESS
                 $purchasedIds = $studentUser ? $studentUser->getPurchasedCoursesIds() : [];
-                $data['studentPurchases'] = !empty($purchasedIds)
-                    ? Webinar::whereIn('id', $purchasedIds)->where('status', 'active')->get()->map(fn($w) => ['id' => $w->id, 'title' => $w->title ?? 'Course #' . $w->id])
+                $allPurchasedWebinars = !empty($purchasedIds)
+                    ? Webinar::whereIn('id', $purchasedIds)->where('status', 'active')->get()
                     : collect();
+                
+                $filteredPurchases = collect();
+                foreach ($allPurchasedWebinars as $webinar) {
+                    // Check if this is non-paid access (exclude from refundable courses)
+                    $accessEngine = app(\App\Services\PaymentEngine\AccessEngine::class);
+                    
+                    // Find the UPE product for this webinar
+                    $productTypes = ['course_video', 'webinar'];
+                    $upeProduct = \App\Models\PaymentEngine\UpeProduct::whereIn('product_type', $productTypes)
+                        ->where('external_id', $webinar->id)
+                        ->first();
+                    
+                    if ($upeProduct) {
+                        $accessResult = $accessEngine->computeAccess($studentUserId, $upeProduct->id);
+                        
+                        // Exclude courses accessed for free, through mentor, or temporary access
+                        if ($accessResult->hasAccess && in_array($accessResult->accessType, ['free', 'mentor', 'temporary'])) {
+                            continue; // Skip non-paid access courses
+                        }
+                    }
+                    
+                    $filteredPurchases->push(['id' => $webinar->id, 'title' => $webinar->title ?? 'Course #' . $webinar->id]);
+                }
+                
+                $data['studentPurchases'] = $filteredPurchases;
 
                 // Expired courses (for extension scenario)
                 $expiredList = [];
@@ -286,8 +312,19 @@ class AdminSupportController extends Controller
                         ->where('base_fee_snapshot', '>', 0)
                         ->with('product')
                         ->get();
+                    
                     foreach ($paidSales as $s) {
                         if (!$s->product || !in_array($s->product->product_type, ['course_video', 'webinar'])) continue;
+                        
+                        // Check if this is non-paid access (exclude from refundable courses)
+                        $accessEngine = app(\App\Services\PaymentEngine\AccessEngine::class);
+                        $accessResult = $accessEngine->computeAccess($studentUserId, $s->product->id);
+                        
+                        // Exclude courses accessed for free, through mentor, or temporary access
+                        if ($accessResult->hasAccess && in_array($accessResult->accessType, ['free', 'mentor', 'temporary'])) {
+                            continue; // Skip non-paid access courses
+                        }
+                        
                         $w = Webinar::find($s->product->external_id);
                         if ($w) $refundableList[] = ['id' => $w->id, 'title' => $w->title ?? 'Course #' . $w->id];
                     }
@@ -1203,17 +1240,6 @@ class AdminSupportController extends Controller
                  /* ---------- refund_payment ---------- */
                 if ($supportRequest->support_scenario === 'refund_payment') {
                      $this->refundPayment($supportRequest);
-
-                     // UPE: Record refund in UPE ledger
-                     if ($supportRequest->webinar_id) {
-                         $bridge = app(SupportUpeBridge::class);
-                         $bridge->recordRefund(
-                             $supportRequest->user_id,
-                             $supportRequest->webinar_id,
-                             $supportRequest->id,
-                             $user->id
-                         );
-                     }
                 }
             }
 
@@ -1293,10 +1319,7 @@ class AdminSupportController extends Controller
             'temporary_access_percentage' => 'nullable|integer|min:1|max:100',
             'verified_amount' => 'nullable|numeric|min:0',
             'coupon_code' => 'nullable|string',
-            'refund_method' => 'nullable|string|in:bank_transfer,wallet_credit,original_method',
-            'bank_account_number' => 'nullable|string',
-            'ifsc_code' => 'nullable|string',
-            'account_holder_name' => 'nullable|string',
+            'credit_to_wallet' => 'nullable|boolean',
             'correct_course_id' => 'nullable|exists:webinars,id',
             'service_type' => 'nullable|string',
             'service_id' => 'nullable|integer',
@@ -1465,6 +1488,12 @@ class AdminSupportController extends Controller
      */
     public function adminApproveRestructure($supportRequest)
     {
+        $result = [
+            'success' => false,
+            'message' => '',
+            'data' => null
+        ];
+
         try {
             Log::info('=== STARTING INSTALLMENT RESTRUCTURE APPROVAL (UPE) ===', [
                 'support_request_id' => $supportRequest->id,
@@ -1509,6 +1538,15 @@ class AdminSupportController extends Controller
             $subSchedulesJson = $request->input('restructure_sub_schedules');
             $subSchedules = $subSchedulesJson ? json_decode($subSchedulesJson, true) : null;
 
+            // Debug logging
+            Log::info('Restructure form data received', [
+                'restructure_sub_schedules_raw' => $subSchedulesJson,
+                'restructure_sub_schedules_decoded' => $subSchedules,
+                'restructure_schedule_id' => $request->input('restructure_schedule_id'),
+                'restructure_plan_id' => $request->input('restructure_plan_id'),
+                'all_request_data' => $request->all()
+            ]);
+
             if (!$subSchedules || !is_array($subSchedules) || count($subSchedules) < 2) {
                 // Fallback: equal 2-way split with 30-day interval
                 $remaining = $schedule->remainingAmount();
@@ -1517,7 +1555,10 @@ class AdminSupportController extends Controller
                     ['amount' => $half, 'due_date' => now()->format('Y-m-d')],
                     ['amount' => round($remaining - $half, 2), 'due_date' => now()->addDays(30)->format('Y-m-d')],
                 ];
-                Log::info('Using default 2-way equal split (no admin input received)');
+                Log::warning('Using default 2-way equal split (no admin input received)', [
+                    'reason' => !$subSchedules ? 'No subSchedules data' : (count($subSchedules) < 2 ? 'Less than 2 parts' : 'Invalid array'),
+                    'received_json' => $subSchedulesJson
+                ]);
             }
 
             Log::info('Restructure sub-schedules', [
@@ -1590,7 +1631,7 @@ class AdminSupportController extends Controller
                 'new_schedule_ids' => array_map(fn($s) => $s->id, $createdSchedules),
             ]);
 
-            return [
+            $result = [
                 'success' => true,
                 'message' => $executionNotes,
                 'data' => [
@@ -1612,11 +1653,14 @@ class AdminSupportController extends Controller
                 'trace' => $e->getTraceAsString(),
             ]);
             
-            return [
+            $result = [
                 'success' => false,
-                'message' => 'Error approving restructure: ' . $e->getMessage()
+                'message' => 'Installment restructure failed: ' . $e->getMessage(),
+                'data' => null,
             ];
         }
+
+        return $result;
     }
 
     /**
@@ -1704,9 +1748,7 @@ class AdminSupportController extends Controller
             case 'refund_payment':
                 $scenarioRules['webinar_id'] = 'required|exists:webinars,id';
                 $scenarioRules['refund_reason'] = 'nullable|string';
-                $scenarioRules['bank_account_number'] = 'nullable|string';
-                $scenarioRules['ifsc_code'] = 'nullable|string';
-                $scenarioRules['account_holder_name'] = 'nullable|string';
+                $scenarioRules['credit_to_wallet'] = 'nullable|boolean';
                 break;
             case 'post_purchase_coupon':
                 $scenarioRules['webinar_id'] = 'required|exists:webinars,id';
@@ -1757,8 +1799,7 @@ class AdminSupportController extends Controller
                 'extension_days', 'extension_reason', 'temporary_access_days', 'temporary_access_percentage',
                 'temporary_access_reason', 'mentor_change_reason', 'relative_description',
                 'free_course_reason', 'cash_amount', 'payment_date', 'payment_location',
-                'payment_receipt_number', 'restructure_reason', 'refund_reason',
-                'bank_account_number', 'ifsc_code', 'account_holder_name',
+                'payment_receipt_number', 'restructure_reason', 'refund_reason', 'credit_to_wallet',
                 'coupon_code', 'coupon_apply_reason',
             ];
 
@@ -1773,15 +1814,28 @@ class AdminSupportController extends Controller
             // Force fresh instance to ensure all relations are reloaded or data is current
             $supportRequest = $supportRequest->fresh();
 
+            // Special handling for installment_restructure: find and link UPE plan data
+            if ($scenario === 'installment_restructure') {
+                $this->linkUpePlanForRestructure($supportRequest);
+                // Refresh again to get the updated execution_result
+                $supportRequest = $supportRequest->fresh();
+            }
+
             // Step 2: Update status based on role
             // Support Role: set as approved (needs admin final action)
-            // Admin: set as completed (final execution)
+            // Admin: set as completed (final execution) - EXCEPT for installment_restructure which needs split interface
             if ($user->role_name === 'Support Role') {
                 $status = 'approved';
                 $remarks = $request->admin_remarks ?? 'Processed by Support team';
             } else {
-                $status = 'completed';
-                $remarks = $request->admin_remarks ?? 'Processed by Admin';
+                if ($scenario === 'installment_restructure') {
+                    // For installment restructure, set to approved first so admin can see the restructure interface
+                    $status = 'approved';
+                    $remarks = $request->admin_remarks ?? 'Installment restructure ready for split definition';
+                } else {
+                    $status = 'completed';
+                    $remarks = $request->admin_remarks ?? 'Processed by Admin';
+                }
             }
 
             // Sync remarks to the request so updateStatus picks them up
@@ -1812,6 +1866,82 @@ class AdminSupportController extends Controller
                 'msg' => 'Failed to process ticket: ' . \Str::limit($e->getMessage(), 200),
                 'status' => 'error'
             ]]);
+        }
+    }
+
+    /**
+     * Find and link UPE plan data for installment restructure scenario
+     * This populates the execution_result with plan_id and schedule_id needed by adminApproveRestructure
+     */
+    private function linkUpePlanForRestructure($supportRequest)
+    {
+        if (!$supportRequest->webinar_id || !$supportRequest->user_id) {
+            throw new \RuntimeException('webinar_id and user_id are required for installment restructure');
+        }
+
+        try {
+            // Find UPE product for the webinar
+            $upeProduct = \App\Models\PaymentEngine\UpeProduct::where('external_id', $supportRequest->webinar_id)
+                ->whereIn('product_type', ['course_video', 'webinar'])
+                ->first();
+
+            if (!$upeProduct) {
+                throw new \RuntimeException('No UPE product found for webinar_id: ' . $supportRequest->webinar_id);
+            }
+
+            // Find active installment plan for this user and product
+            $plan = \App\Models\PaymentEngine\UpeInstallmentPlan::whereHas('sale', function ($q) use ($supportRequest, $upeProduct) {
+                    $q->where('user_id', $supportRequest->user_id)->where('product_id', $upeProduct->id);
+                })
+                ->whereIn('status', ['active', 'completed'])
+                ->with(['schedules', 'sale.product'])
+                ->first();
+
+            if (!$plan) {
+                throw new \RuntimeException('No active installment plan found for user_id: ' . $supportRequest->user_id . ' and product_id: ' . $upeProduct->id);
+            }
+
+            // Find unpaid schedules
+            $unpaidSchedules = $plan->schedules->whereIn('status', ['due', 'upcoming', 'partial', 'overdue']);
+            $targetSchedule = $unpaidSchedules->sortBy('due_date')->first();
+
+            if (!$targetSchedule) {
+                throw new \RuntimeException('No unpaid schedules found for restructuring');
+            }
+
+            $isUpfront = $targetSchedule ? ($targetSchedule->sequence <= 1) : false;
+
+            // Populate execution_result with UPE plan data
+            $executionResult = [
+                'plan_id' => $plan->id,
+                'schedule_id' => $targetSchedule->id,
+                'schedule_sequence' => $targetSchedule->sequence,
+                'schedule_amount' => (float) $targetSchedule->amount_due,
+                'schedule_remaining' => $targetSchedule->remainingAmount(),
+                'is_upfront' => $isUpfront,
+                'upe_payment_request_id' => null,
+            ];
+
+            $supportRequest->update([
+                'execution_result' => $executionResult
+            ]);
+
+            Log::info('UPE plan data linked for restructure', [
+                'support_request_id' => $supportRequest->id,
+                'plan_id' => $plan->id,
+                'schedule_id' => $targetSchedule->id,
+                'schedule_sequence' => $targetSchedule->sequence,
+                'schedule_remaining' => $targetSchedule->remainingAmount(),
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to link UPE plan for restructure', [
+                'support_request_id' => $supportRequest->id,
+                'webinar_id' => $supportRequest->webinar_id,
+                'user_id' => $supportRequest->user_id,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
         }
     }
 
@@ -2756,94 +2886,200 @@ class AdminSupportController extends Controller
             }
             
             return $result;
+    }
+
+    /**
+     * Process refund payment - matches SupportRequestService functionality
+     */
+    public function refundPayment($supportRequest)
+    {
+        $userId = $supportRequest->user_id;
+        $courseId = $supportRequest->webinar_id;
+
+        \Log::info('Processing refund (admin)', [
+            'user_id' => $userId,
+            'webinar_id' => $courseId,
+            'support_request_id' => $supportRequest->id,
+        ]);
+
+        if (empty($userId) || empty($courseId)) {
+            throw new \RuntimeException('Refund failed: missing user_id or webinar_id.');
         }
 
+        // 1. Find active sale
+        $sale = Sale::where('buyer_id', $userId)
+            ->where('webinar_id', $courseId)
+            ->whereNull('refund_at')
+            ->where('access_to_purchased_item', 1)
+            ->lockForUpdate()
+            ->first();
 
-        /**
-         * V-12 FIX: Rewritten refundPayment() — SOFT-REVOKE pattern.
-         * NO hard deletes. All original records are preserved.
-         * Creates reversal Accounting entries and a Refund record.
-         *
-         * NOTE: Called from within updateStatus() which already has an open
-         * DB::beginTransaction(). Do NOT open a nested transaction here.
-         */
-        public function refundPayment($supportRequest)
-        {
-            $userId = $supportRequest->user_id;
-            $courseId = $supportRequest->webinar_id;
+        if (!$sale) {
+            throw new \RuntimeException('No active purchase found for this user and course.');
+        }
 
-            \Log::info('Processing refund (soft-revoke)', [
-                'user_id' => $userId,
-                'webinar_id' => $courseId,
-                'support_request_id' => $supportRequest->id,
-            ]);
+        // 2. Update sale (soft-revoke)
+        $sale->update([
+            'refund_at' => time(),
+            'access_to_purchased_item' => 0,
+        ]);
 
-            if (empty($userId) || empty($courseId)) {
-                throw new \RuntimeException('Refund failed: missing user_id or webinar_id.');
-            }
+        // 3. Calculate refund amount
+        $actualAmountPaid = $sale->total_amount - ($sale->discount ?? 0);
+        $refundAmount = $supportRequest->verified_amount ?? $actualAmountPaid;
 
-            // 1. Soft-revoke Sale (NO DELETE)
-            $sale = Sale::where('buyer_id', $userId)
-                ->where('webinar_id', $courseId)
-                ->whereNull('refund_at')
-                ->where('access_to_purchased_item', 1)
-                ->lockForUpdate()
-                ->first();
+        // 4. Create accounting entry
+        Accounting::create([
+            'user_id' => $sale->buyer_id,
+            'amount' => -1 * abs($refundAmount),
+            'type' => 'deduction',
+            'type_account' => Accounting::$asset,
+            'description' => "Refund: Support #{$supportRequest->ticket_number} - Course #{$courseId}",
+            'created_at' => time(),
+        ]);
 
-            if ($sale) {
-                $sale->update([
-                    'refund_at' => time(),
-                    'access_to_purchased_item' => 0,
+        // 5. Create refund record
+        Refund::create([
+            'user_id' => $sale->buyer_id,
+            'sale_id' => $sale->id,
+            'support_request_id' => $supportRequest->id,
+            'refund_amount' => $refundAmount,
+            'refund_method' => 'wallet_credit', // Always wallet credit
+            'processed_by' => Auth::id(),
+            'status' => 'pending', // Set to pending for manual processing
+        ]);
+
+        // 6. Credit refund to wallet system ONLY if explicitly requested
+        $creditToWallet = request()->input('credit_to_wallet', false);
+        
+        if ($creditToWallet) {
+            try {
+                $walletService = app(\App\Services\PaymentEngine\WalletService::class);
+                $walletService->credit(
+                    $sale->buyer_id,
+                    $refundAmount,
+                    'refund',
+                    "Refund for course #{$courseId} (Support #{$supportRequest->ticket_number})",
+                    'support_request',
+                    $supportRequest->id
+                );
+
+                // Update refund status to processed
+                $refundRecord = Refund::where('support_request_id', $supportRequest->id)->first();
+                if ($refundRecord) {
+                    $refundRecord->update(['status' => 'processed']);
+                }
+
+                \Log::info('Refund credited to wallet', [
+                    'user_id' => $sale->buyer_id,
+                    'amount' => $refundAmount,
+                    'support_request_id' => $supportRequest->id,
                 ]);
+
+            } catch (\Exception $e) {
+                \Log::warning('Failed to credit refund to wallet', [
+                    'user_id' => $sale->buyer_id,
+                    'amount' => $refundAmount,
+                    'error' => $e->getMessage(),
+                ]);
+                // Continue even if wallet credit fails
             }
-
-            // 2. Create reversal Accounting entry (NO DELETE of originals)
-            $refundAmount = $sale ? $sale->amount : 0;
-            Accounting::create([
-                'user_id' => $userId,
-                'amount' => -1 * abs($refundAmount),
-                'type' => 'deduction',
-                'type_account' => Accounting::$asset,
-                'description' => "Refund: Support #{$supportRequest->ticket_number} - Course #{$courseId}",
-                'created_at' => time(),
-            ]);
-
-            // 3. Soft-close InstallmentOrder (NO DELETE)
-            InstallmentOrder::where('user_id', $userId)
-                ->where('webinar_id', $courseId)
-                ->whereIn('status', ['open', 'paying'])
-                ->update(['status' => 'refunded']);
-
-            // 4. Revoke WebinarAccessControl (NO DELETE)
-            WebinarAccessControl::where('user_id', $userId)
-                ->where('webinar_id', $courseId)
-                ->where('status', 'active')
-                ->update(['status' => 'revoked']);
-
-            // 5. Create Refund record for audit trail
-            \App\Models\Refund::create([
-                'user_id' => $userId,
-                'sale_id' => $sale ? $sale->id : null,
-                'support_request_id' => $supportRequest->id,
-                'refund_amount' => $refundAmount,
-                'refund_method' => 'bank_transfer',
-                'processed_by' => Auth::id(),
-                'status' => 'pending',
-            ]);
-
-            // 6. UPE: Record refund in UPE ledger + revoke UPE sale
-            if ($courseId) {
-                $bridge = app(SupportUpeBridge::class);
-                $bridge->recordRefund($userId, $courseId, $supportRequest->id, Auth::id());
-            }
-
-            \Log::info('Refund completed (soft-revoke, all records preserved)', [
-                'user_id' => $userId,
-                'webinar_id' => $courseId,
-                'refund_amount' => $refundAmount,
+        } else {
+            \Log::info('Refund created but not credited to wallet (manual processing required)', [
+                'user_id' => $sale->buyer_id,
+                'amount' => $refundAmount,
+                'credit_to_wallet' => $creditToWallet,
                 'support_request_id' => $supportRequest->id,
             ]);
         }
 
-    
+        // 7. Handle installment orders - COMPLETE CANCELLATION
+        InstallmentOrder::where('user_id', $userId)
+            ->where('webinar_id', $courseId)
+            ->whereIn('status', ['open', 'paying'])
+            ->update(['status' => 'refunded']);
+
+        // 8. COMPLETE UPE SYSTEM UPDATES - Critical for dashboard display
+        try {
+            $this->completeUpeRefund($userId, $courseId, $supportRequest->id, Auth::id(), $refundAmount);
+        } catch (\Exception $upeError) {
+            \Log::error('UPE refund update failed', [
+                'user_id' => $userId,
+                'course_id' => $courseId,
+                'error' => $upeError->getMessage(),
+            ]);
+        }
+
+        // 9. Revoke WebinarAccessControl
+        WebinarAccessControl::where('user_id', $userId)
+            ->where('webinar_id', $courseId)
+            ->where('status', 'active')
+            ->update(['status' => 'revoked']);
+
+        // 10. UPE: Record refund in UPE ledger + revoke UPE sale (backup)
+        $bridge = app(SupportUpeBridge::class);
+        $bridge->recordRefund($userId, $courseId, $supportRequest->id, Auth::id());
+
+        \Log::info('Refund completed (admin) - COMPLETE SYSTEM UPDATE', [
+            'user_id' => $userId,
+            'webinar_id' => $courseId,
+            'refund_amount' => $refundAmount,
+            'support_request_id' => $supportRequest->id,
+            'credit_to_wallet' => $creditToWallet,
+        ]);
+    }
+
+    /**
+     * Complete UPE system updates for refund - ensures course disappears from dashboard
+     */
+    private function completeUpeRefund(int $userId, int $webinarId, int $supportRequestId, int $adminId, float $refundAmount): void
+    {
+        // Get UPE product
+        $product = \App\Models\PaymentEngine\UpeProduct::where('external_id', $webinarId)
+            ->where('product_type', 'course_video')
+            ->first();
+
+        if (!$product) {
+            \Log::warning('UPE product not found for refund', ['webinar_id' => $webinarId]);
+            return;
+        }
+
+        // Find and update UPE sale
+        $upeSale = \App\Models\PaymentEngine\UpeSale::where('user_id', $userId)
+            ->where('product_id', $product->id)
+            ->whereNotIn('status', ['cancelled', 'refunded'])
+            ->orderByDesc('id')
+            ->first();
+
+        if ($upeSale) {
+            // Update sale status to refunded
+            $upeSale->update(['status' => 'refunded']);
+            
+            // Cancel all installment schedules
+            \App\Models\PaymentEngine\UpeInstallmentSchedule::where('sale_id', $upeSale->id)
+                ->whereIn('status', ['pending', 'overdue'])
+                ->update(['status' => 'cancelled']);
+
+            // Cancel installment plan if exists
+            \App\Models\PaymentEngine\UpeInstallmentPlan::where('sale_id', $upeSale->id)
+                ->whereNotIn('status', ['completed', 'cancelled'])
+                ->update(['status' => 'cancelled']);
+
+            // Invalidate access immediately
+            $accessEngine = app(\App\Services\PaymentEngine\AccessEngine::class);
+            $accessEngine->invalidate($userId, $product->id);
+
+            \Log::info('UPE refund completed', [
+                'sale_id' => $upeSale->id,
+                'product_id' => $product->id,
+                'user_id' => $userId,
+                'refund_amount' => $refundAmount,
+            ]);
+        } else {
+            \Log::warning('No active UPE sale found for refund', [
+                'user_id' => $userId,
+                'product_id' => $product->id,
+            ]);
+        }
+    }
 }

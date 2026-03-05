@@ -1383,15 +1383,16 @@ class WebinarController extends Controller
                 ->groupBy('product_id')
                 ->pluck('product_id');
 
-            // For each product, get the single best sale
+            // For each product, get the single best sale (EXCLUDE refunded)
             $deduped = collect();
             foreach ($bestSaleIds as $productId) {
                 $sale = UpeSale::where('user_id', $user->id)
                     ->where('product_id', $productId)
+                    ->whereNotIn('status', ['refunded', 'cancelled', 'expired']) // Exclude refunded
                     ->whereHas('product', function ($q) {
                         $q->whereIn('product_type', ['webinar', 'course_video', 'course_live', 'bundle']);
                     })
-                    ->orderByRaw("FIELD(status, 'active', 'partially_refunded', 'pending_payment', 'completed', 'refunded', 'expired', 'cancelled') ASC")
+                    ->orderByRaw("FIELD(status, 'active', 'partially_refunded', 'pending_payment', 'completed') ASC")
                     ->orderByDesc('id')
                     ->first();
                 if ($sale) {
@@ -1424,7 +1425,7 @@ class WebinarController extends Controller
 
             $time = time();
 
-            // Calculate stats for the dashboard info widgets
+            // Calculate stats for the dashboard info widgets (EXCLUDE refunded)
             // We use the full deduped query (not paginated) for stats
             $allMySales = UpeSale::whereIn('id', $deduped)->with('product')->get();
             
