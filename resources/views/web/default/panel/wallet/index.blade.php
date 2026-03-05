@@ -168,11 +168,63 @@
         text-transform: uppercase;
         letter-spacing: 0.3px;
     }
-    .txn-type-badge.top_up { background: #e8f5e9; color: #2e7d32; }
-    .txn-type-badge.refund { background: #e3f2fd; color: #1565c0; }
-    .txn-type-badge.purchase, .txn-type-badge.wallet_payment { background: #fff3e0; color: #e65100; }
-    .txn-type-badge.admin_credit { background: #f3e5f5; color: #7b1fa2; }
-    .txn-type-badge.admin_debit { background: #fce4ec; color: #c62828; }
+    /* ── Transaction type badge colours ── */
+    .txn-type-badge.top_up,
+    .txn-type-badge.gateway_topup     { background: #e8f5e9; color: #2e7d32; }
+    .txn-type-badge.refund,
+    .txn-type-badge.overpayment_refund,
+    .txn-type-badge.course_change_refund { background: #e3f2fd; color: #1565c0; }
+    .txn-type-badge.purchase,
+    .txn-type-badge.wallet_payment,
+    .txn-type-badge.wallet_purchase    { background: #fff3e0; color: #e65100; }
+    .txn-type-badge.offline_payment    { background: #fce4ec; color: #880e4f; }
+    .txn-type-badge.admin_credit       { background: #f3e5f5; color: #7b1fa2; }
+    .txn-type-badge.admin_debit        { background: #fde8e8; color: #c62828; }
+    .txn-type-badge.adjustment         { background: #fff9c4; color: #f57f17; }
+
+    /* ── Direction badge ── */
+    .dir-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+    }
+    .dir-credit { background: #d4edda; color: #155724; }
+    .dir-debit  { background: #f8d7da; color: #721c24; }
+
+    /* ── Row background tints ── */
+    .txn-table table tbody tr.row-credit { background: #f6fff7; }
+    .txn-table table tbody tr.row-debit  { background: #fff6f6; }
+    .txn-table table tbody tr.row-refund { background: #f0f7ff; }
+    .txn-table table tbody tr.row-adjustment { background: #fffde7; }
+    .txn-table table tbody tr:hover { filter: brightness(0.97); }
+
+    /* ── Legend ── */
+    .txn-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 12px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        background: #fafafa;
+    }
+    .txn-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #555;
+    }
+    .legend-dot {
+        width: 12px; height: 12px;
+        border-radius: 3px;
+        flex-shrink: 0;
+    }
     .empty-state {
         text-align: center;
         padding: 40px 20px;
@@ -220,8 +272,16 @@
 
     {{-- Transaction History --}}
     <div class="txn-table mt-30">
-        <div class="txn-table-header">
+        <div class="txn-table-header d-flex align-items-center justify-content-between">
             <h3>Transaction History</h3>
+        </div>
+
+        {{-- Legend --}}
+        <div class="txn-legend">
+            <div class="txn-legend-item"><span class="legend-dot" style="background:#d4edda;"></span> Credit (Money In)</div>
+            <div class="txn-legend-item"><span class="legend-dot" style="background:#f8d7da;"></span> Debit (Money Out)</div>
+            <div class="txn-legend-item"><span class="legend-dot" style="background:#d1ecf1;"></span> Refund</div>
+            <div class="txn-legend-item"><span class="legend-dot" style="background:#fffde7;"></span> Adjustment</div>
         </div>
 
         @if($transactions instanceof \Illuminate\Pagination\LengthAwarePaginator && $transactions->count() > 0)
@@ -229,31 +289,74 @@
                 <table>
                     <thead>
                         <tr>
+                            <th>#</th>
                             <th>Date</th>
+                            <th>Direction</th>
                             <th>Type</th>
                             <th>Description</th>
                             <th>Amount</th>
-                            <th>Balance</th>
+                            <th>Balance After</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $typeLabels = [
+                                'top_up'               => 'Top Up',
+                                'gateway_topup'        => 'Gateway Top Up',
+                                'purchase'             => 'Purchase',
+                                'wallet_payment'       => 'Wallet Payment',
+                                'wallet_purchase'      => 'Wallet Purchase',
+                                'refund'               => 'Refund',
+                                'overpayment_refund'   => 'Overpayment Refund',
+                                'course_change_refund' => 'Course Change Refund',
+                                'offline_payment'      => 'Offline Payment',
+                                'admin_credit'         => 'Admin Credit',
+                                'admin_debit'          => 'Admin Debit',
+                                'adjustment'           => 'Adjustment',
+                            ];
+                            $refundTypes = ['refund','overpayment_refund','course_change_refund'];
+                            $adjustTypes = ['adjustment','admin_credit','admin_debit'];
+                            $counter = ($transactions->currentPage() - 1) * $transactions->perPage() + 1;
+                        @endphp
                         @foreach($transactions as $txn)
-                            <tr>
-                                <td>{{ $txn->created_at->format('d M Y, h:i A') }}</td>
-                                <td>
-                                    <span class="txn-type-badge {{ $txn->transaction_type }}">
-                                        {{ str_replace('_', ' ', $txn->transaction_type) }}
-                                    </span>
-                                </td>
-                                <td>{{ $txn->description ?? '-' }}</td>
+                            @php
+                                $isRefund   = in_array($txn->transaction_type, $refundTypes);
+                                $isAdjust   = in_array($txn->transaction_type, $adjustTypes);
+                                $rowClass   = $isRefund ? 'row-refund'
+                                            : ($isAdjust ? 'row-adjustment'
+                                            : ($txn->isCredit() ? 'row-credit' : 'row-debit'));
+                                $typeLabel  = $typeLabels[$txn->transaction_type] ?? ucwords(str_replace('_',' ',$txn->transaction_type));
+                            @endphp
+                            <tr class="{{ $rowClass }}">
+                                <td class="text-muted font-12">{{ $counter++ }}</td>
+                                <td style="white-space:nowrap;">{{ $txn->created_at->format('d M Y') }}<br><small class="text-muted">{{ $txn->created_at->format('h:i A') }}</small></td>
                                 <td>
                                     @if($txn->isCredit())
-                                        <span class="txn-credit">+{{ handlePrice((float)$txn->amount) }}</span>
+                                        <span class="dir-badge dir-credit">
+                                            <svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1v8M1 5l4-4 4 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+                                            Credit
+                                        </span>
                                     @else
-                                        <span class="txn-debit">-{{ handlePrice((float)$txn->amount) }}</span>
+                                        <span class="dir-badge dir-debit">
+                                            <svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1v8M1 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+                                            Debit
+                                        </span>
                                     @endif
                                 </td>
-                                <td>{{ handlePrice((float)$txn->balance_after) }}</td>
+                                <td>
+                                    <span class="txn-type-badge {{ $txn->transaction_type }}">
+                                        {{ $typeLabel }}
+                                    </span>
+                                </td>
+                                <td style="max-width:260px;">{{ $txn->description ?? '—' }}</td>
+                                <td style="white-space:nowrap;">
+                                    @if($txn->isCredit())
+                                        <span class="txn-credit">+ {{ handlePrice((float)$txn->amount) }}</span>
+                                    @else
+                                        <span class="txn-debit">− {{ handlePrice((float)$txn->amount) }}</span>
+                                    @endif
+                                </td>
+                                <td style="white-space:nowrap;">{{ handlePrice((float)$txn->balance_after) }}</td>
                             </tr>
                         @endforeach
                     </tbody>

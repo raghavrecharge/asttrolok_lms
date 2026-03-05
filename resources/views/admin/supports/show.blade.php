@@ -881,9 +881,146 @@
                                     break;
 
                                 case 'wrong_course_correction':
-                                    html = buildCourseSelect('wrong_course_id', 'Wrong Course', studentPurchases, true, currentValues.wrong_course_id);
-                                    html += buildCourseSelect('correct_course_id', 'Correct Course', allWebinars, true, currentValues.correct_course_id);
-                                    html += buildTextarea('correction_reason', 'Reason', currentValues.correction_reason);
+                                    html = buildCourseSelect('wrong_course_id', 'Wrong Course (Purchased by Mistake)', studentPurchases, true, currentValues.wrong_course_id);
+                                    html += buildCourseSelect('correct_course_id', 'Correct Course (Student Wants)', allWebinars, true, currentValues.correct_course_id);
+                                    html += buildTextarea('correction_reason', 'Correction Reason', currentValues.correction_reason);
+                                    html += `
+                                    <div class="form-group">
+                                        <label><i class="fas fa-tag"></i> Coupon Code (Optional — for new course)</label>
+                                        <div class="input-group">
+                                            <input type="text" id="wccCouponCode" class="form-control text-uppercase" placeholder="Enter coupon code" value="${escapeHtml(currentValues.coupon_code || '')}">
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-info" onclick="loadWccInfo()"><i class="fas fa-search"></i> Check</button>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">Leave blank if no coupon. Click Check to preview wallet balance and purchase options.</small>
+                                    </div>
+
+                                    <div id="wccInfoPanel" style="display:none;">
+                                        <div class="card border-info mt-2 mb-2">
+                                            <div class="card-header bg-info text-white py-2">
+                                                <strong><i class="fas fa-wallet"></i> Wallet &amp; Price Breakdown</strong>
+                                            </div>
+                                            <div class="card-body py-2">
+                                                {{-- New Course Price --}}
+                                                <h6 class="text-muted mb-1">New Course Cost</h6>
+                                                <table class="table table-sm table-borderless mb-2">
+                                                    <tr><td>Correct Course Price</td><td class="text-right" id="wccCoursePrice">—</td></tr>
+                                                    <tr id="wccDiscountRow" style="display:none;"><td><span class="badge badge-success">Coupon Discount</span></td><td class="text-right text-success" id="wccDiscount">—</td></tr>
+                                                    <tr class="border-top"><td><strong>Amount to Pay</strong></td><td class="text-right font-weight-bold" id="wccFinalPrice">—</td></tr>
+                                                </table>
+
+                                                <hr class="my-2">
+
+                                                {{-- Refund + Wallet --}}
+                                                <h6 class="text-muted mb-1">Student Wallet Projection</h6>
+                                                <table class="table table-sm table-borderless mb-2">
+                                                    <tr><td>Current Wallet Balance</td><td class="text-right" id="wccCurrentWallet">—</td></tr>
+                                                    <tr><td><span class="text-success"><i class="fas fa-plus-circle"></i> Refund from Wrong Course</span></td><td class="text-right text-success font-weight-bold" id="wccRefund">—</td></tr>
+                                                    <tr class="border-top bg-light"><td><strong>Wallet Balance After Refund</strong></td><td class="text-right font-weight-bold" id="wccProjected">—</td></tr>
+                                                </table>
+
+                                                {{-- Comparison --}}
+                                                <div id="wccSufficientMsg" class="alert alert-success py-2 mb-1" style="display:none;">
+                                                    <i class="fas fa-check-circle"></i>
+                                                    <strong>Sufficient balance.</strong>
+                                                    After the refund, wallet balance of <strong id="wccSuffProjected">—</strong>
+                                                    covers the course cost of <strong id="wccSuffFinal">—</strong>.
+                                                    Will be processed fully through wallet.
+                                                </div>
+                                                <div id="wccInsufficientMsg" class="alert alert-warning py-2 mb-1" style="display:none;">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                    <strong>Insufficient wallet balance for full payment.</strong><br>
+                                                    After refund, wallet will have <strong id="wccInsufProjected">—</strong>
+                                                    but course requires <strong id="wccInsufFinal">—</strong>
+                                                    (shortfall: <strong id="wccShortfall" class="text-danger">—</strong>).<br>
+                                                    <small>Please choose <em>Installment</em> or <em>Quick Pay</em> below, or add funds to the student's wallet first.</small>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label><strong>Purchase Type <span class="text-danger">*</span></strong></label>
+                                            <div>
+                                                <div class="custom-control custom-radio custom-control-inline">
+                                                    <input type="radio" id="wccTypeFull" name="correction_purchase_type" value="full" class="custom-control-input" onchange="onWccTypeChange()" checked>
+                                                    <label class="custom-control-label" for="wccTypeFull"><i class="fas fa-money-bill"></i> Full Payment</label>
+                                                </div>
+                                                <div class="custom-control custom-radio custom-control-inline" id="wccInstallmentRadioWrap" style="display:none;">
+                                                    <input type="radio" id="wccTypeInstallment" name="correction_purchase_type" value="installment" class="custom-control-input" onchange="onWccTypeChange()">
+                                                    <label class="custom-control-label" for="wccTypeInstallment"><i class="fas fa-layer-group"></i> Installment</label>
+                                                </div>
+                                                <div class="custom-control custom-radio custom-control-inline">
+                                                    <input type="radio" id="wccTypeQuickPay" name="correction_purchase_type" value="quick_pay" class="custom-control-input" onchange="onWccTypeChange()">
+                                                    <label class="custom-control-label" for="wccTypeQuickPay"><i class="fas fa-bolt"></i> Quick Pay</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div id="wccInstallmentSection" style="display:none;">
+                                            <div class="form-group">
+                                                <label><strong>Select Installment Plan <span class="text-danger">*</span></strong></label>
+                                                <select id="wccInstallmentSelect" name="correction_installment_id" class="form-control" onchange="onWccPlanChange()">
+                                                    <option value="">-- Select Plan --</option>
+                                                </select>
+                                            </div>
+                                            <div id="wccInstallmentSchedule" style="display:none;">
+                                                <h6 class="text-muted"><i class="fas fa-calendar-alt"></i> EMI Schedule</h6>
+                                                <table class="table table-sm table-bordered" id="wccScheduleTable">
+                                                    <thead class="thead-light"><tr><th>EMI</th><th class="text-right">Amount</th><th>Due</th></tr></thead>
+                                                    <tbody></tbody>
+                                                </table>
+                                                <div id="wccInstallmentSufficient" class="alert alert-success py-1" style="display:none;">
+                                                    <i class="fas fa-check-circle"></i> Wallet balance is sufficient for first installment.
+                                                </div>
+                                                <div id="wccInstallmentInsufficient" class="alert alert-warning py-1" style="display:none;">
+                                                    <i class="fas fa-exclamation-triangle"></i> <strong>Insufficient balance</strong> for first installment. Please add funds to wallet.
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div id="wccQuickPaySection" style="display:none;">
+                                            <div class="form-group">
+                                                <label><strong>Quick Pay Amount (₹) <span class="text-danger">*</span></strong></label>
+                                                <input type="number" id="wccQuickPayInput" name="correction_quick_pay_amount" class="form-control" min="1" step="1" placeholder="Enter amount to pay now" onchange="onWccQuickPayChange()">
+                                                <small class="text-muted">Student can pay remaining amount later through normal payment flow.</small>
+                                            </div>
+                                            <div id="wccQuickPaySufficient" class="alert alert-success py-1" style="display:none;">
+                                                <i class="fas fa-check-circle"></i> Wallet balance is sufficient for this amount.
+                                            </div>
+                                            <div id="wccQuickPayInsufficient" class="alert alert-warning py-1" style="display:none;">
+                                                <i class="fas fa-exclamation-triangle"></i> <strong>Insufficient wallet balance.</strong> Please add funds.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <input type="hidden" name="coupon_code" id="wccCouponHidden" value="${escapeHtml(currentValues.coupon_code || '')}">
+                                    `;
+                                    // After building the HTML, wire up the correct_course_id change to auto-load info
+                                    setTimeout(function() {
+                                        var correctSel = document.querySelector('[name="correct_course_id"]');
+                                        var wrongSel   = document.querySelector('[name="wrong_course_id"]');
+                                        if (correctSel) {
+                                            correctSel.addEventListener('change', function() {
+                                                if (this.value) loadWccInfo();
+                                            });
+                                        }
+                                        if (wrongSel) {
+                                            wrongSel.addEventListener('change', function() {
+                                                var correctVal = document.querySelector('[name="correct_course_id"]');
+                                                if (correctVal && correctVal.value) loadWccInfo();
+                                            });
+                                        }
+                                        // Pre-fill purchase type if editing
+                                        var savedType = '{{ $supportRequest->correction_purchase_type ?? '' }}';
+                                        if (savedType) {
+                                            var radio = document.querySelector('[name="correction_purchase_type"][value="' + savedType + '"]');
+                                            if (radio) { radio.checked = true; }
+                                        }
+                                        // Auto-load if both courses already selected
+                                        var cid = document.querySelector('[name="correct_course_id"]');
+                                        if (cid && cid.value) loadWccInfo();
+                                    }, 100);
                                     break;
                             }
 
@@ -927,6 +1064,182 @@
                             }
                         }
                     });
+
+                    // ── Wrong Course Correction JS helpers ──
+                    var wccLastData = null;
+
+                    function escapeHtml(str) {
+                        if (!str) return '';
+                        const div = document.createElement('div');
+                        div.textContent = str;
+                        return div.innerHTML;
+                    }
+
+                    function loadWccInfo() {
+                        var correctCourseEl = document.querySelector('[name="correct_course_id"]');
+                        var wrongCourseEl   = document.querySelector('[name="wrong_course_id"]');
+                        var couponEl        = document.getElementById('wccCouponCode');
+
+                        if (!correctCourseEl || !correctCourseEl.value) return;
+
+                        var correctCourseId = correctCourseEl.value;
+                        var wrongCourseId   = wrongCourseEl ? wrongCourseEl.value : '';
+                        var couponCode      = couponEl ? couponEl.value.trim().toUpperCase() : '';
+
+                        // Sync coupon to hidden field
+                        var hidden = document.getElementById('wccCouponHidden');
+                        if (hidden) hidden.value = couponCode;
+
+                        var btn = document.querySelector('#wccCouponCode + * button, .input-group button');
+
+                        fetch('{{ route("admin.support.wrongCourseInfo") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                support_request_id: {{ $supportRequest->id }},
+                                correct_course_id:  correctCourseId,
+                                wrong_course_id:    wrongCourseId,
+                                coupon_code:        couponCode
+                            })
+                        })
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            if (!data.success) {
+                                alert(data.message || 'Error loading course info.');
+                                return;
+                            }
+                            wccLastData = data;
+                            renderWccInfo(data);
+                        })
+                        .catch(function(err) {
+                            console.error('WCC info load error:', err);
+                            alert('Could not load course info. Please try again.');
+                        });
+                    }
+
+                    function renderWccInfo(data) {
+                        var panel = document.getElementById('wccInfoPanel');
+                        if (!panel) return;
+                        panel.style.display = '';
+
+                        document.getElementById('wccCoursePrice').textContent  = '₹' + numberFmt(data.course_price);
+                        document.getElementById('wccFinalPrice').textContent   = '₹' + numberFmt(data.final_price);
+                        document.getElementById('wccRefund').textContent       = '₹' + numberFmt(data.actual_refund);
+                        document.getElementById('wccCurrentWallet').textContent = '₹' + numberFmt(data.current_wallet_balance);
+                        document.getElementById('wccProjected').textContent    = '₹' + numberFmt(data.projected_wallet_balance);
+
+                        var discRow = document.getElementById('wccDiscountRow');
+                        var discEl  = document.getElementById('wccDiscount');
+                        if (data.discount_amount > 0) {
+                            discEl.textContent = '− ₹' + numberFmt(data.discount_amount);
+                            discRow.style.display = '';
+                        } else {
+                            discRow.style.display = 'none';
+                        }
+
+                        var projFmt  = '₹' + numberFmt(data.projected_wallet_balance);
+                        var finalFmt = '₹' + numberFmt(data.final_price);
+
+                        // Sufficient message
+                        document.getElementById('wccSuffProjected').textContent = projFmt;
+                        document.getElementById('wccSuffFinal').textContent     = finalFmt;
+
+                        // Insufficient message
+                        document.getElementById('wccInsufProjected').textContent = projFmt;
+                        document.getElementById('wccInsufFinal').textContent     = finalFmt;
+                        document.getElementById('wccShortfall').textContent      = '₹' + numberFmt(data.shortfall || 0);
+
+                        document.getElementById('wccSufficientMsg').style.display   = data.is_sufficient_full ? '' : 'none';
+                        document.getElementById('wccInsufficientMsg').style.display  = data.is_sufficient_full ? 'none' : '';
+
+                        // Populate installment plans
+                        var radWrap = document.getElementById('wccInstallmentRadioWrap');
+                        var selPlan = document.getElementById('wccInstallmentSelect');
+                        if (data.is_installment_available && data.installment_plans && data.installment_plans.length > 0) {
+                            radWrap.style.display = '';
+                            selPlan.innerHTML = '<option value="">-- Select Plan --</option>';
+                            data.installment_plans.forEach(function(p) {
+                                var opt = document.createElement('option');
+                                opt.value = p.id;
+                                opt.textContent = p.title + ' (' + p.total_emis + ' EMIs, Upfront: ₹' + numberFmt(p.upfront) + ')';
+                                opt.dataset.plans = JSON.stringify(p);
+                                selPlan.appendChild(opt);
+                            });
+                        } else {
+                            radWrap.style.display = 'none';
+                            var radInst = document.getElementById('wccTypeInstallment');
+                            if (radInst && radInst.checked) {
+                                document.getElementById('wccTypeFull').checked = true;
+                            }
+                        }
+
+                        // Apply saved purchase type
+                        var savedType = '{{ $supportRequest->correction_purchase_type ?? "" }}';
+                        if (savedType) {
+                            var radio = document.querySelector('[name="correction_purchase_type"][value="' + savedType + '"]');
+                            if (radio) { radio.checked = true; }
+                        }
+                        onWccTypeChange();
+                    }
+
+                    function onWccTypeChange() {
+                        var selected = document.querySelector('[name="correction_purchase_type"]:checked');
+                        if (!selected) return;
+                        var type = selected.value;
+
+                        document.getElementById('wccInstallmentSection').style.display = (type === 'installment') ? '' : 'none';
+                        document.getElementById('wccQuickPaySection').style.display    = (type === 'quick_pay')    ? '' : 'none';
+
+                        // Disable installment_id if not installment
+                        var selPlan = document.getElementById('wccInstallmentSelect');
+                        if (selPlan) selPlan.disabled = (type !== 'installment');
+
+                        // Disable quick_pay_amount if not quick_pay
+                        var qpInput = document.getElementById('wccQuickPayInput');
+                        if (qpInput) qpInput.disabled = (type !== 'quick_pay');
+                    }
+
+                    function onWccPlanChange() {
+                        var selPlan  = document.getElementById('wccInstallmentSelect');
+                        var schedDiv = document.getElementById('wccInstallmentSchedule');
+                        var tbody    = document.querySelector('#wccScheduleTable tbody');
+                        if (!selPlan || !selPlan.value) {
+                            schedDiv.style.display = 'none';
+                            return;
+                        }
+                        var opt  = selPlan.options[selPlan.selectedIndex];
+                        var plan = JSON.parse(opt.dataset.plans || '{}');
+
+                        schedDiv.style.display = '';
+                        tbody.innerHTML = '';
+                        (plan.schedules || []).forEach(function(s, i) {
+                            var tr = document.createElement('tr');
+                            tr.innerHTML = '<td>' + escapeHtml(s.label) + '</td>' +
+                                           '<td class="text-right">₹' + numberFmt(s.amount) + '</td>' +
+                                           '<td>' + (i === 0 ? 'Due now' : 'In ' + s.deadline_days + ' days') + '</td>';
+                            tbody.appendChild(tr);
+                        });
+
+                        var sufficient = plan.is_sufficient_installment;
+                        document.getElementById('wccInstallmentSufficient').style.display   = sufficient ? '' : 'none';
+                        document.getElementById('wccInstallmentInsufficient').style.display  = sufficient ? 'none' : '';
+                    }
+
+                    function onWccQuickPayChange() {
+                        var qpInput  = document.getElementById('wccQuickPayInput');
+                        var amount   = parseFloat(qpInput ? qpInput.value : 0) || 0;
+                        var projected = wccLastData ? wccLastData.projected_wallet_balance : 0;
+                        var ok = projected >= (amount - 1);
+                        document.getElementById('wccQuickPaySufficient').style.display   = ok ? '' : 'none';
+                        document.getElementById('wccQuickPayInsufficient').style.display  = ok ? 'none' : '';
+                    }
+
+                    function numberFmt(n) {
+                        return parseFloat(n || 0).toLocaleString('en-IN', {maximumFractionDigits: 0});
+                    }
                     </script>
                     @endif
                 </div>

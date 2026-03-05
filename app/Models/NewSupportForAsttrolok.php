@@ -57,6 +57,9 @@ class NewSupportForAsttrolok extends Model
         'wrong_course_id',
         'correct_course_id',
         'correction_reason',
+        'correction_purchase_type',
+        'correction_installment_id',
+        'correction_quick_pay_amount',
         'temporary_access_days',
         'temporary_access_reason',
         

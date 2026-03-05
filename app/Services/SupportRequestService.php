@@ -775,10 +775,13 @@ class SupportRequestService
 
     /**
      * Scenario 11: Wrong Course Correction (PRESERVE HISTORY, no webinar_id overwrite)
+     *
+     * UPE bridge handles ALL wallet logic (refund + purchase).
+     * This method handles legacy dual-writes only.
      */
     private function executeWrongCourseCorrection(NewSupportForAsttrolok $request, array $data, $user)
     {
-        $wrongCourseId = $request->webinar_id;
+        $wrongCourseId  = $request->webinar_id;
         $correctCourseId = $request->correct_course_id ?? $data['correct_course_id'] ?? null;
 
         if (!$correctCourseId) {
@@ -787,6 +790,40 @@ class SupportRequestService
 
         $correctCourse = Webinar::findOrFail($correctCourseId);
 
+        // Resolve coupon → discount_id if coupon_code is set
+        $couponCode  = $request->coupon_code ?? null;
+        $discountId  = null;
+        if ($couponCode) {
+            $discount = \App\Models\Discount::where('code', $couponCode)->where('status', 'active')->first();
+            if ($discount) {
+                $discountId = $discount->id;
+            }
+        }
+
+        $purchaseType    = $request->correction_purchase_type    ?? 'full';
+        $installmentId   = $request->correction_installment_id   ? (int) $request->correction_installment_id : null;
+        $quickPayAmount  = $request->correction_quick_pay_amount ? (float) $request->correction_quick_pay_amount : 0;
+
+        // ── UPE: handle all wallet + access logic first ──
+        $bridge = app(SupportUpeBridge::class);
+        $wccResult = $bridge->handleWrongCourseCorrection(
+            $request->user_id,
+            $wrongCourseId,
+            $correctCourseId,
+            $request->id,
+            $user->id,
+            $discountId,
+            $couponCode,
+            $purchaseType,
+            $installmentId,
+            $quickPayAmount
+        );
+
+        if (!$wccResult['success']) {
+            throw new \RuntimeException($wccResult['message']);
+        }
+
+        // ── Legacy dual-writes (backward compat for admin financial views) ──
         $oldSale = Sale::where('buyer_id', $request->user_id)
             ->where('webinar_id', $wrongCourseId)
             ->whereNull('refund_at')
@@ -794,8 +831,22 @@ class SupportRequestService
             ->lockForUpdate()
             ->first();
 
-        if (!$oldSale) {
-            throw new \RuntimeException('No active purchase found for the wrong course.');
+        $originalAmount = $oldSale ? $oldSale->amount : 0;
+
+        if ($oldSale) {
+            $oldSale->update([
+                'refund_at'                => time(),
+                'access_to_purchased_item' => 0,
+            ]);
+
+            Accounting::create([
+                'user_id'      => $oldSale->buyer_id,
+                'amount'       => -1 * abs($originalAmount),
+                'type'         => 'deduction',
+                'type_account' => Accounting::$asset,
+                'description'  => "Wrong course reversal: Course #{$wrongCourseId} — Support #{$request->ticket_number}",
+                'created_at'   => time(),
+            ]);
         }
 
         $existingCorrect = Sale::where('buyer_id', $request->user_id)
@@ -803,151 +854,79 @@ class SupportRequestService
             ->whereNull('refund_at')
             ->first();
 
-        if ($existingCorrect) {
-            throw new \RuntimeException('User already has access to the correct course.');
+        if (!$existingCorrect) {
+            Sale::create([
+                'buyer_id'                 => $request->user_id,
+                'seller_id'                => $correctCourse->creator_id,
+                'webinar_id'               => $correctCourseId,
+                'type'                     => Sale::$webinar,
+                'payment_method'           => $oldSale ? $oldSale->payment_method : Sale::$credit,
+                'amount'                   => $originalAmount,
+                'total_amount'             => $originalAmount,
+                'access_to_purchased_item' => 1,
+                'manual_added'             => true,
+                'support_request_id'       => $request->id,
+                'granted_by_admin_id'      => $user->id,
+                'created_at'               => time(),
+            ]);
+
+            Accounting::create([
+                'user_id'      => $request->user_id,
+                'amount'       => $originalAmount,
+                'type'         => Accounting::$addiction,
+                'type_account' => Accounting::$asset,
+                'description'  => "Wrong course correction: Course #{$correctCourseId} — Support #{$request->ticket_number}",
+                'created_at'   => time(),
+            ]);
         }
 
-        // Calculate price difference
-        $wrongCoursePrice = $oldSale->total_amount - ($oldSale->discount ?? 0);
-        $correctCoursePrice = $correctCourse->getPrice();
-        $priceDifference = $wrongCoursePrice - $correctCoursePrice;
-
-        $oldSale->update([
-            'refund_at' => time(),
-            'access_to_purchased_item' => 0,
-        ]);
-
-        Accounting::create([
-            'user_id' => $oldSale->buyer_id,
-            'amount' => -1 * abs($wrongCoursePrice),
-            'type' => 'deduction',
-            'type_account' => Accounting::$asset,
-            'description' => "Wrong course reversal: Course #{$wrongCourseId} - Support #{$request->ticket_number}",
-            'created_at' => time(),
-        ]);
-
-        // Create new sale with correct course price
-        $newSale = Sale::create([
-            'buyer_id' => $request->user_id,
-            'seller_id' => $correctCourse->creator_id,
-            'webinar_id' => $correctCourseId,
-            'type' => Sale::$webinar,
-            'payment_method' => $oldSale->payment_method,
-            'amount' => $correctCoursePrice,
-            'total_amount' => $correctCoursePrice,
-            'access_to_purchased_item' => 1,
-            'support_request_id' => $request->id,
-            'granted_by_admin_id' => $user->id,
-            'created_at' => time(),
-        ]);
-
-        Accounting::create([
-            'user_id' => $request->user_id,
-            'amount' => $correctCoursePrice,
-            'type' => Accounting::$addiction,
-            'type_account' => Accounting::$asset,
-            'description' => "Wrong course correction: Course #{$correctCourseId} - Support #{$request->ticket_number}",
-            'created_at' => time(),
-        ]);
-
-        // Credit price difference to wallet if correct course is cheaper
-        if ($priceDifference > 0.01) { // More than 1 paisa difference
-            try {
-                $walletService = app(\App\Services\PaymentEngine\WalletService::class);
-                $walletService->credit(
-                    $request->user_id,
-                    $priceDifference,
-                    \App\Models\PaymentEngine\WalletTransaction::TXN_COURSE_CHANGE_REFUND,
-                    "Price difference refunded for wrong course correction: {$wrongCourseId} → {$correctCourseId}",
-                    'support_request',
-                    $request->id,
-                    null,
-                    [
-                        'wrong_course_id' => $wrongCourseId,
-                        'correct_course_id' => $correctCourseId,
-                        'old_price' => $wrongCoursePrice,
-                        'new_price' => $correctCoursePrice,
-                        'price_difference' => $priceDifference,
-                        'old_sale_id' => $oldSale->id,
-                        'new_sale_id' => $newSale->id,
-                    ]
-                );
-                
-                Log::info('SupportRequestService: Price difference credited to wallet for wrong course correction', [
-                    'user_id' => $request->user_id,
-                    'price_difference' => $priceDifference,
-                    'wrong_course_id' => $wrongCourseId,
-                    'correct_course_id' => $correctCourseId,
-                    'support_request_id' => $request->id,
-                ]);
-            } catch (\Exception $walletErr) {
-                Log::error('SupportRequestService: Failed to credit price difference to wallet', [
-                    'user_id' => $request->user_id,
-                    'price_difference' => $priceDifference,
-                    'error' => $walletErr->getMessage(),
-                ]);
-                // Don't throw - continue with course correction
-            }
-        }
-
+        // Legacy: transfer any open InstallmentOrder to correct course
         $oldInstallment = InstallmentOrder::where('user_id', $request->user_id)
             ->where('webinar_id', $wrongCourseId)
             ->whereIn('status', ['open', 'paying'])
             ->first();
 
         if ($oldInstallment) {
-            $oldInstallment->update([
-                'status' => 'transferred',
-                'transferred_to_order_id' => null,
-            ]);
+            $oldInstallment->update(['status' => 'transferred', 'transferred_to_order_id' => null]);
 
             $newInstallment = InstallmentOrder::create([
-                'installment_id' => $oldInstallment->installment_id,
-                'user_id' => $request->user_id,
-                'webinar_id' => $correctCourseId,
-                'item_price' => $correctCourse->getPrice(),
-                'status' => 'open',
+                'installment_id'  => $oldInstallment->installment_id,
+                'user_id'         => $request->user_id,
+                'webinar_id'      => $correctCourseId,
+                'item_price'      => $correctCourse->getPrice(),
+                'status'          => 'open',
                 'parent_order_id' => $oldInstallment->id,
-                'created_at' => time(),
+                'created_at'      => time(),
             ]);
 
             $oldInstallment->update(['transferred_to_order_id' => $newInstallment->id]);
         }
 
+        // Legacy: revoke WebinarAccessControl for wrong course
         try {
-            $oldAccessControls = WebinarAccessControl::where('user_id', $request->user_id)
+            WebinarAccessControl::where('user_id', $request->user_id)
                 ->where('webinar_id', $wrongCourseId)
                 ->where('status', 'active')
-                ->get();
-
-            foreach ($oldAccessControls as $ac) {
-                $ac->update(['status' => 'revoked']);
-            }
+                ->update(['status' => 'revoked']);
         } catch (\Exception $e) {
-            // Legacy table may lack 'status' column — delete the rows instead
             WebinarAccessControl::where('user_id', $request->user_id)
                 ->where('webinar_id', $wrongCourseId)
                 ->delete();
-            \Log::warning('webinar_access_control missing status column (wrong course), deleted rows instead', [
+            Log::warning('webinar_access_control missing status column (wrong course), deleted rows instead', [
                 'user_id' => $request->user_id, 'webinar_id' => $wrongCourseId,
             ]);
         }
 
-        // UPE: Revoke wrong course + grant correct course in UPE
-        app(SupportUpeBridge::class)->handleWrongCourseCorrection(
-            $request->user_id, $wrongCourseId, $correctCourseId, $request->id, $user->id
-        );
-
         Log::info('Wrong course correction completed', [
-            'support_request_id' => $request->id,
-            'user_id' => $request->user_id,
-            'wrong_course_id' => $wrongCourseId,
-            'correct_course_id' => $correctCourseId,
-            'old_price' => $wrongCoursePrice,
-            'new_price' => $correctCoursePrice,
-            'price_difference' => $priceDifference,
-            'old_sale_id' => $oldSale->id,
-            'new_sale_id' => $newSale->id,
+            'support_request_id'  => $request->id,
+            'user_id'             => $request->user_id,
+            'wrong_course_id'     => $wrongCourseId,
+            'correct_course_id'   => $correctCourseId,
+            'purchase_type'       => $purchaseType,
+            'amount_refunded'     => $wccResult['amount_refunded'],
+            'amount_charged'      => $wccResult['amount_charged'],
+            'access_granted'      => $wccResult['access_granted'],
+            'upe_sale_id'         => $wccResult['sale_id'],
         ]);
     }
 }

@@ -217,6 +217,9 @@
                    <li class="mt-5 {{ (request()->is('panel/upe/purchases*')) ? 'active font-weight-bold' : '' }}">
                         <a href="/panel/upe/purchases">My Purchases</a>
                     </li>
+                    <li class="mt-5 {{ (request()->is('panel/webinars/purchases/refunded')) ? 'active font-weight-bold' : '' }}">
+                        <a href="/panel/webinars/purchases/refunded">Refunded Courses</a>
+                    </li>
                     <li class="mt-5 {{ (request()->is('panel/upe/installments*')) ? 'active' : '' }}">
                         <a href="/panel/upe/installments">EMI Plans</a>
                     </li>

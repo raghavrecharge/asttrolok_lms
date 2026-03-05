@@ -182,6 +182,8 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
 
                 Route::post('/validate-coupon', 'AdminSupportController@validateCoupon');
                 Route::post('/validate-offline-coupon', 'AdminSupportController@validateOfflineCoupon');
+                Route::post('/wrong-course-info', 'AdminSupportController@getWrongCourseInfo')
+                    ->name('admin.support.wrongCourseInfo');
                 
                 Route::post('/support/{id}/process', 'AdminSupportController@processTicket')
                     ->name('admin.support.processTicket');

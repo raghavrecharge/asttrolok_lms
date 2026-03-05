@@ -2,6 +2,35 @@
 @push('styles_top')
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/chartjs/chart.min.css"/>
     <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/apexcharts/apexcharts.css"/>
+<style>
+.wt-card { background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,.06); border:1px solid #f0f0f0; overflow:hidden; margin-top:30px; }
+.wt-card-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #f0f0f0; }
+.wt-card-header h3 { font-size:15px; font-weight:700; color:#1f3b64; margin:0; }
+.wt-card-header a { font-size:12px; color:#2d5aa0; }
+.wt-legend { display:flex; gap:14px; padding:10px 20px; background:#fafafa; border-bottom:1px solid #f0f0f0; flex-wrap:wrap; }
+.wt-legend-item { display:flex; align-items:center; gap:5px; font-size:11px; color:#666; }
+.wt-dot { width:10px; height:10px; border-radius:2px; flex-shrink:0; }
+.wt-table { width:100%; border-collapse:collapse; }
+.wt-table th { background:#f8f9fc; padding:10px 14px; font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.4px; border-bottom:1px solid #f0f0f0; }
+.wt-table td { padding:11px 14px; font-size:13px; color:#333; border-bottom:1px solid #f7f7f7; vertical-align:middle; }
+.wt-table tr:last-child td { border-bottom:none; }
+.wt-table tr.row-credit { background:#f6fff7; }
+.wt-table tr.row-debit  { background:#fff6f6; }
+.wt-table tr.row-refund { background:#f0f7ff; }
+.wt-table tr.row-adjust { background:#fffde7; }
+.dir-pill { display:inline-flex; align-items:center; gap:3px; padding:3px 9px; border-radius:20px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+.dir-pill.credit { background:#d4edda; color:#155724; }
+.dir-pill.debit  { background:#f8d7da; color:#721c24; }
+.type-pill { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.3px; }
+.type-pill.top_up,.type-pill.gateway_topup { background:#e8f5e9; color:#2e7d32; }
+.type-pill.refund,.type-pill.overpayment_refund,.type-pill.course_change_refund { background:#e3f2fd; color:#1565c0; }
+.type-pill.purchase,.type-pill.wallet_payment,.type-pill.wallet_purchase { background:#fff3e0; color:#e65100; }
+.type-pill.admin_credit { background:#f3e5f5; color:#7b1fa2; }
+.type-pill.admin_debit  { background:#fde8e8; color:#c62828; }
+.type-pill.adjustment   { background:#fff9c4; color:#f57f17; }
+.amt-credit { color:#28a745; font-weight:700; }
+.amt-debit  { color:#dc3545; font-weight:700; }
+</style>
 
       <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/owl.carousel.min.css">
   <link rel="stylesheet" href="{{ config('app.js_css_url') }}/assets/default/vendors/owl.theme.default.min.css">
@@ -1120,6 +1149,71 @@ height: 100%;
             <p class="modal-message font-weight-500 text-gray mt-4"></p>
         </div>
     </div>
+
+{{-- ── Recent Wallet Transactions ── --}}
+@if(isset($recentWalletTransactions) && $recentWalletTransactions->isNotEmpty())
+<div class="wt-card">
+    <div class="wt-card-header">
+        <h3><i class="fa fa-wallet mr-5"></i> Recent Wallet Transactions</h3>
+        <a href="/panel/wallet">View All →</a>
+    </div>
+    <div class="wt-legend">
+        <div class="wt-legend-item"><span class="wt-dot" style="background:#d4edda"></span> Credit</div>
+        <div class="wt-legend-item"><span class="wt-dot" style="background:#f8d7da"></span> Debit</div>
+        <div class="wt-legend-item"><span class="wt-dot" style="background:#d1ecf1"></span> Refund</div>
+        <div class="wt-legend-item"><span class="wt-dot" style="background:#fffde7"></span> Adjustment</div>
+    </div>
+    <div class="table-responsive">
+        <table class="wt-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Direction</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Balance After</th>
+                </tr>
+            </thead>
+            <tbody>
+            @php
+                $wt_typeLabels = ['top_up'=>'Top Up','gateway_topup'=>'Gateway Top Up','purchase'=>'Purchase','wallet_payment'=>'Wallet Pay','wallet_purchase'=>'Wallet Buy','refund'=>'Refund','overpayment_refund'=>'Overpayment Refund','course_change_refund'=>'Course Change Refund','offline_payment'=>'Offline Pay','admin_credit'=>'Admin Credit','admin_debit'=>'Admin Debit','adjustment'=>'Adjustment'];
+                $wt_refundTypes = ['refund','overpayment_refund','course_change_refund'];
+                $wt_adjustTypes = ['adjustment','admin_credit','admin_debit'];
+            @endphp
+            @foreach($recentWalletTransactions as $wt)
+                @php
+                    $wt_isRefund = in_array($wt->transaction_type, $wt_refundTypes);
+                    $wt_isAdjust = in_array($wt->transaction_type, $wt_adjustTypes);
+                    $wt_row = $wt_isRefund ? 'row-refund' : ($wt_isAdjust ? 'row-adjust' : ($wt->isCredit() ? 'row-credit' : 'row-debit'));
+                    $wt_label = $wt_typeLabels[$wt->transaction_type] ?? ucwords(str_replace('_',' ',$wt->transaction_type));
+                @endphp
+                <tr class="{{ $wt_row }}">
+                    <td style="white-space:nowrap">{{ $wt->created_at->format('d M, h:i A') }}</td>
+                    <td>
+                        @if($wt->isCredit())
+                            <span class="dir-pill credit">▲ Credit</span>
+                        @else
+                            <span class="dir-pill debit">▼ Debit</span>
+                        @endif
+                    </td>
+                    <td><span class="type-pill {{ $wt->transaction_type }}">{{ $wt_label }}</span></td>
+                    <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ $wt->description }}">{{ $wt->description ?? '—' }}</td>
+                    <td style="white-space:nowrap">
+                        @if($wt->isCredit())
+                            <span class="amt-credit">+ {{ handlePrice((float)$wt->amount) }}</span>
+                        @else
+                            <span class="amt-debit">− {{ handlePrice((float)$wt->amount) }}</span>
+                        @endif
+                    </td>
+                    <td style="white-space:nowrap">{{ handlePrice((float)$wt->balance_after) }}</td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+@endif
 
 @endsection
 

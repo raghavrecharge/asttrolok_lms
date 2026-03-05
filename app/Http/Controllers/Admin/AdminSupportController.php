@@ -767,6 +767,18 @@ class AdminSupportController extends Controller
     //             }
     // }
 
+    // ── Role helpers ──────────────────────────────────────────────
+    private function isAdminRole($user): bool
+    {
+        return $user->isAdmin() || in_array($user->role_name, ['admin', 'super_admin']);
+    }
+
+    private function isSupportRole($user): bool
+    {
+        return in_array($user->role_name, ['Support Role', 'support', 'Support']);
+    }
+    // ─────────────────────────────────────────────────────────────
+
     public function updateStatus(Request $request, $id)
     {
         $this->authorize('admin_support_manage');
@@ -787,22 +799,17 @@ class AdminSupportController extends Controller
                 'rejection_reason' => 'required_if:status,rejected|string|nullable',
             ];
 
-            if ($user->role_name === 'Support Role') {
+            if ($this->isSupportRole($user)) {
                 $rules['support_remarks'] = 'required|string';
-            } elseif ($user->role_name === 'admin') {
-                // Admin: support_remarks optional on completion/execution, required on review/approval
-                if (in_array($request->status, ['completed', 'executed', 'closed', 'rejected'])) {
-                    $rules['support_remarks'] = 'nullable|string';
-                } else {
-                    $rules['support_remarks'] = 'nullable|string';
-                }
+            } elseif ($this->isAdminRole($user)) {
+                $rules['support_remarks'] = 'nullable|string';
             }
 
             // Only require temporary_access_percentage on approval (not rejection)
             if (
                 $request->status === 'approved' &&
                 $supportRequest->support_scenario === 'temporary_access' &&
-                $user->role_name === 'admin'
+                $this->isAdminRole($user)
             ) {
                 $rules['temporary_access_percentage'] = 'required|integer|min:1|max:100';
             }
@@ -818,7 +825,7 @@ class AdminSupportController extends Controller
             /* ================= SUPPORT ROLE BLOCK ================= */
 
             if (
-                $user->role_name === 'Support Role' &&
+                $this->isSupportRole($user) &&
                 $validated['status'] === 'completed'
             ) {
                 return response()->json([
@@ -827,7 +834,7 @@ class AdminSupportController extends Controller
                 ], 403);
             }
 
-            if ($user->role_name === 'Support Role') {
+            if ($this->isSupportRole($user)) {
                 if (
                     in_array($supportRequest->status, ['approved', 'executed', 'closed']) ||
                     $validated['status'] === 'pending'
@@ -858,14 +865,14 @@ class AdminSupportController extends Controller
 
             if ($validated['status'] === 'approved') {
 
-                if ($user->role_name === 'admin') {
+                if ($this->isAdminRole($user)) {
                     $updateData['sub_admin_id'] = $user->id;
                 } else {
                     $updateData['support_handler_id'] = $user->id;
                 }
 
                 if ($supportRequest->support_scenario === 'post_purchase_coupon') {
-                    if ($user->role_name === 'Support Role') {
+                    if ($this->isSupportRole($user)) {
                         $couponCode = strtoupper(trim($request->input('coupon_code')));
                     
                         if (empty($couponCode)) {
@@ -882,7 +889,7 @@ class AdminSupportController extends Controller
 
                     // LMS-039 FIX: Auto-execute coupon on admin approval.
                     // Check both the persisted coupon_code AND any just-set coupon_code from admin input.
-                    if ($user->role_name === 'admin') {
+                    if ($this->isAdminRole($user)) {
                         // Admin can also supply coupon_code directly at approval time
                         $adminCoupon = trim($request->input('coupon_code', ''));
                         if (!empty($adminCoupon)) {
@@ -919,7 +926,7 @@ class AdminSupportController extends Controller
 
             if ($validated['status'] === 'rejected') {
 
-                if ($user->role_name === 'admin') {
+                if ($this->isAdminRole($user)) {
                     $updateData['sub_admin_id'] = $user->id;
                 } else {
                     $updateData['support_handler_id'] = $user->id;
@@ -936,7 +943,7 @@ class AdminSupportController extends Controller
 
             if ($validated['status'] === 'completed') {
 
-                if ($user->role_name !== 'admin') {
+                if (!$this->isAdminRole($user)) {
                     return response()->json([
                         'success' => false,
                         'message' => 'Only Admin can mark completed.'
@@ -967,7 +974,10 @@ class AdminSupportController extends Controller
 
                 /* ---------- WRONG COURSE ---------- */
                 if ($supportRequest->support_scenario === 'wrong_course_correction') {
-                    $this->handleWrongCourseCorrection($supportRequest);
+                    $wccResult = $this->handleWrongCourseCorrection($supportRequest);
+                    if ($wccResult && !$wccResult['success']) {
+                        throw new \RuntimeException($wccResult['message']);
+                    }
                 }
 
                 /* ---------- RELATIVE / FRIEND ACCESS ---------- */
@@ -1053,20 +1063,20 @@ class AdminSupportController extends Controller
                 if ($supportRequest->support_scenario === 'free_course_grant') {
 
                     $sourceCourseId = $supportRequest->source_course_id;
-                    $targetCourseId = $supportRequest->target_course_id;
-                    
+                    $targetCourseId = $supportRequest->target_course_id ?? $supportRequest->webinar_id;
+                    $bridge = app(SupportUpeBridge::class);
+
                     if ($sourceCourseId && $targetCourseId) {
+                        // ── Batch mode: grant to ALL users of source course ──
                         $sourceWebinar = \App\Models\Webinar::find($sourceCourseId);
                         $targetWebinar = \App\Models\Webinar::find($targetCourseId);
-                        
-                        // Get all users who have access to source course from BOTH legacy Sale and UPE
+
                         $sourceUserIds = \App\Models\Sale::where('webinar_id', $sourceCourseId)
                             ->where('access_to_purchased_item', 1)
                             ->pluck('buyer_id')
                             ->unique()
                             ->toArray();
 
-                        $bridge = app(SupportUpeBridge::class);
                         $sourceProduct = $bridge->resolveProductId($sourceCourseId);
                         if ($sourceProduct) {
                             $upeSourceUserIds = \App\Models\PaymentEngine\UpeSale::where('product_id', $sourceProduct)
@@ -1076,35 +1086,32 @@ class AdminSupportController extends Controller
                                 ->toArray();
                             $sourceUserIds = array_unique(array_merge($sourceUserIds, $upeSourceUserIds));
                         }
-                        
+
                         $grantedCount = 0;
                         $alreadyHasAccess = 0;
-                        
+                        $targetProduct = $bridge->resolveProductId($targetCourseId);
+
                         foreach ($sourceUserIds as $sourceUserId) {
                             $userObj = \App\User::find($sourceUserId);
                             if (!$userObj) continue;
-                            
-                            // Check if user already has access to target course (legacy + UPE)
+
                             $existingSale = \App\Models\Sale::where('buyer_id', $sourceUserId)
                                 ->where('webinar_id', $targetCourseId)
                                 ->where('access_to_purchased_item', 1)
                                 ->first();
 
-                            $existingUpe = false;
-                            $targetProduct = $bridge->resolveProductId($targetCourseId);
-                            if ($targetProduct) {
-                                $existingUpe = \App\Models\PaymentEngine\UpeSale::where('user_id', $sourceUserId)
+                            $existingUpe = $targetProduct
+                                ? \App\Models\PaymentEngine\UpeSale::where('user_id', $sourceUserId)
                                     ->where('product_id', $targetProduct)
                                     ->whereNotIn('status', ['cancelled', 'refunded'])
-                                    ->exists();
-                            }
-                            
+                                    ->exists()
+                                : false;
+
                             if ($existingSale || $existingUpe) {
                                 $alreadyHasAccess++;
                                 continue;
                             }
-                            
-                            // Grant free access to target course
+
                             $sale = new \App\Models\Sale();
                             $sale->buyer_id = $sourceUserId;
                             $sale->seller_id = $targetWebinar->creator_id;
@@ -1118,22 +1125,58 @@ class AdminSupportController extends Controller
                             $sale->created_at = time();
                             $sale->save();
 
-                            // UPE: Create UPE sale so AccessEngine grants access
                             $bridge->grantFreeCourseAccess($sourceUserId, $targetCourseId, $supportRequest->id, Auth::id());
-                            
                             $grantedCount++;
                         }
-                        
-                        // Update request with results
+
                         $updateData['course_purchased_at'] = now();
                         $updateData['purchase_status'] = 'completed';
                         $updateData['granted_users_count'] = $grantedCount;
                         $updateData['already_had_access_count'] = $alreadyHasAccess;
+
+                    } elseif ($targetCourseId) {
+                        // ── Individual mode: grant only the ticket submitter ──
+                        $targetWebinar = \App\Models\Webinar::find($targetCourseId);
+                        $grantUserId   = $supportRequest->user_id;
+
+                        if ($targetWebinar && $grantUserId) {
+                            $existingSale = \App\Models\Sale::where('buyer_id', $grantUserId)
+                                ->where('webinar_id', $targetCourseId)
+                                ->where('access_to_purchased_item', 1)
+                                ->first();
+
+                            $targetProduct = $bridge->resolveProductId($targetCourseId);
+                            $existingUpe   = $targetProduct
+                                ? \App\Models\PaymentEngine\UpeSale::where('user_id', $grantUserId)
+                                    ->where('product_id', $targetProduct)
+                                    ->whereNotIn('status', ['cancelled', 'refunded'])
+                                    ->exists()
+                                : false;
+
+                            if (!$existingSale && !$existingUpe) {
+                                $sale = new \App\Models\Sale();
+                                $sale->buyer_id = $grantUserId;
+                                $sale->seller_id = $targetWebinar->creator_id;
+                                $sale->webinar_id = $targetCourseId;
+                                $sale->type = \App\Models\Sale::$webinar;
+                                $sale->manual_added = true;
+                                $sale->payment_method = \App\Models\Sale::$credit;
+                                $sale->amount = 0;
+                                $sale->total_amount = 0;
+                                $sale->access_to_purchased_item = 1;
+                                $sale->created_at = time();
+                                $sale->save();
+
+                                $bridge->grantFreeCourseAccess($grantUserId, $targetCourseId, $supportRequest->id, Auth::id());
+                            }
+
+                            $updateData['course_purchased_at'] = now();
+                            $updateData['purchase_status'] = 'completed';
+                        }
                     }
-                 
                 }
                /* ---------- temporary_access ---------- */
-                if ($supportRequest->support_scenario === 'temporary_access' && Auth::user()->role_name === 'admin') {
+                if ($supportRequest->support_scenario === 'temporary_access' && $this->isAdminRole(Auth::user())) {
 
                         $expireDate = now()->addDays(7);
                         $percentage = $supportRequest->temporary_access_percentage ?? 100;
@@ -1676,7 +1719,7 @@ class AdminSupportController extends Controller
         $user = Auth::user();
 
         // Allow both admin and Support Role to process tickets
-        if ($user->role_name !== 'admin' && $user->role_name !== 'Support Role') {
+        if (!$this->isAdminRole($user) && !$this->isSupportRole($user)) {
             return back()->with(['toast' => [
                 'title' => 'Not Allowed',
                 'msg' => 'You do not have permission to process this ticket.',
@@ -1759,6 +1802,11 @@ class AdminSupportController extends Controller
                 $scenarioRules['wrong_course_id'] = 'required|exists:webinars,id';
                 $scenarioRules['correct_course_id'] = 'required|exists:webinars,id';
                 $scenarioRules['correction_reason'] = 'nullable|string';
+                $scenarioRules['coupon_code'] = 'nullable|string';
+                $scenarioRules['coupon_apply_reason'] = 'nullable|string';
+                $scenarioRules['correction_purchase_type'] = 'required|string|in:full,installment,quick_pay';
+                $scenarioRules['correction_installment_id'] = 'nullable|integer|exists:installments,id';
+                $scenarioRules['correction_quick_pay_amount'] = 'nullable|numeric|min:1';
                 break;
         }
 
@@ -1781,6 +1829,11 @@ class AdminSupportController extends Controller
                 $updateData['wrong_course_id'] = $request->wrong_course_id;
                 $updateData['correct_course_id'] = $request->correct_course_id;
                 $updateData['correction_reason'] = $request->correction_reason;
+                $updateData['coupon_code'] = $request->coupon_code;
+                $updateData['coupon_apply_reason'] = $request->coupon_apply_reason;
+                $updateData['correction_purchase_type'] = $request->correction_purchase_type ?? 'full';
+                $updateData['correction_installment_id'] = $request->correction_installment_id ?? null;
+                $updateData['correction_quick_pay_amount'] = $request->correction_quick_pay_amount ?? null;
             } else {
                 $updateData['webinar_id'] = $request->webinar_id;
             }
@@ -1801,6 +1854,7 @@ class AdminSupportController extends Controller
                 'free_course_reason', 'cash_amount', 'payment_date', 'payment_location',
                 'payment_receipt_number', 'restructure_reason', 'refund_reason', 'credit_to_wallet',
                 'coupon_code', 'coupon_apply_reason',
+                'correction_purchase_type', 'correction_installment_id', 'correction_quick_pay_amount',
             ];
 
             foreach ($scenarioFields as $field) {
@@ -1824,7 +1878,7 @@ class AdminSupportController extends Controller
             // Step 2: Update status based on role
             // Support Role: set as approved (needs admin final action)
             // Admin: set as completed (final execution) - EXCEPT for installment_restructure which needs split interface
-            if ($user->role_name === 'Support Role') {
+            if ($this->isSupportRole($user)) {
                 $status = 'approved';
                 $remarks = $request->admin_remarks ?? 'Processed by Support team';
             } else {
@@ -2341,14 +2395,10 @@ class AdminSupportController extends Controller
     }
 
     /**
-     * Handle wrong course correction - update all tables when approved
-    */
-    /**
-     * V-13 FIX: Rewritten handleWrongCourseCorrection() — PRESERVE HISTORY pattern.
-     * NO webinar_id overwrites. Original records are preserved.
-     * Creates soft-revoke on wrong course + new grant for correct course.
+     * V-13 FIX: Rewritten handleWrongCourseCorrection() — wallet-mediated UPE flow.
+     * All wallet logic handled by SupportUpeBridge. Returns result array.
      */
-    private function handleWrongCourseCorrection($supportRequest)
+    private function handleWrongCourseCorrection($supportRequest): array
     {
         try {
             $userId = $supportRequest->user_id;
@@ -2462,22 +2512,48 @@ class AdminSupportController extends Controller
                 ]);
             }
 
-            // UPE: Revoke wrong course + grant correct course in UPE
+            // UPE bridge handles ALL wallet + access logic
             $bridge = app(SupportUpeBridge::class);
-            $bridge->handleWrongCourseCorrection(
+
+            $couponCode = $supportRequest->coupon_code;
+            $discountId = null;
+            if ($couponCode) {
+                $discount = \App\Models\Discount::where('code', $couponCode)->where('status', 'active')->first();
+                if ($discount) $discountId = $discount->id;
+            }
+
+            $purchaseType   = $supportRequest->correction_purchase_type   ?? 'full';
+            $installmentId  = $supportRequest->correction_installment_id  ? (int) $supportRequest->correction_installment_id : null;
+            $quickPayAmount = $supportRequest->correction_quick_pay_amount ? (float) $supportRequest->correction_quick_pay_amount : 0;
+
+            $wccResult = $bridge->handleWrongCourseCorrection(
                 $userId,
                 $wrongCourseId,
                 $correctCourseId,
                 $supportRequest->id,
-                Auth::id()
+                Auth::id(),
+                $discountId,
+                $couponCode,
+                $purchaseType,
+                $installmentId,
+                $quickPayAmount
             );
 
-            \Log::info('Wrong course correction completed (all original records preserved)', [
-                'user_id' => $userId,
-                'wrong_course_id' => $wrongCourseId,
-                'correct_course_id' => $correctCourseId,
+            if (!$wccResult['success']) {
+                return $wccResult;
+            }
+
+            \Log::info('Wrong course correction completed', [
+                'user_id'            => $userId,
+                'wrong_course_id'    => $wrongCourseId,
+                'correct_course_id'  => $correctCourseId,
+                'purchase_type'      => $purchaseType,
+                'amount_refunded'    => $wccResult['amount_refunded'],
+                'amount_charged'     => $wccResult['amount_charged'],
                 'support_request_id' => $supportRequest->id,
             ]);
+
+            return $wccResult;
 
         } catch (\Exception $e) {
             \Log::error('Error in wrong course correction: ' . $e->getMessage());
@@ -2673,7 +2749,187 @@ class AdminSupportController extends Controller
             return response()->json($result);
         }
 
-        public function ApplyCouponCode($supportRequest)
+    /**
+     * AJAX: Return price breakdown, wallet projection, and installment plans
+     * for the wrong course correction scenario.
+     *
+     * POST params: support_request_id, correct_course_id, coupon_code (optional), purchase_type (optional)
+     */
+    public function getWrongCourseInfo(Request $request)
+    {
+        $this->authorize('admin_support_manage');
+
+        $request->validate([
+            'support_request_id' => 'required|integer|exists:new_support_for_asttrolok,id',
+            'correct_course_id'  => 'required|integer|exists:webinars,id',
+        ]);
+
+        $supportRequest  = \App\Models\NewSupportForAsttrolok::findOrFail($request->support_request_id);
+        $userId          = $supportRequest->user_id;
+        $wrongCourseId   = $request->wrong_course_id ?: $supportRequest->wrong_course_id ?: $supportRequest->webinar_id;
+        $correctCourseId = (int) $request->correct_course_id;
+        $couponCode      = strtoupper(trim($request->input('coupon_code', '')));
+
+        $correctWebinar  = \App\Models\Webinar::findOrFail($correctCourseId);
+        $coursePrice     = (float) $correctWebinar->getPrice();
+
+        // ── Compute discount ──
+        $discountAmount = 0;
+        $discountMsg    = '';
+        $discountId     = null;
+        if ($couponCode) {
+            $discount = \App\Models\Discount::where('code', $couponCode)->where('status', 'active')->first();
+            if (!$discount) {
+                return response()->json(['success' => false, 'message' => 'Invalid or inactive coupon code.']);
+            }
+            if (!empty($discount->expire_at) && now()->timestamp > $discount->expire_at) {
+                return response()->json(['success' => false, 'message' => 'This coupon has expired.']);
+            }
+            if ($discount->max_use_id != 0 && $discount->discountRemain() <= 0) {
+                return response()->json(['success' => false, 'message' => 'This coupon has been fully used.']);
+            }
+            if ($discount->source === 'course') {
+                $applies = \App\Models\DiscountCourse::where('discount_id', $discount->id)
+                    ->where('course_id', $correctCourseId)->exists();
+                if (!$applies) {
+                    return response()->json(['success' => false, 'message' => 'This coupon is not valid for this course.']);
+                }
+            }
+            $discountId = $discount->id;
+            if ($discount->discount_type === 'fixed_amount') {
+                $discountAmount = min((float) $discount->amount, $coursePrice);
+            } else {
+                $discountAmount = round($coursePrice * (float) ($discount->percent ?? 0) / 100, 2);
+                if (!empty($discount->max_amount) && $discountAmount > $discount->max_amount) {
+                    $discountAmount = (float) $discount->max_amount;
+                }
+            }
+            $discountAmount = round($discountAmount, 0, PHP_ROUND_HALF_UP);
+            $discountMsg    = "Coupon applied! Discount: ₹" . number_format($discountAmount, 0);
+        }
+
+        $finalPrice = max(0, $coursePrice - $discountAmount);
+
+        // ── Compute actual refund from wrong course ──
+        // PRIMARY: legacy Sale SUM (one row per actual payment, no sync duplicates)
+        // FALLBACK: UPE ledger (for purchases with no legacy Sale rows)
+        $actualRefund = 0;
+        $refundSource = 'none';
+        if ($userId && $wrongCourseId) {
+            // ── Primary: sum all unrefunded Sale rows for this user + wrong course ──
+            try {
+                $legacyPaid = (float) \App\Models\Sale::where('buyer_id', $userId)
+                    ->where('webinar_id', $wrongCourseId)
+                    ->whereNull('refund_at')
+                    ->whereIn('type', ['webinar', 'installment_payment', 'course_video', 'bundle'])
+                    ->sum('amount');
+
+                if ($legacyPaid > 0) {
+                    $actualRefund = $legacyPaid;
+                    $refundSource = 'legacy';
+                }
+            } catch (\Exception $e) {
+                \Log::warning('getWrongCourseInfo: Legacy Sale refund lookup failed', ['error' => $e->getMessage()]);
+            }
+
+            // ── Fallback: UPE ledger (only when no legacy Sale rows exist) ──
+            if ($actualRefund <= 0) {
+                try {
+                    $bridge      = app(\App\Services\SupportUpeBridge::class);
+                    $wrongProduct = $bridge->getOrCreateProduct((int) $wrongCourseId);
+                    if ($wrongProduct) {
+                        $wrongSale = \App\Models\PaymentEngine\UpeSale::where('user_id', $userId)
+                            ->where('product_id', $wrongProduct->id)
+                            ->whereIn('status', ['active', 'partially_refunded', 'pending_payment'])
+                            ->orderByRaw("FIELD(status,'pending_payment','partially_refunded','active')")
+                            ->orderByDesc('id')
+                            ->first();
+                        if ($wrongSale) {
+                            $ledger       = app(\App\Services\PaymentEngine\PaymentLedgerService::class);
+                            $actualRefund = $ledger->actualAmountPaid($wrongSale->id);
+                            if ($actualRefund > 0) {
+                                $refundSource = 'upe';
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    \Log::warning('getWrongCourseInfo: UPE refund lookup failed', ['error' => $e->getMessage()]);
+                }
+            }
+        }
+
+        // ── Current wallet balance + projected after refund ──
+        $walletService     = app(\App\Services\PaymentEngine\WalletService::class);
+        $currentBalance    = $userId ? $walletService->balance($userId) : 0;
+        $projectedBalance  = $currentBalance + $actualRefund;
+
+        $isSufficientFull  = $projectedBalance >= ($finalPrice - 1);
+
+        // ── Installment plans for correct course ──
+        $studentUser    = $userId ? \App\User::find($userId) : null;
+        $installmentPlans = [];
+        $isInstallmentAvailable = false;
+
+        $showInstallments = $correctWebinar
+            && !empty($correctWebinar->price) && $correctWebinar->price > 0
+            && getInstallmentsSettings('status')
+            && (empty($studentUser) || !empty($studentUser->enable_installments));
+
+        if ($showInstallments) {
+            $installmentMixin = new \App\Mixins\Installment\InstallmentPlans($studentUser);
+            $plans = $installmentMixin->getPlans(
+                'courses', $correctWebinar->id, $correctWebinar->type,
+                $correctWebinar->category_id, $correctWebinar->teacher_id
+            );
+            $plans->loadCount('steps');
+
+            if ($plans->isNotEmpty()) {
+                $isInstallmentAvailable = true;
+                foreach ($plans as $plan) {
+                    $upfront = round($plan->getUpfront($finalPrice), 0, PHP_ROUND_HALF_UP);
+                    $isSufficientInstallment = $projectedBalance >= ($upfront - 1);
+                    $steps = $plan->steps()->orderBy('order')->get();
+                    $schedules = [['label' => 'Upfront (EMI 1)', 'amount' => $upfront, 'deadline_days' => 0]];
+                    foreach ($steps as $step) {
+                        $schedules[] = [
+                            'label'         => 'EMI ' . ($step->order + 1),
+                            'amount'        => round($step->getPrice($finalPrice), 0, PHP_ROUND_HALF_UP),
+                            'deadline_days' => (int) $step->deadline,
+                        ];
+                    }
+                    $installmentPlans[] = [
+                        'id'                       => $plan->id,
+                        'title'                    => $plan->title ?? ('Plan #' . $plan->id),
+                        'upfront'                  => $upfront,
+                        'steps_count'              => $plan->steps_count,
+                        'total_emis'               => $plan->steps_count + 1,
+                        'schedules'                => $schedules,
+                        'is_sufficient_installment' => $isSufficientInstallment,
+                    ];
+                }
+            }
+        }
+
+        $shortfall = max(0, $finalPrice - $projectedBalance);
+
+        return response()->json([
+            'success'                  => true,
+            'message'                  => $discountMsg ?: 'Course info loaded.',
+            'course_price'             => $coursePrice,
+            'discount_amount'          => $discountAmount,
+            'final_price'              => $finalPrice,
+            'actual_refund'            => $actualRefund,
+            'refund_source'            => $refundSource,
+            'current_wallet_balance'   => $currentBalance,
+            'projected_wallet_balance' => $projectedBalance,
+            'shortfall'                => $shortfall,
+            'is_sufficient_full'       => $isSufficientFull,
+            'is_installment_available' => $isInstallmentAvailable,
+            'installment_plans'        => $installmentPlans,
+        ]);
+    }
+
+    public function ApplyCouponCode($supportRequest)
         {
 
             // Inputs
@@ -2748,32 +3004,59 @@ class AdminSupportController extends Controller
 
                if ($validCourses) {
 
-                 $order = InstallmentOrder:: where([
+                    $order = InstallmentOrder::where([
                         'user_id' => $userId,
                         'webinar_id' => $webinarId,
                         'status' => 'open',
                     ])->first();
 
-                    // print_r( $order);die;
+                    if ($order) {
+                        // ── Installment purchase: apply discount as part-payment credit ──
+                        $originalAmount = $order->item_price ?? 0;
 
-                   $originalAmount = $order->item_price;
-                        //  Calculate discount
                         if ($discount->percent > 0) {
                             $discountAmount = ($originalAmount * $discount->percent) / 100;
                         } else {
-                            $discountAmount =$discount->amount;
+                            $discountAmount = $discount->amount;
                         }
+                        $finalAmount = min($discountAmount, $originalAmount);
 
-                        $finalAmount = $discountAmount;
-
-                        //  Save payment
                         \App\Models\WebinarPartPayment::create([
-                            'user_id'         => $userId,
+                            'user_id'        => $userId,
                             'installment_id' => $order->installment_id,
-                            'webinar_id'      => $webinarId,
-                            'amount'          => $finalAmount,
-                            'created_at'      => now(),
+                            'webinar_id'     => $webinarId,
+                            'amount'         => $finalAmount,
+                            'created_at'     => now(),
                         ]);
+
+                    } else {
+                        // ── Regular (non-installment) purchase: credit wallet via Accounting ──
+                        $legacySale = \App\Models\Sale::where('buyer_id', $userId)
+                            ->where('webinar_id', $webinarId)
+                            ->whereNull('refund_at')
+                            ->orderByDesc('id')
+                            ->first();
+
+                        $originalAmount = $legacySale ? ($legacySale->total_amount ?? 0) : ($supportRequest->amount ?? 0);
+
+                        if ($discount->percent > 0) {
+                            $discountAmount = ($originalAmount * $discount->percent) / 100;
+                        } else {
+                            $discountAmount = $discount->amount;
+                        }
+                        $finalAmount = min($discountAmount, $originalAmount);
+
+                        if ($finalAmount > 0) {
+                            \App\Models\Accounting::create([
+                                'user_id'      => $userId,
+                                'amount'       => $finalAmount,
+                                'type'         => \App\Models\Accounting::$addiction,
+                                'type_account' => \App\Models\Accounting::$asset,
+                                'description'  => "Post-purchase coupon credit: {$couponCode} - Support #{$supportRequest->ticket_number}",
+                                'created_at'   => time(),
+                            ]);
+                        }
+                    }
 
                         // UPE: Record coupon discount in UPE ledger
                         try {

@@ -41,6 +41,10 @@
     <section class="mt-25">
         <div class="d-flex align-items-start align-items-md-center justify-content-between flex-column flex-md-row">
             <h2 class="section-title">{{ trans('panel.my_purchases') }}</h2>
+            <div class="purchase-tabs d-flex" style="gap:8px;">
+                <a href="/panel/webinars/purchases" class="btn btn-primary btn-sm" style="border-radius:20px;font-weight:600;">My Purchases</a>
+                <a href="/panel/webinars/purchases/refunded" class="btn btn-outline-secondary btn-sm" style="border-radius:20px;font-weight:600;">Refunded</a>
+            </div>
         </div>
 
         @if((!empty($sales) and !$sales->isEmpty()) or !empty($orders) and !$orders->isEmpty())

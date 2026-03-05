@@ -155,6 +155,10 @@
                         <a href="/panel/webinars/purchases">{{ trans('panel.my_purchases') }}</a>
                     </li>
 
+                    <li class="mt-5 {{ (request()->is('panel/webinars/purchases/refunded')) ? 'active' : '' }}">
+                        <a href="/panel/webinars/purchases/refunded">Refunded Courses</a>
+                    </li>
+
                     @if($authUser->isOrganization() || $authUser->isTeacher())
                         <li class="mt-5 {{ (request()->is('panel/webinars/comments')) ? 'active' : '' }}">
                             <a href="/panel/webinars/comments">{{ trans('panel.my_class_comments') }}</a>

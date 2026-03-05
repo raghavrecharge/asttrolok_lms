@@ -976,72 +976,518 @@ class SupportUpeBridge
     //  WRONG COURSE CORRECTION — revoke old + grant new in UPE
     // ══════════════════════════════════════════════════════════════
 
-    public function handleWrongCourseCorrection(int $userId, int $wrongWebinarId, int $correctWebinarId, int $supportRequestId, int $adminId): ?UpeSale
-    {
-        $wrongProduct = $this->getOrCreateProduct($wrongWebinarId);
+    /**
+     * Handle wrong course correction with full wallet-mediated purchase flow.
+     *
+     * Returns array: ['success', 'message', 'access_granted', 'sale_id',
+     *                 'amount_refunded', 'amount_charged', 'wallet_balance', 'required_amount']
+     *
+     * @param string $purchaseType  'full' | 'installment' | 'quick_pay'
+     * @param int|null $installmentId  legacy Installment model id (required when purchaseType='installment')
+     * @param float $quickPayAmount   amount to charge now (required when purchaseType='quick_pay')
+     */
+    public function handleWrongCourseCorrection(
+        int $userId,
+        int $wrongWebinarId,
+        int $correctWebinarId,
+        int $supportRequestId,
+        int $adminId,
+        ?int $discountId = null,
+        ?string $couponCode = null,
+        string $purchaseType = 'full',
+        ?int $installmentId = null,
+        float $quickPayAmount = 0
+    ): array {
+        $wrongProduct  = $this->getOrCreateProduct($wrongWebinarId);
         $correctProduct = $this->getOrCreateProduct($correctWebinarId);
 
-        if (!$wrongProduct || !$correctProduct) return null;
-
-        // Soft-revoke wrong course UPE sale
-        $wrongSale = UpeSale::where('user_id', $userId)
-            ->where('product_id', $wrongProduct->id)
-            ->whereIn('status', ['active', 'partially_refunded'])
-            ->first();
-
-        $amountPaid = 0;
-        if ($wrongSale) {
-            // Get the actual amount paid for wrong course
-            $amountPaid = $this->ledger->balance($wrongSale->id);
-            $correctCoursePrice = (float) $correctProduct->base_fee;
-
-            $wrongSale->update(['status' => 'refunded']);
-            $this->access->invalidate($userId, $wrongProduct->id);
-
-            // Wallet-mediated course switch: credit full old amount → debit new course price
-            if ($amountPaid > 0) {
-                try {
-                    $walletService = app(\App\Services\PaymentEngine\WalletService::class);
-
-                    // Step 1: Credit full old course amount to wallet
-                    $walletService->creditCourseSwitch(
-                        $userId,
-                        $amountPaid,
-                        $wrongSale->id,
-                        "Course correction refund: ₹{$amountPaid} from wrong course #{$wrongWebinarId}"
-                    );
-
-                    // Step 2: Debit correct course price from wallet
-                    $walletService->purchaseFromWallet(
-                        $userId,
-                        $correctCoursePrice,
-                        null,
-                        "Purchase for correct course #{$correctWebinarId} (wrong course correction)"
-                    );
-
-                    Log::info('SupportUpeBridge: Wrong course correction via wallet', [
-                        'user_id' => $userId,
-                        'refunded' => $amountPaid,
-                        'new_price' => $correctCoursePrice,
-                        'wallet_remainder' => $amountPaid - $correctCoursePrice,
-                        'wrong_course_id' => $wrongWebinarId,
-                        'correct_course_id' => $correctWebinarId,
-                        'support_request_id' => $supportRequestId,
-                    ]);
-                } catch (\Exception $walletErr) {
-                    Log::error('SupportUpeBridge: Failed to process wallet for wrong course correction', [
-                        'user_id' => $userId,
-                        'amount_paid' => $amountPaid,
-                        'error' => $walletErr->getMessage(),
-                    ]);
-                }
-            }
+        if (!$wrongProduct || !$correctProduct) {
+            return $this->wccResult(false, 'Could not resolve course products in UPE. Please check product mapping.', false);
         }
 
-        // Create UPE sale for correct course
-        $correctSale = $this->grantRelativeAccess($userId, $correctWebinarId, $supportRequestId, $adminId);
+        // ── Step 1: Revoke wrong course UPE sales + compute actual amount paid ──
+        // Use legacy Sale SUM as source of truth (immune to upe_ledger sync duplicates).
+        // UPE ledger may have duplicate entries from upe:sync-part-payments; legacy Sale has one row per payment.
+        $amountPaid = (float) \App\Models\Sale::where('buyer_id', $userId)
+            ->where('webinar_id', $wrongWebinarId)
+            ->whereNull('refund_at')
+            ->whereIn('type', ['webinar', 'installment_payment', 'course_video', 'bundle'])
+            ->sum('amount');
 
-        return $correctSale;
+        // Fallback to UPE ledger only if no legacy Sale rows exist
+        $wrongSales = UpeSale::where('user_id', $userId)
+            ->where('product_id', $wrongProduct->id)
+            ->whereIn('status', ['active', 'partially_refunded', 'pending_payment'])
+            ->get();
+
+        if ($amountPaid <= 0 && $wrongSales->isNotEmpty()) {
+            $wrongSale  = $wrongSales->sortByDesc('id')->first();
+            $amountPaid = $this->ledger->actualAmountPaid($wrongSale->id);
+        }
+
+        foreach ($wrongSales as $wrongSale) {
+            Log::info('SupportUpeBridge: WCC — revoking wrong course sale', [
+                'user_id'         => $userId,
+                'sale_id'         => $wrongSale->id,
+                'amount_refunded' => $amountPaid,
+                'wrong_course_id' => $wrongWebinarId,
+            ]);
+            $wrongSale->update(['status' => 'refunded']);
+            $this->access->invalidate($userId, $wrongProduct->id);
+        }
+
+        // ── Step 2: Compute correct course price after coupon ──
+        $correctCoursePrice = (float) $correctProduct->base_fee;
+        $discountAmount = 0;
+        if ($discountId && $couponCode) {
+            $discountAmount = $this->computeCouponDiscountForWcc(
+                $discountId, $couponCode, $correctCoursePrice, $correctWebinarId, $userId
+            );
+        }
+        $finalPrice = max(0, $correctCoursePrice - $discountAmount);
+
+        // ── Step 3: Credit refund amount to wallet ──
+        $walletService = app(\App\Services\PaymentEngine\WalletService::class);
+        if ($amountPaid > 0) {
+            $walletService->creditCourseSwitch(
+                $userId,
+                $amountPaid,
+                $wrongSales->first()?->id,
+                "Course correction refund: ₹{$amountPaid} from wrong course #{$wrongWebinarId} (support #{$supportRequestId})"
+            );
+        }
+
+        Log::info('SupportUpeBridge: WCC — wallet credited, dispatching to purchase handler', [
+            'user_id'           => $userId,
+            'wrong_course_id'   => $wrongWebinarId,
+            'correct_course_id' => $correctWebinarId,
+            'amount_refunded'   => $amountPaid,
+            'course_price'      => $correctCoursePrice,
+            'discount_amount'   => $discountAmount,
+            'final_price'       => $finalPrice,
+            'purchase_type'     => $purchaseType,
+            'support_request_id' => $supportRequestId,
+        ]);
+
+        // ── Step 4: Dispatch to purchase type handler ──
+        switch ($purchaseType) {
+            case 'installment':
+                return $this->wccInstallmentPayment(
+                    $userId, $correctWebinarId, $correctProduct, $supportRequestId, $adminId,
+                    $walletService, $finalPrice, $discountAmount, $discountId, $couponCode,
+                    $installmentId, $amountPaid
+                );
+            case 'quick_pay':
+                return $this->wccQuickPayment(
+                    $userId, $correctWebinarId, $correctProduct, $supportRequestId, $adminId,
+                    $walletService, $finalPrice, $discountAmount, $discountId, $couponCode,
+                    $quickPayAmount, $amountPaid
+                );
+            default:
+                return $this->wccFullPayment(
+                    $userId, $correctWebinarId, $correctProduct, $supportRequestId, $adminId,
+                    $walletService, $finalPrice, $discountAmount, $discountId, $couponCode,
+                    $amountPaid
+                );
+        }
+    }
+
+    // ── Private: compute coupon discount for WCC (does NOT depend on Cart context) ──
+    private function computeCouponDiscountForWcc(
+        int $discountId, string $couponCode, float $coursePrice, int $webinarId, int $userId
+    ): float {
+        try {
+            $discount = \App\Models\Discount::where('id', $discountId)->where('status', 'active')->first();
+            if (!$discount) return 0;
+
+            if ($discount->expire_at && now()->timestamp > $discount->expire_at) return 0;
+            if ($discount->max_use_id != 0 && $discount->discountRemain() <= 0) return 0;
+
+            if ($discount->source !== 'all') {
+                $applies = \App\Models\DiscountCourse::where('discount_id', $discount->id)
+                    ->where('course_id', $webinarId)->exists();
+                if (!$applies) return 0;
+            }
+
+            if ($discount->discount_type == 'fixed_amount') {
+                return min((float) $discount->amount, $coursePrice);
+            }
+
+            $percent = (float) ($discount->percent ?? 0);
+            $calc    = round($coursePrice * $percent / 100, 2);
+            if (!empty($discount->max_amount) && $calc > (float) $discount->max_amount) {
+                $calc = (float) $discount->max_amount;
+            }
+            return $calc;
+        } catch (\Exception $e) {
+            Log::error('SupportUpeBridge: WCC coupon discount calculation failed', ['error' => $e->getMessage()]);
+            return 0;
+        }
+    }
+
+    // ── Private: Full payment handler ──
+    private function wccFullPayment(
+        int $userId, int $correctWebinarId, UpeProduct $correctProduct,
+        int $supportRequestId, int $adminId,
+        $walletService, float $finalPrice, float $discountAmount,
+        ?int $discountId, ?string $couponCode, float $amountRefunded
+    ): array {
+        $currentBalance = $walletService->balance($userId);
+
+        if ($currentBalance < $finalPrice - 1) {
+            return $this->wccResult(
+                false,
+                "Insufficient wallet balance for full payment. " .
+                "Available: ₹" . number_format($currentBalance, 0) . ", " .
+                "Required: ₹" . number_format($finalPrice, 0) . ". " .
+                "Please add funds to the wallet.",
+                false,
+                null, $amountRefunded, $finalPrice, $currentBalance, $finalPrice
+            );
+        }
+
+        return DB::transaction(function () use (
+            $userId, $correctWebinarId, $correctProduct, $supportRequestId, $adminId,
+            $walletService, $finalPrice, $discountAmount, $discountId, $couponCode, $amountRefunded
+        ) {
+            $validFrom  = now();
+            $validUntil = $correctProduct->validity_days
+                ? $validFrom->copy()->addDays($correctProduct->validity_days) : null;
+
+            $sale = UpeSale::create([
+                'uuid'               => (string) Str::uuid(),
+                'user_id'            => $userId,
+                'product_id'         => $correctProduct->id,
+                'sale_type'          => 'paid',
+                'pricing_mode'       => 'full',
+                'base_fee_snapshot'  => $correctProduct->base_fee,
+                'currency'           => 'INR',
+                'status'             => 'active',
+                'valid_from'         => $validFrom,
+                'valid_until'        => $validUntil,
+                'support_request_id' => $supportRequestId,
+                'approved_by'        => $adminId,
+                'executed_at'        => now(),
+                'metadata'           => [
+                    'source'             => 'wcc_full_payment',
+                    'support_request_id' => $supportRequestId,
+                    'discount_amount'    => $discountAmount,
+                    'coupon_code'        => $couponCode,
+                ],
+            ]);
+
+            $walletService->purchaseFromWallet(
+                $userId, $finalPrice, null,
+                "Wrong course correction — full purchase of course #{$correctWebinarId} (support #{$supportRequestId})" .
+                ($discountAmount > 0 ? " — coupon discount: ₹{$discountAmount}" : "")
+            );
+
+            $this->ledger->recordPayment(
+                saleId: $sale->id,
+                amount: $finalPrice,
+                paymentMethod: 'wallet',
+                processedBy: $adminId,
+                description: "Wrong course correction full payment via wallet (support #{$supportRequestId})",
+                idempotencyKey: "wcc_full_{$supportRequestId}"
+            );
+
+            if ($discountId && $discountAmount > 0) {
+                $this->ledger->recordDiscount(
+                    saleId: $sale->id,
+                    amount: $discountAmount,
+                    discountId: $discountId,
+                    processedBy: $adminId,
+                    description: "Coupon '{$couponCode}' for wrong course correction (support #{$supportRequestId})"
+                );
+            }
+
+            $this->access->invalidate($userId, $correctProduct->id);
+
+            Log::info('SupportUpeBridge: WCC full payment completed', [
+                'sale_id'            => $sale->id,
+                'user_id'            => $userId,
+                'correct_course_id'  => $correctWebinarId,
+                'amount_charged'     => $finalPrice,
+                'discount_amount'    => $discountAmount,
+                'amount_refunded'    => $amountRefunded,
+                'support_request_id' => $supportRequestId,
+            ]);
+
+            return $this->wccResult(
+                true,
+                "Course correction complete. ₹" . number_format($amountRefunded, 0) . " refunded from wrong course. " .
+                "₹" . number_format($finalPrice, 0) . " charged for correct course. Access granted.",
+                true, $sale->id, $amountRefunded, $finalPrice, $walletService->balance($userId)
+            );
+        });
+    }
+
+    // ── Private: Installment payment handler ──
+    private function wccInstallmentPayment(
+        int $userId, int $correctWebinarId, UpeProduct $correctProduct,
+        int $supportRequestId, int $adminId,
+        $walletService, float $finalPrice, float $discountAmount,
+        ?int $discountId, ?string $couponCode,
+        ?int $installmentId, float $amountRefunded
+    ): array {
+        if (!$installmentId) {
+            return $this->wccResult(false, 'Installment plan ID is required for installment purchase.', false);
+        }
+
+        $installment = \App\Models\Installment::find($installmentId);
+        if (!$installment || !$installment->enable) {
+            return $this->wccResult(false, 'Selected installment plan is invalid or disabled.', false);
+        }
+
+        $upfrontAmount = round($installment->getUpfront($finalPrice), 0, PHP_ROUND_HALF_UP);
+        $currentBalance = $walletService->balance($userId);
+
+        if ($currentBalance < $upfrontAmount - 1) {
+            return $this->wccResult(
+                false,
+                "Insufficient wallet balance for first installment. " .
+                "Available: ₹" . number_format($currentBalance, 0) . ", " .
+                "First installment required: ₹" . number_format($upfrontAmount, 0) . ". " .
+                "Please add funds to the wallet.",
+                false,
+                null, $amountRefunded, $upfrontAmount, $currentBalance, $upfrontAmount
+            );
+        }
+
+        return DB::transaction(function () use (
+            $userId, $correctWebinarId, $correctProduct, $supportRequestId, $adminId,
+            $walletService, $finalPrice, $discountAmount, $discountId, $couponCode,
+            $installment, $installmentId, $upfrontAmount, $amountRefunded
+        ) {
+            $validFrom  = now();
+            $validUntil = $correctProduct->validity_days
+                ? $validFrom->copy()->addDays($correctProduct->validity_days) : null;
+
+            $sale = UpeSale::create([
+                'uuid'               => (string) Str::uuid(),
+                'user_id'            => $userId,
+                'product_id'         => $correctProduct->id,
+                'sale_type'          => 'paid',
+                'pricing_mode'       => 'installment',
+                'base_fee_snapshot'  => $correctProduct->base_fee,
+                'currency'           => 'INR',
+                'status'             => 'active',
+                'valid_from'         => $validFrom,
+                'valid_until'        => $validUntil,
+                'support_request_id' => $supportRequestId,
+                'approved_by'        => $adminId,
+                'executed_at'        => now(),
+                'metadata'           => [
+                    'source'             => 'wcc_installment_payment',
+                    'support_request_id' => $supportRequestId,
+                    'installment_id'     => $installmentId,
+                    'coupon_code'        => $couponCode,
+                ],
+            ]);
+
+            // Build and create UPE installment plan + schedules from legacy Installment config
+            $scheduleAmounts   = [];
+            $scheduleAmounts[] = ['amount' => $upfrontAmount, 'deadline_days' => 0];
+
+            $steps = $installment->steps()->orderBy('order')->get();
+            foreach ($steps as $step) {
+                $scheduleAmounts[] = [
+                    'amount'        => round($step->getPrice($finalPrice), 0, PHP_ROUND_HALF_UP),
+                    'deadline_days' => (int) $step->deadline,
+                ];
+            }
+
+            $totalAmount = round(array_sum(array_column($scheduleAmounts, 'amount')), 2);
+
+            $plan = UpeInstallmentPlan::create([
+                'sale_id'           => $sale->id,
+                'total_amount'      => $totalAmount,
+                'num_installments'  => count($scheduleAmounts),
+                'plan_type'         => 'standard',
+                'status'            => 'active',
+            ]);
+
+            foreach ($scheduleAmounts as $i => $sched) {
+                UpeInstallmentSchedule::create([
+                    'plan_id'      => $plan->id,
+                    'sequence'     => $i + 1,
+                    'due_date'     => now()->addDays($sched['deadline_days']),
+                    'amount_due'   => $sched['amount'],
+                    'amount_paid'  => 0,
+                    'status'       => ($i === 0) ? 'due' : 'upcoming',
+                ]);
+            }
+
+            // Debit upfront from wallet + record in installment engine
+            $walletService->purchaseFromWallet(
+                $userId, $upfrontAmount, null,
+                "Wrong course correction — installment upfront for course #{$correctWebinarId} (support #{$supportRequestId})"
+            );
+
+            $engine = app(InstallmentEngine::class);
+            $engine->recordPayment($plan, $upfrontAmount, 'wallet', null, null, $adminId);
+
+            if ($discountId && $discountAmount > 0) {
+                $this->ledger->recordDiscount(
+                    saleId: $sale->id,
+                    amount: $discountAmount,
+                    discountId: $discountId,
+                    processedBy: $adminId,
+                    description: "Coupon '{$couponCode}' for wrong course correction installment (support #{$supportRequestId})"
+                );
+            }
+
+            $this->access->invalidate($userId, $correctProduct->id);
+
+            Log::info('SupportUpeBridge: WCC installment payment completed', [
+                'sale_id'            => $sale->id,
+                'plan_id'            => $plan->id,
+                'user_id'            => $userId,
+                'correct_course_id'  => $correctWebinarId,
+                'upfront_charged'    => $upfrontAmount,
+                'total_plan_amount'  => $totalAmount,
+                'amount_refunded'    => $amountRefunded,
+                'support_request_id' => $supportRequestId,
+            ]);
+
+            return $this->wccResult(
+                true,
+                "Course correction complete (installment). ₹" . number_format($amountRefunded, 0) . " refunded from wrong course. " .
+                "First installment of ₹" . number_format($upfrontAmount, 0) . " charged. Access granted. " .
+                "Remaining " . ($plan->num_installments - 1) . " EMI(s) due as per schedule.",
+                true, $sale->id, $amountRefunded, $upfrontAmount, $walletService->balance($userId)
+            );
+        });
+    }
+
+    // ── Private: Quick Pay handler ──
+    private function wccQuickPayment(
+        int $userId, int $correctWebinarId, UpeProduct $correctProduct,
+        int $supportRequestId, int $adminId,
+        $walletService, float $finalPrice, float $discountAmount,
+        ?int $discountId, ?string $couponCode,
+        float $quickPayAmount, float $amountRefunded
+    ): array {
+        if ($quickPayAmount <= 0) {
+            return $this->wccResult(false, 'Quick pay amount must be greater than zero.', false);
+        }
+
+        $currentBalance = $walletService->balance($userId);
+
+        if ($currentBalance < $quickPayAmount - 1) {
+            return $this->wccResult(
+                false,
+                "Insufficient wallet balance for quick pay. " .
+                "Available: ₹" . number_format($currentBalance, 0) . ", " .
+                "Requested: ₹" . number_format($quickPayAmount, 0) . ". " .
+                "Please add funds to the wallet.",
+                false,
+                null, $amountRefunded, $quickPayAmount, $currentBalance, $quickPayAmount
+            );
+        }
+
+        return DB::transaction(function () use (
+            $userId, $correctWebinarId, $correctProduct, $supportRequestId, $adminId,
+            $walletService, $finalPrice, $discountAmount, $discountId, $couponCode,
+            $quickPayAmount, $amountRefunded
+        ) {
+            $validFrom  = now();
+            $validUntil = $correctProduct->validity_days
+                ? $validFrom->copy()->addDays($correctProduct->validity_days) : null;
+
+            $sale = UpeSale::create([
+                'uuid'               => (string) Str::uuid(),
+                'user_id'            => $userId,
+                'product_id'         => $correctProduct->id,
+                'sale_type'          => 'paid',
+                'pricing_mode'       => 'full',
+                'base_fee_snapshot'  => $correctProduct->base_fee,
+                'currency'           => 'INR',
+                'status'             => 'active',
+                'valid_from'         => $validFrom,
+                'valid_until'        => $validUntil,
+                'support_request_id' => $supportRequestId,
+                'approved_by'        => $adminId,
+                'executed_at'        => now(),
+                'metadata'           => [
+                    'source'             => 'wcc_quick_pay',
+                    'support_request_id' => $supportRequestId,
+                    'quick_pay_amount'   => $quickPayAmount,
+                    'full_price'         => $finalPrice,
+                    'discount_amount'    => $discountAmount,
+                    'coupon_code'        => $couponCode,
+                ],
+            ]);
+
+            $walletService->purchaseFromWallet(
+                $userId, $quickPayAmount, null,
+                "Wrong course correction — quick pay ₹{$quickPayAmount} for course #{$correctWebinarId} (support #{$supportRequestId})"
+            );
+
+            $this->ledger->recordPayment(
+                saleId: $sale->id,
+                amount: $quickPayAmount,
+                paymentMethod: 'wallet',
+                processedBy: $adminId,
+                description: "Wrong course correction quick pay ₹{$quickPayAmount} (full price ₹{$finalPrice}) (support #{$supportRequestId})",
+                idempotencyKey: "wcc_quick_{$supportRequestId}"
+            );
+
+            if ($discountId && $discountAmount > 0) {
+                $this->ledger->recordDiscount(
+                    saleId: $sale->id,
+                    amount: $discountAmount,
+                    discountId: $discountId,
+                    processedBy: $adminId,
+                    description: "Coupon '{$couponCode}' for wrong course correction quick pay (support #{$supportRequestId})"
+                );
+            }
+
+            $this->access->invalidate($userId, $correctProduct->id);
+
+            $remaining = max(0, $finalPrice - $quickPayAmount);
+
+            Log::info('SupportUpeBridge: WCC quick pay completed', [
+                'sale_id'            => $sale->id,
+                'user_id'            => $userId,
+                'correct_course_id'  => $correctWebinarId,
+                'quick_pay_amount'   => $quickPayAmount,
+                'remaining_amount'   => $remaining,
+                'amount_refunded'    => $amountRefunded,
+                'support_request_id' => $supportRequestId,
+            ]);
+
+            $msg = "Course correction complete (quick pay). ₹" . number_format($amountRefunded, 0) . " refunded from wrong course. " .
+                "₹" . number_format($quickPayAmount, 0) . " charged now. Access granted.";
+            if ($remaining > 0.01) {
+                $msg .= " Remaining balance of ₹" . number_format($remaining, 0) . " can be paid via normal payment flow.";
+            }
+
+            return $this->wccResult(true, $msg, true, $sale->id, $amountRefunded, $quickPayAmount, $walletService->balance($userId));
+        });
+    }
+
+    // ── Private: Standardized result array for WCC ──
+    private function wccResult(
+        bool $success,
+        string $message,
+        bool $accessGranted,
+        ?int $saleId = null,
+        float $amountRefunded = 0,
+        float $amountCharged = 0,
+        float $walletBalance = 0,
+        float $requiredAmount = 0
+    ): array {
+        return [
+            'success'         => $success,
+            'message'         => $message,
+            'access_granted'  => $accessGranted,
+            'sale_id'         => $saleId,
+            'amount_refunded' => $amountRefunded,
+            'amount_charged'  => $amountCharged,
+            'wallet_balance'  => $walletBalance,
+            'required_amount' => $requiredAmount,
+        ];
     }
 
     // ══════════════════════════════════════════════════════════════

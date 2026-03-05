@@ -206,6 +206,24 @@
         </div>
     </section>
 
+<style>
+.fsl-table tbody tr.fsl-row-credit { background:#f6fff7; }
+.fsl-table tbody tr.fsl-row-debit  { background:#fff6f6; }
+.fsl-dir-pill { display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px; }
+.fsl-dir-pill.credit { background:#d4edda;color:#155724; }
+.fsl-dir-pill.debit  { background:#f8d7da;color:#721c24; }
+.fsl-legend { display:flex;gap:12px;padding:8px 0 12px 0;flex-wrap:wrap; }
+.fsl-legend-item { display:flex;align-items:center;gap:5px;font-size:11px;color:#666; }
+.fsl-dot { width:10px;height:10px;border-radius:2px; }
+.type-badge { display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;text-transform:uppercase; }
+.badge-course     { background:#e3f2fd;color:#1565c0; }
+.badge-part       { background:#fff9c4;color:#f57f17; }
+.badge-meeting    { background:#fce4ec;color:#880e4f; }
+.badge-subscription { background:#e8f5e9;color:#2e7d32; }
+.badge-bundle     { background:#f3e5f5;color:#7b1fa2; }
+.badge-product    { background:#fff3e0;color:#e65100; }
+</style>
+
     <section class="mt-35">
         <h2 class="section-title">Financial Documents List</h2>
 
@@ -213,12 +231,18 @@
             <div class="panel-section-card py-20 px-25 mt-20">
                 <div class="row">
                     <div class="col-12 ">
+                        {{-- Legend --}}
+                        <div class="fsl-legend">
+                            <div class="fsl-legend-item"><span class="fsl-dot" style="background:#d4edda"></span> Credit / Full Payment</div>
+                            <div class="fsl-legend-item"><span class="fsl-dot" style="background:#f8d7da"></span> Installment / Part</div>
+                        </div>
                         <div class="table-responsive">
-                            <table class="table text-center custom-table">
+                            <table class="table text-center custom-table fsl-table">
                                 <thead>
                                 <tr>
                                     <th>#</th>
                                     <th class="text-left font-weight-bold">{{ trans('public.title') }}</th>
+                                    <th class="text-center">Direction</th>
                                     <th class="text-center">Type</th>
                                     <th class="text-center">{{ trans('panel.amount') }} ({{ $currency }})</th>
                                     <th class="text-center">{{ trans('public.date') }}</th>
@@ -228,10 +252,23 @@
 
                                 <tbody>
                                 @foreach($amount_paid as $item)
-                                    <tr>
+                                    @php
+                                        $fsl_type  = $item[5] ?? 'course';
+                                        $fsl_sub   = $item[6] ?? '';
+                                        $fsl_isInst = ($fsl_type == 'part' || $fsl_sub == 'installment_payment');
+                                        $fsl_row   = $fsl_isInst ? 'fsl-row-debit' : 'fsl-row-credit';
+                                    @endphp
+                                    <tr class="{{ $fsl_row }}">
                                         <td><span class="font-weight-bold">#{{ $item[3] }}</span></td>
                                         <td class="text-left align-middle">
                                             <span class="font-weight-500">{{ $item[2] }}</span>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            @if($fsl_isInst)
+                                                <span class="fsl-dir-pill debit">&#9660; Debit</span>
+                                            @else
+                                                <span class="fsl-dir-pill credit">&#9650; Credit</span>
+                                            @endif
                                         </td>
                                         <td>
                                             @if($item[5] == 'part')
@@ -249,7 +286,7 @@
                                             @endif
                                         </td>
                                         <td class="text-center align-middle">
-                                            <span class="font-16 font-weight-bold text-primary">{{ handlePrice($item[0], false) }}</span>
+                                            <span class="font-16 font-weight-bold" style="color:{{ $fsl_isInst ? '#dc3545' : '#28a745' }};">{{ handlePrice($item[0], false) }}</span>
                                         </td>
                                         <td class="text-center align-middle">
                                             <span>{{ is_numeric($item[1]) ? dateTimeFormat($item[1], 'j M Y') : $item[1] }}</span>

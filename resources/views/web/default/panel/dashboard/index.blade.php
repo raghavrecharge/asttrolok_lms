@@ -1225,13 +1225,35 @@
                     <a href="/panel/financial/summary" class="db-card-link">View All</a>
                 </div>
 
+<style>
+.db-finance-table tbody tr.fd-row-credit { background:#f6fff7; }
+.db-finance-table tbody tr.fd-row-debit  { background:#fff6f6; }
+.fd-dir-pill { display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px; }
+.fd-dir-pill.credit { background:#d4edda;color:#155724; }
+.fd-dir-pill.debit  { background:#f8d7da;color:#721c24; }
+.fd-type-pill { display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;text-transform:uppercase; }
+.fd-type-pill.course   { background:#e3f2fd;color:#1565c0; }
+.fd-type-pill.installment { background:#fff9c4;color:#f57f17; }
+.fd-type-pill.bundle   { background:#f3e5f5;color:#7b1fa2; }
+.fd-type-pill.meeting  { background:#fce4ec;color:#880e4f; }
+.fd-type-pill.subscription { background:#e8f5e9;color:#2e7d32; }
+.fd-type-pill.product  { background:#fff3e0;color:#e65100; }
+.fd-legend { display:flex;gap:12px;padding:8px 0 12px 0;flex-wrap:wrap; }
+.fd-legend-item { display:flex;align-items:center;gap:5px;font-size:11px;color:#666; }
+.fd-dot { width:10px;height:10px;border-radius:2px; }
+</style>
                 @if(count($amount_paid ?? []) > 0)
+                    <div class="fd-legend">
+                        <div class="fd-legend-item"><span class="fd-dot" style="background:#d4edda"></span> Credit / Full Payment</div>
+                        <div class="fd-legend-item"><span class="fd-dot" style="background:#f8d7da"></span> Installment / Part</div>
+                    </div>
                     <div class="db-scroll-md">
                         <table class="db-finance-table">
                             <thead>
                                 <tr>
                                     <th>#</th>
                                     <th class="text-left">{{ trans('public.title') }}</th>
+                                    <th class="text-center">Direction</th>
                                     <th class="text-center">Type</th>
                                     <th class="text-center">{{ trans('panel.amount') }} ({{ $currency ?? '₹' }})</th>
                                     <th class="text-center">{{ trans('public.date') }}</th>
@@ -1240,29 +1262,28 @@
                             </thead>
                             <tbody>
                                 @foreach(array_slice($amount_paid ?? [], 0, 10) as $row)
-                                    <tr>
+                                    @php
+                                        $fd_type  = $row[5] ?? 'course';
+                                        $fd_sub   = $row[6] ?? '';
+                                        $fd_isInst = ($fd_type == 'part' || $fd_sub == 'installment_payment');
+                                        $fd_row   = $fd_isInst ? 'fd-row-debit' : 'fd-row-credit';
+                                        $fd_tpill = $fd_isInst ? 'installment' : $fd_type;
+                                        $fd_label = $fd_isInst ? 'Installment' : ucfirst($fd_type);
+                                    @endphp
+                                    <tr class="{{ $fd_row }}">
                                         <td><span>#{{ $row[3] ?? '' }}</span></td>
                                         <td><span>{{ $row[2] ?? 'N/A' }}</span></td>
                                         <td class="text-center">
-                                            @if(($row[5] ?? '') == 'part')
-                                                <span>Installment payment</span>
-                                            @elseif(($row[5] ?? '') == 'course')
-                                                @if(($row[6] ?? '') == 'installment_payment')
-                                                    <span>Installment payment</span>
-                                                @else
-                                                    <span>Course</span>
-                                                @endif
-                                            @elseif(($row[5] ?? '') == 'meeting')
-                                                <span>Meeting</span>
-                                            @elseif(($row[5] ?? '') == 'subscription')
-                                                <span>Subscription</span>
-                                            @elseif(($row[5] ?? '') == 'bundle')
-                                                <span>Bundle</span>
-                                            @elseif(($row[5] ?? '') == 'product')
-                                                <span>Product</span>
+                                            @if($fd_isInst)
+                                                <span class="fd-dir-pill debit">&#9660; Debit</span>
+                                            @else
+                                                <span class="fd-dir-pill credit">&#9650; Credit</span>
                                             @endif
                                         </td>
-                                        <td class="text-center"><span class="font-weight-bold" style="color:var(--primary);">{{ handlePrice($row[0] ?? 0, false) }}</span></td>
+                                        <td class="text-center">
+                                            <span class="fd-type-pill {{ $fd_tpill }}">{{ $fd_label }}</span>
+                                        </td>
+                                        <td class="text-center"><span class="font-weight-bold" style="color:{{ $fd_isInst ? '#dc3545' : '#28a745' }};">{{ handlePrice($row[0] ?? 0, false) }}</span></td>
                                         <td class="text-center">{{ dateTimeFormat($row[1], 'j M Y') }}</td>
                                         <td class="text-center">
                                             @if(($row[5] ?? '') == 'part')

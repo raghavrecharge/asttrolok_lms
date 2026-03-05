@@ -317,6 +317,26 @@ class PaymentLedgerService
     }
 
     /**
+     * Actual amount paid by user (excludes discounts, coupons, and promotional benefits)
+     * Only includes TYPE_PAYMENT entries, not TYPE_DISCOUNT or TYPE_ADJUSTMENT_IN
+     */
+    public function actualAmountPaid(int $saleId): float
+    {
+        $result = DB::table('upe_ledger_entries')
+            ->where('sale_id', $saleId)
+            ->whereIn('entry_type', [
+                UpeLedgerEntry::TYPE_PAYMENT,
+                UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
+                UpeLedgerEntry::TYPE_WALLET_PAYMENT,
+            ])
+            ->where('direction', 'credit')
+            ->selectRaw("COALESCE(SUM(amount), 0) AS total_payments")
+            ->first();
+
+        return round((float) ($result->total_payments ?? 0), 2);
+    }
+
+    /**
      * Total real money received (excludes discounts, adjustments, bonuses).
      */
     public function totalRealPayments(int $saleId): float

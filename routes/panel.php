@@ -55,6 +55,7 @@ Route::group(['namespace' => 'Panel', 'prefix' => 'panel', 'middleware' => ['che
 
         Route::group(['prefix' => 'purchases'], function () {
             Route::get('/', 'WebinarController@purchases');
+            Route::get('/refunded', 'WebinarController@refundedPurchases');
             Route::post('/getJoinInfo', 'WebinarController@getJoinInfo');
         });
 

@@ -1383,14 +1383,19 @@ class WebinarController extends Controller
                 ->groupBy('product_id')
                 ->pluck('product_id');
 
-            // For each product, get the single best sale (EXCLUDE refunded)
+            // For each product, get the single best sale (EXCLUDE refunded + support-granted free access)
             $deduped = collect();
             foreach ($bestSaleIds as $productId) {
                 $sale = UpeSale::where('user_id', $user->id)
                     ->where('product_id', $productId)
-                    ->whereNotIn('status', ['refunded', 'cancelled', 'expired']) // Exclude refunded
+                    ->whereNotIn('status', ['refunded', 'cancelled', 'expired'])
                     ->whereHas('product', function ($q) {
                         $q->whereIn('product_type', ['webinar', 'course_video', 'course_live', 'bundle']);
+                    })
+                    // Exclude support-granted free access (free_course_grant / mentor / relative)
+                    ->where(function ($q) {
+                        $q->where('sale_type', '!=', 'free')
+                          ->orWhereNull('support_request_id');
                     })
                     ->orderByRaw("FIELD(status, 'active', 'partially_refunded', 'pending_payment', 'completed') ASC")
                     ->orderByDesc('id')
@@ -1471,6 +1476,79 @@ class WebinarController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             
+            throw $e;
+        }
+    }
+
+    public function refundedPurchases()
+    {
+        try {
+            $user = auth()->user();
+
+            // UPE refunded sales
+            $upeSales = UpeSale::where('user_id', $user->id)
+                ->where('status', 'refunded')
+                ->whereHas('product', function ($q) {
+                    $q->whereIn('product_type', ['webinar', 'course_video', 'course_live', 'bundle']);
+                })
+                ->with('product')
+                ->orderByDesc('id')
+                ->get();
+
+            // Legacy refunded sales (not already in UPE set)
+            $legacySales = \App\Models\Sale::where('buyer_id', $user->id)
+                ->whereNotNull('refund_at')
+                ->with('webinar')
+                ->orderByDesc('id')
+                ->get();
+
+            // Merge: build unified list (UPE primary, fallback to legacy)
+            $upeWebinarIds = $upeSales->map(function ($s) {
+                return optional($s->product)->external_id;
+            })->filter()->toArray();
+
+            $refunds = collect();
+
+            foreach ($upeSales as $sale) {
+                $product = $sale->product;
+                if (!$product) continue;
+                $item = \App\Models\Webinar::find($product->external_id)
+                     ?? \App\Models\Bundle::find($product->external_id);
+                if (!$item) continue;
+                $refunds->push([
+                    'item'        => $item,
+                    'sale'        => $sale,
+                    'refunded_at' => $sale->updated_at,
+                    'amount'      => $sale->base_fee_snapshot ?? 0,
+                    'source'      => 'upe',
+                ]);
+            }
+
+            foreach ($legacySales as $sale) {
+                if (!$sale->webinar) continue;
+                // Skip if already included via UPE
+                if (in_array($sale->webinar_id, $upeWebinarIds)) continue;
+                $refunds->push([
+                    'item'        => $sale->webinar,
+                    'sale'        => $sale,
+                    'refunded_at' => $sale->refund_at ? \Carbon\Carbon::createFromTimestamp($sale->refund_at) : null,
+                    'amount'      => $sale->total_amount ?? 0,
+                    'source'      => 'legacy',
+                ]);
+            }
+
+            $data = [
+                'pageTitle'      => 'Refunded Courses',
+                'refunds'        => $refunds,
+                'refundedCount'  => $refunds->count(),
+            ];
+
+            return view(getTemplate() . '.panel.webinar.refunded_purchases', $data);
+        } catch (\Exception $e) {
+            \Log::error('refundedPurchases error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
             throw $e;
         }
     }

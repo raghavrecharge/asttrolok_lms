@@ -623,15 +623,26 @@ try {
             // Use UPE-based logic for webinars (exclude refunded)
             $userWebinarsIds = $user->getPurchasedCoursesIds();
 
-            $query = \App\Models\NewSupportForAsttrolok::query()
-                ->where(function ($query) use ($user, $userWebinarsIds) {
-                    $query->where('user_id', $user->id)
-                        ->orWhereIn('webinar_id', $userWebinarsIds);
-                });
+            // Students see only their own tickets; instructors/orgs see own + tickets on their courses
+            // Use $user->webinars (courses they teach) — matches support page scope exactly
+            if ($user->isUser()) {
+                $supportWebinarIds = [];
+                $query = \App\Models\NewSupportForAsttrolok::query()
+                    ->where('user_id', $user->id);
+            } else {
+                $supportWebinarIds = $user->webinars->pluck('id')->toArray();
+                $query = \App\Models\NewSupportForAsttrolok::query()
+                    ->where(function ($query) use ($user, $supportWebinarIds) {
+                        $query->where('user_id', $user->id)
+                            ->orWhereIn('webinar_id', $supportWebinarIds);
+                    });
+            }
 
-            $supportsCount = (clone $query)->count();
-            $openSupportsCount = (clone $query)->whereIn('status', ['pending', 'approved', 'verified'])->count();
-            $closeSupportsCount = (clone $query)->where('status', 'closed')->count();
+            $supportsCount      = (clone $query)->count();
+            // Open: any status that still requires action
+            $openSupportsCount  = (clone $query)->whereIn('status', ['pending', 'in_review', 'approved', 'verified'])->count();
+            // Closed: resolved in any final state (matches support page grouping)
+            $closeSupportsCount = (clone $query)->whereIn('status', ['completed', 'executed', 'closed', 'rejected'])->count();
 
             $query = $this->filters1($query, $request, $userWebinarsIds);
 
@@ -971,16 +982,24 @@ try {
             $data['sidebanner'] = $sidebanner;
             $data['giftModal'] = $this->showGiftModal($user);
 
-            // Get wallet balance using new WalletService
+            // Get wallet balance + recent transactions using WalletService
             try {
                 $walletBalance = 0;
+                $recentWalletTransactions = collect();
                 if (auth()->check()) {
-                    $walletBalance = app(\App\Services\PaymentEngine\WalletService::class)->balance(auth()->id());
+                    $walletSvc = app(\App\Services\PaymentEngine\WalletService::class);
+                    $walletBalance = $walletSvc->balance(auth()->id());
+                    $recentWalletTransactions = \App\Models\PaymentEngine\WalletTransaction::where('user_id', auth()->id())
+                        ->orderByDesc('id')
+                        ->limit(5)
+                        ->get();
                 }
                 $data['walletBalance'] = $walletBalance;
+                $data['recentWalletTransactions'] = $recentWalletTransactions;
             } catch (\Throwable $e) {
                 \Log::warning('Dashboard wallet balance fetch failed', ['error' => $e->getMessage()]);
                 $data['walletBalance'] = 0;
+                $data['recentWalletTransactions'] = collect();
             }
 
                 if($user->role_name == 'user' || ($user->role_name == 'teacher' && !empty($user->consultant) && $user->consultant == 1)){
