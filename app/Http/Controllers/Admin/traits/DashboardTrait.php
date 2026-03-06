@@ -13,6 +13,9 @@ use App\Models\Sale;
 use App\Models\Support;
 use App\Models\Webinar;
 use App\Models\WebinarPartPayment;
+use App\Models\PaymentEngine\UpeSale;
+use App\Models\PaymentEngine\UpeLedgerEntry;
+use App\Models\PaymentEngine\UpeProduct;
 use App\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -20,45 +23,144 @@ use PhpOffice\PhpSpreadsheet\Calculation\Web;
 
 trait DashboardTrait
 {
+    /**
+     * UPE cutover: before this date use legacy tables, after use UPE tables.
+     * This is the created_at of the earliest UpeSale record.
+     */
+    private static $UPE_CUTOVER = '2026-02-14 12:17:11';
+
+    private function getUpeCutover()
+    {
+        return Carbon::parse(self::$UPE_CUTOVER);
+    }
+
+    /**
+     * Legacy income from Sale + WebinarPartPayment.
+     * Uses timestamps for Sale.created_at (stored as int) and Carbon for WebinarPartPayment.
+     */
+    private function getLegacyIncomes($from = null, $to = null)
+    {
+        $saleQuery = Sale::whereNull('product_order_id')->whereNull('status');
+        if ($from) {
+            $saleQuery->where('created_at', '>=', $from->timestamp);
+        }
+        if ($to) {
+            $saleQuery->where('created_at', '<', $to->timestamp);
+        }
+        $saleIncome = $saleQuery->sum('total_amount');
+
+        $installQuery = WebinarPartPayment::query();
+        if ($from) {
+            $installQuery->where('created_at', '>=', $from);
+        }
+        if ($to) {
+            $installQuery->where('created_at', '<', $to);
+        }
+        $installIncome = $installQuery->sum('amount');
+
+        return max($saleIncome + $installIncome, 0);
+    }
+
+    /**
+     * UPE income from ledger credit entries.
+     */
+    private function getUpeIncomes($from = null, $to = null)
+    {
+        $query = UpeLedgerEntry::where('direction', UpeLedgerEntry::DIR_CREDIT)
+            ->whereIn('entry_type', [
+                UpeLedgerEntry::TYPE_PAYMENT,
+                UpeLedgerEntry::TYPE_INSTALLMENT_PAYMENT,
+                UpeLedgerEntry::TYPE_SUBSCRIPTION_CHARGE,
+            ]);
+        if ($from) {
+            $query->where('created_at', '>=', $from);
+        }
+        if ($to) {
+            $query->where('created_at', '<', $to);
+        }
+        return max($query->sum('amount'), 0);
+    }
+
+    /**
+     * Legacy sales count from Sale table.
+     */
+    private function getLegacySalesCount($from = null, $to = null)
+    {
+        $query = Sale::whereNull('refund_at')->whereNull('status');
+        if ($from) {
+            $query->where('created_at', '>=', $from->timestamp);
+        }
+        if ($to) {
+            $query->where('created_at', '<', $to->timestamp);
+        }
+        return $query->count();
+    }
+
+    /**
+     * UPE sales count from upe_sales table.
+     */
+    private function getUpeSalesCount($from = null, $to = null)
+    {
+        $query = UpeSale::whereNotIn('status', ['refunded', 'cancelled']);
+        if ($from) {
+            $query->where('created_at', '>=', $from);
+        }
+        if ($to) {
+            $query->where('created_at', '<', $to);
+        }
+        return $query->count();
+    }
+
+    /**
+     * Hybrid sales count: legacy before cutover + UPE after cutover.
+     */
+    private function getHybridSalesCount($from = null, $to = null)
+    {
+        $cutover = $this->getUpeCutover();
+
+        if ($from && $to) {
+            if ($from >= $cutover) {
+                return $this->getUpeSalesCount($from, $to);
+            } elseif ($to <= $cutover) {
+                return $this->getLegacySalesCount($from, $to);
+            } else {
+                return $this->getLegacySalesCount($from, $cutover) + $this->getUpeSalesCount($cutover, $to);
+            }
+        }
+
+        return $this->getLegacySalesCount(null, $cutover) + $this->getUpeSalesCount($cutover, null);
+    }
+
     public function dailySalesTypeStatistics()
     {
         try {
             $this->authorize('admin_general_dashboard_daily_sales_statistics');
 
-            $beginOfDay = strtotime("today", time());
-            $endOfDay = strtotime("tomorrow", $beginOfDay) - 1;
+            $todayStart = Carbon::today();
+            $todayEnd = Carbon::tomorrow();
 
-            $webinarsSales = Sale::whereNull('refund_at')->whereNull('status')
-                ->where('type', Sale::$webinar)
-                ->whereBetween('created_at', [$beginOfDay, $endOfDay])
-                ->whereHas('webinar', function ($query) {
-                    $query->where('type', Webinar::$webinar);
+            $baseQuery = UpeSale::whereNotIn('status', ['refunded', 'cancelled'])
+                ->whereBetween('created_at', [$todayStart, $todayEnd]);
+
+            $webinarsSales = (clone $baseQuery)
+                ->whereHas('product', function ($q) {
+                    $q->where('product_type', 'webinar');
                 })->count();
 
-            $courseSales = Sale::whereNull('refund_at')->whereNull('status')
-                ->where('type', Sale::$webinar)
-                ->whereBetween('created_at', [$beginOfDay, $endOfDay])
-                ->whereHas('webinar', function ($query) {
-                    $query->where('type', Webinar::$course);
+            $courseSales = (clone $baseQuery)
+                ->whereHas('product', function ($q) {
+                    $q->where('product_type', 'course_video');
                 })->count();
 
-            $courseSales1 = WebinarPartPayment::query()
-                ->selectRaw("*, UNIX_TIMESTAMP(created_at) as created_at")
-                ->whereBetween(DB::raw('UNIX_TIMESTAMP(created_at)'), [$beginOfDay, $endOfDay])
-                ->count();
-            $courseSales+=$courseSales1;
+            $appointmentSales = (clone $baseQuery)
+                ->whereHas('product', function ($q) {
+                    $q->where('product_type', 'meeting');
+                })->count();
 
-            $appointmentSales = Sale::whereNull('refund_at')
-                ->where('type', Sale::$meeting)
-                ->whereBetween('created_at', [$beginOfDay, $endOfDay])
-                ->count();
-
-            $allSales = Sale::whereNull('refund_at')->whereNull('status')
-                ->whereIn('type', [Sale::$webinar, Sale::$meeting])
-                ->whereBetween('created_at', [$beginOfDay, $endOfDay])
-                ->count();
-
-            $allSales+=$courseSales1;
+            $allSales = (clone $baseQuery)
+                ->whereHas('product', function ($q) {
+                    $q->whereIn('product_type', ['webinar', 'course_video', 'meeting', 'bundle', 'subscription']);
+                })->count();
 
             return [
                 'webinarsSales' => $webinarsSales,
@@ -82,24 +184,15 @@ trait DashboardTrait
         try {
             $this->authorize('admin_general_dashboard_income_statistics');
 
-            $dateStartAndEnd = $this->getAllDateStartAndEnd();
-
-            $beginOfDay = $dateStartAndEnd['today']['start'];
-            $endOfDay = $dateStartAndEnd['today']['end'];
-
-            $beginOfMonth = $dateStartAndEnd['month']['start'];
-            $endOfMonth = $dateStartAndEnd['month']['end'];
-
-            $beginOfYear = $dateStartAndEnd['year']['start'];
-            $endOfYear = $dateStartAndEnd['year']['end'];
+            $now = Carbon::now();
 
             $totalSales = $this->getIncomes();
 
-            $todaySales = $this->getIncomes($beginOfDay, $endOfDay);
+            $todaySales = $this->getIncomes(Carbon::today(), Carbon::tomorrow());
 
-            $monthSales = $this->getIncomes($beginOfMonth, $endOfMonth);
+            $monthSales = $this->getIncomes($now->copy()->startOfMonth(), $now->copy()->endOfMonth());
 
-            $yearSales = $this->getIncomes($beginOfYear, $endOfYear);
+            $yearSales = $this->getIncomes($now->copy()->startOfYear(), $now->copy()->endOfYear());
 
             return [
                 'totalSales' => $totalSales,
@@ -118,35 +211,25 @@ trait DashboardTrait
         }
     }
 
+    /**
+     * Hybrid income: legacy before cutover + UPE after cutover.
+     */
     private function getIncomes($from = null, $to = null)
     {
-        $querypart2 = WebinarPartPayment::query()
-            ->selectRaw("*, UNIX_TIMESTAMP(created_at) as created_at");
+        $cutover = $this->getUpeCutover();
 
-        if($from){
-        $salespart1 = $querypart2->whereBetween(DB::raw('UNIX_TIMESTAMP(created_at)'), [$from, $to]);
-        }else{
-            $salespart1 = $querypart2;
+        if ($from && $to) {
+            if ($from >= $cutover) {
+                return $this->getUpeIncomes($from, $to);
+            } elseif ($to <= $cutover) {
+                return $this->getLegacyIncomes($from, $to);
+            } else {
+                return $this->getLegacyIncomes($from, $cutover) + $this->getUpeIncomes($cutover, $to);
+            }
         }
 
-        $salespart = $salespart1
-            ->selectRaw("amount as total_amount")
-            ->get();
-
-        $query = Sale::whereNull('product_order_id')->whereNull('status');
-
-        $salesQuery = fromAndToDateFilter($from, $to, $query, 'created_at', false);
-        $sales1 = $salesQuery
-            ->get();
-
-        $mergedData = $sales1->merge($salespart);
-
-        $mergedCollection = collect($mergedData);
-
-        $sortedCollection = $mergedCollection->sortByDesc('created_at');
-        $income = $sortedCollection->sum('total_amount');
-
-        return $income > 0 ? $income : 0;
+        // All-time: legacy before cutover + UPE after cutover
+        return $this->getLegacyIncomes(null, $cutover) + $this->getUpeIncomes($cutover, null);
     }
 
     private function getAllDateStartAndEnd()
@@ -188,30 +271,12 @@ trait DashboardTrait
     public function getTotalSalesStatistics()
     {
         try {
-            $dateStartAndEnd = $this->getAllDateStartAndEnd();
+            $now = Carbon::now();
 
-            $beginOfDay = $dateStartAndEnd['today']['start'];
-            $endOfDay = $dateStartAndEnd['today']['end'];
-
-            $beginOfMonth = $dateStartAndEnd['month']['start'];
-            $endOfMonth = $dateStartAndEnd['month']['end'];
-
-            $beginOfYear = $dateStartAndEnd['year']['start'];
-            $endOfYear = $dateStartAndEnd['year']['end'];
-
-            $totalSales = Sale::whereNull('refund_at')->whereNull('status')->count();
-
-            $todaySales = Sale::whereNull('refund_at')
-                ->whereBetween('created_at', [$beginOfDay, $endOfDay])
-                ->count();
-
-            $monthSales = Sale::whereNull('refund_at')
-                ->whereBetween('created_at', [$beginOfMonth, $endOfMonth])
-                ->count();
-
-            $yearSales = Sale::whereNull('refund_at')
-                ->whereBetween('created_at', [$beginOfYear, $endOfYear])
-                ->count();
+            $totalSales = $this->getHybridSalesCount();
+            $todaySales = $this->getHybridSalesCount(Carbon::today(), Carbon::tomorrow());
+            $monthSales = $this->getHybridSalesCount($now->copy()->startOfMonth(), $now->copy()->endOfMonth());
+            $yearSales = $this->getHybridSalesCount($now->copy()->startOfYear(), $now->copy()->endOfYear());
 
             return [
                 'totalSales' => $totalSales,
@@ -313,20 +378,13 @@ trait DashboardTrait
             if ($type == 'day_of_month') {
 
                 for ($day = 1; $day <= 31; $day++) {
-                    $startDay = strtotime(date('Y-m-' . $day));
-                    $endDay = strtotime('-1 second', strtotime('+1 day', $startDay));
+                    $startDay = Carbon::create(date('Y'), date('m'), $day)->startOfDay();
+                    $endDay = $startDay->copy()->endOfDay();
 
                     $labels[] = str_pad($day, 2, 0, STR_PAD_LEFT);
 
-                    $amount = Sale::whereNull('refund_at')->whereNull('status')
-                        ->whereBetween('created_at', [$startDay, $endDay])
-                        ->sum('total_amount');
+                    $amount = $this->getIncomes($startDay, $endDay);
 
-                    $amount1 = WebinarPartPayment::query()
-                        ->selectRaw("*, UNIX_TIMESTAMP(created_at) as created_at")
-                        ->whereBetween(DB::raw('UNIX_TIMESTAMP(created_at)'), [$startDay, $endDay])
-                        ->sum('amount');
-                    $amount+=$amount1;
                     $data[] = round($amount, 2);
                 }
 
@@ -334,20 +392,12 @@ trait DashboardTrait
                 for ($month = 1; $month <= 12; $month++) {
                     $date = Carbon::create(date('Y'), $month);
 
-                    $start_date = $date->timestamp;
-                    $end_date = $date->copy()->endOfMonth()->timestamp;
+                    $start_date = $date->copy()->startOfMonth();
+                    $end_date = $date->copy()->endOfMonth();
 
                     $labels[] = trans('panel.month_' . $month);
 
-                    $amount = Sale::whereNull('refund_at')->whereNull('status')
-                        ->whereBetween('created_at', [$start_date, $end_date])
-                        ->sum('total_amount');
-
-                    $amount1 = WebinarPartPayment::query()
-                        ->selectRaw("*, UNIX_TIMESTAMP(created_at) as created_at")
-                        ->whereBetween(DB::raw('UNIX_TIMESTAMP(created_at)'), [$start_date, $end_date])
-                        ->sum('amount');
-                    $amount+=$amount1;
+                    $amount = $this->getIncomes($start_date, $end_date);
 
                     $data[] = round($amount, 2);
                 }
@@ -371,111 +421,43 @@ trait DashboardTrait
     public function getMonthAndYearSalesChartStatistics()
     {
         try {
-            $dateStartAndEnd = $this->getAllDateStartAndEnd();
+            $now = Carbon::now();
 
-            $beginOfDay = $dateStartAndEnd['today']['start'];
-            $endOfDay = $dateStartAndEnd['today']['end'];
+            $beginOfDay = Carbon::today();
+            $endOfDay = Carbon::tomorrow();
 
-            $beginOfWeek = $dateStartAndEnd['week']['start'];
-            $endOfWeek = $dateStartAndEnd['week']['end'];
+            $beginOfWeek = $now->copy()->startOfWeek();
+            $endOfWeek = $now->copy()->endOfWeek();
 
-            $beginOfMonth = $dateStartAndEnd['month']['start'];
-            $endOfMonth = $dateStartAndEnd['month']['end'];
+            $beginOfMonth = $now->copy()->startOfMonth();
+            $endOfMonth = $now->copy()->endOfMonth();
 
-            $beginOfYear = $dateStartAndEnd['year']['start'];
-            $endOfYear = $dateStartAndEnd['year']['end'];
+            $beginOfYear = $now->copy()->startOfYear();
+            $endOfYear = $now->copy()->endOfYear();
 
-            $lastDayStart = $beginOfDay - 24 * 60 * 60;
-            $lastDayEnd = $endOfDay - 24 * 60 * 60;
+            $lastDayStart = $beginOfDay->copy()->subDay();
+            $lastDayEnd = $beginOfDay->copy();
 
-            $lastWeekStart = $beginOfWeek - 7 * 24 * 60 * 60;
-            $lastWeekEnd = $endOfWeek - 7 * 24 * 60 * 60;
+            $lastWeekStart = $beginOfWeek->copy()->subWeek();
+            $lastWeekEnd = $endOfWeek->copy()->subWeek();
 
-            $lastMonthStart = $beginOfMonth - 30 * 24 * 60 * 60;
-            $lastMonthEnd = $endOfMonth - 30 * 24 * 60 * 60;
+            $lastMonthStart = $beginOfMonth->copy()->subMonth();
+            $lastMonthEnd = $endOfMonth->copy()->subMonth();
 
-            $lastYearStart = $beginOfYear - 365 * 24 * 60 * 60;
-            $lastYearEnd = $endOfYear - 365 * 24 * 60 * 60;
+            $lastYearStart = $beginOfYear->copy()->subYear();
+            $lastYearEnd = $endOfYear->copy()->subYear();
 
-            $todaySales = Sale::whereNull('refund_at')->whereNull('status')
-                ->whereBetween('created_at', [$beginOfDay, $endOfDay])
-                ->sum('total_amount');
+            $todaySales = $this->getLedgerCreditsSum($beginOfDay, $endOfDay);
+            $lastDaySales = $this->getLedgerCreditsSum($lastDayStart, $lastDayEnd);
 
-            $todaySales1 = WebinarPartPayment::query()
-                ->selectRaw("*, UNIX_TIMESTAMP(created_at) as created_at")
-                ->whereBetween(DB::raw('UNIX_TIMESTAMP(created_at)'), [$beginOfDay, $endOfDay])
-                ->sum('amount');
-            $todaySales+=$todaySales1;
+            $weekSales = $this->getLedgerCreditsSum($beginOfWeek, $endOfWeek);
+            $lastWeekSales = $this->getLedgerCreditsSum($lastWeekStart, $lastWeekEnd);
 
-            $lastDaySales = Sale::whereNull('refund_at')->whereNull('status')
-                ->whereBetween('created_at', [$lastDayStart, $lastDayEnd])
-                ->sum('total_amount');
+            $monthSales = $this->getLedgerCreditsSum($beginOfMonth, $endOfMonth);
+            $lastMonthSales = $this->getLedgerCreditsSum($lastMonthStart, $lastMonthEnd);
 
-            $lastDaySales1 = WebinarPartPayment::query()
-                ->selectRaw("*, UNIX_TIMESTAMP(created_at) as created_at")
-                ->whereBetween(DB::raw('UNIX_TIMESTAMP(created_at)'), [$lastDayStart, $lastDayEnd])
-                ->sum('amount');
-            $lastDaySales+=$lastDaySales1;
-
-            $weekSales = Sale::whereNull('refund_at')->whereNull('status')
-                ->whereBetween('created_at', [$beginOfWeek, $endOfWeek])
-                ->sum('total_amount');
-
-            $weekSales1 = WebinarPartPayment::query()
-                ->selectRaw("*, UNIX_TIMESTAMP(created_at) as created_at")
-                ->whereBetween(DB::raw('UNIX_TIMESTAMP(created_at)'), [$beginOfWeek, $endOfWeek])
-                ->sum('amount');
-            $weekSales+=$weekSales1;
-
-            $lastWeekSales = Sale::whereNull('refund_at')->whereNull('status')
-                ->whereBetween('created_at', [$lastWeekStart, $lastWeekEnd])
-                ->sum('total_amount');
-
-            $lastWeekSales1 = WebinarPartPayment::query()
-                ->selectRaw("*, UNIX_TIMESTAMP(created_at) as created_at")
-                ->whereBetween(DB::raw('UNIX_TIMESTAMP(created_at)'), [$lastWeekStart, $lastWeekEnd])
-                ->sum('amount');
-            $lastWeekSales+=$lastWeekSales1;
-
-            $monthSales = Sale::whereNull('refund_at')->whereNull('status')
-                ->whereBetween('created_at', [$beginOfMonth, $endOfMonth])
-                ->sum('total_amount');
-
-            $monthSales1 = WebinarPartPayment::query()
-                ->selectRaw("*, UNIX_TIMESTAMP(created_at) as created_at")
-                ->whereBetween(DB::raw('UNIX_TIMESTAMP(created_at)'), [$beginOfMonth, $endOfMonth])
-                ->sum('amount');
-            $monthSales+=$monthSales1;
-
-            $lastMonthSales = Sale::whereNull('refund_at')->whereNull('status')
-                ->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])
-                ->sum('total_amount');
-
-            $lastMonthSales1 = WebinarPartPayment::query()
-                ->selectRaw("*, UNIX_TIMESTAMP(created_at) as created_at")
-                ->whereBetween(DB::raw('UNIX_TIMESTAMP(created_at)'), [$lastMonthStart, $lastMonthEnd])
-                ->sum('amount');
-            $lastMonthSales+=$lastMonthSales1;
-
-            $yearSales = Sale::whereNull('refund_at')->whereNull('status')
-                ->whereBetween('created_at', [$beginOfYear, $endOfYear])
-                ->sum('total_amount');
-
-            $yearSales1 = WebinarPartPayment::query()
-                ->selectRaw("*, UNIX_TIMESTAMP(created_at) as created_at")
-                ->whereBetween(DB::raw('UNIX_TIMESTAMP(created_at)'), [$beginOfYear, $endOfYear])
-                ->sum('amount');
-            $yearSales+=$yearSales1;
-
-            $lastYearSales = Sale::whereNull('refund_at')->whereNull('status')
-                ->whereBetween('created_at', [$lastYearStart, $lastYearEnd])
-                ->sum('total_amount');
-
-            $lastYearSales1 = WebinarPartPayment::query()
-                ->selectRaw("*, UNIX_TIMESTAMP(created_at) as created_at")
-                ->whereBetween(DB::raw('UNIX_TIMESTAMP(created_at)'), [$lastYearStart, $lastYearEnd])
-                ->sum('amount');
-            $lastYearSales+=$lastYearSales1;
+            $yearSales = $this->getLedgerCreditsSum($beginOfYear, $endOfYear);
+            $lastYearSales = $this->getLedgerCreditsSum($lastYearStart, $lastYearEnd);
 
             return [
                 'todaySales' => [
@@ -506,6 +488,11 @@ trait DashboardTrait
         }
     }
 
+    private function getLedgerCreditsSum($from, $to)
+    {
+        return $this->getIncomes($from, $to);
+    }
+
     private function getGrowPercent($last, $new)
     {
         $percent = 'No previous value';
@@ -525,6 +512,64 @@ trait DashboardTrait
             'percent' => $percent,
             'status' => $status
         ];
+    }
+
+    public function getInstallmentHealth()
+    {
+        try {
+            $overdueSchedules = \App\Models\PaymentEngine\UpeInstallmentSchedule::where('status', 'overdue')->count();
+
+            $overdueAmount = \App\Models\PaymentEngine\UpeInstallmentSchedule::where('status', 'overdue')
+                ->sum('amount_due');
+
+            $upcomingDue = \App\Models\PaymentEngine\UpeInstallmentSchedule::whereIn('status', ['due', 'upcoming'])
+                ->where('due_date', '<=', Carbon::now()->addDays(7))
+                ->count();
+
+            $activePlans = \App\Models\PaymentEngine\UpeInstallmentPlan::where('status', 'active')->count();
+
+            $completedPlans = \App\Models\PaymentEngine\UpeInstallmentPlan::where('status', 'completed')->count();
+
+            return [
+                'overdueCount' => $overdueSchedules,
+                'overdueAmount' => $overdueAmount,
+                'upcomingDueCount' => $upcomingDue,
+                'activePlans' => $activePlans,
+                'completedPlans' => $completedPlans,
+            ];
+        } catch (\Exception $e) {
+            \Log::error('getInstallmentHealth error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'overdueCount' => 0,
+                'overdueAmount' => 0,
+                'upcomingDueCount' => 0,
+                'activePlans' => 0,
+                'completedPlans' => 0,
+            ];
+        }
+    }
+
+    public function getRecentSales($limit = 5)
+    {
+        try {
+            return UpeSale::with(['user', 'product'])
+                ->orderBy('created_at', 'desc')
+                ->limit($limit)
+                ->get();
+        } catch (\Exception $e) {
+            \Log::error('getRecentSales error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return collect();
+        }
     }
 
     public function getRecentComments()

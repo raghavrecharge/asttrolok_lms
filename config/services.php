@@ -61,4 +61,10 @@ return [
         'secret' => env('RAZORPAY_API_SECRET'),
     ],
 
+    'ops_cockpit' => [
+        'enabled' => env('OPS_COCKPIT_ENABLED', false),
+        'project_id' => env('OPS_COCKPIT_PROJECT_ID', 'absolute-water-387410'),
+        'topic' => env('OPS_COCKPIT_TOPIC', 'ops-cockpit-events'),
+    ],
+
 ];
