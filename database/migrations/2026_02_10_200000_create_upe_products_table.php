@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('upe_products')) { return; }
         Schema::create('upe_products', function (Blueprint $table) {
             $table->id();
             $table->enum('product_type', [

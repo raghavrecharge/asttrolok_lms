@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('new_support_for_asttrolok', 'execution_notes')) { return; }
         Schema::table('new_support_for_asttrolok', function (Blueprint $table) {
             $table->text('execution_notes')->nullable()->after('execution_result');
         });

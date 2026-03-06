@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('installment_restructure_requests')) { return; }
         Schema::create('installment_restructure_requests', function (Blueprint $table) {
             $table->id(); // This creates BIGINT UNSIGNED auto_increment
             

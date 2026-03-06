@@ -8,6 +8,7 @@ class CreateServiceAccessTable extends Migration
 {
     public function up()
     {
+        if (Schema::hasTable('service_access')) { return; }
         Schema::create('service_access', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');

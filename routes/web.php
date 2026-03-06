@@ -221,6 +221,7 @@ Route::group(['namespace' => 'Web', 'middleware' => ['check_mobile_app', 'impers
     
     Route::get('/about', 'HomeController@about');
     Route::post('/webhook-url', 'HomeController@webhookdata');
+    Route::get('/pathshala', 'WebinarController@pathshalaCompare');
     Route::get('/landingpage/{slug}', 'WebinarController@landingpage');
     Route::get('/register-course/{slug}', 'InstallmentsController@partPayment');
     Route::post('/register-course/{slug}', 'RegisterController@registerForCourse');

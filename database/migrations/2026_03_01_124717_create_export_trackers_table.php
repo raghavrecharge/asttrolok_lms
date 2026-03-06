@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('export_trackers')) { return; }
         Schema::create('export_trackers', function (Blueprint $table) {
             $table->id();
             $table->string('title');
             $table->string('type'); // e.g. 'subscription_students'
-            $table->unsignedBigInteger('user_id'); // Who requested it
+            $table->unsignedInteger('user_id'); // Who requested it
             $table->enum('status', ['pending', 'processing', 'completed', 'failed'])->default('pending');
             $table->integer('total_records')->default(0);
             $table->integer('processed_records')->default(0);

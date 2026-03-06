@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('sub_admin_permissions')) { return; }
         Schema::create('sub_admin_permissions', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('user_id')->index();

@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('upe_mentor_badges')) { return; }
         Schema::create('upe_mentor_badges', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->unique();
