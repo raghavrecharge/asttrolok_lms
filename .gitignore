@@ -57,3 +57,5 @@ public/store/support-payments/*
 public/store/*
 !public/store/.gitkeepmarketing_asttrolok
 *.sql
+
+*.sql
