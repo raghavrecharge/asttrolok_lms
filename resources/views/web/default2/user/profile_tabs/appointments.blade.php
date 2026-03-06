@@ -444,6 +444,15 @@
         <script src="{{ config('app.js_css_url') }}/assets/vendors/wrunner-html-range-slider-with-2-handles/js/wrunner-jquery.js"></script>
         <script>
 $(document).ready(function() {
+    var meetingAmount30 = {{ (int) round($meeting->amount ?? 0) }};
+
+    function updateSlotPrice(minutes) {
+        var price = minutes === 15 ? Math.round(meetingAmount30 / 2) : meetingAmount30;
+        if (typeof window.updateWalletTotalAmount === 'function') {
+            window.updateWalletTotalAmount(price);
+        }
+    }
+
     // Attach change event listener to radio buttons
     $('#slotsTime input[type="radio"]').change(function() {
         // Remove 'date-active' class from all elements
@@ -453,6 +462,8 @@ $(document).ready(function() {
         $(this).closest('.available-times1').addClass('date-active');
         $('#PickTimeBody').addClass('d-none');
 
+        // Update payment summary for selected slot duration
+        updateSlotPrice(parseInt($(this).val(), 10));
     });
 });
 </script>

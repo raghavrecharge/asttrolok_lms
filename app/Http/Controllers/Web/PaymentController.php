@@ -76,6 +76,7 @@ class PaymentController extends Controller
             'use_wallet' => 'nullable|boolean',
             'wallet_amount' => 'nullable|numeric|min:0',
             'slot_duration' => 'nullable|integer',
+            'currency' => 'nullable|string|size:3',
         ]);
         session()->forget('meeting_discount_id');
         session()->forget('discountCouponId');
@@ -129,10 +130,18 @@ class PaymentController extends Controller
             // Always store wallet info on the order (DB-persisted — survives webhooks)
             // Even when walletDeduction=0, original_amount is needed so
             // processWalletMediatedPayment can credit gateway→wallet→purchase
+            // Capture the currency the user is paying in (from request or user profile/cookie).
+            // Storing it on the order ensures Razorpay receives the correct currency regardless
+            // of what currency() returns at callback time.
+            $paymentCurrency = !empty($validated['currency'])
+                ? strtoupper($validated['currency'])
+                : currency();
+
             $order->update([
                 'payment_data' => json_encode([
                     'wallet_deduction' => $walletDeduction,
-                    'original_amount' => $originalAmount,
+                    'original_amount'  => $originalAmount,
+                    'currency'         => $paymentCurrency,
                 ]),
             ]);
 
@@ -246,7 +255,7 @@ class PaymentController extends Controller
                 'success' => true,
                 'razorpay_order_id' => $razorpayOrder['id'],
                 'amount' => $razorpayOrder['amount'],
-                'currency' => $razorpayOrder['currency'],
+                'currency'   => $razorpayOrder['currency'],
                 'order_id' => $order->id,
                 'key' => env('RAZORPAY_API_KEY'),
                 'wallet_deduction' => $walletDeduction,
@@ -557,7 +566,11 @@ class PaymentController extends Controller
 
                 $user = auth()->user();
 
+                // Mirror InstallmentsController exactly:
+                //   getPrice() = effective/promotional price → base for EMI calculation
+                //   price      = raw DB price               → base for coupon % discount
                 $itemPrice = $item->getPrice();
+                $rawPrice   = (float) ($item->price ?? $itemPrice);
                 $totalDiscount = 0;
                 $Discount = null;
 
@@ -570,7 +583,8 @@ class PaymentController extends Controller
                         $totalDiscount = min($Discount->amount, $itemPrice);
                     } else {
                         $percent = $Discount->percent ?? 0;
-                        $totalDiscount = ($itemPrice > 0) ? round($itemPrice * $percent / 100, 2) : 0;
+                        // Use raw price for discount calc — matches display logic in InstallmentsController
+                        $totalDiscount = ($rawPrice > 0) ? round($rawPrice * $percent / 100, 2) : 0;
                         if (!empty($Discount->max_amount) && $totalDiscount > $Discount->max_amount) {
                             $totalDiscount = $Discount->max_amount;
                         }
@@ -784,12 +798,16 @@ class PaymentController extends Controller
                 break;
         }
 
-        $razorpayOrder = $this->razorpayApi->order->create([
-            'receipt' => 'order_' . $order->id . '_' . time(),
-            'amount' => (int) round((float) $order->total_amount, 0, PHP_ROUND_HALF_UP) * 100,
+        // Use the currency stored on the order (set during initiatePayment from the request).
+        // Falls back to currency() if not stored (e.g., legacy orders).
+        $storedPaymentData = json_decode($order->payment_data ?? '{}', true);
+        $orderCurrency = $storedPaymentData['currency'] ?? currency();
 
-            'currency' => currency(),
-            'notes' => $notes,
+        $razorpayOrder = $this->razorpayApi->order->create([
+            'receipt'  => 'order_' . $order->id . '_' . time(),
+            'amount'   => (int) round((float) $order->total_amount, 0, PHP_ROUND_HALF_UP) * 100,
+            'currency' => $orderCurrency,
+            'notes'    => $notes,
         ]);
 
         $order->update([
@@ -1001,50 +1019,11 @@ class PaymentController extends Controller
 
         Log::info('processSubscriptionPayment', ['subscriptionId' => $subscriptionId]);
 
-        $subscription = Subscription::findOrFail($subscriptionId);
-        $user = User::findOrFail($userId);
-
-        // Legacy SubscriptionAccess + SubscriptionPayments (keep for backward compat)
-        $SubscriptionAccess = SubscriptionAccess::where('user_id', $userId)
-            ->where('subscription_id', $subscriptionId)
-            ->first();
-
-        $startDate = time();
-        $endDate = $this->calculateSubscriptionEndDate($subscription, $startDate);
-
-        SubscriptionPayments::create([
-            'user_id' => $userId,
-            'subscription_id' => $subscriptionId,
-            'amount' => $amount,
-            'created_at' => time()
-        ]);
-
-        $Subscription = Subscription::where('id', $subscriptionId)->first();
-        $SubscriptionPayments = SubscriptionPayments::where('user_id', $userId)
-            ->where('subscription_id', $subscriptionId)->get();
-
-        $access_till_date = time() + ($Subscription->access_days * 24 * 60 * 60);
-        $paid_no_of_subscriptions = $SubscriptionPayments->count();
-        $access_content_count = $Subscription->video_count * $SubscriptionPayments->count();
-
-        if (!empty($SubscriptionAccess->subscription_id)) {
-            $access_till_date1 = $SubscriptionAccess->access_till_date + ($Subscription->access_days * 24 * 60 * 60);
-            $access_till_date = $access_till_date >= $access_till_date1 ? $access_till_date : $access_till_date1;
-            $SubscriptionAccess->update([
-                'access_till_date' => $access_till_date,
-                'access_content_count' => $access_content_count,
-                'paid_no_of_subscriptions' => $paid_no_of_subscriptions
-            ]);
-        } else {
-            SubscriptionAccess::create([
-                'user_id' => $userId,
-                'subscription_id' => $subscriptionId,
-                'access_till_date' => $access_till_date,
-                'access_content_count' => $access_content_count,
-                'paid_no_of_subscriptions' => $paid_no_of_subscriptions,
-                'created_at' => time()
-            ]);
-        }
+        // Legacy: record payment + sync SubscriptionAccess via shared service.
+        // Renewal rule (max of fresh vs extended end date) is enforced inside the service.
+        // See SubscriptionAccessService and SubscriptionAccessResolver for full documentation.
+        $accessService = app(\App\Services\SubscriptionAccessService::class);
+        $accessService->syncAccessAfterPayment($userId, $subscriptionId, $amount);
 
         // UPE CheckoutService (creates UPE sale + subscription + ledger + legacy Sale + accounting)
         $checkout = app(\App\Services\PaymentEngine\CheckoutService::class);
@@ -1053,9 +1032,8 @@ class PaymentController extends Controller
         $this->processAffiliate($userId, $amount, 'subscription', $subscriptionId);
 
         Log::info('Subscription access granted', [
-            'user_id' => $userId,
+            'user_id'         => $userId,
             'subscription_id' => $subscriptionId,
-            'end_date' => date('Y-m-d H:i:s', $endDate),
         ]);
     }
 

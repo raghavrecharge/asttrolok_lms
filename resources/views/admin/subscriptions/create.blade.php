@@ -302,27 +302,18 @@
                                             </div>
 
                                             <div class="form-group mt-15">
-                                                <label class="input-label">Per Payment Videos Access</label>
+                                                <label class="input-label">Content Items Unlocked Per Payment</label>
                                                 <input type="text" name="video_count" value="{{ !empty($subscription) ? $subscription->video_count : old('video_count') }}" class="form-control @error('video_count')  is-invalid @enderror"/>
                                                 @error('video_count')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
                                                 </div>
                                                 @enderror
+                                                <p class="mt-1 text-muted" style="font-size:12px">Number of content items (videos/files) added to the user's accessible list per successful payment. Total unlocked = this × payment_count + free items.</p>
                                             </div>
 
                                             <div class="form-group mt-15">
-                                                <label class="input-label">{{ trans('public.price') }} ({{ $currency }})</label>
-                                                <input type="text" name="price" value="{{ !empty($subscription->price) ? $subscription->price : old('price') }}" class="form-control @error('price')  is-invalid @enderror" placeholder="{{ trans('public.0_for_free') }}"/>
-                                                @error('price')
-                                                <div class="invalid-feedback">
-                                                    {{ $message }}
-                                                </div>
-                                                @enderror
-                                            </div>
-                                            
-                                            <div class="form-group mt-15">
-                                                <label class="input-label">Free video Access</label>
+                                                <label class="input-label">Free Content Items (always accessible)</label>
                                                 <input type="text" name="free_video_count" value="{{ !empty($subscription->free_video_count) ? $subscription->free_video_count : old('free_video_count') }}" class="form-control @error('free_video_count')  is-invalid @enderror"/>
                                                 @error('free_video_count')
                                                 <div class="invalid-feedback">

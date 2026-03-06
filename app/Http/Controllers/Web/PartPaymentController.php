@@ -765,57 +765,11 @@ class PartPaymentController extends Controller
             ]);
 
         $subscription = Subscription::findOrFail($subscriptionId);
-        $user = User::findOrFail($userId);
 
-        $SubscriptionAccess = SubscriptionAccess::where('user_id', $userId)
-            ->where('subscription_id', $subscriptionId)
-            ->first();
-
-        $startDate = time();
-        $endDate = $this->calculateSubscriptionEndDate($subscription, $startDate);
-
-        SubscriptionPayments::create([
-                        'user_id' => $userId,
-                        'subscription_id' => $subscriptionId,
-                        'amount' => $amount,
-                        'created_at' => time()
-                        ]);
-
-        $Subscription = Subscription::where('id' , $subscriptionId)
-                            ->first();
-
-        $SubscriptionPayments = SubscriptionPayments::where('user_id', $userId)
-                                    ->where('subscription_id', $subscriptionId)
-                                            ->get();
-
-        $access_till_date = time() + ($Subscription->access_days * 24 * 60 * 60);
-        $paid_no_of_subscriptions = $SubscriptionPayments->count();
-        $access_content_count = $Subscription->video_count * $SubscriptionPayments->count();
-
-        if(!empty($SubscriptionAccess->subscription_id)){
-
-            $access_till_date1 = $SubscriptionAccess->access_till_date + ($Subscription->access_days * 24 * 60 * 60);
-
-            $access_till_date = $access_till_date >= $access_till_date1 ? $access_till_date : $access_till_date1;
-
-            $SubscriptionAccess->update([
-                'access_till_date' => $access_till_date,
-                'access_content_count' => $access_content_count,
-                'paid_no_of_subscriptions' => $paid_no_of_subscriptions
-                ]);
-
-        }else{
-
-            SubscriptionAccess::create([
-                'user_id' => $userId,
-                'subscription_id' => $subscriptionId,
-                'access_till_date' => $access_till_date,
-                'access_content_count' => $access_content_count,
-                'paid_no_of_subscriptions' => $paid_no_of_subscriptions,
-                'created_at' => time()
-                ]);
-
-        }
+        // Legacy: record payment + sync SubscriptionAccess via shared service.
+        // Renewal rule (max of fresh vs extended end date) is enforced inside the service.
+        $accessService = app(\App\Services\SubscriptionAccessService::class);
+        $accessService->syncAccessAfterPayment($userId, $subscriptionId, $amount);
 
         $this->createSaleRecord([
             'buyer_id' => $userId,
@@ -839,9 +793,8 @@ class PartPaymentController extends Controller
         $this->processAffiliate($userId, $amount, 'subscription', $subscriptionId);
 
         Log::info('Subscription access granted', [
-            'user_id' => $userId,
+            'user_id'         => $userId,
             'subscription_id' => $subscriptionId,
-            'end_date' => date('Y-m-d H:i:s', $endDate),
         ]);
     }
 
@@ -3444,60 +3397,13 @@ class PartPaymentController extends Controller
 
                         Accounting::createAccounting($orderItem, $type);
 
-                        SubscriptionPayments::create([
-                            'user_id' => $orderItem->user_id,
-                            'subscription_id' => $orderItem->subscription_id,
-                            'amount' => $orderItem->total_amount,
-                            'created_at' => time()
-                            ]);
-
-                        $SubscriptionPayments = SubscriptionPayments::where('subscription_id' , $orderItem->subscription_id)
-                                                ->where('user_id' , $orderItem->user_id)
-                                                ->get();
-
-                                                Log::info('SubscriptionPayments');
-
-                        $Subscription = Subscription::where('id' , $orderItem->subscription_id)
-                                                ->first();
-
-                                                Log::info('Subscription',$Subscription->toArray());
-
-                        $SubscriptionAccess = SubscriptionAccess::where('subscription_id' , $orderItem->subscription_id)
-                                                ->where('user_id' , $orderItem->user_id)
-                                                ->first();
-
-                            Log::info('SubscriptionAccess');
-
-                        $access_till_date = time() + ($Subscription->access_days * 24 * 60 * 60);
-                        $paid_no_of_subscriptions = $SubscriptionPayments->count();
-                        $access_content_count = $Subscription->video_count * $SubscriptionPayments->count();
-
-                        Log::info('data');
-
-                        if(!empty($SubscriptionAccess->subscription_id)){
-                            Log::info('if SubscriptionAccess');
-                            $access_till_date1 = $SubscriptionAccess->access_till_date + ($Subscription->access_days * 24 * 60 * 60);
-
-                            $access_till_date = $access_till_date >= $access_till_date1 ? $access_till_date : $access_till_date1;
-
-                            $SubscriptionAccess->update([
-                                'access_till_date' => $access_till_date,
-                                'access_content_count' => $access_content_count,
-                                'paid_no_of_subscriptions' => $paid_no_of_subscriptions
-                                ]);
-
-                        }else{
-                        Log::info('else SubscriptionAccess');
-                            SubscriptionAccess::create([
-                                'user_id' => $orderItem->user_id,
-                                'subscription_id' => $Subscription->id,
-                                'access_till_date' => $access_till_date,
-                                'access_content_count' => $access_content_count,
-                                'paid_no_of_subscriptions' => $paid_no_of_subscriptions,
-                                'created_at' => time()
-                                ]);
-
-                        }
+                        // Legacy: record payment + sync SubscriptionAccess via shared service.
+                        $accessService = app(\App\Services\SubscriptionAccessService::class);
+                        $accessService->syncAccessAfterPayment(
+                            $orderItem->user_id,
+                            $orderItem->subscription_id,
+                            $orderItem->total_amount
+                        );
 
                         TicketUser::useTicket($orderItem);
 

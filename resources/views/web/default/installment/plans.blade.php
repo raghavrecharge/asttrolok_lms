@@ -86,7 +86,17 @@
             <input type="hidden" name="item_type" value="{{!empty($itemType) ? $itemType : null}}"  placeholder="Contact Number" class="form-control mt-25 mb-25 ">
 
             {{-- Wallet Payment Widget --}}
-            @include('web.default.includes.wallet_payment_widget', ['totalAmount' => number_format(((($installments->first()->upfront ?? 0)*($itemPrice ?? 0)) /100), 2, '.', '')])
+            @php
+                $upfrontPct_m         = (float) ($installments->first()->upfront ?? 0);
+                $discountAmt_m        = (float) ($totalDiscount ?? 0);
+                $firstEmiOriginal_m   = ($upfrontPct_m * ($itemPrice + $discountAmt_m)) / 100;
+                $upfrontCouponSav_m   = ($upfrontPct_m * $discountAmt_m) / 100;
+            @endphp
+            @include('web.default.includes.wallet_payment_widget', [
+                'totalAmount'    => $firstEmiOriginal_m,
+                'couponDiscount' => $upfrontCouponSav_m,
+                'couponCode'     => !empty($discountId) ? optional(\App\Models\Discount::find($discountId))->code : null,
+            ])
 
             <div class="form-group">
 
@@ -236,13 +246,17 @@
 document.getElementById('razor-pay-now').addEventListener('click', function(e) {
     e.preventDefault();
 
+    // Read discount_id from DOM at click time so AJAX-applied coupons are included.
+    const discountIdEl = document.querySelector('input[name="discountId"]');
+    const appliedDiscountId = discountIdEl ? (parseInt(discountIdEl.value) || 0) : 0;
+
     const userDetails = {
         name: document.getElementById('customer_name').value,
         email: document.getElementById('customer_email').value,
         number: document.getElementById('customer_number').value,
         installment_id: document.getElementById('installment_id').value,
-        discount_id: @json(session('discountCouponId')),
-        wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
+        discount_id: appliedDiscountId,
+        wallet_amount: (typeof window.getWalletPaymentAmount === 'function') ? window.getWalletPaymentAmount() : 0
     };
 
     showPaymentLoader();

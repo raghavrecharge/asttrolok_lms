@@ -73,42 +73,24 @@ public function inststep(Request $request, $slug){
              $subscription_pricess = $subscription->price;
               $cchapt=count($data['chapterItems']);
 
-             $Access = SubscriptionAccess ::where('subscription_id', $subscription->id)
+             $Access = SubscriptionAccess::where('subscription_id', $subscription->id)
                 ->where('user_id', $user->id)
                 ->first();
 
-            $access_content_count = 0;
+            // Compute content-access boundaries via the single resolver service.
+            // See SubscriptionAccessResolver for the full unlock rule documentation.
+            $resolver = new \App\Services\SubscriptionAccessResolver(
+                $subscription,
+                $Access,
+                $user,
+                $cchapt
+            );
 
-             if($Access){
-
-                //  if($Access->access_till_date > time()){
-
-                //      if($Access->access_content_count > 0){
-                //          $access_content_count =$Access->access_content_count + $subscription ->free_video_count;;
-                //      }
-                //      $data["duedate"]=$Access->access_till_date;
-                //  }else{
-                //      $access_content_count=0;
-                //  }
-                
-                if($Access->access_till_date > time()){
-                 if($Access->access_content_count > 0){
-                     $access_content_count = $Access->access_content_count;
-                 }
-                 if($subscription ->free_video_count){
-                     $access_content_count = $access_content_count + $subscription ->free_video_count;
-                 }
-                 $data["duedate"]=$Access->access_till_date;
-             }else{
-                 $access_content_count=0;
-             }
-             
-             }
-             if($user->id == 1){
-             $access_content_count =$cchapt;
-             }
-
-             $data['limit']=$access_content_count;
+            // Merge resolver view-model into $data.
+            // This sets: unlockedItemCount, freeItemCount, paidUnlockedCount,
+            // itemsPerPayment, paidPaymentCount, accessExpiresAt, hasActiveAccess,
+            // isFreeOnly, isPaidActive, isPaidExpired, isEnrolled, limit (alias).
+            $data = array_merge($data, $resolver->toViewData());
 
              $data['install_url']='/subscriptions/direct-payment/'.$subscription->slug;
 

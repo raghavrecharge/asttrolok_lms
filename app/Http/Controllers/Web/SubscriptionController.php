@@ -880,19 +880,13 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
 
             DB::beginTransaction();
 
-            // Create SubscriptionAccess with free video access
-            // access_content_count = 0 means only free_video_count videos are accessible
-            // (Learning page calculates total as: access_content_count + free_video_count)
+            // Grant free-enrollment access via shared service.
+            // access_content_count = 0; resolver will add free_video_count on top.
+            // See SubscriptionAccessResolver: unlockedItemCount = 0 + free_video_count.
             $accessTillDate = time() + ($subscription->access_days * 24 * 60 * 60);
 
-            SubscriptionAccess::create([
-                'user_id' => $user->id,
-                'subscription_id' => $subscription->id,
-                'access_till_date' => $accessTillDate,
-                'access_content_count' => 0,
-                'paid_no_of_subscriptions' => 0,
-                'created_at' => time(),
-            ]);
+            $accessService = app(\App\Services\SubscriptionAccessService::class);
+            $accessService->grantFreeAccess($user->id, $subscription->id, $accessTillDate);
 
             // UPE: Create free subscription sale (also handles legacy Sale dual-write)
             $checkout = app(CheckoutService::class);

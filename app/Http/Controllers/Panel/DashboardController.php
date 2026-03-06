@@ -865,9 +865,6 @@ try {
                     \Log::warning('Dashboard UPE plan mapping failed', ['error' => $e->getMessage()]);
                 }
 
-                $seenCourseIds = [];
-                $seenBundleIds = [];
-                
                 foreach ($orders as $order) {
                     if ($order->webinar_id) {
                         if (in_array($order->webinar_id, $seenCourseIds)) continue;

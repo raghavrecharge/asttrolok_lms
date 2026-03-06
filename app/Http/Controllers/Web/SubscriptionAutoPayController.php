@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Subscription;
-use App\Models\SubscriptionAccess;
-use App\Models\SubscriptionPayments;
 use App\Models\Sale;
 use App\Models\Accounting;
 use App\Models\PaymentEngine\UpeProduct;
@@ -274,46 +272,10 @@ class SubscriptionAutoPayController extends Controller
      */
     private function processAutoPayFirstPayment(int $userId, Subscription $subscription, float $amount, string $razorpayPaymentId, string $razorpaySubscriptionId)
     {
-        // 1. Legacy SubscriptionPayments
-        SubscriptionPayments::create([
-            'user_id' => $userId,
-            'subscription_id' => $subscription->id,
-            'amount' => $amount,
-            'created_at' => time(),
-        ]);
-
-        // 2. Update/Create SubscriptionAccess (legacy content gating)
-        $subscriptionPayments = SubscriptionPayments::where('user_id', $userId)
-            ->where('subscription_id', $subscription->id)
-            ->get();
-
-        $accessTillDate = time() + ($subscription->access_days * 24 * 60 * 60);
-        $paidCount = $subscriptionPayments->count();
-        $accessContentCount = $subscription->video_count * $paidCount;
-
-        $subscriptionAccess = SubscriptionAccess::where('user_id', $userId)
-            ->where('subscription_id', $subscription->id)
-            ->first();
-
-        if ($subscriptionAccess) {
-            $existingEnd = $subscriptionAccess->access_till_date + ($subscription->access_days * 24 * 60 * 60);
-            $accessTillDate = max($accessTillDate, $existingEnd);
-
-            $subscriptionAccess->update([
-                'access_till_date' => $accessTillDate,
-                'access_content_count' => $accessContentCount,
-                'paid_no_of_subscriptions' => $paidCount,
-            ]);
-        } else {
-            SubscriptionAccess::create([
-                'user_id' => $userId,
-                'subscription_id' => $subscription->id,
-                'access_till_date' => $accessTillDate,
-                'access_content_count' => $accessContentCount,
-                'paid_no_of_subscriptions' => $paidCount,
-                'created_at' => time(),
-            ]);
-        }
+        // 1+2. Legacy: record payment + sync SubscriptionAccess via shared service.
+        // Renewal rule (max of fresh vs extended end date) is enforced inside the service.
+        $accessService = app(\App\Services\SubscriptionAccessService::class);
+        $accessService->syncAccessAfterPayment($userId, $subscription->id, $amount);
 
         // 3. UPE: CheckoutService for UPE records (UpeSale, UpeSubscription, Ledger, legacy Sale+Accounting)
         $checkout = app(CheckoutService::class);
@@ -395,46 +357,10 @@ class SubscriptionAutoPayController extends Controller
 
         DB::beginTransaction();
         try {
-            // 1. Legacy SubscriptionPayments
-            SubscriptionPayments::create([
-                'user_id' => $userId,
-                'subscription_id' => $subscription->id,
-                'amount' => $amount,
-                'created_at' => time(),
-            ]);
-
-            // 2. Update SubscriptionAccess
-            $subscriptionPayments = SubscriptionPayments::where('user_id', $userId)
-                ->where('subscription_id', $subscription->id)
-                ->get();
-
-            $accessTillDate = time() + ($subscription->access_days * 24 * 60 * 60);
-            $paidCount = $subscriptionPayments->count();
-            $accessContentCount = $subscription->video_count * $paidCount;
-
-            $subscriptionAccess = SubscriptionAccess::where('user_id', $userId)
-                ->where('subscription_id', $subscription->id)
-                ->first();
-
-            if ($subscriptionAccess) {
-                $existingEnd = $subscriptionAccess->access_till_date + ($subscription->access_days * 24 * 60 * 60);
-                $accessTillDate = max($accessTillDate, $existingEnd);
-
-                $subscriptionAccess->update([
-                    'access_till_date' => $accessTillDate,
-                    'access_content_count' => $accessContentCount,
-                    'paid_no_of_subscriptions' => $paidCount,
-                ]);
-            } else {
-                SubscriptionAccess::create([
-                    'user_id' => $userId,
-                    'subscription_id' => $subscription->id,
-                    'access_till_date' => $accessTillDate,
-                    'access_content_count' => $accessContentCount,
-                    'paid_no_of_subscriptions' => $paidCount,
-                    'created_at' => time(),
-                ]);
-            }
+            // 1+2. Legacy: record payment + sync SubscriptionAccess via shared service.
+            // Renewal rule (max of fresh vs extended end date) is enforced inside the service.
+            $accessService = app(\App\Services\SubscriptionAccessService::class);
+            $accessService->syncAccessAfterPayment($userId, $subscription->id, $amount);
 
             // 3. UPE: Create renewal sale + ledger entry
             $upeSale = UpeSale::create([

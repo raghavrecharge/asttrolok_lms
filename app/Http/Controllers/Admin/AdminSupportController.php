@@ -1264,6 +1264,25 @@ class AdminSupportController extends Controller
 
             DB::commit();
 
+            // Notify the student about the status change.
+            // Wrapped in try/catch so a notification failure never breaks the status update.
+            try {
+                $student = \App\User::find($supportRequest->user_id);
+                if ($student) {
+                    $notifyOptions = [
+                        '[u.name]'    => $student->full_name,
+                        '[s.t.title]' => $supportRequest->ticket_number ?? ('#' . $supportRequest->id),
+                        '[status]'    => ucfirst($validated['status']),
+                    ];
+                    sendNotification('support_ticket_status_update', $notifyOptions, $student->id);
+                }
+            } catch (\Throwable $notifyErr) {
+                \Log::warning('Support ticket status notification failed', [
+                    'support_id' => $supportRequest->id,
+                    'error'      => $notifyErr->getMessage(),
+                ]);
+            }
+
             return back()->with([
                 'toast' => [
                     'title' => 'Success',
@@ -3003,6 +3022,26 @@ class AdminSupportController extends Controller
             'support_request_id' => $supportRequest->id,
             'credit_to_wallet' => $creditToWallet,
         ]);
+
+        // 11. Notify student about the refund.
+        try {
+            $student = \App\User::find($userId);
+            $webinar  = \App\Models\Webinar::find($courseId);
+            if ($student) {
+                $notifyOptions = [
+                    '[u.name]'   => $student->full_name,
+                    '[c.title]'  => $webinar ? $webinar->title : ('Course #' . $courseId),
+                    '[amount]'   => handlePrice($refundAmount),
+                    '[s.t.title]' => $supportRequest->ticket_number ?? ('#' . $supportRequest->id),
+                ];
+                sendNotification('refund_payment', $notifyOptions, $userId);
+            }
+        } catch (\Throwable $notifyErr) {
+            \Log::warning('Refund notification failed', [
+                'user_id' => $userId,
+                'error'   => $notifyErr->getMessage(),
+            ]);
+        }
     }
 
     /**

@@ -157,7 +157,21 @@
              <input type="hidden" name="item" value="{{!empty($item) ? $item->id : null}}"  placeholder="Contact Number" class="form-control mt-25 mb-25 " >
 
             {{-- Wallet Payment Widget --}}
-            @include('web.default.includes.wallet_payment_widget', ['totalAmount' => number_format(((($installments->first()->upfront ?? 0)*($itemPrice ?? 0)) /100), 2, '.', '')])
+            @php
+                $upfrontPct         = (float) ($installments->first()->upfront ?? 0);
+                $discountAmt        = (float) ($totalDiscount ?? 0);
+                // originalItemPrice = price BEFORE coupon was applied
+                $originalItemPrice  = $itemPrice + $discountAmt;
+                // first EMI based on original price (what the user "would" pay without coupon)
+                $firstEmiOriginal   = ($upfrontPct * $originalItemPrice) / 100;
+                // only the coupon portion that applies to the first EMI
+                $upfrontCouponSavings = ($upfrontPct * $discountAmt) / 100;
+            @endphp
+            @include('web.default.includes.wallet_payment_widget', [
+                'totalAmount'    => $firstEmiOriginal,
+                'couponDiscount' => $upfrontCouponSavings,
+                'couponCode'     => !empty($discountId) ? optional(\App\Models\Discount::find($discountId))->code : null,
+            ])
             <input type="hidden" name="item_type" value="{{!empty($itemType) ? $itemType : null}}"  placeholder="Contact Number" class="form-control mt-25 mb-25 ">
             <div class="form-group">
 
@@ -338,23 +352,7 @@
     function hidePaymentLoader() {
         if (loaderEl) loaderEl.style.display = 'none';
     }
-document.getElementById('razor-pay-now1').addEventListener('click', function(e) {
-    e.preventDefault();
-
-    const userDetails = {
-        name: document.getElementById('customer_name').value,
-        email: document.getElementById('customer_email').value,
-        number: document.getElementById('customer_number').value,
-        password: document.getElementById('customer_password').value,
-        installment_id: document.getElementById('installment_id').value,
-        discount_id: @json(session('discountCouponId')),
-        wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
-    };
-
-    showPaymentLoader();
-
-    initiatePayment('installment', {{!empty($item) ? $item->id : null}}, userDetails);
-});
+{{-- First listener removed: it was a duplicate and used a stale PHP-rendered discount_id --}}
 </script>
 <script>
 // Wait for DOM to be ready
@@ -451,6 +449,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             }
 
+            // Read discount_id from the DOM at click time so AJAX-applied coupons are included.
+            const discountIdEl = document.querySelector('input[name="discountId"]');
+            const appliedDiscountId = discountIdEl ? (parseInt(discountIdEl.value) || 0) : 0;
+
             const userDetails = {
                 name: name,
                 email: email,
@@ -458,8 +460,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 password: password,
                 password_confirmation: confirmPassword,
                 installment_id: installment_id,
-                discount_id: @json(session('discountCouponId')),
-                wallet_amount: (typeof getWalletPaymentAmount === 'function') ? getWalletPaymentAmount() : 0
+                discount_id: appliedDiscountId,
+                wallet_amount: (typeof window.getWalletPaymentAmount === 'function') ? window.getWalletPaymentAmount() : 0
             };
 
             showPaymentLoader();

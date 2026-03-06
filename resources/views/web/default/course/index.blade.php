@@ -631,7 +631,9 @@
                       @else
                     <span class="frame1000001692-text114">{{ $displayPrice['price'] }}  </span>
                     @endif
+              @if(!$hasBought)
               <span class="frame1000001692-text115" style="width:30% !important;text-align:left !important;">Pay Now</span>
+              @endif
               <img
                 src="/public/course_detail/background1177-mhc-200h.png"
                 alt="Background1177"

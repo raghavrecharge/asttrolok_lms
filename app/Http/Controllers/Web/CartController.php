@@ -463,8 +463,9 @@ class CartController extends Controller
     {
         try {
             $user = auth()->user();
-            $coupon = $request->get('coupon');
-            $web_id1 = $request->get('web_id1');
+            $coupon     = $request->get('coupon');
+            $web_id1    = $request->get('web_id1');
+            $webinsta_id1 = $request->get('webinsta_id1');
 
             $discountCoupon = Discount::where('code', $coupon)
                 ->where('status', 'active')
@@ -480,10 +481,59 @@ class CartController extends Controller
                 }
 
                 session(['discountCouponId' => $discountCoupon->id]);
-                return response()->json([
-                    'status' => 200,
+
+                // Build price data for live DOM update so the page doesn't need to reload.
+                $responseData = [
+                    'status'      => 200,
                     'discount_id' => $discountCoupon->id,
-                ], 200);
+                ];
+
+                try {
+                    $webinar     = \App\Models\Webinar::find($web_id1);
+                    $installment = \App\Models\Installment::with('steps')->find($webinsta_id1);
+
+                    if ($webinar && $installment) {
+                        // Mirror InstallmentsController exactly:
+                        //   getPrice() = effective/promotional price → used as display base for EMI
+                        //   price      = raw DB price              → used for coupon discount calc
+                        $effectivePrice  = (float) ($webinar->getPrice() ?? 0);
+                        $rawPrice        = (float) ($webinar->price ?? 0);
+                        $percent         = (float) ($discountCoupon->percent ?? 0);
+                        $discountAmount  = ($percent > 0) ? ($rawPrice * $percent / 100) : 0;
+                        $originalPrice   = $effectivePrice;   // alias kept for labels below
+                        $discountedPrice = max(0, $effectivePrice - $discountAmount);
+
+                        // Per-step deadline labels with the discounted base price
+                        $steps = [];
+                        foreach ($installment->steps as $step) {
+                            $steps[] = $step->getDeadlineTitle($discountedPrice);
+                        }
+
+                        $responseData['percent']          = $percent;
+                        $responseData['original_price']   = handlePrice($originalPrice);
+                        $responseData['discounted_price'] = handlePrice($discountedPrice);
+                        $responseData['total_payments']   = handlePrice($installment->totalPayments($discountedPrice));
+                        $responseData['savings']          = handlePrice($discountAmount);
+                        $responseData['steps']            = $steps;
+
+                        if ($installment->upfront) {
+                            $upfrontOriginal         = $installment->getUpfront($originalPrice);
+                            $upfrontDiscounted       = $installment->getUpfront($discountedPrice);
+                            $upfrontSuffix           = ($installment->upfront_type === 'percent') ? " ({$installment->upfront}%)" : '';
+                            $responseData['upfront']          = handlePrice($upfrontDiscounted);
+                            $responseData['upfront_label']    = trans('update.amount_upfront', ['amount' => handlePrice($upfrontDiscounted)]) . $upfrontSuffix;
+                            $responseData['upfront_original'] = $upfrontOriginal;
+                            $responseData['upfront_savings']  = max(0, $upfrontOriginal - $upfrontDiscounted);
+                        }
+                    }
+                } catch (\Exception $priceErr) {
+                    // Price calculation is best-effort; coupon is still valid
+                    \Log::warning('couponValidate1: price calculation failed', [
+                        'error' => $priceErr->getMessage(),
+                    ]);
+                }
+
+                return response()->json($responseData, 200);
             }
 
             return response()->json([
