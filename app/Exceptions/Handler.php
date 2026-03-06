@@ -42,6 +42,8 @@ class Handler extends ExceptionHandler
      */
     public function report(Throwable $exception)
     {
+        \App\Exceptions\OpsCockpitExceptionReporter::report($exception);
+
         parent::report($exception);
     }
 

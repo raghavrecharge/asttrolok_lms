@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('upe_referrals')) { return; }
         Schema::create('upe_referrals', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('referrer_user_id');

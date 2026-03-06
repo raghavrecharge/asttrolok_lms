@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('support_categories')) { return; }
         Schema::create('support_categories', function (Blueprint $table) {
             $table->id();
             $table->timestamps();

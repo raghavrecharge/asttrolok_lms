@@ -8,6 +8,7 @@ class CreateSupportAuditLogsTable extends Migration
 {
     public function up()
     {
+        if (Schema::hasTable('support_audit_logs')) { return; }
         Schema::create('support_audit_logs', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('support_request_id');

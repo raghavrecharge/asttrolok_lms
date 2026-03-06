@@ -8,6 +8,7 @@ class CreateCouponCreditsTable extends Migration
 {
     public function up()
     {
+        if (Schema::hasTable('coupon_credits')) { return; }
         Schema::create('coupon_credits', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');

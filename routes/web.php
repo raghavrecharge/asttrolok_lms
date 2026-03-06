@@ -38,10 +38,10 @@ Route::get('/maintenance', 'Web\MaintenanceController@index')->middleware(['shar
 
 /* Emergency Database Update */
 Route::get('/emergencyDatabaseUpdate', function () {
-    \Illuminate\Support\Facades\Artisan::call('migrate');
+    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
     $msg1 = \Illuminate\Support\Facades\Artisan::output();
 
-    \Illuminate\Support\Facades\Artisan::call('db:seed --class=SectionsTableSeeder');
+    \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'SectionsTableSeeder', '--force' => true]);
     $msg2 = \Illuminate\Support\Facades\Artisan::output();
 
     \Illuminate\Support\Facades\Artisan::call('clear:all');
@@ -189,6 +189,19 @@ Route::group(['namespace' => 'Web', 'middleware' => ['check_mobile_app', 'impers
         return view('web.default.cart.channels.stripe');
     });
     Route::redirect('/public', '/', 301);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Support Log Viewer Routes
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('admin/supports/newsuportforasttrolok')->middleware('web.auth')->group(function () {
+        Route::get('/logs', [\App\Http\Controllers\Admin\SupportLogController::class, 'index'])->name('admin.support.logs');
+        Route::get('/logs/export', [\App\Http\Controllers\Admin\SupportLogController::class, 'export'])->name('admin.support.logs.export');
+        Route::get('/logs/dashboard', [\App\Http\Controllers\Admin\SupportLogController::class, 'dashboard'])->name('admin.support.logs.dashboard');
+        Route::get('/logs/{ticketId}/timeline', [\App\Http\Controllers\Admin\SupportLogController::class, 'timeline'])->name('admin.support.logs.timeline');
+    });
+
     Route::fallback(function () {
         return view("errors.404", ['pageTitle' => trans('public.error_404_page_title')]);
     });
@@ -221,6 +234,7 @@ Route::group(['namespace' => 'Web', 'middleware' => ['check_mobile_app', 'impers
     
     Route::get('/about', 'HomeController@about');
     Route::post('/webhook-url', 'HomeController@webhookdata');
+    Route::get('/pathshala', 'WebinarController@pathshalaCompare');
     Route::get('/landingpage/{slug}', 'WebinarController@landingpage');
     Route::get('/register-course/{slug}', 'InstallmentsController@partPayment');
     Route::post('/register-course/{slug}', 'RegisterController@registerForCourse');

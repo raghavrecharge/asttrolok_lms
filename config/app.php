@@ -184,6 +184,7 @@ return [
         Jorenvh\Share\Providers\ShareServiceProvider::class,
         // KingFlamez\Rave\RaveServiceProvider::class,
 
+        App\Providers\OpsCockpitServiceProvider::class,
         App\Providers\MinioStorageServiceProvider::class,
         Gathuku\Mpesa\MpesaServiceProvider::class,
         Ssheduardo\Redsys\RedsysServiceProvider::class,

@@ -8,6 +8,7 @@ class CreateRefundsTable extends Migration
 {
     public function up()
     {
+        if (Schema::hasTable('refunds')) { return; }
         Schema::create('refunds', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');

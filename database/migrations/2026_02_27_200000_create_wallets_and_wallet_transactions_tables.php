@@ -8,6 +8,7 @@ class CreateWalletsAndWalletTransactionsTables extends Migration
 {
     public function up()
     {
+        if (Schema::hasTable('wallets')) { return; }
         Schema::create('wallets', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedInteger('user_id')->unique();

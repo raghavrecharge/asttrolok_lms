@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         
-       Schema::create('new_support_for_asttrolok', function (Blueprint $table) {
+       if (Schema::hasTable('new_support_for_asttrolok')) { return; }
+        Schema::create('new_support_for_asttrolok', function (Blueprint $table) {
             $table->id();
             $table->string('ticket_number')->unique();
             

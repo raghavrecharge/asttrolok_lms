@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('new_support_for_asttrolok', 'access_type')) { return; }
         Schema::table('new_support_for_asttrolok', function (Blueprint $table) {
             $table->string('access_type')->nullable()->after('course_expires_at');
         });

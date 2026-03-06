@@ -8,6 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('new_support_for_asttrolok_logs')) {
+            return;
+        }
         Schema::create('new_support_for_asttrolok_logs', function (Blueprint $table) {
             $table->id();
 

@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('upe_discounts')) { return; }
         Schema::create('upe_discounts', function (Blueprint $table) {
             $table->id();
             $table->string('code', 64)->unique()->nullable()->comment('Coupon code; NULL for auto-applied');

@@ -287,82 +287,118 @@
                     </div>
                 </div>
             </div>
+            {{-- PATHSHALA COMPARISON SECTION --}}
+            <style>
+            .ps-section { background: #f5f5f5; padding: 50px 0 60px; font-family: 'Inter', sans-serif; }
+            .ps-wrapper { max-width: 1280px; margin: 0 auto; padding: 0 20px; display: flex; align-items: flex-start; gap: 0; }
+            .ps-banner { flex: 0 0 36%; max-width: 36%; border-radius: 18px; overflow: hidden; }
+            .ps-banner img { width: 100%; height: 100%; object-fit: cover; display: block; min-height: 480px; }
+            .ps-cards { flex: 1; display: flex; gap: 0; }
+            .ps-card { flex: 1; padding: 32px 30px 28px; display: flex; flex-direction: column; }
+            .ps-badge { display: inline-block; border: 1.5px solid #32a028; color: #32a028; font-size: 11px; font-weight: 600; padding: 5px 16px; border-radius: 20px; margin-bottom: 16px; line-height: 1.3; width: fit-content; }
+            .ps-title { font-size: 26px; font-weight: 800; color: #1a1a1a; margin: 0 0 14px; line-height: 1.2; }
+            .ps-desc { font-size: 13.5px; line-height: 1.7; color: #444; margin: 0 0 22px; }
+            .ps-desc strong { font-weight: 700; color: #1a1a1a; }
+            .ps-features { list-style: none; padding: 0; margin: 0 0 24px; }
+            .ps-features li { font-size: 14px; font-weight: 600; color: #1a1a1a; padding: 6px 0 6px 18px; position: relative; line-height: 1.5; }
+            .ps-features li::before { content: ''; position: absolute; left: 0; top: 12px; width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 7px solid #32a028; }
+            .ps-cta { display: inline-flex; align-items: center; gap: 8px; background: #32a028; color: #fff; font-size: 14px; font-weight: 600; padding: 12px 28px; border-radius: 25px; text-decoration: none; border: none; cursor: pointer; transition: background .2s ease, transform .15s ease; margin-top: 4px; width: fit-content; }
+            .ps-cta:hover { background: #278a1e; color: #fff; text-decoration: none; transform: scale(1.03); }
+            .ps-stats { display: flex; gap: 24px; margin-top: 28px; padding-top: 20px; border-top: 1px solid #e5e5e5; }
+            .ps-stat { display: flex; align-items: baseline; gap: 6px; }
+            .ps-stat__num { font-size: 22px; font-weight: 800; color: #1a1a1a; }
+            .ps-stat__label { font-size: 14px; font-weight: 500; color: #1a1a1a; }
+            .ps-stat__sub { font-size: 11px; color: #888; font-style: italic; }
+            .ps-divider { width: 1px; background: #e0e0e0; align-self: stretch; flex-shrink: 0; }
+            .ps-lang { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 12px; border-radius: 6px; margin-bottom: 12px; width: fit-content; }
+            .ps-lang--hindi { background: #fff3e0; color: #e65100; }
+            .ps-lang--english { background: #e3f2fd; color: #1565c0; }
+            .ps-cta svg { width: 16px; height: 16px; flex-shrink: 0; }
+            @media (max-width: 1024px) {
+                .ps-wrapper { flex-direction: column; gap: 30px; }
+                .ps-banner { flex: none; max-width: 100%; }
+                .ps-banner img { min-height: 300px; }
+                .ps-cards { flex-direction: row; background: #fff; border-radius: 12px; }
+            }
+            @media (max-width: 768px) {
+                .ps-section { padding: 24px 0 36px; }
+                .ps-cards { flex-direction: column; }
+                .ps-divider { width: 100%; height: 1px; }
+                .ps-card { padding: 24px 20px 20px; }
+                .ps-title { font-size: 22px; }
+                .ps-stats { flex-direction: column; gap: 8px; }
+            }
+            </style>
 
-            <div class="position-relative d-flex" style="height: 100px"></div>
-            <div class="hybrid-information-section-2-images-text-section position-relative">
-                <div class="container position-relative h-100">
-                    <div class="row h-100  ">
-                        @foreach ($subscriptions as $subscription)
-                            <div class="col-12 col-lg-5">
-                                <div class="d-flex justify-content-center align-items-start flex-column h-100">
-                                   <div class="d-inline-flex-center py-8 px-16 rounded-8 bg-success-20 font-12"
-     style="color:#32A128; border:1px solid #32A128;">
-                                        Become an Astrologer for Just ₹2,100/Month</div>
-                                   <a href="{{ $subscription->getUrl() }}" class="text-decoration-none  d-block"><h2 class="mt-12 font-32 text-dark">{!! $subscription->title !!}</h2></a>
-
-                                    <p class="mt-20 font-16 text-gray-500">{!! $subscription->description !!}</p>
-                                    <a href="{{ $subscription->getUrl() }}" target="_blank"
-                                        class="btn-flip-effect btn  btn-xlg gap-8 text-white mt-24"
-                                        data-text="Enroll Now"style="background-color:#32A128;border:1px solid #32A128;">
-                                        <svg width="24px" height="24px" class="icons"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                                            aria-hidden="true">
-                                            <path d="M11.5 21a9.5 9.5 0 100-19 9.5 9.5 0 000 19z" opacity=".4">
-                                            </path>
-                                            <path
-                                                d="M21.3 22c-.18 0-.36-.07-.49-.2l-1.86-1.86a.706.706 0 010-.99c.27-.27.71-.27.99 0l1.86 1.86c.27.27.27.71 0 .99-.14.13-.32.2-.5.2z">
-                                            </path>
-                                        </svg>
-                                        <span class="btn-flip-effect__text">Enroll Now</span>
-                                    </a>
-                                    <div class="d-flex align-items-center mt-60 gap-54">
-                                        <div class="hybrid-information-section-2-images-text-section__statistic-item">
-                                            <div class="d-flex align-items-center gap-8">
-                                                <span class="line"style="background-color:#32A128"></span>
-                                                <span class="font-24 font-weight-bold" style="font:Gilroy">714+</span>
-                                            </div>
-                                            <h4 class="font-16 text-dark" style="margin-top:6px;">Students</h4>
-                                         <p class="font-14 text-gray-500" style="margin-top:2px;">already learning</p>
-
-                                        </div>
-                                        <div class="hybrid-information-section-2-images-text-section__statistic-item">
-                                            <div class="d-flex align-items-center gap-8">
-                                                <span class="line"style="background-color:#32A128"></span>
-                                                <span
-                                                    class="font-24 font-weight-bold">{{ handlePrice($subscription->price, true, true, false, null, true) }}</span>
-                                            </div>
-                                            <h4 class="font-16 text-dark" style="margin-top:6px;">/ Month</h4>
-                                            <p class="font-14 text-gray-500" style="margin-top:2px;">Beginner to Expert Journey</p>
-
-                                        </div>
-                                    </div>
+            <section class="ps-section">
+                <div class="ps-wrapper">
+                    <div class="ps-banner">
+                        @php
+                            $bannerImg = '';
+                            foreach ($subscriptions as $sub) {
+                                if (!empty($sub->home_banner)) {
+                                    $bannerImg = $sub->home_banner;
+                                    break;
+                                }
+                            }
+                        @endphp
+                        @if(!empty($bannerImg))
+                            <img src="{{ config('app.img_dynamic_url') }}{{ $bannerImg }}" alt="Asttrolok Pathshala" />
+                        @else
+                            <img src="https://storage.googleapis.com/astrolok/store/1/new-one/Astttrolok-Hindi.jpg" alt="Asttrolok Pathshala" />
+                        @endif
+                    </div>
+                    <div class="ps-cards">
+                        <div class="ps-card">
+                            <span class="ps-lang ps-lang--hindi">&#x1F1EE;&#x1F1F3; Hindi Medium</span>
+                            <span class="ps-badge">Become an Astrologer for Just &#8377;2,100/Month</span>
+                            <h2 class="ps-title">Asttrolok Pathshala</h2>
+                            <p class="ps-desc">Your gateway to becoming a <strong>certified Vedic astrologer</strong>. This structured, monthly program takes you from zero to practitioner with live classes, hands-on chart reading, and personal mentor support &mdash; all in <strong>simple Hindi</strong>.</p>
+                            <ul class="ps-features">
+                                <li>Certification on completion</li>
+                                <li>Self-paced &mdash; learn anytime</li>
+                                <li>Live doubt-clearing sessions</li>
+                                <li>Complete study material included</li>
+                            </ul>
+                            <a href="/course/astrology-basic-level" class="ps-cta"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke="#fff" stroke-width="2" fill="none"/><line x1="16.5" y1="16.5" x2="21" y2="21" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg> Enroll Now</a>
+                            <div class="ps-stats">
+                                <div class="ps-stat">
+                                    <span class="ps-stat__num">| 714+</span>
+                                    <div><span class="ps-stat__label">Students</span><br><span class="ps-stat__sub">already learning</span></div>
+                                </div>
+                                <div class="ps-stat">
+                                    <span class="ps-stat__num">| &#8377;2,100</span>
+                                    <div><span class="ps-stat__label">/ Month</span><br><span class="ps-stat__sub">Beginner to Expert Journey</span></div>
                                 </div>
                             </div>
-                            <div class="col-lg-1"></div>
-                            <div class="col-12 col-lg-6 h-100 mt-32 mt-lg-0 px-24 px-lg-48">
-                                <div
-                                    class="hybrid-information-section-2-images-text-section__main-image position-relative rounded-32">
-                                    <!-- <a href="{{ $subscription->getUrl() }}" class="text-decoration-none d-block">
-                                    <img src="https://storage.googleapis.com/astrolok/store/1/new-one/Astttrolok-Hindi.jpg"
-                                        alt="{{ $subscription->title }}" class="img-cover rounded-32">
-                                    </a> -->
-                                    <a href="{{ $subscription->getUrl() }}" class="text-decoration-none d-block">
-                                        @if(!empty($subscription->home_banner))
-                                            <img src="{{ config('app.img_dynamic_url') }}{{ $subscription->home_banner }}"
-                                                alt="{{ $subscription->title }}" 
-                                                class="img-cover rounded-32">
-                                        @else
-                                            <img src="https://storage.googleapis.com/astrolok/store/1/new-one/Astttrolok-Hindi.jpg"
-                                                alt="{{ $subscription->title }}" 
-                                                class="img-cover rounded-32">
-                                        @endif
-                                    </a>
+                        </div>
+                        <div class="ps-divider"></div>
+                        <div class="ps-card">
+                            <span class="ps-lang ps-lang--english">&#x1F30D; English Medium</span>
+                            <span class="ps-badge">Go Pro &mdash; Master Advanced Techniques</span>
+                            <h2 class="ps-title">Pathshala 2</h2>
+                            <p class="ps-desc">Ready to go deeper? Pathshala 2 unlocks <strong>Vimshottari, Yogini &amp; Chara Dasha</strong> systems with real-world case studies and multi-layered chart analysis &mdash; taught entirely in <strong>English</strong> for a global audience.</p>
+                            <ul class="ps-features">
+                                <li>Advanced Dasha &amp; transit mastery</li>
+                                <li>Real client case studies</li>
+                                <li>Professional-level assessments</li>
+                                <li>Certificate of advanced proficiency</li>
+                            </ul>
+                            <a href="/course/astrology-intermediate-level" class="ps-cta"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke="#fff" stroke-width="2" fill="none"/><line x1="16.5" y1="16.5" x2="21" y2="21" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg> Enroll Now</a>
+                            <div class="ps-stats">
+                                <div class="ps-stat">
+                                    <span class="ps-stat__num">| 320+</span>
+                                    <div><span class="ps-stat__label">Practitioners</span><br><span class="ps-stat__sub">levelling up</span></div>
+                                </div>
+                                <div class="ps-stat">
+                                    <span class="ps-stat__num">| &#8377;2,100</span>
+                                    <div><span class="ps-stat__label">/ Month</span><br><span class="ps-stat__sub">Advanced Mastery Track</span></div>
                                 </div>
                             </div>
-                        @endforeach
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
         @endif
 

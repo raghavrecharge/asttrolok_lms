@@ -83,6 +83,9 @@ class DashboardController extends Controller
                 $usersStatisticsChart = $this->usersStatisticsChart();
             }
 
+            $installmentHealth = $this->getInstallmentHealth();
+            $recentSales = $this->getRecentSales(5);
+
             $data = [
                 'pageTitle' => trans('admin/main.general_dashboard_title'),
                 'dailySalesTypeStatistics' => $dailySalesTypeStatistics ?? null,
@@ -99,6 +102,8 @@ class DashboardController extends Controller
                 'recentWebinars' => $recentWebinars ?? null,
                 'recentCourses' => $recentCourses ?? null,
                 'usersStatisticsChart' => $usersStatisticsChart ?? null,
+                'installmentHealth' => $installmentHealth,
+                'recentSales' => $recentSales,
             ];
 
             return view('admin.dashboard', $data);

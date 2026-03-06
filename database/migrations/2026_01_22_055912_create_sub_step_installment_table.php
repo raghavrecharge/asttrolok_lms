@@ -13,6 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('sub_step_installments')) { return; }
         Schema::create('sub_step_installments', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('installment_step_id')->comment('Reference to installment_steps table');

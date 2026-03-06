@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\User;
 use App\Models\Webinar;
+use App\Models\SupportAuditLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -134,6 +135,11 @@ class NewSupportForAsttrolok extends Model
     public function logs()
     {
         return $this->hasMany(NewSupportForAsttrolokLog::class, 'support_request_id');
+    }
+
+    public function audits()
+    {
+        return $this->hasMany(SupportAuditLog::class, 'support_request_id');
     }
 
     // Scopes

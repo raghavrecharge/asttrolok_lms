@@ -524,6 +524,20 @@ public function index()
             $videos = $this->latestVideos();
             $siteGeneralSettings = getGeneralSettings();
 
+            $pathshalaBeginner = Cache::remember('pathshala_beginner', $cacheTime, function () {
+                return Webinar::where('slug', 'astrology-basic-level')
+                    ->with(['extraDetails', 'teacher'])
+                    ->where('status', 'active')
+                    ->first();
+            });
+
+            $pathshalaAdvanced = Cache::remember('pathshala_advanced', $cacheTime, function () {
+                return Webinar::where('slug', 'astrology-intermediate-level')
+                    ->with(['extraDetails', 'teacher'])
+                    ->where('status', 'active')
+                    ->first();
+            });
+
             $data = [
                 'pageTitle' => $pageTitle,
                 'pageDescription' => $pageDescription,
@@ -575,6 +589,8 @@ public function index()
                 'categories_mobile' => $categories,
                 'featuredBook' => $featuredBook,
                 'courseFilters' => $courseFilters,
+                'pathshalaBeginner' => $pathshalaBeginner,
+                'pathshalaAdvanced' => $pathshalaAdvanced,
             ];
 
             if ($agent->isMobile()){

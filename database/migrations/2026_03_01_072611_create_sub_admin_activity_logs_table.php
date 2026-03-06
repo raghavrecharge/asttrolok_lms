@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('sub_admin_activity_logs')) { return; }
         Schema::create('sub_admin_activity_logs', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('user_id')->index();

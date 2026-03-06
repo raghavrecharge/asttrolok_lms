@@ -376,6 +376,45 @@ class WebinarController extends Controller
         }
     }
 
+    public function pathshalaCompare()
+    {
+        try {
+            $user = auth()->check() ? auth()->user() : null;
+
+            $beginner = Webinar::where('slug', 'astrology-basic-level')
+                ->with(['extraDetails', 'teacher'])
+                ->where('status', 'active')
+                ->first();
+
+            $advanced = Webinar::where('slug', 'astrology-intermediate-level')
+                ->with(['extraDetails', 'teacher'])
+                ->where('status', 'active')
+                ->first();
+
+            $hasBoughtBeginner = $beginner ? $beginner->checkUserHasBought($user, true, true) : false;
+            $hasBoughtAdvanced = $advanced ? $advanced->checkUserHasBought($user, true, true) : false;
+
+            $data = [
+                'pageTitle' => 'Asttrolok Pathshala — Vedic Astrology Courses',
+                'pageDescription' => 'Choose the right Vedic Astrology course for you. Start with Pathshala for beginners or advance your skills with Pathshala 2.',
+                'beginner' => $beginner,
+                'advanced' => $advanced,
+                'hasBoughtBeginner' => $hasBoughtBeginner,
+                'hasBoughtAdvanced' => $hasBoughtAdvanced,
+                'user' => $user,
+            ];
+
+            return view('web.default2.course.pathshala-compare', $data);
+        } catch (\Exception $e) {
+            \Log::error('pathshalaCompare error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
+    }
+
     public function landingpage($slug)
     {
         try {
