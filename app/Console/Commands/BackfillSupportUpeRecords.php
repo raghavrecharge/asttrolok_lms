@@ -142,7 +142,7 @@ class BackfillSupportUpeRecords extends Command
             case 'offline_cash_payment':
                 $cashAmount = (float) ($ticket->cash_amount ?? 0);
                 if ($cashAmount > 0) {
-                    $bridge->recordOfflinePayment($userId, $webinarId, $supportId, $adminId, $cashAmount);
+                    $bridge->creditCashToWallet($userId, $supportId, $adminId, $cashAmount);
                 }
                 break;
 

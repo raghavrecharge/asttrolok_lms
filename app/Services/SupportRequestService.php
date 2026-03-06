@@ -487,52 +487,45 @@ class SupportRequestService
 
     /**
      * Scenario 6: Offline / Cash Payment
+     *
+     * Credits the received cash amount to the student's wallet.
+     * The student then uses their wallet balance to purchase the course.
      */
     private function executeOfflineCashPayment(NewSupportForAsttrolok $request, array $data, $user)
     {
         $cashAmount = (float) ($request->cash_amount ?? 0);
-        if ($cashAmount <= 0 || !$request->webinar_id) {
-            throw new \RuntimeException('Invalid offline payment: missing cash amount or course.');
+        if ($cashAmount <= 0) {
+            throw new \RuntimeException('Invalid offline payment: cash amount must be greater than zero.');
         }
 
         $bridge = app(SupportUpeBridge::class);
-        $couponCode = $data['offline_coupon_code'] ?? ($request->coupon_code ?? null);
-        $installmentId = !empty($data['offline_installment_id']) ? (int) $data['offline_installment_id'] : ($request->installment_id ?? null);
 
-        $result = $bridge->processOfflinePayment(
+        $result = $bridge->creditCashToWallet(
             $request->user_id,
-            $request->webinar_id,
             $request->id,
             $user->id,
-            $cashAmount,
-            $couponCode,
-            $installmentId
+            $cashAmount
         );
 
         if (!$result['success']) {
-            throw new \RuntimeException('Offline payment failed: ' . $result['message']);
+            throw new \RuntimeException('Wallet credit failed: ' . $result['message']);
         }
 
-        // Store serializable audit data
+        // Store audit data
         $request->update([
             'execution_result' => [
-                'success' => $result['success'],
-                'message' => $result['message'],
-                'sale_id' => $result['sale']?->id,
-                'plan_id' => $result['plan']?->id,
-                'price_breakdown' => $result['price_breakdown'],
-                'allocation' => $result['allocation'],
-                'access_granted' => $result['access_granted'],
+                'success'         => $result['success'],
+                'message'         => $result['message'],
+                'amount_credited' => $result['amount_credited'],
+                'wallet_txn_id'   => $result['wallet_txn_id'],
             ],
         ]);
 
-        Log::info('Offline cash payment processed via UPE', [
+        Log::info('Offline cash credited to student wallet', [
             'support_request_id' => $request->id,
-            'user_id' => $request->user_id,
-            'webinar_id' => $request->webinar_id,
-            'cash_amount' => $cashAmount,
-            'access_granted' => $result['access_granted'],
-            'sale_id' => $result['sale']?->id,
+            'user_id'            => $request->user_id,
+            'cash_amount'        => $cashAmount,
+            'wallet_txn_id'      => $result['wallet_txn_id'],
         ]);
     }
 
