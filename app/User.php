@@ -59,9 +59,9 @@ class User extends Authenticatable
         $activeMentorCourses = \App\Models\Sale::where('buyer_id', $this->id)
             ->where('type', \App\Models\Sale::$webinar)
             ->where('access_to_purchased_item', 1)
-            ->where(function($q) {
-                $q->whereNull('refund_at')->orWhere('refund_at', 0);
-            })
+            ->where(function ($q) {
+            $q->whereNull('refund_at')->orWhere('refund_at', 0);
+        })
             ->get();
 
         $hasActive = false;
@@ -73,7 +73,8 @@ class User extends Authenticatable
                     $hasActive = true;
                     break;
                 }
-            } else {
+            }
+            else {
                 // If no expiry, treat as active
                 $hasActive = true;
                 break;
@@ -154,8 +155,10 @@ class User extends Authenticatable
     public static function findOrCreateForPurchase($email, $mobile, $name, $password = null, array $extra = [])
     {
         $user = static::where(function ($q) use ($email, $mobile) {
-            if ($email) $q->where('email', $email);
-            if ($mobile) $q->orWhere('mobile', $mobile);
+            if ($email)
+                $q->where('email', $email);
+            if ($mobile)
+                $q->orWhere('mobile', $mobile);
         })->first();
 
         if ($user) {
@@ -174,16 +177,16 @@ class User extends Authenticatable
 
         return static::create(array_merge([
             'role_name' => 'user',
-            'role_id'   => 1,
-            'mobile'    => $mobile ?? null,
-            'email'     => $email ?? null,
+            'role_id' => 1,
+            'mobile' => $mobile ?? null,
+            'email' => $email ?? null,
             'full_name' => $name,
-            'status'    => 'active',
+            'status' => 'active',
             'access_content' => 1,
-            'password'  => \Illuminate\Support\Facades\Hash::make($plainPwd),
-            'pwd_hint'  => $plainPwd,
+            'password' => \Illuminate\Support\Facades\Hash::make($plainPwd),
+            'pwd_hint' => $plainPwd,
             'affiliate' => 0,
-            'timezone'  => 'Asia/Kolkata',
+            'timezone' => 'Asia/Kolkata',
             'created_at' => time(),
         ], $extra));
     }
@@ -221,7 +224,7 @@ class User extends Authenticatable
 
     public function hasPermission($section_name)
     {
-        if (self::isAdmin()) {
+        if ($this->isAdmin()) {
             if (!isset($this->permissions)) {
                 // Check for per-user sub-admin permissions first
                 if ($this->role_name === 'sub_admin') {
@@ -236,12 +239,14 @@ class User extends Authenticatable
                             ->pluck('section_id')
                             ->toArray();
                         $this->permissions = Section::whereIn('id', $sections_id)->pluck('name')->toArray();
-                    } else {
+                    }
+                    else {
                         // Fall back to role-based permissions
                         $sections_id = Permission::where('role_id', '=', $this->role_id)->where('allow', true)->pluck('section_id')->toArray();
                         $this->permissions = Section::whereIn('id', $sections_id)->pluck('name')->toArray();
                     }
-                } else {
+                }
+                else {
                     $sections_id = Permission::where('role_id', '=', $this->role_id)->where('allow', true)->pluck('section_id')->toArray();
                     $this->permissions = Section::whereIn('id', $sections_id)->pluck('name')->toArray();
                 }
@@ -260,15 +265,18 @@ class User extends Authenticatable
     {
         if (!empty($this->avatar)) {
             $avatarUrl = $this->avatar;
-        } else {
+        }
+        else {
             $settings = getOthersPersonalizationSettings();
 
             if (!empty($settings) and !empty($settings['user_avatar_style']) and $settings['user_avatar_style'] == "ui_avatar") {
                 $avatarUrl = "/getDefaultAvatar?item={$this->id}&name={$this->full_name}&size=$size";
-            } else {
+            }
+            else {
                 if (!empty($settings) and !empty($settings['default_user_avatar'])) {
                     $avatarUrl = $settings['default_user_avatar'];
-                } else {
+                }
+                else {
                     $avatarUrl = "/assets/default/img/default/avatar-1.png";
                 }
             }
@@ -281,11 +289,12 @@ class User extends Authenticatable
     {
         if (!empty($this->cover_img)) {
             $path = str_replace('/storage', '', $this->cover_img);
-               $baseUrl = "https://storage.googleapis.com/astrolok/webp";
+            $baseUrl = "https://storage.googleapis.com/astrolok/webp";
 
             $imgUrl = $baseUrl . $path;
-        } else {
-            $imgUrl = getPageBackgroundSettings('user_cover');
+        }
+        else {
+            $imgUrl = \App\Models\Setting::getPageBackgroundSettings('user_cover');
         }
 
         return $this->cover_img;
@@ -315,7 +324,8 @@ class User extends Authenticatable
                 if (is_numeric($tmp) and $tmp > 0 and $tmp <= 7) {
                     $bit = $tmp;
                 }
-            } catch (\Exception $exception) {
+            }
+            catch (\Exception $exception) {
 
             }
         }
@@ -350,7 +360,7 @@ class User extends Authenticatable
 
     public function accounting()
     {
-        return $this->hasMany(Accounting::class, 'user_id', 'id');
+        return $this->hasMany(Accounting::class , 'user_id', 'id');
     }
 
     public function meeting()
@@ -440,9 +450,9 @@ class User extends Authenticatable
     {
         $webinars = Webinar::where('status', 'active')
             ->where(function ($query) {
-                $query->where('creator_id', $this->id)
-                    ->orWhere('teacher_id', $this->id);
-            })
+            $query->where('creator_id', $this->id)
+                ->orWhere('teacher_id', $this->id);
+        })
             ->orderBy('created_at', 'desc');
 
         if ($just_count) {
@@ -694,35 +704,37 @@ class User extends Authenticatable
     public function getUnReadNotifications()
     {
         $user = $this;
-        if($this->id == 1){
+        if ($this->id == 1) {
         // echo "<pre>" ;print_r($user);die();
-}
+        }
         $notifications = Notification::where(function ($query) {
             $query->where(function ($query) {
-                $query->where('user_id', $this->id)
-                    ->where('type', 'single');
-            })->orWhere(function ($query) {
-                if (!$this->isAdmin()) {
-                    $query->whereNull('user_id')
-                        ->whereNull('group_id')
-                        ->where('type', 'all_users');
+                    $query->where('user_id', $this->id)
+                        ->where('type', 'single');
                 }
-            });
-        })->doesntHave('notificationStatus')
+                )->orWhere(function ($query) {
+                    if (!$this->isAdmin()) {
+                        $query->whereNull('user_id')
+                            ->whereNull('group_id')
+                            ->where('type', 'all_users');
+                    }
+                }
+                );
+            })->doesntHave('notificationStatus')
             ->orderBy('created_at', 'desc')
             ->get();
-            
-            
+
+
 
         $userGroup = $this->userGroup()->first();
-        if (!empty($userGroup)) {
+        if ($userGroup instanceof \App\Models\GroupUser and !empty($userGroup->group_id)) {
             $groupNotifications = Notification::where('group_id', $userGroup->group_id)
                 ->where('type', 'group')
                 ->doesntHave('notificationStatus')
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            if (!empty($groupNotifications) and !$groupNotifications->isEmpty()) {
+            if ($groupNotifications->isNotEmpty()) {
                 $notifications = $notifications->merge($groupNotifications);
             }
         }
@@ -770,8 +782,8 @@ class User extends Authenticatable
             $courseStudentsNotifications = Notification::whereIn('webinar_id', $userBoughtWebinarsIds)
                 ->where('type', 'course_students')
                 ->whereDoesntHave('notificationStatus', function ($query) use ($user) {
-                    $query->where('user_id', $user->id);
-                })
+                $query->where('user_id', $user->id);
+            })
                 ->orderBy('created_at', 'desc')
                 ->get();
 
@@ -811,26 +823,30 @@ class User extends Authenticatable
             $query->whereNotNull('organ_id')
                 ->where('organ_id', $this->organ_id)
                 ->where(function ($query) {
-                    if ($this->isOrganization()) {
-                        $query->where('type', 'organizations');
-                    } else {
-                        $type = 'students';
+                if ($this->isOrganization()) {
+                    $query->where('type', 'organizations');
+                }
+                else {
+                    $type = 'students';
 
-                        if ($this->isTeacher()) {
-                            $type = 'instructors';
-                        }
-
-                        $query->whereIn('type', ['students_and_instructors', $type]);
+                    if ($this->isTeacher()) {
+                        $type = 'instructors';
                     }
-                });
+
+                    $query->whereIn('type', ['students_and_instructors', $type]);
+                }
+            }
+            );
         })->orWhere(function ($query) {
             $type = ['all'];
 
             if ($this->isUser()) {
                 $type = array_merge($type, ['students', 'students_and_instructors']);
-            } elseif ($this->isTeacher()) {
+            }
+            elseif ($this->isTeacher()) {
                 $type = array_merge($type, ['instructors', 'students_and_instructors']);
-            } elseif ($this->isOrganization()) {
+            }
+            elseif ($this->isOrganization()) {
                 $type = array_merge($type, ['organizations']);
             }
 
@@ -848,10 +864,10 @@ class User extends Authenticatable
 
 
         /*
-        ->whereDoesntHave('noticeboardStatus', function ($qu) {
-            $qu->where('user_id', $this->id);
-        })
-        */
+         ->whereDoesntHave('noticeboardStatus', function ($qu) {
+         $qu->where('user_id', $this->id);
+         })
+         */
 
         return $noticeboards;
     }
@@ -881,7 +897,8 @@ class User extends Authenticatable
 
             if (in_array($product->product_type, ['course_video', 'webinar', 'course_live'])) {
                 $webinarIds[] = $product->external_id;
-            } elseif ($product->product_type === 'bundle') {
+            }
+            elseif ($product->product_type === 'bundle') {
                 $bundleIds[] = $product->external_id;
             }
         }
@@ -894,7 +911,8 @@ class User extends Authenticatable
         foreach ($traditionalSales as $sale) {
             if ($sale->webinar_id) {
                 $webinarIds[] = $sale->webinar_id;
-            } elseif ($sale->bundle_id) {
+            }
+            elseif ($sale->bundle_id) {
                 $bundleIds[] = $sale->bundle_id;
             }
         }
@@ -991,11 +1009,14 @@ class User extends Authenticatable
             foreach ($regions as $region) {
                 if ($region->id == $this->country_id) {
                     $address .= $region->title;
-                } elseif ($region->id == $this->province_id) {
+                }
+                elseif ($region->id == $this->province_id) {
                     $address .= ', ' . $region->title;
-                } elseif ($region->id == $this->city_id) {
+                }
+                elseif ($region->id == $this->city_id) {
                     $address .= ', ' . $region->title;
-                } elseif ($region->id == $this->district_id) {
+                }
+                elseif ($region->id == $this->district_id) {
                     $address .= ', ' . $region->title;
                 }
             }
@@ -1077,7 +1098,7 @@ class User extends Authenticatable
 
     public function getRegionByTypeId($typeId, $justTitle = true)
     {
-        $region = !empty($typeId) ? Region::where('id', $typeId)->first() : null;
+        $region = !empty($typeId) ?Region::where('id', $typeId)->first() : null;
 
         if (!empty($region)) {
             return $justTitle ? $region->title : $region;
@@ -1085,10 +1106,10 @@ class User extends Authenticatable
 
         return '';
     }
-    
+
     public function consultationSeos()
     {
-        return $this->hasMany(ConsultationSeo::class, 'user_id');
+        return $this->hasMany(ConsultationSeo::class , 'user_id');
     }
 
 }

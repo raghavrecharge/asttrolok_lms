@@ -4,58 +4,28 @@
 
 <div class="navbar-bg"></div>
 
-<nav class="navbar navbar-expand-lg main-navbar">
+<nav class="navbar navbar-expand-lg main-navbar" style="padding: 0 30px; display:flex; justify-content:space-between; align-items:center;">
 
-    <form class="form-inline mr-auto">
+    <div class="d-flex align-items-center">
         <ul class="navbar-nav mr-3">
-            <li><a href="#" data-toggle="sidebar" class="nav-link nav-link-lg"><i class="fas fa-bars"></i></a></li>
-            <li><a href="#" data-toggle="search" class="nav-link nav-link-lg d-sm-none"><i class="fas fa-search"></i></a></li>
+            <li><a href="#" data-toggle="sidebar" class="nav-link nav-link-lg text-dark"><i class="fas fa-bars"></i></a></li>
         </ul>
-    </form>
-    <ul class="navbar-nav navbar-right">
-
-    <li class="dropdown dropdown-list-toggle">
-                <a href="#" data-toggle="dropdown" class="nav-link notification-toggle nav-link-lg">
-                    <i class="fa fa-info-circle"></i>
-                </a>
-                <div class="dropdown-menu dropdown-list dropdown-menu-right">
-                    <div class="dropdown-list-icons mb-0" height="150px">
-                            <a href="#" class="dropdown-item">
-                                <div class="dropdown-item-icon bg-info text-white d-flex align-items-center justify-content-center">
-                                    <i class="fa fa-info"></i>
-                                </div>
-                                <div class="dropdown-item-desc">
-                                   Asttrolok
-                                   <div class="time text-primary">All rights reserved for Asttrolok</div>
-                                </div>
-                            </a>
-                    </div>
-                </div>
-            </li>
-
-        {{-- Export Downloads Tray --}}
-        <li class="dropdown dropdown-list-toggle" id="exportDownloadsTray" style="display: none;">
-            <a href="#" data-toggle="dropdown" class="nav-link notification-toggle nav-link-lg beep">
-                <i class="fas fa-download"></i>
-            </a>
-
-            <div class="dropdown-menu dropdown-list dropdown-menu-right">
-                <div class="dropdown-header">
-                    Active & Recent Exports
-                    <div class="float-right">
-                        <a href="javascript:void(0);" id="deleteAllExports" class="text-danger">Delete All</a>
-                    </div>
-                </div>
-                <div class="dropdown-list-content dropdown-list-icons" id="exportDownloadsList" style="height: auto; max-height: 350px; overflow-y: auto;">
-                    <!-- Export items will be injected here via JS -->
-                </div>
+        <h4 style="margin:0; font-weight:700; color:#1e293b; font-size:1.1rem; margin-right:24px;">Dashboard Overview</h4>
+        <form class="form-inline d-none d-lg-block">
+            <div style="border-radius:24px; padding:6px 16px; display:flex; align-items:center;">
+                <span class="material-symbols-outlined" style="color:#94a3b8; margin-right:8px; font-size:1.2rem;">search</span>
+                <input type="text" placeholder="Search..." style="border:none; background:transparent; outline:none; font-size:0.85rem; width:220px; color:#334155;">
             </div>
-        </li>
+        </form>
+    </div>
+
+    <ul class="navbar-nav navbar-right align-items-center">
+        
 
         @can('admin_notifications_list')
             <li class="dropdown dropdown-list-toggle">
-                <a href="#" data-toggle="dropdown" class="nav-link notification-toggle nav-link-lg @if(!empty($unreadNotifications) and count($unreadNotifications)) beep @else disabled @endif">
-                    <i class="far fa-bell"></i>
+                <a href="#" data-toggle="dropdown" class="nav-link notification-toggle nav-link-lg text-dark @if(!empty($unreadNotifications) and count($unreadNotifications)) beep @else disabled @endif" style="font-size:1.1rem;">
+                    <span class="material-symbols-outlined">notifications</span>
                 </a>
 
                 <div class="dropdown-menu dropdown-list dropdown-menu-right">
@@ -87,20 +57,18 @@
             </li>
         @endcan
 
-        <li class="dropdown"><a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
-                <img alt="image" src="https://storage.googleapis.com/astrolok/webp/store/1/astrologer_mobile/Alok Sir.webp" class="rounded-circle mr-1" style="width: 30px; height: 30px; object-fit: cover;">
-                <div class="d-sm-none d-lg-inline-block">{{ $authUser->full_name }}</div>
+        <li class="dropdown">
+            <a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user d-flex align-items-center" style="padding:0;">
+                <img alt="image" src="https://storage.googleapis.com/astrolok/webp/store/1/astrologer_mobile/Alok Sir.webp" class="rounded-circle mr-2" style="width: 38px; height: 38px; object-fit: cover; border: 2px solid #e2e8f0;">
+                <span class="text-slate-700 font-weight-bold">{{ $authUser->full_name }}</span>
             </a>
             <div class="dropdown-menu dropdown-menu-right">
-
-                 <a href="/" class="dropdown-item has-icon">
+                <a href="/" class="dropdown-item has-icon">
                     <i class="fas fa-globe"></i> {{ trans('admin/main.show_website') }}
                 </a>
-
                 <a href="{{ getAdminPanelUrl() }}/users/{{ $authUser->id }}/edit" class="dropdown-item has-icon">
                     <i class="fas fa-cog"></i> {{ trans('admin/main.change_password') }}
                 </a>
-
                 <div class="dropdown-divider"></div>
                 <a href="{{ getAdminPanelUrl() }}/logout" class="dropdown-item has-icon text-danger">
                     <i class="fas fa-sign-out-alt"></i> {{ trans('admin/main.logout') }}

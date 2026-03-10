@@ -1,0 +1,736 @@
+diff --git a/resources/views/admin/financial/sales/lists.blade.php b/resources/views/admin/financial/sales/lists.blade.php
+index 496c1b27..8362737f 100644
+--- a/resources/views/admin/financial/sales/lists.blade.php
++++ b/resources/views/admin/financial/sales/lists.blade.php
+@@ -1,342 +1,420 @@
+ @extends('admin.layouts.app')
+ 
++@push('styles_top')
++    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
++    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
++    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
++    <script>
++        tailwind.config = {
++            darkMode: "class",
++            theme: {
++                extend: {
++                    colors: {
++                        "primary": "#32A128",
++                        "accent": "#eab308",
++                        "background-light": "#F7F9FC",
++                        "background-dark": "#112210",
++                    },
++                    fontFamily: {
++                        "display": ["Inter", "sans-serif"]
++                    },
++                    borderRadius: {
++                        "DEFAULT": "0.25rem",
++                        "lg": "0.5rem",
++                        "xl": "0.75rem",
++                        "2xl": "12px",
++                        "3xl": "1.5rem",
++                        "full": "9999px"
++                    },
++                },
++            },
++        }
++    </script>
++    <style>
++        .page-container { font-family: 'Inter', sans-serif; }
++        .page-container .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
++        .section-header, .section-body > .card:first-child, .section-body > section.card { display: none !important; }
++        .no-scrollbar::-webkit-scrollbar { display: none; }
++        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
++        
++        /* Select2 override for premium look */
++        .select2-container--default .select2-selection--multiple { 
++            border-radius: 0.75rem; 
++            border-color: #f1f5f9; 
++            background-color: #f8fafc;
++            padding: 4px 8px; 
++            min-height: 48px;
++        }
++        .select2-container--default.select2-container--focus .select2-selection--multiple { 
++            border-color: #32A128; 
++            box-shadow: 0 0 0 2px rgba(50, 161, 40, 0.1);
++        }
++        .select2-container--default .select2-selection--multiple .select2-selection__choice {
++            background-color: white;
++            border: 1px solid #e2e8f0;
++            border-radius: 6px;
++            padding: 2px 8px;
++            font-size: 13px;
++            font-weight: 600;
++            color: #334155;
++            margin-top: 6px;
++        }
++        
++        .premium-card {
++            @apply bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden;
++        }
++    </style>
++@endpush
++
+ @section('content')
+-    <section class="section">
+-        <div class="section-header">
+-            <h1>{{ trans('admin/main.sales') }}</h1>
+-            <div class="section-header-breadcrumb">
+-                <div class="breadcrumb-item active"><a href="{{ getAdminPanelUrl() }}">{{trans('admin/main.dashboard')}}</a>
++<div class="page-container bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 p-4 md:p-8 space-y-8 h-full min-h-screen">
++
++    <!-- Title & Header Actions -->
++    <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
++        <div class="flex items-center gap-3">
++            <div class="size-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
++                <span class="material-symbols-outlined font-bold">payments</span>
++            </div>
++            <div>
++                <h2 class="text-2xl font-bold tracking-tight text-slate-800 dark:text-white">Sales Transactions</h2>
++                <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Financial Overview</p>
++            </div>
++        </div>
++        <div class="flex items-center gap-3">
++            @can('admin_sales_export')
++                <a href="{{ getAdminPanelUrl() }}/financial/sales/export" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-95">
++                    <span class="material-symbols-outlined text-[18px]">download</span>
++                    Export Ledger
++                </a>
++            @endcan
++        </div>
++    </header>
++
++    <!-- KPI Cards -->
++    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
++        <!-- Total Sales -->
++        <div class="premium-card p-6 md:p-8 relative group">
++            <div class="absolute right-0 top-0 w-32 h-32 bg-emerald-50 rounded-full -mr-10 -mt-10 transition-transform duration-500 group-hover:scale-110"></div>
++            <div class="relative z-10">
++                <div class="flex justify-between items-start mb-6">
++                    <div class="size-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
++                        <span class="material-symbols-outlined text-[26px]">account_balance_wallet</span>
++                    </div>
++                </div>
++                <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{{trans('admin/main.total_sales')}}</p>
++                <h4 class="text-3xl font-black text-slate-800 dark:text-white">{{ currencySign() }}{{ handlePrice($totalSales['amount'], false) }}</h4>
++                <div class="flex items-center gap-2 mt-3">
++                    <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-[11px] font-bold">+12%</span>
++                    <p class="text-[11px] text-slate-400 font-bold uppercase">{{ $totalSales['count'] }} Transactions</p>
+                 </div>
+-                <div class="breadcrumb-item">{{ trans('admin/main.sales') }}</div>
+             </div>
+         </div>
+ 
+-        <div class="section-body">
++        <!-- Class Sales -->
++        <div class="premium-card p-6 md:p-8 relative group">
++            <div class="absolute right-0 top-0 w-32 h-32 bg-blue-50 rounded-full -mr-10 -mt-10 transition-transform duration-500 group-hover:scale-110"></div>
++            <div class="relative z-10">
++                <div class="flex justify-between items-start mb-6">
++                    <div class="size-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
++                        <span class="material-symbols-outlined text-[26px]">play_circle</span>
++                    </div>
++                </div>
++                <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{{trans('admin/main.classes_sales')}}</p>
++                <h4 class="text-3xl font-black text-slate-800 dark:text-white">{{ currencySign() }}{{ handlePrice($classesSales['amount'], false) }}</h4>
++                <div class="flex items-center gap-2 mt-3">
++                    <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 text-[11px] font-bold">+8%</span>
++                    <p class="text-[11px] text-slate-400 font-bold uppercase">{{ $classesSales['count'] }} Courses</p>
++                </div>
++            </div>
++        </div>
+ 
+-            <div class="row">
+-                <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+-                    <div class="card card-statistic-1">
+-                        <div class="card-icon bg-primary">
+-                            <i class="fas fa-dollar-sign"></i>
+-                        </div>
+-                        <div class="card-wrap">
+-                            <div class="card-header">
+-                                <h4>{{trans('admin/main.total_sales')}}</h4>
+-                            </div>
+-                            <div class="card-body">
+-                                {{ $totalSales['count'] }}
+-                            </div>
+-                            <div class="text-primary font-weight-bold">
+-                                {{ handlePrice($totalSales['amount']) }}
+-                            </div>
+-                        </div>
++        <!-- Appointments Sales -->
++        <div class="premium-card p-6 md:p-8 relative group">
++            <div class="absolute right-0 top-0 w-32 h-32 bg-amber-50 rounded-full -mr-10 -mt-10 transition-transform duration-500 group-hover:scale-110"></div>
++            <div class="relative z-10">
++                <div class="flex justify-between items-start mb-6">
++                    <div class="size-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
++                        <span class="material-symbols-outlined text-[26px]">calendar_month</span>
+                     </div>
+                 </div>
+-                <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+-                    <div class="card card-statistic-1">
+-                        <div class="card-icon bg-success">
+-                            <i class="fas fa-play-circle"></i></div>
+-                        <div class="card-wrap">
+-                            <div class="card-header">
+-                                <h4>{{trans('admin/main.classes_sales')}}</h4>
+-                            </div>
+-                            <div class="card-body">
+-                                {{ $classesSales['count'] }}
+-                            </div>
+-                            <div class="text-success font-weight-bold">
+-                                {{ handlePrice($classesSales['amount']) }}
+-                            </div>
+-                        </div>
++                <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{{trans('admin/main.appointments_sales')}}</p>
++                <h4 class="text-3xl font-black text-slate-800 dark:text-white">{{ currencySign() }}{{ handlePrice($appointmentSales['amount'], false) }}</h4>
++                <div class="flex items-center gap-2 mt-3">
++                    <span class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-600 text-[11px] font-bold">+5%</span>
++                    <p class="text-[11px] text-slate-400 font-bold uppercase">{{ $appointmentSales['count'] }} Bookings</p>
++                </div>
++            </div>
++        </div>
++
++        <!-- Failed Sales -->
++        <div class="premium-card p-6 md:p-8 relative group">
++            <div class="absolute right-0 top-0 w-32 h-32 bg-rose-50 rounded-full -mr-10 -mt-10 transition-transform duration-500 group-hover:scale-110"></div>
++            <div class="relative z-10">
++                <div class="flex justify-between items-start mb-6">
++                    <div class="size-12 rounded-xl bg-rose-100 flex items-center justify-center text-rose-600">
++                        <span class="material-symbols-outlined text-[26px]">cancel</span>
+                     </div>
+                 </div>
+-                <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+-                    <div class="card card-statistic-1">
+-                        <div class="card-icon bg-warning">
+-                            <i class="fas fa-calendar-alt"></i></div>
+-                        <div class="card-wrap">
+-                            <div class="card-header">
+-                                <h4>{{trans('admin/main.appointments_sales')}}</h4>
+-                            </div>
+-                            <div class="card-body">
+-                                {{ $appointmentSales['count'] }}
+-                            </div>
+-                            <div class="text-danger font-weight-bold">
+-                                {{ handlePrice($appointmentSales['amount']) }}
+-                            </div>
+-                        </div>
++                <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{{trans('admin/main.faild_sales')}}</p>
++                <h4 class="text-3xl font-black text-slate-800 dark:text-white">{{ $failedSales }}</h4>
++                <div class="flex items-center gap-2 mt-3">
++                    <span class="px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 text-[11px] font-bold">-2%</span>
++                    <p class="text-[11px] text-slate-400 font-bold uppercase">Errors</p>
++                </div>
++            </div>
++        </div>
++    </div>
++
++    <!-- Filters Section -->
++    <div class="premium-card p-6 md:p-8">
++        <h2 class="text-lg font-black text-slate-800 dark:text-white flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
++            <span class="material-symbols-outlined text-primary">filter_list</span>
++            Search & Filter Records
++        </h2>
++        <form method="get" class="mb-0">
++            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
++                <div class="space-y-2">
++                    <label class="text-xs font-black text-slate-500 uppercase tracking-wider block">{{ trans('admin/main.search') }}</label>
++                    <div class="relative">
++                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
++                        <input type="text" class="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 placeholder:text-slate-400" name="item_title" value="{{ request()->get('item_title') }}" placeholder="Search item...">
+                     </div>
+                 </div>
+-                <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+-                    <div class="card card-statistic-1">
+-                        <div class="card-icon bg-danger">
+-                            <i class="fas fa-times"></i></div>
+-                        <div class="card-wrap">
+-                            <div class="card-header">
+-                                <h4>{{trans('admin/main.faild_sales')}}</h4>
+-                            </div>
+-                            <div class="card-body">
+-                                {{ $failedSales }}
+-                            </div>
+-                        </div>
++
++                <div class="grid grid-cols-2 gap-4">
++                    <div class="space-y-2">
++                        <label class="text-xs font-black text-slate-500 uppercase tracking-wider block">{{ trans('admin/main.start_date') }}</label>
++                        <input type="date" class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20 transition-all text-slate-800" name="from" value="{{ request()->get('from') }}">
++                    </div>
++                    <div class="space-y-2">
++                        <label class="text-xs font-black text-slate-500 uppercase tracking-wider block">{{ trans('admin/main.end_date') }}</label>
++                        <input type="date" class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20 transition-all text-slate-800" name="to" value="{{ request()->get('to') }}">
+                     </div>
+                 </div>
+-            </div>
+ 
+-            <section class="card">
+-                <div class="card-body">
+-                    <form method="get" class="mb-0">
+-                        <div class="row">
+-                            <div class="col-md-3">
+-                                <div class="form-group">
+-                                    <label class="input-label">{{ trans('admin/main.search') }}</label>
+-                                    <input type="text" class="form-control" name="item_title" value="{{ request()->get('item_title') }}">
+-                                </div>
+-                            </div>
++                <div class="space-y-2">
++                    <label class="text-xs font-black text-slate-500 uppercase tracking-wider block">{{ trans('admin/main.status') }}</label>
++                    <select name="status" class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20 transition-all text-slate-800 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%24%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010L12%2015L17%2010%22%20stroke%3D%22%2394A3B8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:calc(100%-12px)_center]">
++                        <option value="">{{ trans('admin/main.all_status') }}</option>
++                        <option value="success" @if(request()->get('status') == 'success') selected @endif>{{ trans('admin/main.success') }}</option>
++                        <option value="refund" @if(request()->get('status') == 'refund') selected @endif>{{ trans('admin/main.refund') }}</option>
++                        <option value="blocked" @if(request()->get('status') == 'blocked') selected @endif>{{ trans('update.access_blocked') }}</option>
++                    </select>
++                </div>
+ 
+-                            <div class="col-md-3">
+-                                <div class="form-group">
+-                                    <label class="input-label">{{ trans('admin/main.start_date') }}</label>
+-                                    <div class="input-group">
+-                                        <input type="date" id="fsdate" class="text-center form-control" name="from" value="{{ request()->get('from') }}" placeholder="Start Date">
+-                                    </div>
+-                                </div>
+-                            </div>
+-                            <div class="col-md-3">
+-                                <div class="form-group">
+-                                    <label class="input-label">{{ trans('admin/main.end_date') }}</label>
+-                                    <div class="input-group">
+-                                        <input type="date" id="lsdate" class="text-center form-control" name="to" value="{{ request()->get('to') }}" placeholder="End Date">
+-                                    </div>
+-                                </div>
+-                            </div>
++                <div class="space-y-2">
++                    <label class="text-xs font-black text-slate-500 uppercase tracking-wider block">{{ trans('admin/main.class') }}</label>
++                    <select name="webinar_ids[]" multiple="multiple" class="w-full search-webinar-select2">
++                        @if(!empty($webinars) and $webinars->count() > 0)
++                            @foreach($webinars as $webinar)
++                                <option value="{{ $webinar->id }}" selected>{{ $webinar->title }}</option>
++                            @endforeach
++                        @endif
++                    </select>
++                </div>
+ 
+-                            <div class="col-md-3">
+-                                <div class="form-group">
+-                                    <label class="input-label">{{ trans('admin/main.status') }}</label>
+-                                    <select name="status" data-plugin-selectTwo class="form-control populate">
+-                                        <option value="">{{ trans('admin/main.all_status') }}</option>
+-                                        <option value="success" @if(request()->get('status') == 'success') selected @endif>{{ trans('admin/main.success') }}</option>
+-                                        <option value="refund" @if(request()->get('status') == 'refund') selected @endif>{{ trans('admin/main.refund') }}</option>
+-                                        <option value="blocked" @if(request()->get('status') == 'blocked') selected @endif>{{ trans('update.access_blocked') }}</option>
+-                                    </select>
+-                                </div>
+-                            </div>
++                <div class="space-y-2">
++                    <label class="text-xs font-black text-slate-500 uppercase tracking-wider block">{{ trans('admin/main.instructor') }}</label>
++                    <select name="teacher_ids[]" multiple="multiple" data-search-option="just_teacher_role" class="w-full search-user-select2">
++                        @if(!empty($teachers) and $teachers->count() > 0)
++                            @foreach($teachers as $teacher)
++                                <option value="{{ $teacher->id }}" selected>{{ $teacher->full_name }}</option>
++                            @endforeach
++                        @endif
++                    </select>
++                </div>
+ 
+-                            <div class="col-md-3">
+-                                <div class="form-group">
+-                                    <label class="input-label">{{ trans('admin/main.class') }}</label>
+-                                    <select name="webinar_ids[]" multiple="multiple" class="form-control search-webinar-select2"
+-                                            data-placeholder="Search classes">
++                <div class="space-y-2">
++                    <label class="text-xs font-black text-slate-500 uppercase tracking-wider block">{{ trans('admin/main.student') }}</label>
++                    <select name="student_ids[]" multiple="multiple" data-search-option="just_student_role" class="w-full search-user-select2">
++                        @if(!empty($students) and $students->count() > 0)
++                            @foreach($students as $student)
++                                <option value="{{ $student->id }}" selected>{{ $student->full_name }}</option>
++                            @endforeach
++                        @endif
++                    </select>
++                </div>
+ 
+-                                        @if(!empty($webinars) and $webinars->count() > 0)
+-                                            @foreach($webinars as $webinar)
+-                                                <option value="{{ $webinar->id }}" selected>{{ $webinar->title }}</option>
+-                                            @endforeach
++                <div class="space-y-2 flex items-end lg:col-start-4">
++                    <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white px-5 py-3 rounded-xl text-sm font-black transition-all flex justify-center items-center shadow-lg shadow-primary/20 h-[48px] uppercase tracking-wider">
++                        {{ trans('admin/main.show_results') }}
++                    </button>
++</div>
++        </form>
++    </div>
++
++    <!-- Data Table -->
++    <div class="premium-card flex flex-col">
++        <div class="overflow-x-auto no-scrollbar">
++            <table class="w-full text-left border-collapse">
++                <thead class="bg-slate-50 border-b border-slate-100">
++                    <tr>
++                        <th class="px-6 py-4 text-[11px] font-black uppercase tracking-[0.15em] text-slate-400"># ID</th>
++                        <th class="px-6 py-4 text-[11px] font-black uppercase tracking-[0.15em] text-slate-400">{{ trans('admin/main.student') }}</th>
++                        <th class="px-6 py-4 text-[11px] font-black uppercase tracking-[0.15em] text-slate-400">{{ trans('admin/main.instructor') }}</th>
++                        <th class="px-6 py-4 text-[11px] font-black uppercase tracking-[0.15em] text-slate-400">{{ trans('admin/main.item') }}</th>
++                        <th class="px-6 py-4 text-[11px] font-black uppercase tracking-[0.15em] text-slate-400">Financials</th>
++                        <th class="px-6 py-4 text-[11px] font-black uppercase tracking-[0.15em] text-slate-400">{{ trans('admin/main.sale_type') }}</th>
++                        <th class="px-6 py-4 text-[11px] font-black uppercase tracking-[0.15em] text-slate-400 text-center">{{ trans('admin/main.status') }}</th>
++                        <th class="px-6 py-4 text-[11px] font-black uppercase tracking-[0.15em] text-slate-400 text-right">Actions</th>
++                    </tr>
++                </thead>
++                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
++                    @foreach($sales as $sale)
++                        <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors group">
++                            <td class="px-6 py-5 text-sm font-black text-slate-700 dark:text-slate-300">
++                                #{{ $sale['id'] }}
++                            </td>
++                            <td class="px-6 py-5">
++                                <div class="flex items-center gap-3">
++                                    <div class="size-10 rounded-xl bg-slate-100 flex items-center justify-center text-sm font-black text-slate-600 shrink-0 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
++                                        @if(!empty($sale['buyer']))
++                                            {{ strtoupper(substr($sale['buyer']['full_name'], 0, 1)) }}
++                                        @else
++                                            U
+                                         @endif
+-                                    </select>
++                                    </div>
++                                    <div>
++                                        <div class="text-sm font-bold text-slate-800 dark:text-white line-clamp-1 group-hover:text-primary transition-colors">
++                                            {{ !empty($sale['buyer']) ? $sale['buyer']['full_name'] : 'Deleted User' }}
++                                        </div>
++                                        <div class="text-[11px] font-semibold text-slate-400 mt-0.5">ID: {{ !empty($sale['buyer']) ? $sale['buyer']['id'] : '-' }}</div>
++                                    </div>
+                                 </div>
+-                            </div>
+-
+-                            <div class="col-md-3">
+-                                <div class="form-group">
+-                                    <label class="input-label">{{ trans('admin/main.instructor') }}</label>
+-                                    <select name="teacher_ids[]" multiple="multiple" data-search-option="just_teacher_role" class="form-control search-user-select2"
+-                                            data-placeholder="Search teachers">
+-
+-                                        @if(!empty($teachers) and $teachers->count() > 0)
+-                                            @foreach($teachers as $teacher)
+-                                                <option value="{{ $teacher->id }}" selected>{{ $teacher->full_name }}</option>
+-                                            @endforeach
++                            </td>
++                            <td class="px-6 py-5">
++                                @if(!empty($sale['item_seller']))
++                                    <div class="text-sm font-bold text-slate-700 dark:text-slate-300 line-clamp-1">{{ $sale['item_seller'] }}</div>
++                                    <div class="text-[11px] font-semibold text-slate-400 mt-0.5">ID: {{ $sale['seller_id'] }}</div>
++                                @else
++                                    <span class="text-slate-300 font-black text-lg">-</span>
++                                @endif
++                            </td>
++                            <td class="px-6 py-5 max-w-[200px]">
++                                @if(!empty($sale->item_id))
++                                    <div class="text-sm font-bold text-slate-700 dark:text-slate-300 line-clamp-2 leading-tight" title="{{ $sale->item_title }}">{{ $sale->item_title }}</div>
++                                    <div class="text-[11px] font-semibold text-slate-400 mt-1">ID: {{ $sale->item_id }}</div>
++                                @else
++                                    <div class="text-sm font-bold text-slate-700 dark:text-slate-300 line-clamp-2 leading-tight" title="{{ $sale->webinar->title ?? '' }}">{{ $sale->webinar->title ?? '' }}</div>
++                                    <div class="text-[11px] font-semibold text-slate-400 mt-1">ID: {{ $sale->webinar_id }}</div>
++                                @endif
++                            </td>
++                            <td class="px-6 py-5">
++                                <div class="flex flex-col gap-1">
++                                    <span class="text-[15px] font-black text-slate-800 dark:text-white">
++                                        @if($sale['payment_method'] == \App\Models\Sale::$subscribe)
++                                            <span class="text-primary text-sm tracking-wide">{{ trans('admin/main.subscribe') }}</span>
++                                        @else
++                                            @if(!empty($sale->total_amount))
++                                                {{ currencySign() }}{{ handlePrice($sale->total_amount ?? 0, false) }}
++                                            @elseif(!empty($sale->amount))
++                                                {{ currencySign() }}{{ handlePrice($sale->amount ?? 0, false) }}
++                                            @else
++                                                <span class="text-emerald-500 text-sm tracking-wide">{{ trans('public.free') }}</span>
++                                            @endif
+                                         @endif
+-                                    </select>
+-                                </div>
+-                            </div>
+-
+-                            <div class="col-md-3">
+-                                <div class="form-group">
+-                                    <label class="input-label">{{ trans('admin/main.student') }}</label>
+-                                    <select name="student_ids[]" multiple="multiple" data-search-option="just_student_role" class="form-control search-user-select2"
+-                                            data-placeholder="Search students">
+-
+-                                        @if(!empty($students) and $students->count() > 0)
+-                                            @foreach($students as $student)
+-                                                <option value="{{ $student->id }}" selected>{{ $student->full_name }}</option>
+-                                            @endforeach
++                                    </span>
++                                    <div class="flex flex-wrap gap-2">
++                                        <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">Tax: {{ currencySign() }}{{ handlePrice($sale->tax ?? 0, false) }}</span>
++                                        @if($sale->discount > 0)
++                                            <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Disc: {{ currencySign() }}{{ handlePrice($sale->discount ?? 0, false) }}</span>
+                                         @endif
+-                                    </select>
+-                                </div>
+-                            </div>
+-
+-                            <div class="col-md-3">
+-                                <div class="form-group mt-1">
+-                                    <label class="input-label mb-4"> </label>
+-                                    <input type="submit" class="text-center btn btn-primary w-100" value="{{ trans('admin/main.show_results') }}">
++                                    </div>
+                                 </div>
+-                            </div>
+-                        </div>
+-
+-                    </form>
+-                </div>
+-            </section>
+-
+-            <div class="row">
+-                <div class="col-12 col-md-12">
+-                    <div class="card">
+-                        <div class="card-header">
+-                            @can('admin_sales_export')
+-                                <a href="{{ getAdminPanelUrl() }}/financial/sales/export" class="btn btn-primary">{{ trans('admin/main.export_xls') }}</a>
+-                            @endcan
+-                        </div>
+-
+-                        <div class="card-body">
+-                            <div class="table-responsive">
+-                                <table class="table table-striped font-14">
+-                                    <tr>
+-                                        <th>#</th>
+-                                        <th class="text-left">{{ trans('admin/main.student') }}</th>
+-                                        <th class="text-left">{{ trans('admin/main.instructor') }}</th>
+-                                        <th>{{ trans('admin/main.paid_amount') }}</th>
+-                                        <th>{{ trans('admin/main.discount') }}</th>
+-                                        <th>{{ trans('admin/main.tax') }}</th>
+-                                        <th class="text-left">{{ trans('admin/main.item') }}</th>
+-                                        <th>{{ trans('admin/main.sale_type') }}</th>
+-                                        <th>{{ trans('admin/main.date') }}</th>
+-                                        <th>{{ trans('admin/main.status') }}</th>
+-                                        <th width="120">{{ trans('admin/main.actions') }}</th>
+-                                    </tr>
+-
+-                                    @foreach($sales as $sale)
+-                                        <tr>
+-                                            <td>{{ $sale['id' ]}}</td>
+-
+-                                            <td class="text-left">
+-                                                {{ !empty($sale['buyer']) ? $sale['buyer']['full_name'] : '' }}
+-                                                <div class="text-primary text-small font-600-bold">ID : {{  !empty($sale['buyer']) ? $sale['buyer']['id']: '' }}</div>
+-                                            </td>
+-
+-                                            <td class="text-left">
+-                                                 @if(!empty($sale['item_seller']))
+-                                                {{ $sale['item_seller'] }}
+-                                                <div class="text-primary text-small font-600-bold">ID : {{  $sale['seller_id'] }}</div>
+-                                                 @else
+-
+-                                                <div class="text-primary text-small font-600-bold"></div>
+-                                                     @endif
+-                                            </td>
+-
+-                                            <td>
+-                                                @if($sale['payment_method'] == \App\Models\Sale::$subscribe)
+-                                                    <span class="">{{ trans('admin/main.subscribe') }}</span>
+-                                                @else
+-                                                    @if(!empty($sale->total_amount))
+-                                                        <span class="">{{ handlePrice($sale->total_amount ?? 0) }}</span>
+-                                                    @else
+-                                                      @if(!empty($sale->amount))
+-                                                      <span class="">{{ handlePrice($sale->amount ?? 0) }}</span>
+-                                                       @else
+-                                                        <span class="">{{ trans('public.free') }}</span>
+-                                                        @endif
+-                                                    @endif
++                            </td>
++                            <td class="px-6 py-5">
++                                <span class="bg-slate-100 text-slate-600 text-[11px] font-bold px-3 py-1 rounded-lg">
++                                    @if(!empty($sale->item_id))
++                                        @if($sale->type == \App\Models\Sale::$registrationPackage)
++                                            {{ trans('update.registration_package') }}
++                                        @elseif($sale->type == \App\Models\Sale::$product)
++                                            {{ trans('update.product') }}
++                                        @elseif($sale->type == \App\Models\Sale::$bundle)
++                                            {{ trans('update.bundle') }}
++                                        @elseif($sale->type == \App\Models\Sale::$gift)
++                                            {{ trans('update.gift') }}
++                                        @elseif($sale->type == \App\Models\Sale::$installmentPayment)
++                                            {{ trans('update.installment_payment') }}
++                                        @else
++                                            {{ trans('admin/main.'.$sale->type) }}
++                                        @endif
++                                    @else
++                                        Part Payment
++                                    @endif
++                                </span>
++                            </td>
++                            <td class="px-6 py-5 text-center">
++                                @if(!empty($sale->item_id))
++                                    @if(!empty($sale->refund_at))
++                                        <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-amber-50 text-amber-600 border border-amber-100">Refund</span>
++                                    @elseif(!$sale->access_to_purchased_item)
++                                        <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100">Blocked</span>
++                                    @else
++                                        <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary border border-primary/20">Success</span>
++                                    @endif
++                                @else
++                                    <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary border border-primary/20">Success</span>
++                                @endif
++                            </td>
++                            <td class="px-6 py-5">
++                                <div class="flex flex-col items-end gap-3 w-full">
++                                    <span class="text-xs font-bold text-slate-500">{{ dateTimeFormat($sale->created_at, 'd M Y') }}</span>
++                                    <div class="flex items-center gap-2 opacity-30 group-hover:opacity-100 transition-opacity">
++                                        @if(!empty($sale->item_id))
++                                            @can('admin_sales_invoice')
++                                                @if(!empty($sale->webinar_id) || !empty($sale->subscription_id) || !empty($sale->bundle_id))
++                                                    <a href="{{ getAdminPanelUrl() }}/financial/sales/{{ $sale->id }}/invoice" target="_blank" class="size-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-primary hover:text-white transition-all hover:scale-105 hover:shadow-lg hover:shadow-primary/20" title="{{ trans('admin/main.invoice') }}">
++                                                        <span class="material-symbols-outlined text-[18px]">receipt_long</span>
++                                                    </a>
+                                                 @endif
+-                                            </td>
+-                                            <td>
+-                                                <span class="">{{ handlePrice($sale->discount ?? 0) }}</span>
+-                                            </td>
+-                                            <td>
+-                                                <span class="">{{ handlePrice($sale->tax ?? 0) }}</span>
+-                                            </td>
+-                                            <td class="text-left">
+-                                                <div class="media-body">
+-                                                     @if(!empty($sale->item_id))
+-                                                       <div>{{ $sale->item_title }}</div>
+-                                                    <div class="text-primary text-small font-600-bold">ID : {{ $sale->item_id }}</div>
+-                                                    @else
+-
+-                                                      <div>{{ $sale->webinar->title }}</div>
+-                                                    <div class="text-primary text-small font-600-bold">ID : {{ $sale->webinar_id }}</div>
+-
+-                                                    @endif
+-
+-                                                </div>
+-                                            </td>
+-
+-                                            <td>
+-                                                <span class="font-weight-bold">
+-                                                     @if(!empty($sale->item_id))
+-                                                    @if($sale->type == \App\Models\Sale::$registrationPackage)
+-                                                        {{ trans('update.registration_package') }}
+-                                                    @elseif($sale->type == \App\Models\Sale::$product)
+-                                                        {{ trans('update.product') }}
+-                                                    @elseif($sale->type == \App\Models\Sale::$bundle)
+-                                                        {{ trans('update.bundle') }}
+-                                                    @elseif($sale->type == \App\Models\Sale::$gift)
+-                                                        {{ trans('update.gift') }}
+-                                                    @elseif($sale->type == \App\Models\Sale::$installmentPayment)
+-                                                        {{ trans('update.installment_payment') }}
+-                                                    @else
+-                                                        {{ trans('admin/main.'.$sale->type) }}
+-                                                    @endif
+-                                                    @else
+-                                                    Part Payment
+-                                                    @endif
+-                                                </span>
+-                                            </td>
+-
+-                                            <td>
+-                                                {{ dateTimeFormat($sale->created_at, 'j F Y H:i') }}
+-                                                </td>
+-
+-                                            <td>
+-                                                 @if(!empty($sale->item_id))
+-                                                @if(!empty($sale->refund_at))
+-                                                    <span class="text-warning">{{ trans('admin/main.refund') }}</span>
+-                                                @elseif(!$sale->access_to_purchased_item)
+-                                                    <span class="text-danger">{{ trans('update.access_blocked') }}</span>
+-                                                @else
+-                                                    <span class="text-success">{{ trans('admin/main.success') }}</span>
++                                            @endcan
++                                            @can('admin_sales_refund')
++                                                @if(empty($sale->refund_at) and $sale->payment_method != \App\Models\Sale::$subscribe)
++                                                    <button class="size-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-amber-500 hover:text-white transition-all hover:scale-105 hover:shadow-lg hover:shadow-amber-500/20" onclick="document.getElementById('deleteForm-{{ $sale->id }}').submit();" title="{{ trans('admin/main.refund') }}">
++                                                        <span class="material-symbols-outlined text-[18px]">money_off</span>
++                                                    </button>
++                                                    <form id="deleteForm-{{ $sale->id }}" action="{{ getAdminPanelUrl() }}/financial/sales/{{ $sale->id }}/refund" method="POST" style="display: none;">
++                                                        @csrf
++                                                        <input type="hidden" name="_method" value="DELETE">
++                                                    </form>
+                                                 @endif
+-                                                  @else
+-                                                     <span class="text-success">{{ trans('admin/main.success') }}</span>
+-                                                    @endif
+-                                            </td>
+-
+-                                            <td>
+-                                                 @if(!empty($sale->item_id))
+-                                                @can('admin_sales_invoice')
+-                                               @if(!empty($sale->webinar_id) || !empty($sale->subscription_id) || !empty($sale->bundle_id))
+-                                                        <a href="{{ getAdminPanelUrl() }}/financial/sales/{{ $sale->id }}/invoice" target="_blank" title="{{ trans('admin/main.invoice') }}"><i class="fa fa-print" aria-hidden="true"></i></a>
+-                                                    @endif
+-                                                @endcan
+-
+-                                                @can('admin_sales_refund')
+-                                                    @if(empty($sale->refund_at) and $sale->payment_method != \App\Models\Sale::$subscribe)
+-                                                        @include('admin.includes.delete_button',[
+-                                                                'url' => getAdminPanelUrl().'/financial/sales/'. $sale->id .'/refund',
+-                                                                'tooltip' => trans('admin/main.refund'),
+-                                                                'btnIcon' => 'fa-times-circle'
+-                                                            ])
+-                                                    @endif
+-                                                @endcan
+-                                                 @else
+-                                                      <a href="#"  title="{{ trans('admin/main.invoice') }}"><i class="fa fa-print" aria-hidden="true"></i></a>
+-
+-                                                    @endif
+-                                            </td>
+-                                        </tr>
+-                                    @endforeach
+-
+-                                </table>
+-                            </div>
+-                        </div>
+-
+-                        <div class="card-footer text-center">
+-                            {{ $sales->links('pagination::bootstrap-4') }}
+-                        </div>
+-
+-                    </div>
+-                </div>
+-            </div>
++                                            @endcan
++                                        @else
++                                            <a href="#" class="size-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-primary hover:text-white transition-all hover:scale-105 hover:shadow-lg hover:shadow-primary/20" title="{{ trans('admin/main.invoice') }}">
++                                                <span class="material-symbols-outlined text-[18px]">receipt_long</span>
++                                            </a>
++                                        @endif
++                                    </div>
++                                </div>
++                            </td>
++                        </tr>
++                    @endforeach
++                </tbody>
++            </table>
+         </div>
+-    </section>
++        
++        <div class="px-6 py-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
++            {{ $sales->appends(request()->input())->links('pagination::tailwind') }}
++        </div>
++    </div>
++
++</div>
+ @endsection
+ 
++@push('scripts_bottom')
++    <script>
++        $(document).ready(function() {
++            // Apply Select2 to multiselects but override style slightly
++            if (jQuery().select2) {
++                $('.search-webinar-select2').select2({
++                    placeholder: "Select Class",
++                    allowClear: true
++                });
++                $('.search-user-select2').select2({
++                    placeholder: "Select User",
++                    allowClear: true
++                });
++            }
++        });
++    </script>
++@endpush

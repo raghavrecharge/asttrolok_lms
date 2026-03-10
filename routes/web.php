@@ -202,15 +202,19 @@ Route::group(['namespace' => 'Web', 'middleware' => ['check_mobile_app', 'impers
         Route::get('/logs/{ticketId}/timeline', [\App\Http\Controllers\Admin\SupportLogController::class, 'timeline'])->name('admin.support.logs.timeline');
     });
 
-    Route::fallback(function () {
-        return view("errors.404", ['pageTitle' => trans('public.error_404_page_title')]);
-    });
-
     // set Locale
     Route::post('/locale', 'LocaleController@setLocale')->name('appLocaleRoute');
 
     // set Locale
     Route::post('/set-currency', 'SetCurrencyController@setCurrency');
+
+    // Global Pricing - Currency API
+    Route::get('/currency/current', 'CurrencyController@currentCurrency');
+    Route::get('/currency/price', 'CurrencyController@resolvePrice');
+
+    Route::fallback(function () {
+        return view("errors.404", ['pageTitle' => trans('public.error_404_page_title')]);
+    });
     
     Route::get('/cronjob', 'InstallmentsController@cronJob');
     

@@ -439,8 +439,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 key: data.key,
                 amount: data.amount,
                 currency: data.currency,
-                name: 'Asttrolok - Wallet Top Up',
-                description: 'Add ₹' + amount + ' to wallet',
+                name: data.site_name + ' - Wallet Top Up',
+                description: 'Add ' + (data.currency === 'INR' ? '₹' : data.currency) + amount + ' to wallet',
                 order_id: data.razorpay_order_id,
                 handler: function(response) {
                     loader.style.display = 'flex';

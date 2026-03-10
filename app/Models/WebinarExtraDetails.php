@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class WebinarExtraDetails extends Model
 {
     protected $table = 'webinar_extra_details';
-    
+
     protected $fillable = [
         'webinar_id',
         'plan_type',
@@ -51,19 +51,21 @@ class WebinarExtraDetails extends Model
         'risk_title',
         'risk_description',
         'cta_text',
+        'mentor_name',
+        'mentor_designation',
+        'mentor_bio',
+        'mentor_image',
     ];
-
-protected $casts = [
-    'material_text' => 'array',
-    'material_icon' => 'array',
-    'learn_text' => 'array',
-    'learn_icon' => 'array',
-    'certification_time' => 'array',
-    'certification_focus' => 'array',
-    'certification_outcome' => 'array',
-    'rate_options' => 'array',
-    'rate_icon' => 'array',
-];
+    protected $casts = [
+        'material_text' => 'array',
+        'material_icon' => 'array',
+        'learn_text' => 'array',
+        'learn_icon' => 'array',
+        'certification_time' => 'array',
+        'certification_focus' => 'array',
+        'certification_outcome' => 'array',
+        'rate_options' => 'array',
+        'rate_icon' => 'array',    ];
 
 
     public function webinar()

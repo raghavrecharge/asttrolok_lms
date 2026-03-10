@@ -21,17 +21,17 @@ class Setting extends Model implements TranslatableContract
         return getTranslateAttributeValue($this, 'value');
     }
 
-    static $seoMetas, $socials,$sidebanner,
-        $footer, $general, $homeSections, $features,
-        $financial, $offlineBanks, $referral, $currencySettings,
-        $homeHero, $homeHero2, $homeVideoOrImage,
-        $pageBackground, $customCssJs,
-        $reportReasons, $notificationTemplates,
-        $contactPage, $Error404Page, $navbarLink, $panelSidebar, $findInstructors, $rewardProgram, $rewardsSettings, $storeSettings,
-        $registrationPackagesGeneral, $registrationPackagesInstructors, $registrationPackagesOrganizations, $becomeInstructorSection,
-        $themeColors, $themeFonts, $forumHomeSection, $cookieSettings, $mobileAppSettings, $remindersSettings, $generalSecuritySettings, $advertisingModal,
-        $othersPersonalization, $installmentsSettings, $installmentsTermsSettings, $registrationBonusSettings, $registrationBonusTermsSettings, $statisticsSettings,
-        $maintenanceSettings, $generalOptions, $giftsGeneralSettings,$video;
+    static $seoMetas, $socials, $sidebanner,
+    $footer, $general, $homeSections, $features,
+    $financial, $offlineBanks, $referral, $currencySettings,
+    $homeHero, $homeHero2, $homeVideoOrImage,
+    $pageBackground, $customCssJs,
+    $reportReasons, $notificationTemplates,
+    $contactPage, $Error404Page, $navbarLink, $panelSidebar, $findInstructors, $rewardProgram, $rewardsSettings, $storeSettings,
+    $registrationPackagesGeneral, $registrationPackagesInstructors, $registrationPackagesOrganizations, $becomeInstructorSection,
+    $themeColors, $themeFonts, $forumHomeSection, $cookieSettings, $mobileAppSettings, $remindersSettings, $generalSecuritySettings, $advertisingModal,
+    $othersPersonalization, $installmentsSettings, $installmentsTermsSettings, $registrationBonusSettings, $registrationBonusTermsSettings, $statisticsSettings,
+    $maintenanceSettings, $generalOptions, $giftsGeneralSettings, $video;
 
     static $seoMetasName = 'seo_metas';
     static $socialsName = 'socials';
@@ -84,7 +84,7 @@ class Setting extends Model implements TranslatableContract
 
     static $pagesSeoMetas = ['home', 'search', 'categories', 'classes', 'login', 'register', 'contact', 'blog', 'certificate_validation',
         'instructors', 'organizations', 'instructor_finder_wizard', 'instructor_finder', 'reward_courses', 'products_lists', 'reward_products',
-        'forum', 'upcoming_courses_lists','remedies'
+        'forum', 'upcoming_courses_lists', 'remedies'
     ];
     static $mainSettingSections = ['general', 'financial', 'payment', 'home_hero', 'home_hero2', 'page_background', 'home_video_or_image_box'];
     static $mainSettingPages = ['general', 'financial', 'personalization', 'notifications', 'seo', 'customization', 'other'];
@@ -133,7 +133,8 @@ class Setting extends Model implements TranslatableContract
         if (!empty($value) and !empty($key)) {
             if (!empty($value[$key])) {
                 return $value[$key];
-            } else {
+            }
+            else {
                 return null;
             }
         }
@@ -204,7 +205,7 @@ class Setting extends Model implements TranslatableContract
         return self::getSetting(self::$homeVideoOrImage, self::$homeVideoOrImageName);
     }
 
-    static function getPageBackgroundSettings($page = null)
+    static function getPageBackgroundSettings(?string $page = null)
     {
         return self::getSetting(self::$pageBackground, self::$pageBackgroundName, $page);
     }

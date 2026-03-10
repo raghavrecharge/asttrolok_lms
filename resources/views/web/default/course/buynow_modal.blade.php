@@ -131,11 +131,7 @@
                         @endif
                     </button>
                 @else
-                    @if($course->slug == 'learn-free-vedic-astrology-course-online' )
-                    <a href="/register-free" class=" btn btn-primary {{ (!$canSale) ? (' disabled ' . $course->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
-                    @else
                     <a href="{{ $canSale ? '/course/'. $course->slug .'/free' : '#' }}" class=" btn btn-primary {{ (!$canSale) ? (' disabled ' . $course->cantSaleStatus($hasBought)) : '' }}">{{ trans('public.enroll_on_webinar') }}</a>
-                    @endif
                 @endif
 
             </div>

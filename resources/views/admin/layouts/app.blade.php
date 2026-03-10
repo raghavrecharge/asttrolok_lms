@@ -32,6 +32,130 @@
         {!! !empty(getCustomCssAndJs('css')) ? getCustomCssAndJs('css') : '' !!}
 
         {!! getThemeColorsSettings(true) !!}
+
+        /* --- New Dashboard Aesthetic --- */
+        body { background: #f8fafc !important; font-family: 'Inter', sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto; }
+        .main-content { background: #f8fafc !important; padding-top: 80px; padding-left: 280px; transition: all 0.3s; }
+        .main-sidebar { background: #fff !important; border-right: 1px solid #f1f5f9; box-shadow: none !important; width: 260px !important; }
+        .sidebar-menu li.active > a { 
+            background: #f0fdf4 !important; /* light green */
+            color: #16a34a !important; /* green text */
+            border-radius: 12px; 
+            margin: 0 10px;
+            font-weight: 700;
+        }
+        .sidebar-menu li.active > a i { color: #16a34a !important; }
+        .sidebar-menu li a { color: #475569; font-weight: 600; font-size: 0.95rem; margin: 0 10px; transition: all 0.2s; border-radius: 12px; padding: 12px 18px !important; display: flex !important; align-items: center !important; }
+        .sidebar-menu li a:hover:not(.active) { background: #f8fafc; color: #1e293b; }
+        .sidebar-menu .menu-header { color: #94a3b8; font-weight: 800; font-size: 0.75rem; letter-spacing: 1px; padding: 25px 25px 10px !important; text-transform: uppercase; }
+        .navbar-bg { display: none !important; }
+        .main-navbar { position: fixed; top: 0; right: 0; left: 260px; z-index: 1030; height: 75px; background: transparent !important; border-bottom: 1px solid #f1f5f9; box-shadow: none !important; transition: all 0.3s; }
+        .main-navbar .nav-link, .main-navbar h4, .main-navbar .text-dark, .main-navbar .nav-link-user .d-lg-inline-block { color: #1e293b !important; }
+        .main-navbar .material-symbols-outlined { color: #64748b !important; }
+        .main-navbar .form-inline input::placeholder { color: #94a3b8; }
+        .main-navbar .form-inline input { color: #334155 !important; }
+        .main-navbar .form-inline div { background: #f8fafc !important; border: 1px solid #f1f5f9 !important; }
+        .navbar-bg { background-color: transparent !important; height: 115px !important; }
+        
+        @media (max-width: 1024px) {
+            .main-navbar { left: 0; padding-left: 20px !important; }
+            .main-content { padding-left: 20px; }
+        }
+        
+        /* Material Symbols Integration */
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+          display: inline-block;
+          vertical-align: middle;
+        }
+
+        /* ========== GLOBAL COMPACT SPACING ========== */
+
+        /* Tighter main content padding */
+        .main-content { padding: 75px 20px 20px 275px !important; }
+        .main-content .section { padding: 0 !important; }
+        .main-content .section .section-body { padding: 0 !important; }
+
+        /* Compact cards */
+        .card { border-radius: 12px !important; margin-bottom: 12px !important; border: 1px solid #e2e8f0 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important; }
+        .card .card-header { padding: 12px 16px !important; min-height: auto !important; }
+        .card .card-body { padding: 12px 16px !important; }
+        .card .card-footer { padding: 10px 16px !important; }
+
+        /* Compact tables */
+        .table th { padding: 8px 12px !important; font-size: 11px !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; color: #64748b !important; background: #f8fafc !important; border-bottom: 2px solid #e2e8f0 !important; white-space: nowrap !important; }
+        .table td { padding: 8px 12px !important; font-size: 13px !important; vertical-align: middle !important; border-bottom: 1px solid #f1f5f9 !important; }
+        .table tbody tr:hover { background: #f8fafc !important; }
+        .table-striped tbody tr:nth-of-type(odd) { background: #fafbfc !important; }
+        .table-bordered th, .table-bordered td { border: 1px solid #e2e8f0 !important; }
+
+        /* Reduce section header spacing */
+        .section-header { padding: 8px 0 !important; margin-bottom: 8px !important; }
+        .section-header h1 { font-size: 1.25rem !important; font-weight: 800 !important; }
+
+        /* Compact form groups */
+        .form-group { margin-bottom: 12px !important; }
+        .form-group label, .form-group .input-label { font-size: 12px !important; font-weight: 600 !important; margin-bottom: 4px !important; }
+        .form-control { padding: 6px 12px !important; height: 38px !important; font-size: 13px !important; border-radius: 8px !important; }
+        textarea.form-control { height: auto !important; }
+        .custom-select { height: 38px !important; padding: 6px 12px !important; font-size: 13px !important; border-radius: 8px !important; }
+
+        /* Compact buttons */
+        .btn { padding: 6px 16px !important; font-size: 13px !important; border-radius: 8px !important; }
+        .btn-lg { padding: 8px 20px !important; }
+        .btn-sm { padding: 4px 10px !important; font-size: 11px !important; }
+
+        /* Compact pagination */
+        .pagination { margin: 8px 0 !important; }
+        .pagination .page-link { padding: 4px 10px !important; font-size: 12px !important; }
+
+        /* Compact breadcrumb */
+        .breadcrumb { padding: 6px 0 !important; margin-bottom: 8px !important; font-size: 12px !important; }
+
+        /* Reduce row gutters */
+        .row { margin-left: -8px !important; margin-right: -8px !important; }
+        .row > [class*="col-"] { padding-left: 8px !important; padding-right: 8px !important; }
+
+        /* Compact alert/info boxes */
+        .alert { padding: 8px 14px !important; font-size: 13px !important; border-radius: 8px !important; margin-bottom: 10px !important; }
+
+        /* Compact modal */
+        .modal-header { padding: 12px 16px !important; }
+        .modal-body { padding: 16px !important; }
+        .modal-footer { padding: 10px 16px !important; }
+
+        /* Tighter badge */
+        .badge { padding: 3px 8px !important; font-size: 10px !important; font-weight: 700 !important; border-radius: 6px !important; }
+
+        /* Compact nav tabs */
+        .nav-tabs .nav-link { padding: 6px 14px !important; font-size: 13px !important; }
+
+        /* Remove excessive margins on headings inside content */
+        .section-body h1, .section-body h2, .section-body h3 { margin-bottom: 8px !important; }
+        .section-body p { margin-bottom: 6px !important; }
+
+        /* Sidebar compact */
+        .sidebar-menu li { margin-bottom: 2px !important; }
+        .sidebar-menu li a { padding: 10px 16px !important; font-size: 14px !important; }
+
+        @media (max-width: 1024px) {
+            .main-content { padding: 75px 12px 12px 12px !important; }
+        }
+
+        /* --- Skeleton Loader --- */
+        .skeleton {
+            background: #eee;
+            background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+            border-radius: 5px;
+            background-size: 200% 100%;
+            animation: 1.5s shine linear infinite;
+        }
+
+        @keyframes shine {
+            to {
+                background-position-x: -200%;
+            }
+        }
     </style>
 </head>
 <body class="@if($isRtl) rtl @endif">
@@ -130,6 +254,26 @@
 </script>
 
 <script src="/assets/admin/js/custom.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<script>
+    window.confirmDelete = function(url) {
+        Swal.fire({
+            title: deleteAlertTitle,
+            text: deleteAlertHint,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#f63c3c',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: deleteAlertConfirm,
+            cancelButtonText: deleteAlertCancel
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+    }
+</script>
 <script>
     {!! !empty(getCustomCssAndJs('js')) ? getCustomCssAndJs('js') : '' !!}
 </script>

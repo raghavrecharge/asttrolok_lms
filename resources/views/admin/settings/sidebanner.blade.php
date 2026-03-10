@@ -1,71 +1,83 @@
 @extends('admin.layouts.app')
 
 @push('styles_top')
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/default/vendors/select2/select2.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#16A34A",
+                        "primary-light": "#F0FDF4",
+                        "accent": "#eab308",
+                        "background-light": "#f8fafc",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"], "body": ["Inter", "sans-serif"] },
+                },
+            },
+        }
+    </script>
+    <style>
+        .settings-page { font-family: 'Inter', sans-serif; }
+        .settings-page .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .section-header, .section-body > .card:first-child { display: none !important; }
+        
+        /* Inner Form Overrides for Premium Look */
+        form label { @apply text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1 ml-1 !important; }
+        form .form-control { 
+            @apply w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700 !important;
+            height: auto !important;
+        }
+        form .btn-primary { 
+            @apply px-6 py-3 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all border-none !important;
+        }
+
+        .input-group-text { @apply bg-slate-100 border-slate-100 rounded-l-2xl px-4 text-slate-500 !important; }
+        .input-group .form-control { @apply rounded-l-none !important; }
+    </style>
 @endpush
 
 @section('content')
-    <section class="section">
-        <div class="section-header">
-            <h1>{{ trans('admin/main.sidebanner_card_title') }} {{ trans('admin/main.settings') }}</h1>
-            <div class="section-header-breadcrumb">
-                <div class="breadcrumb-item active"><a href="{{ getAdminPanelUrl() }}">{{ trans('admin/main.dashboard') }}</a></div>
-                <div class="breadcrumb-item active"><a href="{{ getAdminPanelUrl() }}/settings">{{ trans('admin/main.settings') }}</a></div>
-                <div class="breadcrumb-item ">{{ trans('admin/main.main_general') }}</div>
+<div class="settings-page bg-slate-50 text-slate-900 p-4 md:p-8 space-y-6">
+
+    <div class="max-w-[1400px] mx-auto space-y-6">
+        
+        {{-- Breadcrumbs & Title --}}
+        <div class="flex items-center justify-between">
+            <div>
+                <nav class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+                    <a href="{{ getAdminPanelUrl() }}" class="hover:text-primary no-underline">Dashboard</a>
+                    <span class="material-symbols-outlined text-[12px]">chevron_right</span>
+                    <a href="{{ getAdminPanelUrl('/settings') }}" class="hover:text-primary no-underline">Settings</a>
+                    <span class="material-symbols-outlined text-[12px]">chevron_right</span>
+                    <span class="text-slate-600">Sidebar Banner</span>
+                </nav>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight">Sidebar Promotion Settings</h1>
             </div>
         </div>
 
-        <div class="section-body">
-
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-body">
-
-                            <!--<ul class="nav nav-pills" id="myTab3" role="tablist">-->
-                            <!--    <li class="nav-item">-->
-                            <!--        <a class="nav-link active " id="socials-tab" data-toggle="tab" href="#socials" role="tab" aria-controls="socials" aria-selected="true">Banners</a>-->
-                            <!--    </li>-->
-                                <!--<li class="nav-item">-->
-                                <!--    <a class="nav-link @if(empty($basic)) active @endif" id="basic-tab" data-toggle="tab" href="#basic" role="tab" aria-controls="basic" aria-selected="true">{{ trans('admin/main.basic') }}</a>-->
-                                <!--</li>-->
-
-                                <!--<li class="nav-item">-->
-                                <!--    <a class="nav-link" id="features-tab" data-toggle="tab" href="#features" role="tab" aria-controls="features" aria-selected="true">{{ trans('update.features') }}</a>-->
-                                <!--</li>-->
-
-                                <!--<li class="nav-item">-->
-                                <!--    <a class="nav-link" id="reminders-tab" data-toggle="tab" href="#reminders" role="tab" aria-controls="reminders" aria-selected="true">{{ trans('update.reminders') }}</a>-->
-                                <!--</li>-->
-
-                                <!--<li class="nav-item">-->
-                                <!--    <a class="nav-link" id="security-tab" data-toggle="tab" href="#security" role="tab" aria-controls="security" aria-selected="true">{{ trans('update.security') }}</a>-->
-                                <!--</li>-->
-
-                                <!--<li class="nav-item">-->
-                                <!--    <a class="nav-link" id="general_options-tab" data-toggle="tab" href="#general_options" role="tab" aria-controls="general_options" aria-selected="true">{{ trans('update.options') }}</a>-->
-                                <!--</li>-->
-                            <!--</ul>-->
-
-                            <div class="tab-content" id="myTabContent2">
-
-                                @include('admin.settings.sidebanner.socials',['itemValue' => (!empty($settings) and !empty($settings['sidebanner'])) ? $settings['sidebanner']->value : ''])
-                                <!-- @include('admin.settings.sidebanner.basic',['itemValue' => (!empty($settings) and !empty($settings['general'])) ? $settings['general']->value : ''])-->
-                                <!--@include('admin.settings.sidebanner.features',['itemValue' => (!empty($settings) and !empty($settings['features'])) ? $settings['features']->value : ''])-->
-                                <!--@include('admin.settings.sidebanner.reminders',['itemValue' => (!empty($settings) and !empty($settings['reminders'])) ? $settings['reminders']->value : ''])-->
-                                <!--@include('admin.settings.sidebanner.security',['itemValue' => (!empty($settings) and !empty($settings['security'])) ? $settings['security']->value : ''])-->
-                                <!--@include('admin.settings.sidebanner.options',['itemValue' => (!empty($settings) and !empty($settings['general_options'])) ? $settings['general_options']->value : ''])-->
-                            </div>
-
-                        </div>
-                    </div>
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-6 md:p-10 min-h-[400px]">
+            <div class="max-w-4xl">
+                <div class="tab-content" id="myTabContent2">
+                    @include('admin.settings.sidebanner.socials',['itemValue' => (!empty($settings) and !empty($settings['sidebanner'])) ? $settings['sidebanner']->value : ''])
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</div>
 @endsection
 
 @push('scripts_bottom')
     <script src="/assets/default/vendors/select2/select2.min.js"></script>
     <script src="/assets/default/js/admin/settings/general.min.js"></script>
 @endpush
+
+@push('scripts_bottom')
+    <script src="/assets/default/vendors/select2/select2.min.js"></script>
+    <script src="/assets/default/js/admin/settings/general.min.js"></script>
+@endpush
+

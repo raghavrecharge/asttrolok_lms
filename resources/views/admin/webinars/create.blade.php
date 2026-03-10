@@ -8,42 +8,181 @@
     <link rel="stylesheet" href="/assets/default/vendors/bootstrap-tagsinput/bootstrap-tagsinput.min.css">
     <link rel="stylesheet" href="/assets/vendors/summernote/summernote-bs4.min.css">
     <link href="/assets/default/vendors/sortable/jquery-ui.min.css"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#16A34A",
+                        "primary-light": "#F0FDF4",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
     <style>
-        .bootstrap-timepicker-widget table td input {
-            width: 35px !important;
+        .webinar-edit-page { font-family: 'Inter', sans-serif; }
+        .webinar-edit-page .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .section-header, .section-body > .card:first-child, .section-body > section.card { display: none !important; }
+        
+        /* Refined Sidebar Buttons for high-density UI */
+        .nav-tab-btn {
+            @apply flex items-center px-4 py-3 rounded-[20px] text-[14px] font-bold transition-all text-slate-500 hover:bg-slate-50 w-full text-left mb-1;
+        }
+        .nav-tab-btn.active {
+            @apply bg-[#16A34A] text-white shadow-lg shadow-green-100/50;
+        }
+        .nav-tab-btn .material-symbols-outlined {
+            @apply text-[22px] mr-3 w-6 flex justify-center items-center;
+        }
+        .nav-tab-btn.active .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
+        .nav-tab-btn.active .nav-chevron { @apply mr-0 ml-auto text-[18px]; }
+        .nav-tab-btn:not(.active) .nav-chevron { display: none; }
+        .nav-tab-btn span:not(.material-symbols-outlined) { @apply leading-none; padding-bottom: 2px; }
+
+        .tab-section { display: none; }
+        .tab-section.active { display: block; @apply animate-in fade-in slide-in-from-bottom-2 duration-300; }
+
+        .form-control, .custom-select {
+            @apply w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700 !important;
+            height: auto !important;
+        }
+        .input-label { @apply text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5 ml-1 !important; }
+        
+        .section-title.after-line {
+            @apply text-lg font-black text-slate-900 tracking-tight flex items-center gap-4 mb-8 !important;
+        }
+        .section-title.after-line::after {
+            content: ''; @apply flex-1 h-px bg-slate-100;
         }
 
-        .select2-container {
-            z-index: 1212 !important;
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 @endpush
 
 @section('content')
-    <section class="section">
-        <div class="section-header">
-            <h1>{{!empty($webinar) ?trans('/admin/main.edit'): trans('admin/main.new') }} {{ trans('admin/main.class') }}</h1>
-            <div class="section-header-breadcrumb">
-                <div class="breadcrumb-item active"><a href="{{ getAdminPanelUrl() }}">{{ trans('admin/main.dashboard') }}</a>
-                </div>
-                <div class="breadcrumb-item active">
-                    <a href="{{ getAdminPanelUrl() }}/webinars">{{ trans('admin/main.classes') }}</a>
-                </div>
-                <div class="breadcrumb-item">{{!empty($webinar) ?trans('/admin/main.edit'): trans('admin/main.new') }}</div>
+@php
+    $readyProgress = 0;
+    if(!empty($webinar)) {
+        if(!empty($webinar->title)) $readyProgress += 20;
+        if(!empty($webinar->category_id)) $readyProgress += 20;
+        if(!empty($webinar->thumbnail)) $readyProgress += 20;
+        if(!empty($webinar->price) || $webinar->price == 0) $readyProgress += 20;
+        if($webinar->chapters->count() > 0 || $webinar->files->count() > 0 || $webinar->sessions->count() > 0) $readyProgress += 20;
+    }
+@endphp
+<form method="post" action="{{ getAdminPanelUrl() }}/webinars/{{ !empty($webinar) ? $webinar->id.'/update' : 'store' }}" id="webinarForm" class="webinar-form">
+    {{ csrf_field() }}
+
+<div class="webinar-edit-page bg-[#F8FAFC] min-h-[calc(100vh-64px)]">
+    
+    <!-- Top Sleek Header -->
+    <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+        <div class="flex items-center gap-4">
+            <a href="{{ getAdminPanelUrl('/webinars') }}" class="size-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100 transition-all">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <div class="h-8 w-px bg-slate-200"></div>
+            <div>
+                <p class="text-[10px] font-black text-primary uppercase tracking-[2px] leading-none mb-1">Course Builder</p>
+                <h1 class="text-base font-black text-slate-900 truncate max-w-[400px]">
+                    Building: {{ !empty($webinar->title) ? $webinar->title : 'Untitled Course' }}
+                </h1>
             </div>
         </div>
 
-        <div class="section-body">
+        <div class="flex items-center gap-3">
+             <a href="{{ (!empty($webinar) and $webinar->status == 'active') ? $webinar->getUrl() : 'javascript:void(0)' }}" target="{{ (!empty($webinar) and $webinar->status == 'active') ? '_blank' : '_self' }}" class="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 shadow-sm flex items-center gap-2 transition-all {{ (!empty($webinar) and $webinar->status == 'active') ? '' : 'opacity-50 cursor-not-allowed' }}" title="{{ (!empty($webinar) and $webinar->status == 'active') ? 'View Live' : 'Publish first to preview live' }}">
+                <span class="material-symbols-outlined text-lg">visibility</span>
+                Live Preview
+            </a>
+            <button type="button" id="saveAndPublishTop" class="px-5 py-2.5 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/90 shadow-lg shadow-primary/20 flex items-center gap-2 transition-all">
+                <span class="material-symbols-outlined text-lg">publish</span>
+                Publish Course
+            </button>
+        </div>
+    </header>
 
-            <div class="row">
-                <div class="col-12 ">
-                    <div class="card">
-                        <div class="card-body">
+    <div class="flex">
+        <!-- Vertical Tabs Sidebar -->
+        <aside class="w-[320px] bg-white border-r border-slate-200 p-6 flex flex-col gap-1 sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto shrink-0 no-scrollbar">
+            <h3 class="text-[10px] font-black text-slate-300 uppercase tracking-[2px] mb-4">Structure</h3>
+            
+            <button type="button" class="nav-tab-btn active tab-btn" data-tab="general">
+                <span class="material-symbols-outlined">settings</span>
+                <span>General Details</span>
+                <span class="material-symbols-outlined nav-chevron">chevron_right</span>
+            </button>
+            <button type="button" class="nav-tab-btn tab-btn" data-tab="landing">
+                <span class="material-symbols-outlined">desktop_windows</span>
+                <span>Landing Page</span>
+                <span class="material-symbols-outlined nav-chevron">chevron_right</span>
+            </button>
+            <button type="button" class="nav-tab-btn tab-btn" data-tab="curriculum">
+                <span class="material-symbols-outlined">menu_book</span>
+                <span>Curriculum</span>
+                <span class="material-symbols-outlined nav-chevron">chevron_right</span>
+            </button>
+            <button type="button" class="nav-tab-btn tab-btn" data-tab="mentor">
+                <span class="material-symbols-outlined">person_pin</span>
+                <span>Mentor Profile</span>
+                <span class="material-symbols-outlined nav-chevron">chevron_right</span>
+            </button>
+            <button type="button" class="nav-tab-btn tab-btn" data-tab="roadmap">
+                <span class="material-symbols-outlined">map</span>
+                <span>6-Month Roadmap</span>
+                <span class="material-symbols-outlined nav-chevron">chevron_right</span>
+            </button>
+            <button type="button" class="nav-tab-btn tab-btn" data-tab="what_you_get">
+                <span class="material-symbols-outlined">card_giftcard</span>
+                <span>What You Get</span>
+                <span class="material-symbols-outlined nav-chevron">chevron_right</span>
+            </button>
+            <button type="button" class="nav-tab-btn tab-btn" data-tab="pricing">
+                <span class="material-symbols-outlined">payments</span>
+                <span>Pricing & Plans</span>
+                <span class="material-symbols-outlined nav-chevron">chevron_right</span>
+            </button>
 
-                            <form method="post" action="{{ getAdminPanelUrl() }}/webinars/{{ !empty($webinar) ? $webinar->id.'/update' : 'store' }}" id="webinarForm" class="webinar-form">
-                                {{ csrf_field() }}
-                                <section>
-                                    <h2 class="section-title after-line">{{ trans('public.basic_information') }}</h2>
+            <!-- Status Box at Bottom of Sidebar -->
+            <div class="mt-auto pt-8">
+                <div class="bg-primary/5 rounded-3xl p-5 border border-primary/10">
+                    <div class="flex items-center gap-2 text-primary mb-2">
+                        <span class="material-symbols-outlined text-[16px] font-[FILL]">monitoring</span>
+                        <span class="text-[10px] font-black uppercase tracking-widest">Launch Readiness: {{ $readyProgress }}%</span>
+                    </div>
+                    <div class="w-full bg-slate-200 h-1 rounded-full mb-3 overflow-hidden">
+                        <div class="bg-primary h-full transition-all duration-1000" style="width: {{ $readyProgress }}%"></div>
+                    </div>
+                    <p class="text-[11px] font-medium text-slate-500 leading-relaxed mb-0">
+                        @if($readyProgress == 100)
+                            Everything is ready! You can now publish this course.
+                        @elseif($readyProgress >= 60)
+                            Almost there. Just a few more details to go live.
+                        @else
+                            Start by completing the basic information and curriculum.
+                        @endif
+                    </p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Dynamic Content Area -->
+        <main class="flex-1 p-8 md:p-12 overflow-y-auto">
+            <div class="max-w-[1000px] mx-auto">
+                        <!-- Tab 1: General Details -->
+                        <div class="tab-section active" id="general">
+                            <h2 class="section-title after-line">{{ trans('public.basic_information') }}</h2>
 
                                     <div class="row">
                                         <div class="col-12 col-md-5">
@@ -589,6 +728,11 @@
                                                 @enderror
                                             </div>
                                             @endif
+                        </div> <!-- End General Tab -->
+
+                        <!-- Tab 2: Landing Page -->
+                        <div class="tab-section" id="landing">
+                            <h2 class="section-title after-line">Landing Page Details</h2>
                                          <!-- Extra Details -->
 <!-- Add this section after the "Extra Details" comment in your form -->
 <div class="form-group mt-15">
@@ -878,72 +1022,43 @@
     </div>
 </div>
 
-<!-- what will you get -->
-<div class="form-group mt-25 mb-10">
-    <label class="input-label d-block" style="font-weight: 700;font-size:20px">What will you learn</label>
-    <div class="form-group mt-15">
-    <label class="input-label">Learn Title</label>
-    <input type="text" name="learn_title" value="{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->learn_title : old('learn_title') }}" class="form-control @error('learn_title') is-invalid @enderror"/>
-    @error('learn_title')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
+<!-- Tab: What You Get -->
+                                    <div class="what-you-get-header mb-4">
+                                        <h2 class="font-weight-bold" style="font-size:24px; color:#1f2937;">What You Get</h2>
+                                        <p style="color:#6b7280;">Configure how this section appears on your landing page.</p>
+                                        <p style="color:#6b7280; font-size:13px;" class="mt-3">List the specific benefits and items students will receive each month.</p>
+                                    </div>
 
-<div class="form-group mt-15">
-    <label class="input-label">Learn Description</label>
-    <textarea name="learn_description" rows="3" class="form-control @error('learn_description') is-invalid @enderror">{{ !empty($webinar->extraDetails) ? $webinar->extraDetails->learn_description : old('learn_description') }}</textarea>
-    @error('learn_description')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-</div>
-    @php
-        // Decode JSON data to array
-        $learnIcons = [];
-        if (!empty($webinar->extraDetails) && !empty($webinar->extraDetails->learn_icon)) {
-            $learnIcons = is_array($webinar->extraDetails->learn_icon)
-                ? $webinar->extraDetails->learn_icon
-                : json_decode($webinar->extraDetails->learn_icon, true);
-        }
-    @endphp
-   
-    @for($i = 0; $i < 4; $i++)
-    <div class="row mb-3">
-        <!-- Learn Icon Field -->
-        <div class="col-12 col-md-6">
-           
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <button type="button" class="input-group-text admin-file-manager" data-input="learn_icon_{{ $i }}" data-preview="holder">
-                        <i class="fa fa-upload"></i>
-                    </button>
-                </div>
-                <input type="text" name="learn_icon[]" id="learn_icon_{{ $i }}"
-                       value="{{ $learnIcons[$i] ?? old('learn_icon.'.$i, '') }}"
-                       class="form-control @error('learn_icon.'.$i) is-invalid @enderror"/>
-                <div class="input-group-append">
-                    <button type="button" class="input-group-text admin-file-view" data-input="learn_icon_{{ $i }}">
-                        <i class="fa fa-eye"></i>
-                    </button>
-                </div>
-                @error('learn_icon.'.$i)
-                <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-        </div>
-       
-        <!-- Learn Text Field -->
-        <div class="col-12 col-md-6">
-           
-            <input type="text" name="learn_text[]"
-                value="{{ !empty($webinar->extraDetails) && !empty($webinar->extraDetails->learn_text) && isset($webinar->extraDetails->learn_text[$i]) ? $webinar->extraDetails->learn_text[$i] : old('learn_text.'.$i) }}"
-                class="form-control @error('learn_text.'.$i) is-invalid @enderror"/>
-            @error('learn_text.'.$i)
-            <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
-    </div>
-    @endfor
-</div>
+                                    <div id="benefits_items_container">
+                                        @php
+                                            $learnTexts = [];
+                                            if (!empty($webinar->extraDetails) && !empty($webinar->extraDetails->learn_text)) {
+                                                $learnTexts = is_string($webinar->extraDetails->learn_text) ? json_decode($webinar->extraDetails->learn_text, true) : $webinar->extraDetails->learn_text;
+                                                $learnTexts = is_array($learnTexts) ? $learnTexts : [];
+                                            }
+                                            $benefitsCount = max(count($learnTexts), 1);
+                                        @endphp
+
+                                        @for($i = 0; $i < $benefitsCount; $i++)
+                                        <div class="benefit-item d-flex align-items-center mb-3 p-3 border rounded" style="border-color:#e5e7eb; background:#fff;">
+                                            <div class="mr-3" style="color:#16a34a; font-size:20px;">
+                                                <i class="far fa-check-circle"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <input type="text" name="learn_text[]" value="{{ $learnTexts[$i] ?? '' }}" class="form-control border-0 bg-transparent p-0" placeholder="e.g. 10 Video Lessons + Assignments" style="color:#374151; font-weight:600; font-size:15px; box-shadow:none;" />
+                                            </div>
+                                            <div class="ml-3">
+                                                <button type="button" class="btn btn-sm text-danger remove-benefit-item bg-transparent shadow-none">
+                                                    <i class="fas fa-trash-alt" style="color:#d1d5db;"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        @endfor
+                                    </div>
+
+                                    <button type="button" id="add_benefit_item" class="btn btn-block" style="border: 1px dashed #e5e7eb; background: #f9fafb; color: #6b7280; font-weight: 600; padding: 10px; border-radius: 8px;">
+                                        <i class="fas fa-plus mr-1"></i> Add Benefit Item
+                                    </button>
 <!-- Bonus -->
  <div class="form-group mt-15">
      <label class="input-label d-block" style="font-weight: 700;font-size:20px">Bonus</label>
@@ -977,77 +1092,61 @@
  </div>
 
  
-<!-- Roadmap -->
-<div class="form-group mt-15">
-    <label class="input-label d-block" style="font-weight: 700;font-size:20px">Your 6-Month Roadmap to Certification</label>
-   
-    @php
-        // Decode JSON data to arrays with better error handling
-        $certificationTime = [];
-        if (!empty($webinar->extraDetails) && !empty($webinar->extraDetails->certification_time)) {
-            if (is_string($webinar->extraDetails->certification_time)) {
-                $decoded = json_decode($webinar->extraDetails->certification_time, true);
-                $certificationTime = is_array($decoded) ? $decoded : [];
-            } elseif (is_array($webinar->extraDetails->certification_time)) {
-                $certificationTime = $webinar->extraDetails->certification_time;
-            }
-        }
-       
-        $certificationFocus = [];
-        if (!empty($webinar->extraDetails) && !empty($webinar->extraDetails->certification_focus)) {
-            if (is_string($webinar->extraDetails->certification_focus)) {
-                $decoded = json_decode($webinar->extraDetails->certification_focus, true);
-                $certificationFocus = is_array($decoded) ? $decoded : [];
-            } elseif (is_array($webinar->extraDetails->certification_focus)) {
-                $certificationFocus = $webinar->extraDetails->certification_focus;
-            }
-        }
-       
-        $certificationOutcome = [];
-        if (!empty($webinar->extraDetails) && !empty($webinar->extraDetails->certification_outcome)) {
-            if (is_string($webinar->extraDetails->certification_outcome)) {
-                $decoded = json_decode($webinar->extraDetails->certification_outcome, true);
-                $certificationOutcome = is_array($decoded) ? $decoded : [];
-            } elseif (is_array($webinar->extraDetails->certification_outcome)) {
-                $certificationOutcome = $webinar->extraDetails->certification_outcome;
-            }
-        }
-    @endphp
-   
-    @for($i = 0; $i < 3; $i++)
-    <div class="row mb-3">
-        <!-- Certification Time -->
-        <div class="col-12 col-md-4">
-            <input type="text" name="certification_time[]"
-                value="{{ isset($certificationTime[$i]) ? $certificationTime[$i] : (old('certification_time.'.$i) ?? '') }}"
-                class="form-control @error('certification_time.'.$i) is-invalid @enderror"/>
-            @error('certification_time.'.$i)
-            <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
-       
-        <!-- Certification Focus -->
-        <div class="col-12 col-md-4">
-            <input type="text" name="certification_focus[]"
-                value="{{ isset($certificationFocus[$i]) ? $certificationFocus[$i] : (old('certification_focus.'.$i) ?? '') }}"
-                class="form-control @error('certification_focus.'.$i) is-invalid @enderror"/>
-            @error('certification_focus.'.$i)
-            <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
-       
-        <!-- Certification Outcome -->
-        <div class="col-12 col-md-4">
-            <input type="text" name="certification_outcome[]"
-                value="{{ isset($certificationOutcome[$i]) ? $certificationOutcome[$i] : (old('certification_outcome.'.$i) ?? '') }}"
-                class="form-control @error('certification_outcome.'.$i) is-invalid @enderror"/>
-            @error('certification_outcome.'.$i)
-            <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
-    </div>
-    @endfor
-</div>
+<!-- Tab: Roadmap -->
+                                    <div class="roadmap-header mb-4">
+                                        <h2 class="font-weight-bold" style="font-size:24px; color:#1f2937;">6-Month Roadmap</h2>
+                                        <p style="color:#6b7280;">Configure how this section appears on your landing page.</p>
+                                        <p style="color:#6b7280; font-size:13px;" class="mt-3">Define the learning journey for your students over a 6-month period.</p>
+                                    </div>
+
+                                    <div class="roadmap-table-container border rounded" style="border-color:#e5e7eb;">
+                                        <div class="row align-items-center font-weight-bold px-3 py-2 bg-light border-bottom" style="font-size:12px; color:#6b7280; text-transform:uppercase;">
+                                            <div class="col-3">Month</div>
+                                            <div class="col-4">Focus</div>
+                                            <div class="col-4">Outcome</div>
+                                            <div class="col-1 text-center"></div>
+                                        </div>
+
+                                        <div id="roadmap_items_container">
+                                            @php
+                                                $certificationTime = [];
+                                                $certificationFocus = [];
+                                                $certificationOutcome = [];
+                                                if (!empty($webinar->extraDetails)) {
+                                                    $certificationTime = is_string($webinar->extraDetails->certification_time) ? json_decode($webinar->extraDetails->certification_time, true) : $webinar->extraDetails->certification_time;
+                                                    $certificationTime = is_array($certificationTime) ? $certificationTime : [];
+                                                    $certificationFocus = is_string($webinar->extraDetails->certification_focus) ? json_decode($webinar->extraDetails->certification_focus, true) : $webinar->extraDetails->certification_focus;
+                                                    $certificationFocus = is_array($certificationFocus) ? $certificationFocus : [];
+                                                    $certificationOutcome = is_string($webinar->extraDetails->certification_outcome) ? json_decode($webinar->extraDetails->certification_outcome, true) : $webinar->extraDetails->certification_outcome;
+                                                    $certificationOutcome = is_array($certificationOutcome) ? $certificationOutcome : [];
+                                                }
+                                                $roadmapCount = max(count($certificationTime), count($certificationFocus), count($certificationOutcome), 1);
+                                            @endphp
+
+                                            @for($i = 0; $i < $roadmapCount; $i++)
+                                            <div class="row align-items-center px-3 py-3 border-bottom roadmap-item" style="border-color:#e5e7eb;">
+                                                <div class="col-3">
+                                                    <input type="text" name="certification_time[]" value="{{ $certificationTime[$i] ?? '' }}" class="form-control border-0 bg-transparent p-0" placeholder="e.g. 1-2 Month" style="font-weight:600; color:#374151; font-size:14px; box-shadow:none;" />
+                                                </div>
+                                                <div class="col-4">
+                                                    <input type="text" name="certification_focus[]" value="{{ $certificationFocus[$i] ?? '' }}" class="form-control border-0 bg-transparent p-0" placeholder="e.g. Foundations" style="color:#6b7280; font-size:14px; box-shadow:none;" />
+                                                </div>
+                                                <div class="col-4">
+                                                    <input type="text" name="certification_outcome[]" value="{{ $certificationOutcome[$i] ?? '' }}" class="form-control border-0 bg-transparent p-0" placeholder="e.g. Understand zodiac" style="color:#6b7280; font-size:14px; box-shadow:none;" />
+                                                </div>
+                                                <div class="col-1 text-center">
+                                                    <button type="button" class="btn btn-sm text-danger remove-roadmap-item bg-transparent shadow-none">
+                                                        <i class="fas fa-trash-alt" style="color:#d1d5db;"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            @endfor
+                                        </div>
+                                    </div>
+
+                                    <button type="button" id="add_roadmap_item" class="btn btn-block mt-3" style="border: 1px dashed #e5e7eb; background: #f9fafb; color: #6b7280; font-weight: 600; padding: 10px; border-radius: 8px;">
+                                        <i class="fas fa-plus mr-1"></i> Add Milestone
+                                    </button>
 <!-- Rating -->
 
 
@@ -1603,30 +1702,11 @@
                                         @endif
                                     </div>
                                 </div>
-                            </form>
-
-                            @if(false) {{-- Temporarily Hidden: Prerequisites Modal --}}
-                            @include('admin.webinars.modals.prerequisites')
-                            @endif
-                            @include('admin.webinars.modals.quizzes')
-                            @if(false) {{-- Temporarily Hidden: Pricing Plans Modal --}}
-                            @include('admin.webinars.modals.ticket')
-                            @endif
-                            @include('admin.webinars.modals.chapter')
-                            @include('admin.webinars.modals.session')
-                            @include('admin.webinars.modals.file')
-                            @include('admin.webinars.modals.interactive_file')
-                            @include('admin.webinars.modals.faq')
-                            @include('admin.webinars.modals.testLesson')
-                            @include('admin.webinars.modals.assignment')
-                            @include('admin.webinars.modals.extra_description')
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+            </div> <!-- End max-w-1000px -->
+        </main> <!-- End Main Content area -->
+    </div> <!-- End flex container -->
+</div> <!-- End webinar-edit-page container -->
+</form>
 @endsection
 
 @push('scripts_bottom')
@@ -1687,6 +1767,48 @@
 
             toggleUpcomingFields();
             $typeSelect.on('change', toggleUpcomingFields);
+
+            // Tab Switching Logic
+            $('.tab-btn').on('click', function() {
+                const tabId = $(this).data('tab');
+                
+                // Update buttons
+                $('.tab-btn').removeClass('active');
+                $(this).addClass('active');
+                
+                // Update sections
+                $('.tab-section').removeClass('active');
+                $('#' + tabId).addClass('active');
+                
+                // Save active tab to localStorage
+                localStorage.setItem('active_course_tab', tabId);
+            });
+
+            // Restore active tab
+            const activeTab = localStorage.getItem('active_course_tab');
+            if (activeTab) {
+                $(`.tab-btn[data-tab="${activeTab}"]`).trigger('click');
+            }
+
+            // Mentor Image Preview
+            $('#mentor_image').on('change', function() {
+                const url = $(this).val();
+                if (url) {
+                    $('#mentor_image_preview').attr('src', url);
+                }
+            });
+
+            // Form Submit Buttons
+            $('#saveAndPublish').on('click', function (e) {
+                e.preventDefault();
+                $('#webinarForm').append('<input type="hidden" name="draft" value="publish">');
+                $('#webinarForm').submit();
+            });
+
+            $('#saveReject').on('click', function (e) {
+                e.preventDefault();
+                $('#saveRejectTop').click();
+            });
         });
     </script>
 @endpush

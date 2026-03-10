@@ -8,6 +8,7 @@ use Exception;
 use App\Mixins\Installment\InstallmentAccounting;
 use App\Models\InstallmentOrder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 trait InstallmentOrdersTrait
 {
@@ -21,7 +22,7 @@ trait InstallmentOrdersTrait
             $topStats = $this->getDetailsTopStats($order->user);
 
             $data = [
-                'pageTitle' => trans('update.installment_verification') . ' - '.$order->user->full_name,
+                'pageTitle' => trans('update.installment_verification') . ' - ' . $order->user->full_name,
                 'order' => $order,
                 'payments' => $order->payments,
                 'installment' => $order->installment,
@@ -32,13 +33,14 @@ trait InstallmentOrdersTrait
             $data = array_merge($data, $topStats);
 
             return view('admin.financial.installments.verification_request_details', $data);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('details error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -126,13 +128,14 @@ trait InstallmentOrdersTrait
             ];
 
             return back()->with(['toast' => $toastData]);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('approve error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -165,13 +168,14 @@ trait InstallmentOrdersTrait
             ];
 
             return back()->with(['toast' => $toastData]);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('reject error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -194,13 +198,14 @@ trait InstallmentOrdersTrait
             ];
 
             return back()->with(['toast' => $toastData]);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('cancel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -227,13 +232,14 @@ trait InstallmentOrdersTrait
             ];
 
             return back()->with(['toast' => $toastData]);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('refund error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -272,13 +278,82 @@ trait InstallmentOrdersTrait
             }
 
             abort(404);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('downloadAttachment error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
+            throw $e;
+        }
+    }
+
+    public function logPayment(Request $request, $orderId)
+    {
+        try {
+            $this->authorize('admin_installments_orders');
+
+            $order = InstallmentOrder::query()->findOrFail($orderId);
+            $data = $request->all();
+
+            $stepId = $data['step_id'] ?? null;
+            $paymentMethod = $data['payment_method'] ?? 'Manual';
+            $transactionId = $data['transaction_id'] ?? null;
+
+            if ($stepId) {
+                // Determine step or upfront
+                $type = 'installment_step';
+                if ($stepId == 'upfront') {
+                    $type = 'upfront';
+                }
+
+                $amount = 0;
+                $itemPrice = $order->getItemPrice();
+                if ($type == 'upfront') {
+                    $amount = $order->installment->getUpfront($itemPrice);
+                }
+                else {
+                    $step = \App\Models\InstallmentStep::find($stepId);
+                    if ($step) {
+                        $amount = $step->getPrice($itemPrice);
+                    }
+                }
+
+                \App\Models\InstallmentOrderPayment::create([
+                    'installment_order_id' => $order->id,
+                    'step_id' => ($stepId == 'upfront') ? null : $stepId,
+                    'type' => $type,
+                    'amount' => $amount,
+                    'status' => 'paid',
+                    'created_at' => time(),
+                ]);
+
+                // Create accounting entry
+                \App\Models\Accounting::create([
+                    'user_id' => $order->user_id,
+                    'creator_id' => auth()->user()->id,
+                    'amount' => $amount,
+                    'type' => \App\Models\Accounting::$addiction,
+                    'type_account' => \App\Models\Accounting::$asset,
+                    'store_type' => \App\Models\Accounting::$storeManual,
+                    'description' => "Manual " . ($type == 'upfront' ? 'Upfront' : 'Installment') . " payment (Txn: {$transactionId})",
+                    'created_at' => time(),
+                ]);
+
+                $toastData = [
+                    'title' => trans('public.request_success'),
+                    'msg' => 'Payment logged successfully!',
+                    'status' => 'success'
+                ];
+                return back()->with(['toast' => $toastData]);
+            }
+
+            return back()->withErrors(['step_id' => 'Invalid installment selected.']);
+        }
+        catch (\Exception $e) {
+            \Log::error('logPayment error: ' . $e->getMessage());
             throw $e;
         }
     }

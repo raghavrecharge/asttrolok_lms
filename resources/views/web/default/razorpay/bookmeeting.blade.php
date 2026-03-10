@@ -36,7 +36,7 @@
 
                             <script   src="https://checkout.razorpay.com/v1/checkout.js"
                                     data-key="{{ env('RAZORPAY_API_KEY') }}"
-                                    data-amount="{{ (int)(preg_replace('/[^\d.]/', '', handlePrice($total ))* 100) }}"
+                                    data-amount="{{ (int)(convertPriceToUserCurrency($total) * 100) }}"
                                     data-buttontext="product_price"
                                     data-description="{{ $full_name }} has booked an appointment with astrologer {{ $astrologer }} via Razorpay on Asttrolok using a mobile ({{ $slotTime }})"
                                     data-currency="{{ currency() }}"

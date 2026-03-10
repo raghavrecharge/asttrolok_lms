@@ -141,7 +141,7 @@
             <input type="text" name="item_type" value="{{!empty($itemType) ? $itemType : null}}"  placeholder="Contact Number" class="form-control mt-25 mb-25 d-none" required>
                 <script id="myScript" src="https://checkout.razorpay.com/v1/checkout.js"
                         data-key="{{ env('RAZORPAY_API_KEY') }}"
-                        data-amount="{{ (int)(((($installments->first()->upfront)*$itemPrice) /100) * 100) }}"
+                        data-amount="{{ (int)(convertPriceToUserCurrency((($installments->first()->upfront)*$itemPrice) /100) * 100) }}"
                         data-buttontext="product_price"
                         data-description="Rozerpay"
                         data-currency="{{ currency() }}"

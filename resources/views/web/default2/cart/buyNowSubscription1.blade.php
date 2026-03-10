@@ -91,8 +91,10 @@
             <input type="text" 
                    name="subscription_id" 
                    id="subscription_id" 
-                   placeholder="Subscription ID  (Optional)" 
+                   placeholder="Subscription ID" 
                    class="form-control mt-25" 
+                   value="{{ $subscription->id }}"
+                   readonly
                    >
             
             <input type="text" 
@@ -109,7 +111,7 @@
                    class="form-control mt-25 mb-25">
 
             <div class="d-flex align-items-center justify-content-between mt-45">
-                <span class="font-16 font-weight-500 text-gray">Total Amount: ₹0</span>
+                <span class="font-16 font-weight-500 text-gray">Total Amount: ₹{{ number_format($total, 2) }}</span>
                 <button type="submit" class="btn btn-sm btn-primary">Start Payment</button>
             </div>
         </form>

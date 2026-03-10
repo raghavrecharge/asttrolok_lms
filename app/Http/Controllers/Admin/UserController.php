@@ -74,13 +74,14 @@ class UserController extends Controller
             ];
 
             return view('admin.users.staffs', $data);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('staffs error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -109,7 +110,8 @@ class UserController extends Controller
 
             if ($is_export_excel) {
                 $users = $query->orderBy('created_at', 'desc')->get();
-            } else {
+            }
+            else {
                 $users = $query->orderBy('created_at', 'desc')
                     ->paginate(10);
             }
@@ -131,13 +133,14 @@ class UserController extends Controller
             ];
 
             return view('admin.users.organizations', $data);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('organizations error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -173,7 +176,8 @@ class UserController extends Controller
 
             if ($is_export_excel) {
                 $users = $query->orderBy('created_at', 'desc')->get();
-            } else {
+            }
+            else {
                 $users = $query->orderBy('created_at', 'desc')
                     ->paginate(10);
             }
@@ -193,16 +197,37 @@ class UserController extends Controller
                 'totalOrganizationsStudents' => $totalOrganizationsStudents,
                 'userGroups' => $userGroups,
                 'organizations' => $organizations,
+                'filters' => [
+                    'role' => [
+                        'name' => 'role',
+                        'label' => 'All Roles',
+                        'options' => [
+                            'student' => 'Learner',
+                            'teacher' => 'Instructor',
+                            'admin' => 'Admin'
+                        ]
+                    ],
+                    'status' => [
+                        'name' => 'status',
+                        'label' => 'All Status',
+                        'options' => [
+                            'active_verified' => 'Active',
+                            'inactive' => 'Pending',
+                            'ban' => 'Suspended'
+                        ]
+                    ]
+                ]
             ];
 
             return view('admin.users.students', $data);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('students error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -238,7 +263,8 @@ class UserController extends Controller
 
             if ($is_export_excel) {
                 $users = $query->orderBy('created_at', 'desc')->get();
-            } else {
+            }
+            else {
                 $users = $query->orderBy('created_at', 'desc')
                     ->paginate(10);
             }
@@ -247,6 +273,11 @@ class UserController extends Controller
 
             if ($is_export_excel) {
                 return $users;
+            }
+
+            $organizationOptions = [];
+            foreach ($organizations as $organization) {
+                $organizationOptions[$organization->id] = $organization->full_name;
             }
 
             $data = [
@@ -258,16 +289,33 @@ class UserController extends Controller
                 'totalOrganizationsInstructors' => $totalOrganizationsInstructors,
                 'userGroups' => $userGroups,
                 'organizations' => $organizations,
+                'filters' => [
+                    'role' => [
+                        'name' => 'organization_id',
+                        'label' => 'All Organizations',
+                        'options' => $organizationOptions
+                    ],
+                    'status' => [
+                        'name' => 'status',
+                        'label' => 'All Status',
+                        'options' => [
+                            'active_verified' => 'Active',
+                            'inactive' => 'Pending',
+                            'ban' => 'Suspended'
+                        ]
+                    ]
+                ]
             ];
 
             return view('admin.users.instructors', $data);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('instructors error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -289,14 +337,16 @@ class UserController extends Controller
             $meetingIds = Meeting::where('creator_id', $user->id)->pluck('id');
             $reserveMeetingsQuery = ReserveMeeting::whereIn('meeting_id', $meetingIds)
                 ->where(function ($query) {
-                    $query->whereHas('sale', function ($query) {
+                $query->whereHas('sale', function ($query) {
                         $query->whereNull('refund_at');
-                    });
+                    }
+                    );
 
                     $query->orWhere(function ($query) {
                         $query->whereIn('status', ['canceled']);
                         $query->whereHas('sale');
-                    });
+                    }
+                    );
                 });
 
             $user->meetingsSalesCount = deepClone($reserveMeetingsQuery)->count();
@@ -329,20 +379,21 @@ class UserController extends Controller
     {
         $from = $request->input('from');
         $to = $request->input('to');
-        $full_name = $request->get('full_name');
+        $search = $request->get('search') ?? $request->get('q') ?? $request->get('full_name');
         $sort = $request->get('sort');
         $group_id = $request->get('group_id');
-        $status = $request->get('status');
-        $role_id = $request->get('role_id');
+        $status = $request->get('status') ?? $request->get('status_filter');
+        $role_id = $request->get('role_id') ?? $request->get('role');
         $organization_id = $request->get('organization_id');
 
         $query = fromAndToDateFilter($from, $to, $query, 'created_at');
 
-        if (!empty($full_name)) {
-            $query->where('email', 'like', "%$full_name%");
-            $query->Orwhere('mobile', 'like', "%$full_name%");
-            $query->Orwhere('full_name', 'like', "%$full_name%");
-
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('email', 'like', "%$search%");
+                $q->orWhere('mobile', 'like', "%$search%");
+                $q->orWhere('full_name', 'like', "%$search%");
+            });
         }
 
         if (!empty($sort)) {
@@ -406,7 +457,6 @@ class UserController extends Controller
                         ->whereNull('sales.refund_at')
                         ->groupBy('sales.seller_id')
                         ->orderBy('sales_count', 'desc');
-                    break;
                     break;
                 case 'purchased_appointments_asc':
                     $query->join('sales', 'users.id', '=', 'sales.buyer_id')
@@ -477,7 +527,12 @@ class UserController extends Controller
         }
 
         if (!empty($role_id)) {
-            $query->where('role_id', $role_id);
+            if (is_numeric($role_id)) {
+                $query->where('role_id', $role_id);
+            }
+            else {
+                $query->where('role_name', $role_id);
+            }
         }
 
         if (!empty($organization_id)) {
@@ -502,13 +557,14 @@ class UserController extends Controller
             ];
 
             return view('admin.users.create', $data);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('create error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -524,38 +580,39 @@ class UserController extends Controller
 
         return $username;
     }
-     public function importview()
+    public function importview()
     {
         try {
             return view('admin.users.import');
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('importview error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
-
-public function importExcel(Request $request)
+    public function importExcel(Request $request)
     {
         try {
-            $excels=  Excel::import(new ImportUsers, request()->file('file'));
+            $excels = Excel::import(new ImportUsers, request()->file('file'));
             $toastData = [
                 'title' => trans('public.request_success'),
                 'msg' => 'Student Added successfully',
                 'status' => 'success'
             ];
             return back()->with(['toast' => $toastData]);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('importExcel error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -585,10 +642,10 @@ public function importExcel(Request $request)
                     $referralSettings = getReferralSettings();
                     $usersAffiliateStatus = (!empty($referralSettings) and !empty($referralSettings['users_affiliate_status']));
 
-            if(empty($data['consultant'])){
+                    if (empty($data['consultant'])) {
 
-            $data['consultant']=0;
-            }
+                        $data['consultant'] = 0;
+                    }
                     $user = User::create([
                         'full_name' => $data['full_name'],
                         'role_name' => $role->name,
@@ -630,13 +687,14 @@ public function importExcel(Request $request)
                 'status' => 'error'
             ];
             return back()->with(['toast' => $toastData]);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('store error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -645,46 +703,46 @@ public function importExcel(Request $request)
     {
         try {
             $this->authorize('admin_users_edit');
-            $percent_webinar_id= '';
-            $percent='';
-             $sales = Sale::where('buyer_id', $id)
-             ->get();
+            $percent_webinar_id = '';
+            $percent = '';
+            $sales = Sale::where('buyer_id', $id)
+                ->get();
 
-             $sales1 = Sale::where('buyer_id', $id)
-             ->get();
-             foreach ($sales1 as $sales2) {
-                 if($sales2->installment_payment_id){
+            $sales1 = Sale::where('buyer_id', $id)
+                ->get();
+            foreach ($sales1 as $sales2) {
+                if ($sales2->installment_payment_id) {
                     $installment_step_translations = DB::table('installment_order_payments')
-            ->selectRaw(' * ')
-            ->where('id', $sales2->installment_payment_id )
-            ->get();
-            foreach ($installment_step_translations as $installment_step_translations1) {
-            $percent = $installment_step_translations1->installment_order_id;
-            }
-            $installment_step_translations1 = DB::table('installment_orders')
-            ->selectRaw(' * ')
-            ->where('id', $percent)
-            ->get();
-            foreach ($installment_step_translations1 as $installment_step_translations11) {
-            $percent_webinar_id .='~'.$installment_step_translations11->webinar_id;
-            }
+                        ->selectRaw(' * ')
+                        ->where('id', $sales2->installment_payment_id)
+                        ->get();
+                    foreach ($installment_step_translations as $installment_step_translations1) {
+                        $percent = $installment_step_translations1->installment_order_id;
+                    }
+                    $installment_step_translations1 = DB::table('installment_orders')
+                        ->selectRaw(' * ')
+                        ->where('id', $percent)
+                        ->get();
+                    foreach ($installment_step_translations1 as $installment_step_translations11) {
+                        $percent_webinar_id .= '~' . $installment_step_translations11->webinar_id;
+                    }
 
-             }
+                }
 
-             }
+            }
             $user = User::where('id', $id)
                 ->with([
-                    'customBadges' => function ($query) {
-                        $query->with('badge');
-                    },
-                    'occupations' => function ($query) {
-                        $query->with('category');
-                    },
-                    'organization' => function ($query) {
-                        $query->select('id', 'full_name');
-                    },
-                    'userRegistrationPackage'
-                ])
+                'customBadges' => function ($query) {
+                $query->with('badge');
+            },
+                'occupations' => function ($query) {
+                $query->with('category');
+            },
+                'organization' => function ($query) {
+                $query->select('id', 'full_name');
+            },
+                'userRegistrationPackage'
+            ])
                 ->first();
 
             if (empty($user)) {
@@ -701,7 +759,7 @@ public function importExcel(Request $request)
 
             if (!empty($userMetas)) {
                 foreach ($userMetas as $meta) {
-                    $user->{$meta->name} = $meta->value;
+                    $user->{ $meta->name} = $meta->value;
                 }
             }
 
@@ -725,7 +783,8 @@ public function importExcel(Request $request)
             $userLanguages = getGeneralSettings('user_languages');
             if (!empty($userLanguages) and is_array($userLanguages)) {
                 $userLanguages = getLanguages($userLanguages);
-            } else {
+            }
+            else {
                 $userLanguages = [];
             }
 
@@ -760,8 +819,8 @@ public function importExcel(Request $request)
 
             $userBanks = UserBank::query()
                 ->with([
-                    'specifications'
-                ])
+                'specifications'
+            ])
                 ->orderBy('created_at', 'desc')
                 ->get();
 
@@ -797,29 +856,30 @@ public function importExcel(Request $request)
             if (auth()->user()->can('admin_forum_topics_lists')) {
                 $data['topics'] = ForumTopic::where('creator_id', $user->id)
                     ->with([
-                        'posts' => function ($query) {
-                            $query->orderBy('created_at', 'desc');
-                        },
-                        'forum'
-                    ])
+                    'posts' => function ($query) {
+                    $query->orderBy('created_at', 'desc');
+                },
+                    'forum'
+                ])
                     ->withCount('posts')
                     ->orderBy('created_at', 'desc')
                     ->get();
             }
 
             return view('admin.users.edit', $data);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('edit error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
 
-    public function courseprogress(Request $request, $id,$slug)
+    public function courseprogress(Request $request, $id, $slug)
     {
         try {
             $requestData = $request->all();
@@ -827,20 +887,20 @@ public function importExcel(Request $request)
             $webinarController = new WebinarController();
 
             $data = $webinarController->course($slug, true);
-            $data['directAccess']=0;
+            $data['directAccess'] = 0;
 
             $course = $data['course'];
             $user = $data['user'];
-             $course_pricess = $course->price;
-              $cchapt=count($course->chapters);
+            $course_pricess = $course->price;
+            $cchapt = count($course->chapters);
 
-             $data['limit']=100;
+            $data['limit'] = 100;
 
             if ($course->creator_id != $user->id and $course->teacher_id != $user->id and !$user->isAdmin()) {
                 $unReadCourseNoticeboards = CourseNoticeboard::where('webinar_id', $course->id)
                     ->whereDoesntHave('noticeboardStatus', function ($query) use ($user) {
-                        $query->where('user_id', $user->id);
-                    })
+                    $query->where('user_id', $user->id);
+                })
                     ->count();
 
                 if ($unReadCourseNoticeboards) {
@@ -850,38 +910,39 @@ public function importExcel(Request $request)
             }
 
             return view('web.default.course.learningPage.course_progress', $data);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('courseprogress error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
-       public function subcourseprogress(Request $request, $id,$slug)
+    public function subcourseprogress(Request $request, $id, $slug)
     {
-    
-        
-        
-         $requestData = $request->all();
+
+
+
+        $requestData = $request->all();
         $webinarController = new SubscriptionController();
 
         $data = $webinarController->subscription($slug, true);
-      
+
         $course = $data['subscription'];
         $user = $data['user'];
-      
-         $data['limit']=100;
-        
-        
+
+        $data['limit'] = 100;
+
+
 
         if ($course->creator_id != $user->id and $course->teacher_id != $user->id and !$user->isAdmin()) {
             $unReadCourseNoticeboards = CourseNoticeboard::where('webinar_id', $course->id)
                 ->whereDoesntHave('noticeboardStatus', function ($query) use ($user) {
-                    $query->where('user_id', $user->id);
-                })
+                $query->where('user_id', $user->id);
+            })
                 ->count();
 
             if ($unReadCourseNoticeboards) {
@@ -889,49 +950,49 @@ public function importExcel(Request $request)
                 return redirect($url);
             }
         }
-        
-         $requestData = $request->all();
+
+        $requestData = $request->all();
         $subscriptionController = new SubscriptionController();
-      
+
         $data = $subscriptionController->subscription1($slug, true);
-     
+
         $subscription = $data['subscription'];
         $user = $data['user'];
-         $subscription_pricess = $subscription->price;
-          $cchapt=count($data['chapterItems']);
-          
-         $Access = SubscriptionAccess ::where('subscription_id', $subscription->id)
+        $subscription_pricess = $subscription->price;
+        $cchapt = count($data['chapterItems']);
+
+        $Access = SubscriptionAccess::where('subscription_id', $subscription->id)
             ->where('user_id', $user->id)
-               ->first();
-             
-  
-            
-            // print_r($Access);
-            
-            $access_content_count =0;
-         
-         $data['limit']=$access_content_count;
-         $data['install_url']='/subscriptions/direct-payment/'.$subscription->slug;
-       
+            ->first();
+
+
+
+        // print_r($Access);
+
+        $access_content_count = 0;
+
+        $data['limit'] = $access_content_count;
+        $data['install_url'] = '/subscriptions/direct-payment/' . $subscription->slug;
+
         if ((!$data or !$data['hasBought'])) {
-            
+
             abort(403);
         }
 
-       
-           
-         
-            $data["webinars"] =[];
-            
-     
-     
+
+
+
+        $data["webinars"] = [];
+
+
+
         return view('web.default.subscriptionProgress.learningPage.course_progress', $data);
-    
-            
-        
-        
-    }   
-       public function subcourseprogress123(Request $request, $id,$slug)
+
+
+
+
+    }
+    public function subcourseprogress123(Request $request, $id, $slug)
     {
         try {
             $requestData = $request->all();
@@ -943,13 +1004,13 @@ public function importExcel(Request $request)
             $course = $data['course'];
             $user = $data['user'];
 
-             $data['limit']=100;
+            $data['limit'] = 100;
 
             if ($course->creator_id != $user->id and $course->teacher_id != $user->id and !$user->isAdmin()) {
                 $unReadCourseNoticeboards = CourseNoticeboard::where('webinar_id', $course->id)
                     ->whereDoesntHave('noticeboardStatus', function ($query) use ($user) {
-                        $query->where('user_id', $user->id);
-                    })
+                    $query->where('user_id', $user->id);
+                })
                     ->count();
 
                 if ($unReadCourseNoticeboards) {
@@ -959,57 +1020,59 @@ public function importExcel(Request $request)
             }
 
             return view('web.default.subscription.learningPage.course_progress', $data);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('subcourseprogress error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
-    public function editinsta(Request $request, $id , $instaid)
+    public function editinsta(Request $request, $id, $instaid)
     {
         try {
             if (!empty($instaid)) {
                 $installmentClasses = Sale::whereNull('refund_at')
-                ->where('buyer_id', $id)
-                ->where('installment_payment_id', $instaid)
-                ->whereNotNull('installment_payment_id')
-                ->where('sales.access_to_purchased_item', true)
-                ->whereHas('installment')
-                ->with([
+                    ->where('buyer_id', $id)
+                    ->where('installment_payment_id', $instaid)
+                    ->whereNotNull('installment_payment_id')
+                    ->where('sales.access_to_purchased_item', true)
+                    ->whereHas('installment')
+                    ->with([
                     'installment'
                 ])
-                ->whereHas('installment.installmentOrder')
-                ->with([
+                    ->whereHas('installment.installmentOrder')
+                    ->with([
                     'installment.installmentOrder'
                 ])
 
-                ->get();
+                    ->get();
 
                 if ($installmentClasses[0]->installment->type != 'step') {
                     $status = 'paying';
-                    $id2=$installmentClasses[0]->installment->installmentOrder->id;
+                    $id2 = $installmentClasses[0]->installment->installmentOrder->id;
 
-                    DB::delete('delete from installment_orders where id  = ?',[$id2]);
+                    DB::delete('delete from installment_orders where id  = ?', [$id2]);
 
                 }
 
-                DB::delete('delete from sales where installment_payment_id  = ?',[$instaid]);
-                DB::delete('delete from installment_order_payments where id  = ?',[$instaid]);
+                DB::delete('delete from sales where installment_payment_id  = ?', [$instaid]);
+                DB::delete('delete from installment_order_payments where id  = ?', [$instaid]);
 
             }
 
             return redirect(getAdminPanelUrl() . '/users/' . $id . '/edit');
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('editinsta error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1023,8 +1086,8 @@ public function importExcel(Request $request)
             ->where('sales.access_to_purchased_item', true)
             ->whereHas('webinar')
             ->with([
-                'webinar'
-            ])
+            'webinar'
+        ])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -1034,8 +1097,8 @@ public function importExcel(Request $request)
             ->where('sales.access_to_purchased_item', false)
             ->whereHas('webinar')
             ->with([
-                'webinar'
-            ])
+            'webinar'
+        ])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -1046,8 +1109,8 @@ public function importExcel(Request $request)
             ->where('sales.manual_added', false)
             ->whereHas('webinar')
             ->with([
-                'webinar'
-            ])
+            'webinar'
+        ])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -1066,16 +1129,16 @@ public function importExcel(Request $request)
             ->where('sales.access_to_purchased_item', true)
             ->whereHas('installment')
             ->with([
-                'installment'
-            ])
+            'installment'
+        ])
             ->whereHas('installment.installmentOrder')
             ->with([
-                'installment.installmentOrder'
-            ])
+            'installment.installmentOrder'
+        ])
             ->whereHas('installment.installmentOrder.webinar')
             ->with([
-                'installment.installmentOrder.webinar'
-            ])
+            'installment.installmentOrder.webinar'
+        ])
             ->get();
 
         return [
@@ -1093,8 +1156,8 @@ public function importExcel(Request $request)
             ->where('sales.access_to_purchased_item', true)
             ->whereHas('bundle')
             ->with([
-                'bundle'
-            ])
+            'bundle'
+        ])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -1104,8 +1167,8 @@ public function importExcel(Request $request)
             ->where('sales.access_to_purchased_item', false)
             ->whereHas('bundle')
             ->with([
-                'bundle'
-            ])
+            'bundle'
+        ])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -1116,8 +1179,8 @@ public function importExcel(Request $request)
             ->where('sales.manual_added', false)
             ->whereHas('bundle')
             ->with([
-                'bundle'
-            ])
+            'bundle'
+        ])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -1137,12 +1200,12 @@ public function importExcel(Request $request)
             ->where('sales.access_to_purchased_item', true)
             ->whereHas('productOrder')
             ->with([
-                'productOrder' => function ($query) {
-                    $query->with([
-                        'product'
-                    ]);
-                }
-            ])
+            'productOrder' => function ($query) {
+            $query->with([
+                    'product'
+                ]);
+        }
+        ])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -1152,12 +1215,12 @@ public function importExcel(Request $request)
             ->where('sales.access_to_purchased_item', false)
             ->whereHas('productOrder')
             ->with([
-                'productOrder' => function ($query) {
-                    $query->with([
-                        'product'
-                    ]);
-                }
-            ])
+            'productOrder' => function ($query) {
+            $query->with([
+                    'product'
+                ]);
+        }
+        ])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -1168,12 +1231,12 @@ public function importExcel(Request $request)
             ->where('sales.manual_added', false)
             ->whereHas('productOrder')
             ->with([
-                'productOrder' => function ($query) {
-                    $query->with([
-                        'product'
-                    ]);
-                }
-            ])
+            'productOrder' => function ($query) {
+            $query->with([
+                    'product'
+                ]);
+        }
+        ])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -1236,9 +1299,10 @@ public function importExcel(Request $request)
             $user->full_name = !empty($data['full_name']) ? $data['full_name'] : null;
             $user->role_name = $role->name;
             $user->role_id = $role->id;
-            if (!empty($data['consultant'])){
-            $user->consultant = $data['consultant'];
-            }else{
+            if (!empty($data['consultant'])) {
+                $user->consultant = $data['consultant'];
+            }
+            else {
                 $user->consultant = 0;
             }
             $user->timezone = $data['timezone'] ?? null;
@@ -1254,7 +1318,7 @@ public function importExcel(Request $request)
 
             if (!empty($data['password'])) {
                 $user->password = User::generatePassword($data['password']);
-                // pwd_hint removed — plaintext password storage eliminated (V-02)
+            // pwd_hint removed — plaintext password storage eliminated (V-02)
             }
 
             if (!empty($data['ban']) and $data['ban'] == '1') {
@@ -1264,7 +1328,8 @@ public function importExcel(Request $request)
                 $user->ban = true;
                 $user->ban_start_at = $ban_start_at;
                 $user->ban_end_at = $ban_end_at;
-            } else {
+            }
+            else {
                 $user->ban = false;
                 $user->ban_start_at = null;
                 $user->ban_end_at = null;
@@ -1290,13 +1355,14 @@ public function importExcel(Request $request)
             }
 
             return redirect()->back();
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('update error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1313,7 +1379,8 @@ public function importExcel(Request $request)
             if (!empty($checkMeta)) {
                 $checkMeta->delete();
             }
-        } else {
+        }
+        else {
             UserMeta::updateOrCreate([
                 'user_id' => $userId,
                 'name' => $name
@@ -1339,13 +1406,14 @@ public function importExcel(Request $request)
             $user->save();
 
             return redirect()->back();
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('updateImage error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1396,13 +1464,14 @@ public function importExcel(Request $request)
             }
 
             return redirect()->back();
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('financialUpdate error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1427,13 +1496,14 @@ public function importExcel(Request $request)
             }
 
             return redirect()->back();
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('occupationsUpdate error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1460,13 +1530,14 @@ public function importExcel(Request $request)
             sendNotification('new_badge', ['[u.b.title]' => $badge->title], $user->id);
 
             return redirect()->back();
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('badgesUpdate error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1487,13 +1558,14 @@ public function importExcel(Request $request)
             }
 
             return redirect()->back();
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('deleteBadge error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1510,13 +1582,14 @@ public function importExcel(Request $request)
             }
 
             return redirect()->back();
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('destroy error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1550,13 +1623,14 @@ public function importExcel(Request $request)
             }
 
             abort(404);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('acceptRequestToInstructor error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1570,8 +1644,8 @@ public function importExcel(Request $request)
             $users = User::select('id', 'full_name as name')
 
                 ->where(function ($query) use ($term) {
-                    $query->where('full_name', 'like', '%' . $term . '%');
-                });
+                $query->where('full_name', 'like', '%' . $term . '%');
+            });
 
             if ($option === "for_user_group") {
                 $users->whereNotIn('id', GroupUser::all()->pluck('user_id'));
@@ -1605,13 +1679,14 @@ public function importExcel(Request $request)
             }
 
             return response()->json($users->get(), 200);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('search error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1630,13 +1705,14 @@ public function importExcel(Request $request)
             session()->put(['impersonated' => $user->id]);
 
             return redirect('/panel');
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('impersonate error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1651,13 +1727,14 @@ public function importExcel(Request $request)
             $usersExport = new OrganizationsExport($users);
 
             return $this->dispatchBackgroundExport($usersExport, 'organizations_' . date('Y-m-d_H-i-s') . '.xlsx', 'Organizations Export');
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('exportExcelOrganizations error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1672,13 +1749,14 @@ public function importExcel(Request $request)
             $usersExport = new OrganizationsExport($users);
 
             return $this->dispatchBackgroundExport($usersExport, 'instructors_' . date('Y-m-d_H-i-s') . '.xlsx', 'Instructors Export');
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('exportExcelInstructors error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1693,13 +1771,14 @@ public function importExcel(Request $request)
             $usersExport = new StudentsExport($users);
 
             return $this->dispatchBackgroundExport($usersExport, 'students_' . date('Y-m-d_H-i-s') . '.xlsx', 'Students Export');
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('exportExcelStudents error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1738,13 +1817,14 @@ public function importExcel(Request $request)
             }
 
             abort(404);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('userRegistrationPackage error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1767,7 +1847,7 @@ public function importExcel(Request $request)
                     "province_id" => $data['province_id'] ?? null,
                     "city_id" => $data['city_id'] ?? null,
                     "district_id" => $data['district_id'] ?? null,
-                    "location" => (!empty($data['latitude']) and !empty($data['longitude'])) ? DB::raw("POINT(" . $data['latitude'] . "," . $data['longitude'] . ")") : null,
+                    "location" => (!empty($data['latitude']) and !empty($data['longitude'])) ?DB::raw("POINT(" . $data['latitude'] . "," . $data['longitude'] . ")") : null,
                 ]);
 
                 $updateUserMeta = [
@@ -1786,10 +1866,12 @@ public function importExcel(Request $request)
                             $checkMeta->update([
                                 'value' => $value
                             ]);
-                        } else {
+                        }
+                        else {
                             $checkMeta->delete();
                         }
-                    } else if (!empty($value)) {
+                    }
+                    else if (!empty($value)) {
                         UserMeta::create([
                             'user_id' => $user->id,
                             'name' => $name,
@@ -1802,13 +1884,14 @@ public function importExcel(Request $request)
             }
 
             abort(404);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('meetingSettings error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1831,13 +1914,14 @@ public function importExcel(Request $request)
             ];
 
             return back()->with(['toast' => $toastData]);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('disableCashbackToggle error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1860,13 +1944,14 @@ public function importExcel(Request $request)
             ];
 
             return back()->with(['toast' => $toastData]);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('disableRegitrationBonusStatus error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1889,13 +1974,14 @@ public function importExcel(Request $request)
             ];
 
             return back()->with(['toast' => $toastData]);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('disableInstallmentApproval error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }

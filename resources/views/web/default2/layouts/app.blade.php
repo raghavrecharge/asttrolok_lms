@@ -277,6 +277,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     var deleteAlertSuccessHint = '{{ trans('public.deleteAlertSuccessHint') }}';
     var forbiddenRequestToastTitleLang = '{{ trans('public.forbidden_request_toast_lang') }}';
     var forbiddenRequestToastMsgLang = '{{ trans('public.forbidden_request_toast_msg_lang') }}';
+
+    // Global Pricing: currency state for frontend JS
+    window.__globalPricing = {
+        currency: '{{ $globalCurrency ?? "INR" }}',
+        symbol: '{{ $globalCurrencySymbol ?? "₹" }}',
+        source: '{{ $globalCurrencySource ?? "default" }}',
+        country: '{{ $globalCurrencyCountry ?? "IN" }}',
+        baseCurrency: '{{ config("global_pricing.base_currency", "INR") }}'
+    };
 </script>
 
 @if(session()->has('toast'))

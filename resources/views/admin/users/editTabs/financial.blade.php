@@ -1,128 +1,125 @@
-<div class="tab-pane mt-3 fade" id="financial" role="tabpanel" aria-labelledby="financial-tab">
-    <div class="row">
-        <div class="col-12 col-md-6">
-            <form action="{{ getAdminPanelUrl() }}/users/{{ $user->id .'/financialUpdate' }}" method="Post">
-                {{ csrf_field() }}
+<div id="financial-tab" class="tab-content space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 hidden italic-none">
+    <form action="{{ getAdminPanelUrl() }}/users/{{ $user->id .'/financialUpdate' }}" method="Post" class="space-y-8 italic-none">
+        {{ csrf_field() }}
 
-                <div class="form-group">
-                    <label>{{ trans('financial.account_type') }}</label>
-
-                    <select name="bank_id" class="js-user-bank-input form-control @error('bank_id')  is-invalid @enderror">
-                        <option selected disabled>{{ trans('financial.select_account_type') }}</option>
-
-                        @foreach($userBanks as $userBank)
-                            <option value="{{ $userBank->id }}" @if(!empty($user) and !empty($user->selectedBank) and $user->selectedBank->user_bank_id == $userBank->id) selected="selected" @endif data-specifications="{{ json_encode($userBank->specifications->pluck('name','id')->toArray()) }}">{{ $userBank->title }}</option>
-                        @endforeach
-                    </select>
-
-                    @error('bank_id')
-                    <div class="invalid-feedback">
-                        {{ $message }}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 italic-none">
+            
+            <div class="space-y-6 italic-none">
+                <!-- Account Type -->
+                <div class="space-y-2 italic-none">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block italic-none">{{ trans('financial.account_type') }}</label>
+                    <div class="relative group italic-none">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors text-lg italic-none">account_balance</span>
+                        <select name="bank_id" class="js-user-bank-input w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700 appearance-none @error('bank_id') border-rose-500 @enderror italic-none">
+                            <option selected disabled>{{ trans('financial.select_account_type') }}</option>
+                            @foreach($userBanks as $userBank)
+                                <option value="{{ $userBank->id }}" @if(!empty($user) and !empty($user->selectedBank) and $user->selectedBank->user_bank_id == $userBank->id) selected="selected" @endif data-specifications="{{ json_encode($userBank->specifications->pluck('name','id')->toArray()) }}">{{ $userBank->title }}</option>
+                            @endforeach
+                        </select>
+                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-lg italic-none">expand_more</span>
                     </div>
+                    @error('bank_id')
+                        <p class="text-[10px] font-bold text-rose-500 mt-1 italic-none">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <div class="js-bank-specifications-card">
+                <div class="js-bank-specifications-card space-y-4 italic-none">
                     @if(!empty($user) and !empty($user->selectedBank) and !empty($user->selectedBank->bank))
                         @foreach($user->selectedBank->bank->specifications as $specification)
                             @php
                                 $selectedBankSpecification = $user->selectedBank->specifications->where('user_selected_bank_id', $user->selectedBank->id)->where('user_bank_specification_id', $specification->id)->first();
                             @endphp
-                            <div class="form-group">
-                                <label class="font-weight-500 text-dark-blue">{{ $specification->name }}</label>
-                                <input type="text" name="bank_specifications[{{ $specification->id }}]" value="{{ (!empty($selectedBankSpecification)) ? $selectedBankSpecification->value : '' }}" class="form-control"/>
+                            <div class="space-y-2 italic-none">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block italic-none">{{ $specification->name }}</label>
+                                <input type="text" name="bank_specifications[{{ $specification->id }}]" value="{{ (!empty($selectedBankSpecification)) ? $selectedBankSpecification->value : '' }}" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700 italic-none"/>
                             </div>
                         @endforeach
                     @endif
                 </div>
 
-                <div class="form-group mt-15">
-                    <label class="input-label">{{ trans('financial.identity_scan') }}</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <button type="button" class="input-group-text admin-file-manager" data-input="identity_scan" data-preview="holder">
-                                <i class="fa fa-chevron-up"></i>
-                            </button>
+                <!-- Identity Scan -->
+                <div class="space-y-2 italic-none">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block italic-none">{{ trans('financial.identity_scan') }}</label>
+                    <div class="flex gap-2 italic-none">
+                        <div class="relative flex-1 group italic-none">
+                            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors text-lg italic-none">file_present</span>
+                            <input type="text" name="identity_scan" id="identity_scan_input" value="{{ !empty($user->identity_scan) ? $user->identity_scan : old('identity_scan') }}" class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700 italic-none"/>
                         </div>
-                        <input type="text" name="identity_scan" id="identity_scan" value="{{ !empty($user->identity_scan) ? $user->identity_scan : old('identity_scan') }}" class="form-control"/>
-                        <div class="input-group-append">
-                            <button type="button" class="input-group-text admin-file-view" data-input="identity_scan">
-                                <i class="fa fa-eye"></i>
-                            </button>
-                        </div>
+                        <button type="button" class="admin-file-manager size-12 flex-shrink-0 bg-primary/10 text-primary rounded-2xl flex items-center justify-center hover:bg-primary/20 transition-all italic-none" data-input="identity_scan_input" data-preview="holder">
+                            <span class="material-symbols-outlined italic-none">upload</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6 italic-none">
+                 <!-- Address -->
+                 <div class="space-y-2 italic-none">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block italic-none">{{ trans('financial.address') }}</label>
+                    <div class="relative group italic-none">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors text-lg italic-none">location_on</span>
+                        <input type="text" name="address"
+                               class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700 italic-none"
+                               value="{{ !empty($user) ? $user->address : old('address') }}"
+                               placeholder="{{ trans('financial.address') }}"/>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>{{ trans('financial.address') }}</label>
-                    <input type="text" name="address"
-                           class="form-control "
-                           value="{{ !empty($user) ? $user->address : old('address') }}"
-                           placeholder="{{ trans('financial.address') }}"/>
-                </div>
-
+                <!-- Commission -->
                 @if(!$user->isUser())
-                    <div class="form-group">
-                        <label>{{ trans('admin/main.user_commission') }} (%)</label>
-                        <input type="text" name="commission"
-                               class="form-control "
-                               value="{{ !empty($user) ? $user->commission : old('commission') }}"
-                               placeholder="{{ trans('admin/main.user_commission_placeholder') }}"/>
+                    <div class="space-y-2 italic-none">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block italic-none">{{ trans('admin/main.user_commission') }} (%)</label>
+                        <div class="relative group italic-none">
+                            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors text-lg italic-none">percent</span>
+                            <input type="text" name="commission"
+                                   class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700 italic-none"
+                                   value="{{ !empty($user) ? $user->commission : old('commission') }}"
+                                   placeholder="0"/>
+                        </div>
                     </div>
                 @endif
 
-                <div class="form-group mb-0 d-flex align-items-center">
-                    <div class="custom-control custom-switch d-block">
-                        <input type="checkbox" name="financial_approval" class="custom-control-input" id="verifySwitch" {{ (($user->financial_approval) or (old('financial_approval') == 'on')) ? 'checked' : '' }}>
-                        <label class="custom-control-label" for="verifySwitch"></label>
+                 <!-- Bonus Amount -->
+                 <div class="js-registration-bonus-field space-y-2 {{ $user->enable_registration_bonus ? '' : 'hidden' }} italic-none">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block italic-none">{{ trans('update.registration_bonus_amount') }}</label>
+                    <div class="relative group italic-none">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors text-lg italic-none">redeem</span>
+                        <input type="text" name="registration_bonus_amount"
+                               class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700 italic-none"
+                               value="{{ !empty($user) ? $user->registration_bonus_amount : old('registration_bonus_amount') }}"/>
                     </div>
-                    <label for="verifySwitch">{{ trans('admin/main.financial_approval') }}</label>
                 </div>
-
-                <div class="form-group mb-0 d-flex align-items-center">
-                    <div class="custom-control custom-switch d-block">
-                        <input type="checkbox" name="enable_installments" class="custom-control-input" id="enableInstallmentsSwitch" {{ (($user->enable_installments) or (old('enable_installments') == 'on')) ? 'checked' : '' }}>
-                        <label class="custom-control-label" for="enableInstallmentsSwitch"></label>
-                    </div>
-                    <label for="enableInstallmentsSwitch">{{ trans('update.enable_installments') }}</label>
-                </div>
-
-                <div class="form-group mb-0 d-flex align-items-center">
-                    <div class="custom-control custom-switch d-block">
-                        <input type="checkbox" name="installment_approval" class="custom-control-input" id="installmentApprovalSwitch" {{ (($user->installment_approval) or (old('installment_approval') == 'on')) ? 'checked' : '' }}>
-                        <label class="custom-control-label" for="installmentApprovalSwitch"></label>
-                    </div>
-                    <label for="installmentApprovalSwitch">{{ trans('update.installment_approval') }}</label>
-                </div>
-
-                <div class="form-group mb-0 d-flex align-items-center">
-                    <div class="custom-control custom-switch d-block">
-                        <input type="checkbox" name="disable_cashback" class="custom-control-input" id="disableCashbackSwitch" {{ (($user->disable_cashback) or (old('disable_cashback') == 'on')) ? 'checked' : '' }}>
-                        <label class="custom-control-label" for="disableCashbackSwitch"></label>
-                    </div>
-                    <label for="disableCashbackSwitch">{{ trans('update.disable_cashback') }}</label>
-                </div>
-
-                <div class="form-group mb-0 d-flex align-items-center">
-                    <div class="custom-control custom-switch d-block">
-                        <input type="checkbox" name="enable_registration_bonus" class="custom-control-input" id="enable_registration_bonusSwitch" {{ ($user->enable_registration_bonus) ? 'checked' : '' }}>
-                        <label class="custom-control-label" for="enable_registration_bonusSwitch"></label>
-                    </div>
-                    <label for="enable_registration_bonusSwitch">{{ trans('update.enable_registration_bonus') }}</label>
-                </div>
-
-                <div class="js-registration-bonus-field form-group {{ $user->enable_registration_bonus ? '' : 'd-none' }}">
-                    <label>{{ trans('update.registration_bonus_amount') }}</label>
-                    <input type="text" name="registration_bonus_amount"
-                           class="form-control "
-                           value="{{ !empty($user) ? $user->registration_bonus_amount : old('registration_bonus_amount') }}"
-                           placeholder="{{ trans('update.user_registration_bonus_amount_placeholder') }}"/>
-                </div>
-
-                <div class=" mt-4">
-                    <button class="btn btn-primary">{{ trans('admin/main.submit') }}</button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+
+        <!-- Switches -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 italic-none">
+            @foreach([
+                ['name' => 'financial_approval', 'label' => trans('admin/main.financial_approval'), 'desc' => 'Auto-approve financial requests'],
+                ['name' => 'enable_installments', 'label' => trans('update.enable_installments'), 'desc' => 'Allow purchasing via installments'],
+                ['name' => 'installment_approval', 'label' => trans('update.installment_approval'), 'desc' => 'Auto-approve installment requests'],
+                ['name' => 'disable_cashback', 'label' => trans('update.disable_cashback'), 'desc' => 'Disable cashback for this user'],
+                ['name' => 'enable_registration_bonus', 'label' => trans('update.enable_registration_bonus'), 'desc' => 'Give welcome bonus on registration']
+            ] as $switch)
+                <label class="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl cursor-pointer group hover:bg-slate-100/50 transition-all italic-none">
+                    <div class="flex flex-col italic-none">
+                        <span class="text-[10px] font-black text-slate-700 uppercase tracking-widest italic-none">{{ $switch['label'] }}</span>
+                        <span class="text-[8px] font-bold text-slate-400 italic-none">{{ $switch['desc'] }}</span>
+                    </div>
+                    <div class="relative inline-flex items-center cursor-pointer italic-none">
+                        <input type="hidden" name="{{ $switch['name'] }}" value="0">
+                        <input type="checkbox" name="{{ $switch['name'] }}" id="{{ $switch['name'] }}Toggle" value="1" {{ ($user->{$switch['name']} or old($switch['name']) == 'on') ? 'checked' : '' }} class="sr-only peer italic-none">
+                        <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:after:w-4 after:transition-all peer-checked:bg-primary italic-none"></div>
+                    </div>
+                </label>
+            @endforeach
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100 italic-none">
+            <button type="button" onclick="closeEditPanel()" class="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-all italic-none">Cancel</button>
+            <button type="submit" class="px-8 py-2.5 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/40 active:scale-95 transition-all italic-none">
+                {{ trans('admin/main.submit') }}
+            </button>
+        </div>
+    </form>
 </div>

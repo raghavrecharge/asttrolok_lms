@@ -207,7 +207,7 @@ class SaleController extends Controller
 
  private function getSalesFilterspart($query, $request)
     {
-        $item_title = $request->get('item_title');
+        $item_title = $request->get('item_title') ?? $request->get('search');
         $from = $request->get('from');
         $to = $request->get('to');
         $status = $request->get('status');
@@ -248,7 +248,7 @@ class SaleController extends Controller
 
     private function getSalesFilters($query, $request)
     {
-        $item_title = $request->get('item_title');
+        $item_title = $request->get('item_title') ?? $request->get('search');
         $from = $request->get('from');
         $to = $request->get('to');
         $status = $request->get('status');

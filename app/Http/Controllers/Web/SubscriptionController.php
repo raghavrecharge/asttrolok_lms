@@ -57,22 +57,22 @@ class SubscriptionController extends Controller
 
             $subscription = Subscription::where('slug', $slug)
                 ->with([
-                    'tags',
-                    'faqs' => function ($query) {
-                        $query->orderBy('order', 'asc');
-                    },
+                'tags',
+                'faqs' => function ($query) {
+                $query->orderBy('order', 'asc');
+            },
 
-                    'filterOptions',
-                    'category',
-                    'extraDetails',
-                    'teacher',
+                'filterOptions',
+                'category',
+                'extraDetails',
+                'teacher',
 
-                ])
+            ])
                 ->withCount([
-                    'sales' => function ($query) {
-                        $query->whereNull('refund_at');
-                    },
-                ])
+                'sales' => function ($query) {
+                $query->whereNull('refund_at');
+            },
+            ])
                 ->where('status', 'active')
                 ->first();
 
@@ -80,14 +80,14 @@ class SubscriptionController extends Controller
                 return $justReturnData ? false : back();
             }
 
-            if($subscription->private==1){
-             if (!$justReturnData) {
-                $contentLimitation = $this->checkContentLimitation($user, true);
+            if ($subscription->private == 1) {
+                if (!$justReturnData) {
+                    $contentLimitation = $this->checkContentLimitation($user, true);
 
-                if ($contentLimitation != "ok") {
-                    return $contentLimitation;
+                    if ($contentLimitation != "ok") {
+                        return $contentLimitation;
+                    }
                 }
-            }
             }
 
             $hasBought = $subscription->checkUserHasBought($user, true, true);
@@ -159,10 +159,10 @@ class SubscriptionController extends Controller
             }
 
             $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
-            ->where('subscription_id', $subscription->id)
+                ->where('subscription_id', $subscription->id)
                 ->where('status', 'active')
-            ->orderBy('order', 'asc')
-            ->get();
+                ->orderBy('order', 'asc')
+                ->get();
 
             $data = [
                 'pageH1' => $subscription->h1,
@@ -181,59 +181,61 @@ class SubscriptionController extends Controller
                 'installments' => $installments ?? null,
                 'cashbackRules' => $cashbackRules ?? null,
 
-                 'chapterItems' => $chapterItems,
+                'chapterItems' => $chapterItems,
 
             ];
 
-            if(isset($user->id)){
-            if($subscription->id==2069){
-            $webhookurl = 'https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjUwNTZiMDYzMzA0M2Q1MjY5NTUzNzUxMzUi_pc';
+            if (isset($user->id)) {
+                if ($subscription->id == 2069) {
+                    $webhookurl = 'https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjUwNTZiMDYzMzA0M2Q1MjY5NTUzNzUxMzUi_pc';
 
-            $webhookdata = [
-            'id' => $user->id,
-            'name' => $user->full_name,
-            'mobile' => $user->mobile,
-            'email' => $user->email,
-            ];
+                    $webhookdata = [
+                        'id' => $user->id,
+                        'name' => $user->full_name,
+                        'mobile' => $user->mobile,
+                        'email' => $user->email,
+                    ];
 
-            $webhookcurl = curl_init($webhookurl);
+                    $webhookcurl = curl_init($webhookurl);
 
-            curl_setopt($webhookcurl, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($webhookcurl, CURLOPT_RETURNTRANSFER, true);
 
-            curl_setopt($webhookcurl, CURLOPT_POST, true);
+                    curl_setopt($webhookcurl, CURLOPT_POST, true);
 
-            curl_setopt($webhookcurl, CURLOPT_POSTFIELDS,  json_encode($webhookdata));
+                    curl_setopt($webhookcurl, CURLOPT_POSTFIELDS, json_encode($webhookdata));
 
-            $webhookresponse = curl_exec($webhookcurl);
+                    $webhookresponse = curl_exec($webhookcurl);
 
-            curl_close($webhookcurl);
+                    curl_close($webhookcurl);
 
-            }
+                }
             }
             if ($justReturnData) {
                 return $data;
             }
 
             $agent = new Agent();
-            if ($agent->isMobile()){
+            if ($agent->isMobile()) {
                 return view(getTemplate() . '.subscription.index', $data);
-            }else{
+            }
+            else {
                 return view('web.default2' . '.subscription.index', $data);
             }
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('subscription error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
 
-       public function subscription1($slug, $justReturnData = false)
-    { 
-      
+    public function subscription1($slug, $justReturnData = false)
+    {
+
         $user = null;
 
         if (auth()->check()) {
@@ -241,47 +243,46 @@ class SubscriptionController extends Controller
         }
 
 
-       
-       
+
+
 
 
         $subscription = Subscription::where('slug', $slug)
             ->with([
-                'tags',
-                'faqs' => function ($query) {
-                    $query->orderBy('order', 'asc');
-                },
-          
-                'filterOptions',
-                'category',
-                'teacher',
-              
-            ])
+            'tags',
+            'faqs' => function ($query) {
+            $query->orderBy('order', 'asc');
+        },
+
+            'filterOptions',
+            'category',
+            'teacher',
+
+        ])
             ->withCount([
-                'sales' => function ($query) {
-                    $query->whereNull('refund_at');
-                },
-            ])
+            'sales' => function ($query) {
+            $query->whereNull('refund_at');
+        },
+        ])
             ->where('status', 'active')
             ->first();
-            
-            // print_r($subscription);die();
+
+        // print_r($subscription);die();
 
         if (empty($subscription)) {
             return $justReturnData ? false : back();
         }
 
-     
-        if($subscription->private==1){
-         if (!$justReturnData) {
-            $contentLimitation = $this->checkContentLimitation($user, true);
-          
-            if ($contentLimitation != "ok") {
-                return $contentLimitation;
+
+        if ($subscription->private == 1) {
+            if (!$justReturnData) {
+                $contentLimitation = $this->checkContentLimitation($user, true);
+
+                if ($contentLimitation != "ok") {
+                    return $contentLimitation;
+                }
             }
-        }
-        }
-//   print_r($subscription->private);
+        }        //   print_r($subscription->private);
         $hasBought = $subscription->checkUserHasBought($user, true, true);
         $isPrivate = $subscription->private;
 
@@ -349,12 +350,13 @@ class SubscriptionController extends Controller
             $cashbackRulesMixin = new CashbackRules($user);
             $cashbackRules = $cashbackRulesMixin->getRules('subscriptions', $subscription->id, $subscription->type, $subscription->category_id, $subscription->teacher_id);
         }
+
         
 $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
-    ->where('subscription_id', $subscription->id)
+            ->where('subscription_id', $subscription->id)
             ->where('status', 'active')
-    ->orderBy('order', 'asc')
-    ->get();
+            ->orderBy('order', 'asc')
+            ->get();
 
 
         $data = [
@@ -378,7 +380,7 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
             'cashbackRules' => $cashbackRules ?? null,
             // 'astromani_23' =>$subscription_Astromani_2023,
             // 'subscription_Professional' =>$subscription_Professional,
-             'chapterItems' => $chapterItems,
+            'chapterItems' => $chapterItems,
 
         ];
 
@@ -387,12 +389,13 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
         }
 
         $agent = new Agent();
-        if ($agent->isMobile()){
+        if ($agent->isMobile()) {
             return view(getTemplate() . '.subscription.index', $data);
-        }else{
+        }
+        else {
             return view('web.default2' . '.subscription.index', $data);
         }
-        // return view('web.default.subscription.index', $data);
+    // return view('web.default.subscription.index', $data);
     }
 
     public function landingpage($slug)
@@ -401,14 +404,15 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
             $data = [
                 'slug' => $slug,
             ];
-            return view('web.default2.subscription.landingPage.'.$slug,$data);
-        } catch (\Exception $e) {
+            return view('web.default2.subscription.landingPage.' . $slug, $data);
+        }
+        catch (\Exception $e) {
             \Log::error('landingpage error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -446,7 +450,7 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
                 }
             }
 
-            $quiz->result_status = $status_pass ? QuizzesResult::$passed : $userQuizDone->first()->status;
+            $quiz->result_status = $status_pass ?QuizzesResult::$passed : $userQuizDone->first()->status;
 
             if ($quiz->certificate and $quiz->result_status == QuizzesResult::$passed) {
                 $canDownloadCertificate = true;
@@ -479,7 +483,7 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
         return $canAccess;
     }
 
-     public function downloadFile($slug, $file_id)
+    public function downloadFile($slug, $file_id)
     {
         try {
             $subscriptions = subscription::where('slug', $slug)
@@ -487,7 +491,7 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
                 ->first();
 
             if (!empty($subscriptions) and $this->checkCanAccessToPrivateSubscription($subscriptions)) {
-              $file = File::where('id', $file_id)->first();
+                $file = File::where('id', $file_id)->first();
 
                 if (!empty($file) and $file->downloadable) {
                     $canAccess = true;
@@ -513,17 +517,18 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
                             $headers = array(
                                 'Content-Type: application/' . $file->file_type,
                             );
-                            if($file->storage =='upload'){
-                                 $filePath = Storage::disk('upload')->url($file->file);
+                            if ($file->storage == 'upload') {
+                                $filePath = Storage::disk('upload')->url($file->file);
                             }
 
-                          return redirect()->away($filePath);
+                            return redirect()->away($filePath);
 
                         }
                         $file = Storage::disk('upload')->download($file->file);
 
-            return $file;
-                    } else {
+                        return $file;
+                    }
+                    else {
                         $toastData = [
                             'title' => trans('public.not_access_toast_lang'),
                             'msg' => trans('public.not_access_toast_msg_lang'),
@@ -535,13 +540,14 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
             }
 
             return back();
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('downloadFile error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -574,16 +580,18 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
                                 'path' => url($filePath)
                             ];
                             $agent = new Agent();
-                            if ($agent->isMobile()){
-                            return view(getTemplate() . '.subscription.learningPage.interactive_file', $data);
-                            }else{
+                            if ($agent->isMobile()) {
+                                return view(getTemplate() . '.subscription.learningPage.interactive_file', $data);
+                            }
+                            else {
                                 return view('web.default2' . '.subscription.learningPage.interactive_file', $data);
                             }
 
                         }
 
                         abort(404);
-                    } else {
+                    }
+                    else {
                         $toastData = [
                             'title' => trans('public.not_access_toast_lang'),
                             'msg' => trans('public.not_access_toast_msg_lang'),
@@ -595,13 +603,14 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
             }
 
             abort(403);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('showHtmlFile error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -622,12 +631,12 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
                 $webinar = Webinar::where('id', $file->webinar_id)
                     ->where('status', 'active')
                     ->with([
-                        'files' => function ($query) {
-                            $query->select('id', 'webinar_id', 'file_type')
-                                ->where('status', 'active')
-                                ->orderBy('order', 'asc');
-                        }
-                    ])
+                    'files' => function ($query) {
+                    $query->select('id', 'webinar_id', 'file_type')
+                        ->where('status', 'active')
+                        ->orderBy('order', 'asc');
+                }
+                ])
                     ->first();
 
                 if (!empty($webinar)) {
@@ -642,7 +651,8 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
 
                         if ($file->storage == 'upload') {
                             $path = url("/subscription/$webinar->slug/file/$file->id/play");
-                        } elseif ($file->storage == 'upload_archive') {
+                        }
+                        elseif ($file->storage == 'upload_archive') {
                             $path = url("/subscription/$webinar->slug/file/$file->id/showHtml");
                         }
 
@@ -657,21 +667,21 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
             }
 
             abort(403);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('getFilePath error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
-    public function getFilePath1(Request $request)
-{
+    public function getFilePath1(Request $request)    {
         try {
             $this->validate($request, [
-            'file_id' => 'required|integer'
+                'file_id' => 'required|integer'
             ]);
 
             $file_id = $request->get('file_id');
@@ -680,24 +690,25 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
             $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
             if (!$filePath) {
-            return response()->json([
-                'success' => false,
-                'message' => 'File not found'
-            ], 404);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File not found'
+                ], 404);
             }
 
             return response()->json([
-            'success' => true,
-            'type'=>$extension,
-            'file' => $filePath
+                'success' => true,
+                'type' => $extension,
+                'file' => $filePath
             ]);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('getFilePath1 error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -729,13 +740,15 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
                                 'iframe' => $file->file
                             ];
                             $agent = new Agent();
-                            if ($agent->isMobile()){
-                            return view(getTemplate() . '.subscription.learningPage.interactive_file', $data);
-                            }else{
+                            if ($agent->isMobile()) {
+                                return view(getTemplate() . '.subscription.learningPage.interactive_file', $data);
+                            }
+                            else {
                                 return view('web.default2' . '.subscription.learningPage.interactive_file', $data);
                             }
 
-                        } else if ($file->isVideo()) {
+                        }
+                        else if ($file->isVideo()) {
                             return response()->file(public_path($file->file));
                         }
                     }
@@ -743,13 +756,14 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
             }
 
             abort(403);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('playFile error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -766,8 +780,8 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
             $subscription = Webinar::where('slug', $slug)
                 ->where('status', 'active')
                 ->with(['teacher', 'textLessons' => function ($query) {
-                    $query->orderBy('order', 'asc');
-                }])
+                $query->orderBy('order', 'asc');
+            }])
                 ->first();
 
             if (!empty($subscription) and $this->checkCanAccessToPrivateCourse($subscription)) {
@@ -775,13 +789,13 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
                     ->where('webinar_id', $subscription->id)
                     ->where('status', WebinarChapter::$chapterActive)
                     ->with([
-                        'attachments' => function ($query) {
-                            $query->with('file');
-                        },
-                        'learningStatus' => function ($query) use ($user) {
-                            $query->where('user_id', !empty($user) ? $user->id : null);
-                        }
-                    ])
+                    'attachments' => function ($query) {
+                    $query->with('file');
+                },
+                    'learningStatus' => function ($query) use ($user) {
+                    $query->where('user_id', !empty($user) ? $user->id : null);
+                }
+                ])
                     ->first();
 
                 if (!empty($textLesson)) {
@@ -827,9 +841,10 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
                         'previousLesson' => $previousLesson,
                     ];
                     $agent = new Agent();
-                    if ($agent->isMobile()){
-                    return view(getTemplate() . '.subscription.text_lesson', $data);
-                    }else{
+                    if ($agent->isMobile()) {
+                        return view(getTemplate() . '.subscription.text_lesson', $data);
+                    }
+                    else {
                         return view('web.default2' . '.subscription.text_lesson', $data);
                     }
 
@@ -837,13 +852,14 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
             }
 
             abort(404);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('getLesson error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -872,10 +888,10 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
 
             if ($existingAccess) {
                 return redirect($subscription->getLearningPageUrl())->with(['toast' => [
-                    'title' => '',
-                    'msg' => 'You are already enrolled in this subscription.',
-                    'status' => 'info'
-                ]]);
+                        'title' => '',
+                        'msg' => 'You are already enrolled in this subscription.',
+                        'status' => 'info'
+                    ]]);
             }
 
             DB::beginTransaction();
@@ -910,24 +926,25 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
             ]);
 
             return redirect($subscription->getLearningPageUrl())->with(['toast' => [
-                'title' => 'Welcome!',
-                'msg' => 'You have been enrolled successfully! You have access to ' . $subscription->free_video_count . ' free videos for ' . $subscription->access_days . ' days.',
-                'status' => 'success'
-            ]]);
+                    'title' => 'Welcome!',
+                    'msg' => 'You have been enrolled successfully! You have access to ' . $subscription->free_video_count . ' free videos for ' . $subscription->access_days . ' days.',
+                    'status' => 'success'
+                ]]);
 
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             DB::rollBack();
             \Log::error('free enrollment error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return back()->with(['toast' => [
-                'title' => 'Error',
-                'msg' => 'Something went wrong during enrollment. Please try again.',
-                'status' => 'error'
-            ]]);
+                    'title' => 'Error',
+                    'msg' => 'Something went wrong during enrollment. Please try again.',
+                    'status' => 'error'
+                ]]);
         }
     }
 
@@ -980,13 +997,14 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
             return response()->json([
                 'code' => 401
             ], 200);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('reportWebinar error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1023,13 +1041,14 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
             }
 
             abort(403);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('learningStatus error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1093,16 +1112,18 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
                 }
 
                 abort(404);
-            } else {
+            }
+            else {
                 return redirect('/login');
             }
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('buyWithPoint error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1110,114 +1131,118 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
     public function directPayment(Request $request, $slug)
     {
         try {
-            $discountCouponId=0;
-            if(session('discountCouponId')){
+            $discountCouponId = 0;
+            if (session('discountCouponId')) {
                 $discountCouponId = session('discountCouponId');
             }
 
-                $subscription = Subscription::where('slug', $slug)
-                    ->where('status', 'active')
+            $subscription = Subscription::where('slug', $slug)
+                ->where('status', 'active')
+                ->first();
+
+            if (empty($subscription)) {
+                abort(404);
+            }
+
+            $user = auth()->user();
+
+            // Check if user has already enrolled (has SubscriptionAccess record)
+            $hasEnrolled = false;
+            if ($user) {
+                $subscriptionAccess = SubscriptionAccess::where('subscription_id', $subscription->id)
+                    ->where('user_id', $user->id)
                     ->first();
+                $hasEnrolled = !empty($subscriptionAccess);
+            }
 
-                if (empty($subscription)) {
-                    abort(404);
+            // New user (never enrolled) → show FREE enrollment page
+            if (!$hasEnrolled) {
+                $data = [
+                    'subscription' => $subscription,
+                ];
+
+                $agent = new Agent();
+                if ($agent->isMobile()) {
+                    return view(getTemplate() . '.cart.buyNowSubscriptionFree', $data);
                 }
-
-                $user = auth()->user();
-
-                // Check if user has already enrolled (has SubscriptionAccess record)
-                $hasEnrolled = false;
-                if ($user) {
-                    $subscriptionAccess = SubscriptionAccess::where('subscription_id', $subscription->id)
-                        ->where('user_id', $user->id)
-                        ->first();
-                    $hasEnrolled = !empty($subscriptionAccess);
+                else {
+                    return view('web.default2' . '.cart.buyNowSubscriptionFree', $data);
                 }
+            }
 
-                // New user (never enrolled) → show FREE enrollment page
-                if (!$hasEnrolled) {
-                    $data = [
-                        'subscription' => $subscription,
-                    ];
+            // Already enrolled → show PAID options (one-time + AutoPay)
+            $itemPrice = $subscription->getPrice();
 
-                    $agent = new Agent();
-                    if ($agent->isMobile()){
-                        return view(getTemplate() . '.cart.buyNowSubscriptionFree', $data);
-                    }else{
-                        return view('web.default2' . '.cart.buyNowSubscriptionFree', $data);
-                    }
-                }
+            // Get wallet balance for logged-in users
+            $walletBalance = 0;
+            if (auth()->check()) {
+                $walletBalance = app(\App\Services\PaymentEngine\WalletService::class)->balance(auth()->id());
+            }
 
-                // Already enrolled → show PAID options (one-time + AutoPay)
-                $itemPrice = $subscription->getPrice();
+            $data = [
+                'subscription' => $subscription,
+                'total' => $itemPrice,
+                'walletBalance' => $walletBalance,
+            ];
 
-                // Get wallet balance for logged-in users
-                $walletBalance = 0;
-                if (auth()->check()) {
-                    $walletBalance = app(\App\Services\PaymentEngine\WalletService::class)->balance(auth()->id());
-                }
+            $agent = new Agent();
+            if ($agent->isMobile()) {
+                return view(getTemplate() . '.cart.buyNowSubscription', $data);
+            }
+            else {
+                return view('web.default2' . '.cart.buyNowSubscription', $data);
+            }
 
-                    $data = [
-                        'subscription' => $subscription,
-                        'total' => $itemPrice,
-                        'walletBalance' => $walletBalance,
-                    ];
-
-                    $agent = new Agent();
-                    if ($agent->isMobile()){
-                        return view(getTemplate() . '.cart.buyNowSubscription', $data);
-                    }else{
-                        return view('web.default2' . '.cart.buyNowSubscription', $data);
-                    }
-
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('directPayment error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
     public function directPayment1(Request $request, $slug)
     {
         try {
-            $discountCouponId=0;
-            if(session('discountCouponId')){
+            $discountCouponId = 0;
+            if (session('discountCouponId')) {
                 $discountCouponId = session('discountCouponId');
             }
 
-                $subscription = Subscription::where('slug', $slug)
-                    ->where('status', 'active')
-                    ->first();
+            $subscription = Subscription::where('slug', $slug)
+                ->where('status', 'active')
+                ->first();
 
-                $item = $subscription;
+            $item = $subscription;
 
-                $itemPrice = 0;
-                $price = 0;
+            // Use the shared getPrice() method to handle discounts/special offers correctly
+            $itemPrice = $subscription->getPrice();
 
-                    $data = [
+            $data = [
+                'subscription' => $subscription,
+                'total' => $itemPrice,
+            ];
 
-                        'subscription' => $subscription,
-                        'total' => $itemPrice1 ?? $itemPrice,
-                    ];
-
-                    $agent = new Agent();
-                    if ($agent->isMobile()){
-                        return view(getTemplate() . '.cart.buyNowSubscription1', $data);
-                    }else{
-                        return view('web.default2' . '.cart.buyNowSubscription1', $data);
-                    }
+            $agent = new Agent();
+            if ($agent->isMobile()) {
+                return view(getTemplate() . '.cart.buyNowSubscription1', $data);
+            }
+            else {
+                return view('web.default2' . '.cart.buyNowSubscription1', $data);
+            }
 
             abort(404);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('directPayment1 error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -1230,18 +1255,19 @@ $chapterItems = SubscriptionWebinarChapterItems::with(['file', 'quiz'])
                     ->where('status', 'active')
                     ->first();
 
-                    return $subscription;
+                return $subscription;
 
             }
 
             return null;
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('getItem error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }

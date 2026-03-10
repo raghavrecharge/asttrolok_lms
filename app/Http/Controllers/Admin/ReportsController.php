@@ -36,13 +36,14 @@ class ReportsController extends Controller
             ];
 
             return view('admin.reports.reasons', $data);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('reasons error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -62,7 +63,8 @@ class ReportsController extends Controller
                 $values = array_filter($values, function ($val) {
                     if (is_array($val)) {
                         return array_filter($val);
-                    } else {
+                    }
+                    else {
                         return !empty($val);
                     }
                 });
@@ -71,20 +73,20 @@ class ReportsController extends Controller
                 $values = str_replace('record', rand(1, 600), $values);
 
                 $settings = Setting::updateOrCreate(
-                    ['name' => $name],
-                    [
-                        'updated_at' => time(),
-                    ]
+                ['name' => $name],
+                [
+                    'updated_at' => time(),
+                ]
                 );
 
                 SettingTranslation::updateOrCreate(
-                    [
-                        'setting_id' => $settings->id,
-                        'locale' => mb_strtolower($locale)
-                    ],
-                    [
-                        'value' => $values,
-                    ]
+                [
+                    'setting_id' => $settings->id,
+                    'locale' => mb_strtolower($locale)
+                ],
+                [
+                    'value' => $values,
+                ]
                 );
 
                 cache()->forget('settings.' . $name);
@@ -93,13 +95,14 @@ class ReportsController extends Controller
             removeContentLocale();
 
             return back();
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('storeReasons error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }
@@ -122,13 +125,36 @@ class ReportsController extends Controller
             ];
 
             return view('admin.webinars.reports', $data);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('webinarsReports error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
+            throw $e;
+        }
+    }
+
+    public function analytics()
+    {
+        try {
+            $this->authorize('admin_reports');
+
+            $data = [
+                'pageTitle' => 'Reports & Analytics'
+            ];
+
+            return view('admin.financial.reports.analytics', $data);
+        }
+        catch (\Exception $e) {
+            \Log::error('analytics error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             throw $e;
         }
     }
@@ -143,13 +169,14 @@ class ReportsController extends Controller
             $report->delete();
 
             return redirect()->back();
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('delete error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             throw $e;
         }
     }

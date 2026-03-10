@@ -1,358 +1,302 @@
 @extends('admin.layouts.app')
 
-@push('libraries_top')
-
+@push('styles_top')
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#32A128",
+                    "background-light": "#F7F9FC",
+                    "background-dark": "#112210",
+                },
+                fontFamily: {
+                    "display": ["Inter", "sans-serif"]
+                },
+                borderRadius: {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "2xl": "12px",
+                    "full": "9999px"
+                },
+            },
+        },
+    }
+</script>
+<style>
+    /* Scope that font family so it primarily affects our new container */
+    .um-page-container { font-family: 'Inter', sans-serif; }
+    .um-page-container .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    
+    /* Hide platform default cards that clutter the top */
+    .section-header, .section-body > .card:first-child, .section-body > section.card, .section-filters { display: none !important; }
+    
+    /* Compact form sections */
+    .compact-form-card {
+        @apply bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden p-4;
+    }
+    .compact-section-heading {
+        @apply text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-4 pb-2 border-b border-slate-100 dark:border-slate-800;
+    }
+    .compact-grid {
+        @apply grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4;
+    }
+    .compact-form-row {
+        @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+    }
+    .compact-field {
+        @apply space-y-1;
+    }
+    
+    /* Improve table layout and text handling */
+    .um-page-container table { table-layout: fixed; }
+    .um-page-container td { vertical-align: middle; }
+    .um-page-container .user-info-cell { 
+        max-width: 256px; 
+        word-wrap: break-word; 
+        hyphens: auto; 
+    }
+    
+    /* Adjust default Laravel pagination to look OK */
+    .um-tailwind-pagination .pagination { display: flex; gap: 4px; margin: 0; padding: 0; list-style: none; }
+    .um-tailwind-pagination .page-item .page-link { 
+        display: flex; align-items: center; justify-content: center; 
+        width: 32px; height: 32px; border-radius: 8px; border: 1px solid #e2e8f0; 
+        color: #475569; font-size: 14px; font-weight: 500; text-decoration: none; padding: 0; 
+    }
+    .um-tailwind-pagination .page-item.active .page-link { background: #32A128; color: #fff; border-color: #32A128; }
+    .um-tailwind-pagination .page-item.disabled .page-link { opacity: 0.5; pointer-events: none; }
+</style>
 @endpush
 
 @section('content')
-    <section class="section">
-        <div class="section-header">
-            <h1>{{ trans('admin/main.students') }} {{ trans('admin/main.list') }}</h1>
-            <div class="section-header-breadcrumb">
-                <div class="breadcrumb-item active"><a>{{ trans('admin/main.students') }}</a></div>
-                <div class="breadcrumb-item"><a href="#">{{ trans('admin/main.users_list') }}</a></div>
-            </div>
-        </div>
-    </section>
+<div class="um-page-container bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased h-full flex flex-col p-4 md:p-8">
 
-    <div class="section-body">
-        <div class="row">
-            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
-                <div class="card card-statistic-1">
-                    <div class="card-icon bg-primary">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="card-wrap">
-                        <div class="card-header">
-                            <h4>{{ trans('admin/main.total_students') }}</h4>
-                        </div>
-                        <div class="card-body">
-                            {{ $totalStudents }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
-                <div class="card card-statistic-1">
-                    <div class="card-icon bg-success">
-                        <i class="fas fa-briefcase"></i></div>
-                    <div class="card-wrap">
-                        <div class="card-header">
-                            <h4>{{ trans('admin/main.organizations_students') }}</h4>
-                        </div>
-                        <div class="card-body">
-                            {{ $totalOrganizationsStudents }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
-                <div class="card card-statistic-1">
-                    <div class="card-icon bg-warning">
-                        <i class="fas fa-info-circle"></i></div>
-                    <div class="card-wrap">
-                        <div class="card-header">
-                            <h4>{{ trans('admin/main.inactive_students') }}</h4>
-                        </div>
-                        <div class="card-body">
-                            {{ $inactiveStudents }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 col-sm-6 col-12">
-                <div class="card card-statistic-1">
-                    <div class="card-icon bg-danger">
-                        <i class="fas fa-ban"></i></div>
-                    <div class="card-wrap">
-                        <div class="card-header">
-                            <h4>{{ trans('admin/main.ban_students') }}</h4>
-                        </div>
-                        <div class="card-body">
-                            {{ $banStudents }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <section class="card">
-            <div class="card-body">
-                <form method="get" class="mb-0">
-
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="input-label">{{ trans('admin/main.search') }}</label>
-                                <input name="full_name" type="text" class="form-control" value="{{ request()->get('full_name') }}">
-                            </div>
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="input-label">{{ trans('admin/main.start_date') }}</label>
-                                <div class="input-group">
-                                    <input type="date" id="from" class="text-center form-control" name="from" value="{{ request()->get('from') }}" placeholder="Start Date">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="input-label">{{ trans('admin/main.end_date') }}</label>
-                                <div class="input-group">
-                                    <input type="date" id="to" class="text-center form-control" name="to" value="{{ request()->get('to') }}" placeholder="End Date">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="input-label">{{ trans('admin/main.filters') }}</label>
-                                <select name="sort" data-plugin-selectTwo class="form-control populate">
-                                    <option value="">{{ trans('admin/main.filter_type') }}</option>
-                                    <option value="purchased_classes_asc" @if(request()->get('sort') == 'purchased_classes_asc') selected @endif>{{ trans('admin/main.purchased_classes_ascending') }}</option>
-                                    <option value="purchased_classes_desc" @if(request()->get('sort') == 'purchased_classes_desc') selected @endif>{{ trans('admin/main.purchased_classes_descending') }}</option>
-
-                                    <option value="purchased_classes_amount_asc" @if(request()->get('sort') == 'purchased_classes_amount_asc') selected @endif>{{ trans('admin/main.purchased_classes_amount_ascending') }}</option>
-                                    <option value="purchased_classes_amount_desc" @if(request()->get('sort') == 'purchased_classes_amount_desc') selected @endif>{{ trans('admin/main.purchased_classes_amount_descending') }}</option>
-
-                                    <option value="purchased_appointments_asc" @if(request()->get('sort') == 'purchased_appointments_asc') selected @endif>{{ trans('admin/main.purchased_appointments_ascending') }}</option>
-                                    <option value="purchased_appointments_desc" @if(request()->get('sort') == 'purchased_appointments_desc') selected @endif>{{ trans('admin/main.purchased_appointments_descending') }}</option>
-
-                                    <option value="purchased_appointments_amount_asc" @if(request()->get('sort') == 'purchased_appointments_amount_asc') selected @endif>{{ trans('admin/main.purchased_appointments_amount_ascending') }}</option>
-                                    <option value="purchased_appointments_amount_desc" @if(request()->get('sort') == 'purchased_appointments_amount_desc') selected @endif>{{ trans('admin/main.purchased_appointments_amount_descending') }}</option>
-
-                                    <option value="register_asc" @if(request()->get('sort') == 'register_asc') selected @endif>{{ trans('admin/main.register_date_ascending') }}</option>
-                                    <option value="register_desc" @if(request()->get('sort') == 'register_desc') selected @endif>{{ trans('admin/main.register_date_descending') }}</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="input-label">{{ trans('admin/main.organization') }}</label>
-                                <select name="organization_id" data-plugin-selectTwo class="form-control populate">
-                                    <option value="">{{ trans('admin/main.select_organization') }}</option>
-                                    @foreach($organizations as $organization)
-                                        <option value="{{ $organization->id }}" @if(request()->get('organization_id') == $organization->id) selected @endif>{{ $organization->full_name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="input-label">{{ trans('admin/main.users_group') }}</label>
-                                <select name="group_id" data-plugin-selectTwo class="form-control populate">
-                                    <option value="">{{ trans('admin/main.select_users_group') }}</option>
-                                    @foreach($userGroups as $userGroup)
-                                        <option value="{{ $userGroup->id }}" @if(request()->get('group_id') == $userGroup->id) selected @endif>{{ $userGroup->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="input-label">{{ trans('admin/main.status') }}</label>
-                                <select name="status" data-plugin-selectTwo class="form-control populate">
-                                    <option value="">{{ trans('admin/main.all_status') }}</option>
-                                    <option value="active_verified" @if(request()->get('status') == 'active_verified') selected @endif>{{ trans('admin/main.active_verified') }}</option>
-                                    <option value="active_notVerified" @if(request()->get('status') == 'active_notVerified') selected @endif>{{ trans('admin/main.active_not_verified') }}</option>
-                                    <option value="inactive" @if(request()->get('status') == 'inactive') selected @endif>{{ trans('admin/main.inactive') }}</option>
-                                    <option value="ban" @if(request()->get('status') == 'ban') selected @endif>{{ trans('admin/main.banned') }}</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="form-group mt-1">
-                                <label class="input-label mb-4"> </label>
-                                <input type="submit" class="text-center btn btn-primary w-100" value="{{ trans('admin/main.show_results') }}">
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </section>
-    </div>
-
-    <div class="card">
-        <div class="card-header">
-            @can('admin_users_export_excel')
-                <div class="text-right">
-                    <a href="{{ getAdminPanelUrl() }}/students/excel?{{ http_build_query(request()->all()) }}" class="btn btn-primary js-export-btn">{{ trans('admin/main.export_xls') }}</a>
-                </div>
-            @endcan
-             <button type="button" data-toggle="modal" data-target="#import" class=" course-content-btns btn btn-sm btn-primary not-login-toast">
-                                    Import Excel
-                                </button>
-            <div class="h-10"></div>
-        </div>
-
-        <div class="card-body">
-            <div class="table-responsive text-center">
-                <table class="table table-striped font-14">
-                    <tr>
-                        <th>ID</th>
-                        <th>{{ trans('admin/main.name') }}</th>
-                        <th>{{ trans('admin/main.classes') }}</th>
-                        <th>{{ trans('admin/main.appointments') }}</th>
-                        <th>{{ trans('admin/main.wallet_charge') }}</th>
-                        <th>{{ trans('admin/main.income') }}</th>
-                        <th>{{ trans('admin/main.user_group') }}</th>
-                        <th>{{ trans('admin/main.register_date') }}</th>
-                        <th>{{ trans('admin/main.status') }}</th>
-                        <th width="120">{{ trans('admin/main.actions') }}</th>
-                    </tr>
-
-                    @foreach($users as $user)
-
-                        <tr>
-                            <td>{{ $user->id }}</td>
-                            <td class="text-left">
-                                <div class="d-flex align-items-center">
-                                    <figure class="avatar mr-2">
-                                        <img src="{{ $user->getAvatar() }}" alt="{{ $user->full_name }}">
-                                    </figure>
-                                    <div class="media-body ml-1">
-                                        <div class="mt-0 mb-1 font-weight-bold">{{ $user->full_name }}</div>
-
-                                        @if($user->mobile)
-                                            <div class="text-primary text-small font-600-bold">{{ $user->mobile }}</div>
-                                        @endif
-
-                                        @if($user->email)
-                                            <div class="text-primary text-small font-600-bold">{{ $user->email }}</div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </td>
-
-                            <td>
-                                <div class="media-body">
-                                    <div class="text-primary mt-0 mb-1 font-weight-bold">{{ $user->classesPurchasedsCount }}</div>
-                                    <div class="text-small font-600-bold">{{ handlePrice($user->classesPurchasedsSum) }}</div>
-                                </div>
-                            </td>
-
-                            <td>
-                                <div class="media-body">
-                                    <div class="text-primary mt-0 mb-1 font-weight-bold">{{ $user->meetingsPurchasedsCount }}</div>
-                                    <div class="text-small font-600-bold">{{ handlePrice($user->meetingsPurchasedsSum) }}</div>
-                                </div>
-                            </td>
-
-                            <td>{{ handlePrice(app(\App\Services\PaymentEngine\WalletService::class)->balance($user->id)) }}</td>
-
-                            <td>{{ handlePrice($user->getIncome()) }}</td>
-
-                            <td>
-                                {{ !empty($user->userGroup) ? $user->userGroup->group->name : '' }}
-                            </td>
-
-                            <td>{{ dateTimeFormat($user->created_at, 'j M Y | H:i') }}</td>
-
-                            <td>
-                                @if($user->ban and !empty($user->ban_end_at) and $user->ban_end_at > time())
-                                    <div class="mt-0 mb-1 font-weight-bold text-danger">{{ trans('admin/main.ban') }}</div>
-                                    <div class="text-small font-600-bold">Until {{ dateTimeFormat($user->ban_end_at, 'Y/m/j') }}</div>
-                                @else
-                                    <div class="mt-0 mb-1 font-weight-bold {{ ($user->status == 'active') ? 'text-success' : 'text-warning' }}">{{ trans('admin/main.'.$user->status) }}</div>
-                                @endif
-                            </td>
-
-                            <td class="text-center mb-2" width="120">
-                                @can('admin_users_impersonate')
-                                    <a href="{{ getAdminPanelUrl() }}/users/{{ $user->id }}/impersonate" target="_blank" class="btn-transparent  text-primary" data-toggle="tooltip" data-placement="top" title="{{ trans('admin/main.login') }}">
-                                        <i class="fa fa-user-shield"></i>
-                                    </a>
-                                @endcan
-
-                                @can('admin_users_edit')
-                                    <a href="{{ getAdminPanelUrl() }}/users/{{ $user->id }}/edit" class="btn-transparent  text-primary" data-toggle="tooltip" data-placement="top" title="{{ trans('admin/main.edit') }}">
-                                        <i class="fa fa-edit"></i>
-                                    </a>
-                                @endcan
-
-                                <!--@can('admin_users_delete')-->
-                                <!--    @include('admin.includes.delete_button',['url' => getAdminPanelUrl().'/users/'.$user->id.'/delete' , 'btnClass' => '', 'deleteConfirmMsg' => trans('update.user_delete_confirm_msg')])-->
-                                <!--@endcan-->
-                            </td>
-
-                        </tr>
-                    @endforeach
-                </table>
-            </div>
-        </div>
-
-        <div class="card-footer text-center">
-            {{ $users->appends(request()->input())->links('pagination::bootstrap-4') }}
-        </div>
-    </div>
-
-    <section class="card">
-        <div class="card-body">
-            <div class="section-title ml-0 mt-0 mb-3"><h5>{{trans('admin/main.hints')}}</h5></div>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="media-body">
-                        <div class="text-primary mt-0 mb-1 font-weight-bold">{{trans('admin/main.students_hint_title_1')}}</div>
-                        <div class=" text-small font-600-bold">{{trans('admin/main.students_hint_description_1')}}</div>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="media-body">
-                        <div class="text-primary mt-0 mb-1 font-weight-bold">{{trans('admin/main.students_hint_title_2')}}</div>
-                        <div class=" text-small font-600-bold">{{trans('admin/main.students_hint_description_2')}}</div>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="media-body">
-                        <div class="text-primary mt-0 mb-1 font-weight-bold">{{trans('admin/main.students_hint_title_3')}}</div>
-                        <div class="text-small font-600-bold">{{trans('admin/main.students_hint_description_3')}}</div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-    <div class="modal fade" id="import" tabindex="-1" aria-labelledby="import" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content py-20">
-            <div class="d-flex align-items-center justify-content-between px-20">
-                <h3 class="section-title after-line"></h3>
-
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <i data-feather="x" width="25" height="25"></i>
+    @include('admin.includes.filter_header', [
+        'title' => 'Users Management',
+        'subtitle' => 'Manage and monitor platform learners and instructors (' . $users->total() . ' Total)',
+        'actions' => [
+            '<div class="flex items-center bg-white border border-slate-200 rounded-2xl p-1 shadow-sm">
+                <button type="button" onclick="toggleView(\'grid\')" id="btnGrid" class="p-2 rounded-xl text-slate-400 hover:text-slate-600 transition-all" title="Grid View">
+                    <span class="material-symbols-outlined text-xl block">grid_view</span>
                 </button>
-            </div>
+                <button type="button" onclick="toggleView(\'list\')" id="btnList" class="p-2 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 transition-all" title="List View">
+                    <span class="material-symbols-outlined text-xl block">format_list_bulleted</span>
+                </button>
+            </div>',
+            Gate::allows('admin_users_create') ? '
+            <a href="' . getAdminPanelUrl() . '/users/create" class="bg-primary hover:bg-primary/90 text-white font-bold h-[50px] px-6 rounded-2xl flex items-center gap-2 transition-all shadow-lg shadow-primary/20 shrink-0 no-underline">
+                <span class="material-symbols-outlined text-xl">add</span>
+                Add New User
+            </a>' : ''
+        ]
+    ])
 
-            <div class="mt-25 position-relative">
+    <!-- Main Content Area -->
+    <div id="viewList" class="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto min-w-[1200px]">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50/50 border-b border-slate-100">
+                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">User ID</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] w-64">User Info</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] w-80">Email</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">Role</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] text-center">Balance</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] text-center">Status</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">Joined Date</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    @foreach($users as $user)
+                    @php
+                        $walB = 0;
+                        try { $walB = app(\App\Services\PaymentEngine\WalletService::class)->balance($user->id); } catch(\Exception $e) {}
+                        
+                        $sc = 'bg-emerald-100 text-emerald-600'; $sl='ACTIVE';
+                        if($user->ban && !empty($user->ban_end_at) && $user->ban_end_at > time()) { $sc='bg-rose-100 text-rose-600'; $sl='SUSPENDED'; }
+                        elseif($user->status == 'inactive') { $sc='bg-amber-100 text-amber-600'; $sl='PENDING'; }
+                        
+                        $rc = 'bg-indigo-50 text-indigo-500'; $rn='Learner';
+                        if($user->role_name=='teacher') { $rc='bg-purple-50 text-purple-500'; $rn='Instructor'; }
+                        elseif($user->role_name=='admin') { $rc='bg-slate-100 text-slate-500'; $rn='Admin'; }
+                        
+                        $nm = $user->full_name ?? 'User';
+                        $parts = explode(' ', trim($nm));
+                        $ini = strtoupper(substr($parts[0],0,1) . (count($parts)>1?substr($parts[count($parts)-1],0,1):''));
+                    @endphp
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-8 py-4 text-xs font-black text-slate-400">#AST-{{ str_pad($user->id, 4, '0', STR_PAD_LEFT) }}</td>
+                        <td class="px-8 py-4 user-info-cell">
+                            <a href="{{ getAdminPanelUrl() }}/users/{{ $user->id }}/edit" class="flex items-center gap-4 group no-underline">
+                                <div class="size-10 rounded-[14px] bg-slate-100 flex flex-shrink-0 items-center justify-center overflow-hidden text-slate-400 font-black text-sm shadow-sm ring-4 ring-white group-hover:ring-primary/20 transition-all">
+                                    @if($user->avatar && !str_contains($user->avatar, 'default_profile') && !str_contains($user->avatar, 'default-avatar'))
+                                        <img src="{{ $user->getAvatar() }}" alt="" class="w-full h-full object-cover">
+                                    @else
+                                        {{ $ini }}
+                                    @endif
+                                </div>
+                                <span class="text-sm font-black text-slate-800 group-hover:text-primary transition-colors">{{ $nm }}</span>
+                            </a>
+                        </td>
+                        <td class="px-8 py-4 text-sm font-medium text-slate-400">{{ $user->email ?? '-' }}</td>
+                        <td class="px-8 py-4"><span class="px-3 py-1 rounded-xl {{ $rc }} text-[10px] font-black uppercase tracking-widest">{{ $rn }}</span></td>
+                        <td class="px-8 py-4 text-sm font-black text-slate-800 text-center">{{ number_format($walB) }}</td>
+                        <td class="px-8 py-4 text-center"><span class="px-3 py-1 rounded-xl {{ $sc }} text-[10px] font-black uppercase tracking-widest">{{ $sl }}</span></td>
+                        <td class="px-8 py-4 text-sm font-bold text-slate-500">{{ $user->created_at ? date('M d, Y', strtotime($user->created_at)) : '-' }}</td>
+                        <td class="px-8 py-4 text-center">
+                            @include('admin.includes.user_action_dropdown', ['user' => $user])
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-                <div class="modal-video-lists mt-15">
-                                   <section class="card">
-            <div class="card-body">
-                 <h1 class="font-20 font-weight-bold">Import Student Excel</h1>
-
-                    <form action="{{ getAdminPanelUrl() }}/users/importExcel" method="POST" name="importform"
-	  enctype="multipart/form-data">
-		@csrf
-		<div class="form-group">
-			<label for="file">File:</label>
-			<input id="file" type="file" name="file" class="form-control">
-		</div>
-
-		<button class="btn btn-success">Import File</button>
-	</form>
-            </div>
-        </section>
-
+    <!-- Grid View -->
+    <div id="viewGrid" class="hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            @foreach($users as $user)
+            @php
+                $walB = 0;
+                try { $walB = app(\App\Services\PaymentEngine\WalletService::class)->balance($user->id); } catch(\Exception $e) {}
+                
+                $sd = 'bg-green-100 text-green-800 border-white'; $sdi='check'; $sbc='border-primary/20 group-hover:border-primary/50';
+                if($user->ban && !empty($user->ban_end_at) && $user->ban_end_at > time()) { $sd='bg-red-100 text-red-800 border-white'; $sdi='close'; $sbc='border-red-200 group-hover:border-red-400'; }
+                elseif($user->status == 'inactive') { $sd='bg-orange-100 text-orange-800 border-white'; $sdi='schedule'; $sbc='border-orange-200 group-hover:border-orange-400'; }
+                
+                $rc = 'bg-blue-100 text-blue-600'; $rn='Learner';
+                if($user->role_name=='teacher') { $rc='bg-primary/10 text-primary'; $rn='Instructor'; }
+                elseif($user->role_name=='admin') { $rc='bg-slate-100 text-slate-600'; $rn='Admin'; }
+                
+                $nm = $user->full_name ?? 'User';
+                $parts = explode(' ', trim($nm));
+                $ini = strtoupper(substr($parts[0],0,1) . (count($parts)>1?substr($parts[count($parts)-1],0,1):''));
+            @endphp
+            <div class="group bg-white rounded-xl p-5 shadow-sm border border-slate-200 transition-all hover:shadow-md hover:border-primary/30 relative flex flex-col items-center text-center">
+                <div class="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                    @include('admin.includes.user_action_dropdown', ['user' => $user])
+                </div>
+                
+                <a href="{{ getAdminPanelUrl() }}/users/{{ $user->id }}/edit" class="no-underline group/profile flex flex-col items-center">
+                    <div class="relative mb-4">
+                        <div class="size-20 rounded-full p-1 border-2 {{ $sbc }} transition-colors group-hover/profile:border-primary">
+                            @if($user->avatar && !str_contains($user->avatar, 'default_profile') && !str_contains($user->avatar, 'default-avatar'))
+                                <img src="{{ $user->getAvatar() }}" class="w-full h-full rounded-full object-cover">
+                            @else
+                                <div class="w-full h-full rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-xl">{{ $ini }}</div>
+                            @endif
+                        </div>
+                        <div class="absolute -bottom-1 -right-1">
+                            <span class="flex size-6 items-center justify-center rounded-full {{ $sd }} border-2 shadow-sm">
+                                <span class="material-symbols-outlined text-sm font-bold">{{ $sdi }}</span>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <h3 class="font-bold text-slate-900 mb-1 group-hover/profile:text-primary transition-colors">{{ $nm }}</h3>
+                    <p class="text-xs text-slate-500 mb-3 w-full px-4 truncate">{{ $user->email ?? 'no-email@platform.com' }}</p>
+                </a>
+                
+                <div class="flex gap-2 mb-4">
+                    <span class="px-2 py-0.5 {{ $rc }} rounded-full text-[10px] font-bold uppercase tracking-wider">{{ $rn }}</span>
+                    <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-wider">#AST-{{ str_pad($user->id, 4, '0', STR_PAD_LEFT) }}</span>
+                </div>
+                
+                <div class="w-full pt-4 mt-auto border-t border-slate-100 flex justify-between items-center">
+                    <div class="text-left">
+                        <p class="text-[10px] uppercase font-semibold text-slate-400">Wallet</p>
+                        <p class="text-sm font-bold text-slate-900">₹{{ number_format($walB) }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] uppercase font-semibold text-slate-400">Joined</p>
+                        <p class="text-sm font-medium text-slate-600">{{ $user->created_at ? date('M d, Y', strtotime($user->created_at)) : '-' }}</p>
+                    </div>
                 </div>
             </div>
+            @endforeach
         </div>
     </div>
 </div>
+    {{-- Pagination Wrapper --}}
+    @if($users->hasPages())
+    <div class="mt-6 px-4 py-4 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <p class="text-sm text-slate-600">Showing <span class="font-bold">{{ $users->firstItem() }}-{{ $users->lastItem() }}</span> of <span class="font-bold">{{ $users->total() }}</span> users</p>
+        <div class="um-tailwind-pagination flex items-center gap-2">
+            {{ $users->appends(request()->input())->links('pagination::bootstrap-4') }}
+        </div>
+    </div>
+    @endif
+    
+</div>
 @endsection
+
+@push('scripts_bottom')
+<script>
+    // View preference logic
+    const viewList = document.getElementById('viewList');
+    const viewGrid = document.getElementById('viewGrid');
+    const btnList = document.getElementById('btnList');
+    const btnGrid = document.getElementById('btnGrid');
+
+    function toggleView(view) {
+        if (view === 'list') {
+            viewList.classList.remove('hidden');
+            viewGrid.classList.add('hidden');
+            
+            btnList.classList.add('bg-primary/10', 'text-primary');
+            btnList.classList.remove('text-slate-400', 'hover:text-slate-600');
+            
+            btnGrid.classList.add('text-slate-400', 'hover:text-slate-600');
+            btnGrid.classList.remove('bg-primary/10', 'text-primary');
+            
+            localStorage.setItem('umViewPreference', 'list');
+        } else {
+            viewGrid.classList.remove('hidden');
+            viewList.classList.add('hidden');
+            
+            btnGrid.classList.add('bg-primary/10', 'text-primary');
+            btnGrid.classList.remove('text-slate-400', 'hover:text-slate-600');
+            
+            btnList.classList.add('text-slate-400', 'hover:text-slate-600');
+            btnList.classList.remove('bg-primary/10', 'text-primary');
+            
+            localStorage.setItem('umViewPreference', 'grid');
+        }
+    }
+
+    // Load preference on mount
+    document.addEventListener('DOMContentLoaded', () => {
+        const pref = localStorage.getItem('umViewPreference') || 'list';
+        toggleView(pref);
+    });
+</script>
+
+<style>
+/* Reset some Bootstrap leaking into the tailwind space */
+.um-page-container * { box-sizing: border-box; }
+.um-page-container input:focus, .um-page-container select:focus { outline: none !important; box-shadow: 0 0 0 2px rgba(50, 161, 40, 0.2) !important; border-color: #32A128 !important; }
+
+/* Improve table layout and text handling */
+.um-page-container table { table-layout: fixed; }
+.um-page-container td { vertical-align: middle; }
+.um-page-container .user-info-cell { max-width: 256px; word-wrap: break-word; hyphens: auto; }
+
+/* Adjust default Laravel pagination to look OK */
+.um-tailwind-pagination .pagination { display: flex; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.um-tailwind-pagination .page-item .page-link { 
+    display: flex; align-items: center; justify-content: center; 
+    width: 32px; height: 32px; border-radius: 8px; border: 1px solid #e2e8f0; 
+    color: #475569; font-size: 14px; font-weight: 500; text-decoration: none; padding: 0; 
+}
+.um-tailwind-pagination .page-item.active .page-link { background: #32A128; color: #fff; border-color: #32A128; }
+.um-tailwind-pagination .page-item.disabled .page-link { opacity: 0.5; pointer-events: none; }
+</style>
+@endpush

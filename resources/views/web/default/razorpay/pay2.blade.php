@@ -12,7 +12,7 @@
             
                             <script src="https://checkout.razorpay.com/v1/checkout.js"
                                     data-key="{{ env('RAZORPAY_API_KEY') }}"
-                                    data-amount="{{ (int)($total * 100) }}"
+                                    data-amount="{{ (int)(convertPriceToUserCurrency($total) * 100) }}"
                                     data-buttontext="product_price"
                                     data-description="This payment was made via a direct Razorpay link through our official website – Asttrolok, using a mobile"
                                     data-currency="{{ currency() }}"

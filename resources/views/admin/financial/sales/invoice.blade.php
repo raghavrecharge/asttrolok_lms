@@ -1,318 +1,223 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
     <title>{{ $pageTitle ?? '' }} </title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <!-- General CSS File -->
-    <link rel="stylesheet" href="/assets/admin/vendor/bootstrap/bootstrap.min.css"/>
-    <link rel="stylesheet" href="/assets/vendors/fontawesome/css/all.min.css"/>
-
-    <link rel="stylesheet" href="/assets/admin/css/style.css">
-    <link rel="stylesheet" href="/assets/admin/css/custom.css">
-    <link rel="stylesheet" href="/assets/admin/css/components.css">
-
-    <style>
-        {!! !empty(getCustomCssAndJs('css')) ? getCustomCssAndJs('css') : '' !!}
-        body {
-                font-family: 'main-font-family' !important;
-                color: #000 !important;
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#32A128",
+                        "accent": "#eab308",
+                        "background-light": "#F7F9FC",
+                        "background-dark": "#112210",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
         }
-        .card .card-body .section-title {
-    margin: 30px 0 10px 0;
-    font-size: 16px;
-    background-color: rgba(0, 0, 0, .03);
-    border-bottom: 1px solid rgba(0, 0, 0, .125);
-    padding: .5rem 1rem;
-}
-.invoice th{
-    background-color: rgb(255 255 255 / 4%) !important;
-    height: 0px !important;
-}
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+            .print-container { padding: 0 !important; max-width: 100% !important; }
+            .shadow-sm { shadow: none !important; }
+            .border { border: 1px solid #e2e8f0 !important; }
+        }
     </style>
 </head>
-<body>
+<body class="bg-background-light text-slate-900 font-display min-h-screen">
+<div class="layout-container flex flex-col items-center print-container">
+    <div class="w-full max-w-[1000px] px-4 md:px-8 py-6">
+        
+        <!-- Top Action Bar (No Print) -->
+        <header class="flex items-center justify-between no-print border-b border-slate-200 bg-white rounded-xl px-6 py-4 shadow-sm mb-6">
+            <div class="flex items-center gap-4">
+                <div class="size-8 flex items-center justify-center bg-primary/10 rounded-lg">
+                    <span class="material-symbols-outlined text-primary text-[20px]">receipt_long</span>
+                </div>
+                <h2 class="text-slate-900 text-lg font-bold leading-tight tracking-tight">Invoice Details</h2>
+            </div>
+            <div class="flex gap-2">
+                <button type="button" onclick="window.print()" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 shadow-md shadow-primary/20 transition-all">
+                    <span class="material-symbols-outlined text-sm">print</span>
+                    Print Invoice
+                </button>
+            </div>
+        </header>
 
-<div id="app">
-    <section class="section">
-        <div class="container mt-5">
-            <div class="row">
-                <div class="col-12 col-md-10 offset-md-1 col-lg-10 offset-lg-1">
-
-                    <div class="card card-primary">
-                        <div class="row m-0">
-                            <div class="col-12 col-md-12">
-                                <div class="card-body">
-
-                                    <div class="section-body">
-                                        <div class="invoice">
-                                            <div class="invoice-print">
-                                                <div class="row">
-                                                    <div class="col-lg-12">
-                                                        <div class="invoice-title">
-                                                            <!--<h2>{{ $generalSettings['site_name'] }}</h2>-->
-                                                            <div style="width:200px;">             <h2><a class="navbar-brand navbar-order d-flex align-items-center justify-content-center mr-0 " href="/">
-                                    <img src="https://storage.googleapis.com/astrolok/store/1/Home/asttroloklogo-min_converted.webp" class="img-cover" alt="site logo">
-                            </a></h2></div>
-
-                                                           {{--<div class="invoice-number">Invoice<p>{{ trans('public.item_id') }}: #{{ $webinar->id }}</p></div>--}}
-                                                        <div class="invoice-number">Invoice<p style="color: #6c757d;">Invoice Number: #{{ $sale->id }}</p></div>
-                                                        </div>
-                                                       <hr style="color: #000;border-top: 1px solid;">
-                                                        <div class="row">
-                                                            <div class="col-md-6">
-                                                                <address>
-                                                                      <!--<strong> Invoiced To:</strong>-->
-                                                                     <!--<br>-->
-                                                                    <strong>{{ trans('quiz.student') }}:</strong>
-                                                                    <br>
-                                                                    {{ !empty($sale->gift_recipient) ? $sale->gift_recipient : $sale->buyer->full_name }}
-                                                                    <!--<br>-->
-                                                                </address>
-
-                                                                <address>
-                                                                    <strong>{{ trans('home.organization') }}:</strong><br>
-                                                                    {{--@if($webinar->tracher_id != $webinar->creator_id)
-                                                                        {{ $webinar->creator->full_name }}
-                                                                    @else
-                                                                        -
-                                                                    @endif--}}
-                                                                    Asttrolok
-                                                                    <br>
-                                                                </address>
-                                                            </div>
-                                                            <div class="col-md-6 text-md-right">
-    <address>
-        <strong>{{ trans('home.platform_address') }}:</strong><br>
-@if(!empty($orderAddress))
-    {{ $orderAddress->Address ?? $orderAddress->StreetAddress . ', ' . $orderAddress->City . ', ' . $orderAddress->StateProvince . ' - ' . $orderAddress->PostalCode . ', ' . $orderAddress->Country }}
-@else
-    {!! nl2br(getContactPageSettings('address')) !!}
-@endif
-    </address>
-</div>
-                                                        </div>
-                                                        <div class="row">
-                                                             {{-- Webinar Invoice --}}
-@if(!empty($webinar))
-    <div class="col-md-6">
-        <address>
-            <strong>{{ trans('home.teachers') }}:</strong><br>
-            {{ !empty($webinar->teacher) ? $webinar->teacher->full_name : '-' }} <br>
-
-            @if(!empty($webinar->webinarPartnerTeacher) && count($webinar->webinarPartnerTeacher))
-                @foreach($webinar->webinarPartnerTeacher as $partner)
-                    {{ !empty($partner->teacher) ? $partner->teacher->full_name : '-' }}
-                @endforeach
-            @endif
-        </address>
-    </div>
-@endif
-
-{{-- Subscription Invoice --}}
-@if(!empty($subscription))
-    <div class="col-md-6">
-        <address>
-            <strong>{{ trans('home.subscription') }}:</strong><br>
-            {{ $subscription->title }} <br>
-            Price: {{ handlePrice($subscription->price) }}
-        </address>
-    </div>
-@endif
-{{-- Bundle Invoice --}}
-@if(!empty($bundle))
-    <div class="col-md-6">
-        <address>
-            <strong>Bundle:</strong><br>
-            {{ $bundle->slug }} <br>
-            Price: {{ handlePrice($bundle->price) }} <br>
-        </address>
-    </div>
-@endif
-
-                                                            <div class="col-md-6 text-md-right">
-                                                                <address>
-                                                                    <strong>{{ trans('panel.purchase_date') }}:</strong><br>
-                                                                    {{ dateTimeFormat($sale->created_at,'j M Y | H:i') }}<br><br>
-                                                                </address>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="row ">
-                                                    <div class="col-md-12">
-                                                        <div class="section-title">{{ trans('home.order_summary') }}</div>
-                                                        <div class="table-responsive">
-                                                            <table class="table table-striped table-hover table-md">
-                                                                <tr>
-                                                                    <th data-width="40">#</th>
-                                                                    <th>{{ trans('cart.item') }}</th>
-                                                                    <th class="text-center">{{ trans('admin/main.type') }}</th>
-                                                                    <th class="text-center">{{ trans('public.price') }}</th>
-                                                                    <th class="text-center">{{ trans('panel.discount') }}</th>
-                                                                    <th class="text-right">{{ trans('cart.total') }}</th>
-                                                                </tr>
-
-                                                                 <tr>
-    <td>1</td>
-    <td>
-        @if(!empty($webinar))
-            {{ $webinar->title ?? $webinar->slug ?? '-' }}
-        @elseif(!empty($subscription))
-            {{ $subscription->title ?? $subscription->slug ?? '-' }}
-        @elseif(!empty($bundle))
-            {{ $bundle->title ?? $bundle->slug ?? '-' }}
-        @else
-            -
-        @endif
-    </td>
-    <td class="text-center">
-        @if(!empty($webinar))
-            Webinar
-        @elseif(!empty($subscription))
-            Subscription
-        @elseif(!empty($bundle))
-            Bundle
-        @else
-            -
-        @endif
-    </td>
-    <td class="text-center">
-        @if(!empty($webinar))
-            {{ handlePrice($webinar->price ?? 0) }}
-        @elseif(!empty($subscription))
-            {{ handlePrice($subscription->price ?? 0) }}
-        @elseif(!empty($bundle))
-            {{ handlePrice($bundle->price ?? 0) }}
-        @else
-            -
-        @endif
-    </td>
-    <td class="text-center">
-        {{ handlePrice($sale->discount ?? 0) }}
-    </td>
-    <td class="text-right">
-        {{ handlePrice($sale->total_amount ?? 0) }}
-    </td>
-</tr>
-                                                            </table>
-                                                        </div>
-                                                        <div class="row mt-4">
-
-                                                            <div class="col-lg-12 text-right">
-                                                                <div class="table-responsive">
-                                                            <table class="table mb-0 invoice table-striped table-hover table-md">
-                                                                <thead>
-                                                                    <tr>
-                                                                    <th ></th>
-                                                                    <th></th>
-                                                                    <th></th>
-                                                                    <th ></th>
-                                                                    <th ></th>
-                                                                    <th ></th>
-                                                                  </tr>
-                                                               </thead>
-                                                               <tbody>
-
-                                                  <tr>
-                                                      <td colspan="6" ></td>
-                                                     <td class="text-right"><strong>{{ trans('cart.sub_total') }}</strong></td>
-                                                     <td class="text-right">{{ handlePrice($sale->amount) }}</td>
-                                                  </tr>
-                                                  <tr>
-                                                       <td colspan="6" ></td>
-                                                     <td  class="text-right"><strong>{{ trans('cart.tax') }} ({{ getFinancialSettings('tax') }}%)</strong></td>
-                                                     <td class="text-right">
-                                                          @if(!empty($sale->tax))
-                                                                            {{ handlePrice($sale->tax) }}
-                                                                        @else
-                                                                            -
-                                                                        @endif
-                                                         </td>
-                                                  </tr>
-                                                  <tr>
-                                                       <td colspan="6" ></td>
-                                                     <td  class="text-right"><strong>{{ trans('public.discount') }}</strong></td>
-                                                     <td class="text-right">@if(!empty($sale->discount))
-                                                                            {{ handlePrice($sale->discount) }}
-                                                                        @else
-                                                                            -
-                                                                        @endif
-                                                                </td>
-                                                  </tr>
-                                                   <tr>
-                                                       <td colspan="6" ></td>
-                                                     <td  class="text-right"><strong>{{ trans('cart.total') }}</strong></td>
-                                                     <td class="text-right">
-                                                           @if(!empty($sale->total_amount))
-                                                                            {{ handlePrice($sale->total_amount) }}
-                                                                        @else
-                                                                            -
-                                                                        @endif
-                                                                </td>
-                                                  </tr>
-                                               </tbody>
-                                            </table>
-                                                        </div>
-
-                                                                <!--<div class="invoice-detail-item">-->
-                                                                <!--    <div class="invoice-detail-name">{{ trans('cart.sub_total') }}</div>-->
-                                                                <!--    <div class="invoice-detail-value">{{ handlePrice($sale->amount) }}</div>-->
-                                                                <!--</div>-->
-                                                                <!--<div class="invoice-detail-item">-->
-                                                                <!--    <div class="invoice-detail-name">{{ trans('cart.tax') }} ({{ getFinancialSettings('tax') }}%)</div>-->
-                                                                <!--    <div class="invoice-detail-value">-->
-                                                                <!--        @if(!empty($sale->tax))-->
-                                                                <!--            {{ handlePrice($sale->tax) }}-->
-                                                                <!--        @else-->
-                                                                <!--            --->
-                                                                <!--        @endif-->
-                                                                <!--    </div>-->
-                                                                <!--</div>-->
-                                                                <!--<div class="invoice-detail-item">-->
-                                                                <!--    <div class="invoice-detail-name">{{ trans('public.discount') }}</div>-->
-                                                                <!--    <div class="invoice-detail-value">-->
-                                                                <!--        @if(!empty($sale->discount))-->
-                                                                <!--            {{ handlePrice($sale->discount) }}-->
-                                                                <!--        @else-->
-                                                                <!--            --->
-                                                                <!--        @endif-->
-                                                                <!--    </div>-->
-                                                                <!--</div>-->
-                                                                <!--<hr class="mt-2 mb-2">-->
-                                                                <!--<div class="invoice-detail-item">-->
-                                                                <!--    <div class="invoice-detail-name">{{ trans('cart.total') }}</div>-->
-                                                                <!--    <div class="invoice-detail-value invoice-detail-value-lg">-->
-                                                                <!--        @if(!empty($sale->total_amount))-->
-                                                                <!--            {{ handlePrice($sale->total_amount) }}-->
-                                                                <!--        @else-->
-                                                                <!--            --->
-                                                                <!--        @endif-->
-                                                                <!--    </div>-->
-                                                                <!--</div>-->
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <hr>
-                                            <div class="text-md-right">
-
-                                                <button type="button" onclick="window.print()" class="btn btn-warning btn-icon icon-left"><i class="fas fa-print"></i> Print</button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-
-                        </div>
+        <!-- Main Invoice Content -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            
+            <!-- Branding & Status Header -->
+            <div class="p-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-slate-50/30">
+                <div class="flex flex-col gap-4">
+                    <img src="https://storage.googleapis.com/astrolok/store/1/Home/asttroloklogo-min_converted.webp" class="h-10 w-auto object-contain" alt="Asttrolok Logo">
+                    <div>
+                        <h1 class="text-2xl font-black text-slate-900 tracking-tight">TAX INVOICE</h1>
+                        <p class="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest">Transaction #{{ $sale->id }}</p>
                     </div>
-
+                </div>
+                <div class="flex flex-col items-end gap-2">
+                    <span class="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-black uppercase tracking-wider">
+                        <span class="size-2 bg-primary rounded-full mr-2"></span>
+                        PAID
+                    </span>
+                    <p class="text-xs font-semibold text-slate-500">{{ dateTimeFormat($sale->created_at,'j F Y, H:i') }}</p>
                 </div>
             </div>
+
+            <!-- Billing Info Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 p-8 border-b border-slate-50 text-sm">
+                <div class="space-y-4">
+                    <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Billed To</h3>
+                    <div class="space-y-1">
+                        <p class="text-lg font-black text-slate-800">{{ !empty($sale->gift_recipient) ? $sale->gift_recipient : $sale->buyer->full_name }}</p>
+                        <p class="text-slate-500 font-medium">Student ID: #{{ $sale->buyer->id }}</p>
+                        @if(!empty($orderAddress))
+                            <p class="text-slate-500 leading-relaxed mt-2">
+                                {{ $orderAddress->Address ?? $orderAddress->StreetAddress . ', ' . $orderAddress->City . ', ' . $orderAddress->StateProvince . ' - ' . $orderAddress->PostalCode . ', ' . $orderAddress->Country }}
+                            </p>
+                        @endif
+                    </div>
+                </div>
+                <div class="space-y-4 text-right">
+                    <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Platform Details</h3>
+                    <div class="space-y-1">
+                        <p class="text-lg font-black text-primary">Asttrolok</p>
+                        <p class="text-slate-500 font-medium">Empowering Enlightenment</p>
+                        <div class="text-slate-500 leading-relaxed mt-2">
+                            {!! nl2br(getContactPageSettings('address')) !!}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="p-8 pb-0">
+                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Order Summary</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-slate-400 text-[10px] font-black uppercase tracking-widest border-b-2 border-slate-50">
+                                <th class="pb-4 pt-2">Description</th>
+                                <th class="pb-4 pt-2 text-center">Type</th>
+                                <th class="pb-4 pt-2 text-right">Unit Price</th>
+                                <th class="pb-4 pt-2 text-right">Discount</th>
+                                <th class="pb-4 pt-2 text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <tr class="border-b border-slate-50 relative group">
+                                <td class="py-6">
+                                    <div class="flex items-center gap-3">
+                                        <div class="size-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
+                                            @if(!empty($webinar)) <span class="material-symbols-outlined text-[20px]">movie</span>
+                                            @elseif(!empty($subscription)) <span class="material-symbols-outlined text-[20px]">loyalty</span>
+                                            @else <span class="material-symbols-outlined text-[20px]">package_2</span>
+                                            @endif
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="font-black text-slate-800 text-base">
+                                                @if(!empty($webinar)) {{ $webinar->title ?? $webinar->slug ?? '-' }}
+                                                @elseif(!empty($subscription)) {{ $subscription->title ?? $subscription->slug ?? '-' }}
+                                                @elseif(!empty($bundle)) {{ $bundle->title ?? $bundle->slug ?? '-' }}
+                                                @else - @endif
+                                            </span>
+                                            @if(!empty($webinar))
+                                                <span class="text-xs font-bold text-slate-400 mt-0.5">Instructor: {{ !empty($webinar->teacher) ? $webinar->teacher->full_name : '-' }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-6 text-center">
+                                    <span class="inline-flex px-2 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest">
+                                        @if(!empty($webinar)) Webinar @elseif(!empty($subscription)) Subscription @elseif(!empty($bundle)) Bundle @else Item @endif
+                                    </span>
+                                </td>
+                                <td class="py-6 text-right font-medium text-slate-600">
+                                    @if(!empty($webinar)) {{ handlePrice($webinar->price ?? 0) }}
+                                    @elseif(!empty($subscription)) {{ handlePrice($subscription->price ?? 0) }}
+                                    @elseif(!empty($bundle)) {{ handlePrice($bundle->price ?? 0) }}
+                                    @else - @endif
+                                </td>
+                                <td class="py-6 text-right font-medium text-slate-400">
+                                    {{ handlePrice($sale->discount ?? 0) }}
+                                </td>
+                                <td class="py-6 text-right font-black text-slate-900 text-base">
+                                    {{ handlePrice($sale->total_amount ?? 0) }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Financial Totals -->
+            <div class="p-8 pt-0 flex flex-col md:flex-row justify-between items-start gap-8">
+                <div class="md:w-1/2 p-6 rounded-2xl bg-slate-50 border border-slate-100 mt-8">
+                    <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">info</span>
+                        Important Notice
+                    </h4>
+                    <p class="text-[11px] text-slate-500 leading-relaxed font-medium">
+                        This is a computer-generated invoice and does not require a physical signature. Returns or refunds are subject to our standard terms and conditions. For any billing queries, please contact Asttrolok Support with your Transaction ID #{{ $sale->id }}.
+                    </p>
+                </div>
+                
+                <div class="md:w-1/3 w-full space-y-3 mt-8">
+                    <div class="flex justify-between items-center text-sm font-bold text-slate-500">
+                        <span>Subtotal</span>
+                        <span>{{ handlePrice($sale->amount) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm font-bold text-slate-500">
+                        <span>Tax ({{ (int)getFinancialSettings('tax') }}%)</span>
+                        <span class="text-slate-800">{{ $sale->tax ? handlePrice($sale->tax) : '-' }}</span>
+                    </div>
+                    @if(!empty($sale->discount))
+                        <div class="flex justify-between items-center text-sm font-bold text-accent">
+                            <span>Total Discount</span>
+                            <span>-{{ handlePrice($sale->discount) }}</span>
+                        </div>
+                    @endif
+                    <div class="pt-4 border-t-2 border-slate-100 flex justify-between items-center">
+                        <span class="text-base font-black text-slate-900 uppercase tracking-tight">Net Amount</span>
+                        <span class="text-2xl font-black text-primary">{{ handlePrice($sale->total_amount) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Branding -->
+            <div class="p-8 bg-slate-900 flex flex-col items-center gap-2 text-center">
+                <p class="text-white font-black text-sm tracking-widest uppercase">Thank you for choosing Asttrolok</p>
+                <p class="text-slate-500 text-[10px] font-medium tracking-tight">A step towards spiritual and celestial wisdom.</p>
+            </div>
         </div>
-    </section>
+
+        <footer class="flex items-center justify-center py-8 text-slate-400 text-[10px] font-bold uppercase tracking-widest no-print">
+            Asttrolok Administrative Suite • Secured Transaction
+        </footer>
+    </div>
 </div>
 </body>
+</html>
