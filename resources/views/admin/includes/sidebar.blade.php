@@ -198,6 +198,13 @@
                         <span>Support Tickets</span>
                     </a>
                 </li>
+                
+                <li class="{{ (request()->is(getAdminPanelUrl('/support-settings*'))) ? 'active' : '' }}">
+                    <a href="{{ getAdminPanelUrl() }}/support-settings" class="nav-link d-flex align-items-center">
+                        <span class="material-symbols-outlined mr-3">settings_accessibility</span>
+                        <span>Support Settings</span>
+                    </a>
+                </li>
             @endcan
 
             @can('admin_documents')

@@ -1,0 +1,40 @@
+{
+  "project": {
+    "title": "Asttrolok Admin Dashboard",
+    "id": "16797213973576861812"
+  },
+  "screens": [
+    {
+      "name": "SMS Notification Settings",
+      "id": "21b8f0862b5a4516b2af3c4861d13817",
+      "filename": "sms-notification-settings",
+      "imageDownloaded": true,
+      "codeDownloaded": true,
+      "imagePath": "images/sms-notification-settings.png",
+      "codePath": "code/sms-notification-settings.html",
+      "jsonPath": "code/sms-notification-settings.json"
+    },
+    {
+      "name": "Email Notification Settings",
+      "id": "9137a5e000334ad18d70bbdca5af1090",
+      "filename": "email-notification-settings",
+      "imageDownloaded": true,
+      "codeDownloaded": true,
+      "imagePath": "images/email-notification-settings.png",
+      "codePath": "code/email-notification-settings.html",
+      "jsonPath": "code/email-notification-settings.json"
+    },
+    {
+      "name": "Notification Settings",
+      "id": "c32a6df8f1c141ba80492e45df510dc4",
+      "filename": "notification-settings",
+      "imageDownloaded": true,
+      "codeDownloaded": true,
+      "imagePath": "images/notification-settings.png",
+      "codePath": "code/notification-settings.html",
+      "jsonPath": "code/notification-settings.json"
+    }
+  ],
+  "downloadedAt": "2026-03-10T13:37:46.157Z",
+  "totalScreens": 3
+}

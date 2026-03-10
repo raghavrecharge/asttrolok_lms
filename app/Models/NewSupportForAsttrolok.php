@@ -63,7 +63,7 @@ class NewSupportForAsttrolok extends Model
         'correction_quick_pay_amount',
         'temporary_access_days',
         'temporary_access_reason',
-        
+
         // Support handling fields
         'support_handler_id',
         'support_remarks',
@@ -73,7 +73,7 @@ class NewSupportForAsttrolok extends Model
         'approved_at',
         'rejected_at',
         'rejection_reason',
-        
+
         // Quick Support Form fields
         'source_course_id',
         'target_course_id',
@@ -84,8 +84,9 @@ class NewSupportForAsttrolok extends Model
         'execution_notes',
         'executed_at',
         'execution_result',
+        'priority',
     ];
- 
+
 
     protected $casts = [
         'attachments' => 'array',
@@ -101,9 +102,9 @@ class NewSupportForAsttrolok extends Model
     {
         parent::boot();
 
-         static::creating(function ($model) {
-        $model->ticket_number = 'AST-' . now()->format('ymdHis') . rand(1000,9999);
-    });
+        static::creating(function ($model) {
+            $model->ticket_number = 'AST-' . now()->format('ymdHis') . rand(1000, 9999);
+        });
     }
 
     // Relationships
@@ -119,27 +120,27 @@ class NewSupportForAsttrolok extends Model
 
     public function category()
     {
-        return $this->belongsTo(SupportCategory::class, 'support_category_id');
+        return $this->belongsTo(SupportCategory::class , 'support_category_id');
     }
 
     public function supportHandler()
     {
-        return $this->belongsTo(User::class, 'support_handler_id');
+        return $this->belongsTo(User::class , 'support_handler_id');
     }
 
     public function subAdmin()
     {
-        return $this->belongsTo(User::class, 'sub_admin_id');
+        return $this->belongsTo(User::class , 'sub_admin_id');
     }
 
     public function logs()
     {
-        return $this->hasMany(NewSupportForAsttrolokLog::class, 'support_request_id');
+        return $this->hasMany(NewSupportForAsttrolokLog::class , 'support_request_id');
     }
 
     public function audits()
     {
-        return $this->hasMany(SupportAuditLog::class, 'support_request_id');
+        return $this->hasMany(SupportAuditLog::class , 'support_request_id');
     }
 
     // Scopes
@@ -239,6 +240,6 @@ class NewSupportForAsttrolok extends Model
 
     public function restructureRequest()
     {
-        return $this->hasOne(InstallmentRestructureRequest::class, 'support_ticket_id');
+        return $this->hasOne(InstallmentRestructureRequest::class , 'support_ticket_id');
     }
 }

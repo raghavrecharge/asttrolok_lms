@@ -182,6 +182,15 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
                             Route::get('/{id}/delete', 'SupportDepartmentsController@delete');
                         }
                         );
+                        Route::group(['prefix' => 'support-settings'], function () {
+                            Route::get('/', 'AdminSupportController@supportSettings')->name('admin.support_settings');
+                            Route::get('/notifications', 'AdminSupportController@notificationSettings')->name('admin.support_settings.notifications');
+                            Route::get('/email', 'AdminSupportController@emailSettings')->name('admin.support_settings.email');
+                            Route::get('/sms', 'AdminSupportController@smsSettings')->name('admin.support_settings.sms');
+                            Route::post('/store', 'AdminSupportController@storeSupportSettings')->name('admin.support_settings.store');
+                        }
+                        );
+
                         Route::group(['prefix' => 'newsuportforasttrolok'], function () {
 
                             Route::get('/support', 'AdminSupportController@index')
@@ -210,9 +219,10 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
                             Route::post('/support/test-wrong-course', 'AdminSupportController@testWrongCourseCorrection')
                                 ->name('admin.support.testWrongCourseCorrection');
 
+                            Route::post('/support/{id}/quick-update', 'AdminSupportController@quickUpdate');
+
                             Route::post('/support/test-purchase-list', 'AdminSupportController@testUserPurchaseList')
                                 ->name('admin.support.testUserPurchaseList');
-
                         }
                         );
                     }
@@ -1457,6 +1467,16 @@ Route::group(['prefix' => $prefix, 'namespace' => 'Admin', 'middleware' => 'web'
                     Route::get('/{id}/delete', 'EventController@destroy')->name('admin.events.delete');
                     Route::get('/{id}/toggle-status', 'EventController@toggleStatus')->name('admin.events.toggle-status');
                     Route::get('/{id}/regenerate-link', 'EventController@regenerateLink')->name('admin.events.regenerate-link');
+                }
+                );
+
+                // Support Settings Routes
+                Route::group(['prefix' => 'support-settings'], function () {
+                    Route::get('/', 'SupportSettingsController@index')->name('admin.support_settings.index');
+                    Route::post('/save', 'SupportSettingsController@saveSettings')->name('admin.support_settings.save');
+                    Route::get('/load', 'SupportSettingsController@getSettings')->name('admin.support_settings.load');
+                    Route::post('/test-notification', 'SupportSettingsController@sendTestNotification')->name('admin.support_settings.test');
+                    Route::get('/notification-history', 'SupportSettingsController@getNotificationHistory')->name('admin.support_settings.history');
                 }
                 );
             }

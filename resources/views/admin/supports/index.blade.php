@@ -148,16 +148,16 @@
                             <tr>
                                 <th>Ticket #</th>
                                 <th class="text-left">Title</th>
-                                <th class="text-center">Scenario</th>
+                                <th class="text-center" style="width: 200px;">Category</th>
+                                <th class="text-center" style="width: 150px;">Priority</th>
                                 <th class="text-center">Created Date</th>
                                 <th class="text-left">User</th>
-                                <th class="text-left">Course</th>
                                 <th class="text-center">Status</th>
                                 <th class="text-center">Actions</th>
                             </tr>
 
                             @foreach($supportRequests as $request)
-                            <tr>
+                            <tr data-ticket="{{ $request->id }}">
                                 <td>
                                     <a href="{{ route('admin.support.show', $request->id) }}">
                                         <strong class="text-primary">{{ $request->ticket_number }}</strong>
@@ -167,7 +167,25 @@
                                 <td class="text-left">{{ $request->title }}</td>
 
                                 <td class="text-center">
-                                    <span class="badge badge-info">{{ $request->getScenarioLabel() }}</span>
+                                    <select class="form-control form-control-sm quick-update-select" data-field="scenario" style="border-radius: 8px; font-weight: 600; font-size: 11px; height: 32px; border: 1px solid #e2e8f0; background: #f8fafc;">
+                                        <option value="">Awaiting</option>
+                                        <option value="course_extension" {{ $request->support_scenario == 'course_extension' ? 'selected' : '' }}>Extension</option>
+                                        <option value="temporary_access" {{ $request->support_scenario == 'temporary_access' ? 'selected' : '' }}>Temp Access</option>
+                                        <option value="mentor_access" {{ $request->support_scenario == 'mentor_access' ? 'selected' : '' }}>Mentor</option>
+                                        <option value="refund_payment" {{ $request->support_scenario == 'refund_payment' ? 'selected' : '' }}>Refund</option>
+                                        <option value="offline_cash_payment" {{ $request->support_scenario == 'offline_cash_payment' ? 'selected' : '' }}>Cash/Offline</option>
+                                        <option value="installment_restructure" {{ $request->support_scenario == 'installment_restructure' ? 'selected' : '' }}>EMI Restruct</option>
+                                        <option value="mentor_change" {{ $request->support_scenario == 'mentor_change' ? 'selected' : '' }}>Mentor Change</option>
+                                    </select>
+                                </td>
+
+                                <td class="text-center">
+                                    <select class="form-control form-control-sm quick-update-select" data-field="priority" style="border-radius: 8px; font-weight: 600; font-size: 11px; height: 32px; border: 1px solid #e2e8f0; background: #f8fafc;">
+                                        <option value="low" {{ $request->priority == 'low' ? 'selected' : '' }}>Low</option>
+                                        <option value="medium" {{ $request->priority == 'medium' ? 'selected' : '' }}>Medium</option>
+                                        <option value="high" {{ $request->priority == 'high' ? 'selected' : '' }}>High</option>
+                                        <option value="urgent" {{ $request->priority == 'urgent' ? 'selected' : '' }}>Urgent</option>
+                                    </select>
                                 </td>
 
                                 <td class="text-center">{{ \Carbon\Carbon::parse($request->created_at)->format('j M Y | H:i') }}</td>
@@ -183,32 +201,27 @@
                                     @endif
                                 </td>
 
-                                <td class="text-left">
-                                    {{ $request->webinar?->title }}<br>
-                                    <small class="text-muted">{{ $request->webinar?->creator->full_name }}</small>
-                                </td>
-
                                 <td class="text-center">
                                     @if($request->status == 'pending')
-                                        <span class="text-warning">Pending</span>
+                                        <span class="text-warning font-weight-bold">Pending</span>
                                     @elseif($request->status == 'in_review')
-                                        <span class="text-info">In Review</span>
+                                        <span class="text-info font-weight-bold">In Review</span>
                                     @elseif($request->status == 'approved')
-                                        <span class="text-success">Approved</span>
+                                        <span class="text-success font-weight-bold">Approved</span>
                                     @elseif($request->status == 'rejected')
-                                        <span class="text-danger">Rejected</span>
+                                        <span class="text-danger font-weight-bold">Rejected</span>
                                     @else
-                                        <span class="text-primary">{{ ucfirst($request->status) }}</span>
+                                        <span class="text-primary font-weight-bold">{{ ucfirst($request->status) }}</span>
                                     @endif
                                 </td>
 
                                 <td class="text-center" width="100">
                                     <a href="{{ route('admin.support.show', $request->id) }}" 
-                                       class="btn-transparent btn-sm text-primary" 
+                                       class="btn btn-sm btn-outline-primary" 
                                        data-toggle="tooltip" 
                                        data-placement="top" 
                                        title="View Details">
-                                        <i class="fa fa-eye" aria-hidden="true"></i>
+                                        <i class="fa fa-eye"></i>
                                     </a>
                                 </td>
                             </tr>
@@ -224,3 +237,45 @@
         </div>
     </section>
 @endsection
+
+@push('scripts_bottom')
+<script>
+    $(document).ready(function() {
+        $('.quick-update-select').on('change', function() {
+            var $this = $(this);
+            var ticketId = $this.closest('tr').data('ticket');
+            var field = $this.data('field');
+            var value = $this.val();
+            var data = {};
+            data[field] = value;
+            data['_token'] = '{{ csrf_token() }}';
+
+            $this.css('opacity', '0.5').prop('disabled', true);
+
+            $.post('{{ getAdminPanelUrl() }}/support/' + ticketId + '/quick-update', data, function(response) {
+                if (response.status === 'success') {
+                    iziToast.success({
+                        title: 'Success',
+                        message: response.message,
+                        position: 'topRight'
+                    });
+                } else {
+                    iziToast.error({
+                        title: 'Error',
+                        message: response.message,
+                        position: 'topRight'
+                    });
+                }
+            }).fail(function() {
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Failed to update ticket',
+                    position: 'topRight'
+                });
+            }).always(function() {
+                $this.css('opacity', '1').prop('disabled', false);
+            });
+        });
+    });
+</script>
+@endpush

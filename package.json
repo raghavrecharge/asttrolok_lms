@@ -7,7 +7,8 @@
         "watch-poll": "npm run watch -- --watch-poll",
         "hot": "cross-env NODE_ENV=development node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --hot --disable-host-check --config=node_modules/laravel-mix/setup/webpack.config.js",
         "prod": "npm run production",
-        "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --no-progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
+        "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --no-progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
+        "mcp:stitch": "node stitch-mcp-server.js"
     },
     "devDependencies": {
         "@playwright/test": "^1.58.2",
@@ -30,6 +31,7 @@
         "agora-rtc-sdk": "^3.6.11",
         "agora-rtm-sdk": "^1.4.3-203",
         "feather-icons": "^4.28.0",
-        "sweetalert2": "^9.17.1"
+        "sweetalert2": "^9.17.1",
+        "@modelcontextprotocol/sdk": "^0.5.0"
     }
 }
